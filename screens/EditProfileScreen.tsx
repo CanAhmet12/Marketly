@@ -163,16 +163,25 @@ export function EditProfileScreen() {
           <Text style={s.avatarHint}>Değiştirmek için dokun</Text>
         </View>
 
-        {/* Avatar URL */}
-        <Field
-          label="Fotoğraf URL'si (isteğe bağlı)"
-          placeholder="https://..."
-          value={avatarUrl}
-          onChangeText={setAvatarUrl}
-          error={errors.avatarUrl}
-          autoCapitalize="none"
-          keyboardType="url"
-        />
+        {/* Avatar URL — yalnızca manuel URL girişi istenirse göster */}
+        {avatarUrl.startsWith('http') ? null : (
+          avatarUrl.trim() === '' ? (
+            <Pressable style={s.pasteUrlBtn} onPress={() => setAvatarUrl(' ')}>
+              <Ionicons name="link-outline" size={14} color={colors.textMuted} />
+              <Text style={s.pasteUrlTxt}>URL ile fotoğraf ekle (isteğe bağlı)</Text>
+            </Pressable>
+          ) : (
+            <Field
+              label="Fotoğraf URL'si"
+              placeholder="https://..."
+              value={avatarUrl}
+              onChangeText={setAvatarUrl}
+              error={errors.avatarUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+          )
+        )}
 
         {/* Full name */}
         <Field
@@ -332,4 +341,10 @@ const s = StyleSheet.create({
     opacity:         0.6,
   },
   readOnlyTxt: { color: colors.textMuted, fontSize: 15 },
+
+  pasteUrlBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 10, marginBottom: 14,
+  },
+  pasteUrlTxt: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
 });

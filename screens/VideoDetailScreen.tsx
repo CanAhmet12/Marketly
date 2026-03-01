@@ -10,6 +10,8 @@ import type { VideoItem } from '../data/mockVideos';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideoComments } from '../hooks/useVideoComments';
+import { useVideos } from '../hooks/useVideos';
+import { supabase } from '../lib/supabase';
 import { radius, shadow, colors } from '../constants/theme';
 
 // ─── Video oynatıcı bileşeni ──────────────────────────────────────────────────
@@ -67,28 +69,7 @@ function timeAgo(isoDate: string): string {
 }
 
 
-const RELATED = [
-  {
-    id: 'r1', title: 'Altın Fırsat mı? XAU/USD Analiz',
-    thumb: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=400',
-    creator: 'Emtia Pro', views: '8.2K', duration: '11:05',
-  },
-  {
-    id: 'r2', title: 'Nasdaq Teknik Analiz — Kritik Seviyeler',
-    thumb: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400',
-    creator: 'Market Day', views: '12K', duration: '14:20',
-  },
-  {
-    id: 'r3', title: 'BIST100 Günlük Özet ve Tahminler',
-    thumb: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400',
-    creator: 'BIST Takip', views: '5.1K', duration: '9:48',
-  },
-  {
-    id: 'r4', title: 'Fed Kararı Sonrası Portföy Stratejisi',
-    thumb: 'https://images.unsplash.com/photo-1604594849809-dfedbc827105?w=400',
-    creator: 'Macro King', views: '31K', duration: '17:44',
-  },
-];
+// İlgili videolar — useVideos ile dinamik olarak çekiliyor (RELATED sabit verisi kaldırıldı)
 
 // ─── Asset Mini Card ──────────────────────────────────────────────────────────
 function AssetMiniCard({ tag, price, change }: { tag: string; price?: string; change?: number }) {
@@ -364,6 +345,24 @@ export function VideoDetailScreen({ item, onBack }: Props) {
   const [comment, setComment]     = useState('');
   const [likedCmts, setLikedCmts] = useState<Record<string, boolean>>({});
 
+  // İlgili videolar — aynı asset tag'e göre gerçek veriden çek
+  const { videos: relatedRaw } = useVideos({
+    assetTag: item.assetTags?.[0] ?? undefined,
+  });
+  const related = relatedRaw.filter(v => v.id !== item.id).slice(0, 4);
+
+  // Başlangıçta takip durumunu Supabase'den yükle
+  useEffect(() => {
+    if (!user?.id || !item.creator?.id) return;
+    supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', user.id)
+      .eq('following_id', item.creator.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFollowing(true); });
+  }, [user?.id, item.creator?.id]);
+
   const {
     comments: liveComments,
     loading:  cmtLoading,
@@ -387,10 +386,21 @@ export function VideoDetailScreen({ item, onBack }: Props) {
   const up    = (item.changePercent ?? 0) >= 0;
   const stats = item.stats ?? { likes: 0, comments: 0, shares: 0, views: 0 };
 
-  const handleFollow = () => {
+  const handleFollow = async () => {
+    if (!user) { toast.info('Takip etmek için giriş yap'); return; }
     const nf = !following;
     setFollowing(nf);
-    toast.success(nf ? `${item.creator.name} takip ediliyor ✓` : 'Takipten çıkıldı');
+    if (nf) {
+      await supabase.from('follows').upsert(
+        { follower_id: user.id, following_id: item.creator.id },
+        { onConflict: 'follower_id,following_id' }
+      );
+      toast.success(`${item.creator.name} takip ediliyor ✓`);
+    } else {
+      await supabase.from('follows').delete()
+        .eq('follower_id', user.id).eq('following_id', item.creator.id);
+      toast.info('Takipten çıkıldı');
+    }
   };
 
   const handleSendComment = useCallback(async () => {
@@ -550,29 +560,35 @@ export function VideoDetailScreen({ item, onBack }: Props) {
         </View>
 
         {/* ── Related Videos ── */}
-        <View style={v.section}>
-          <View style={v.sectionHeader}>
-            <View style={v.sectionAccent} />
-            <Text style={v.sectionTitle}>İlgili Videolar</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={v.relatedRow}>
-            {RELATED.map((r) => (
-              <Pressable key={r.id} style={v.relatedCard}>
-                <View style={v.relatedImgWrap}>
-                  <Image source={{ uri: r.thumb }} style={v.relatedThumb} />
-                  <View style={v.relatedOverlay} />
-                  <View style={v.relatedDuration}>
-                    <Text style={v.relatedDurationTxt}>{r.duration}</Text>
+        {related.length > 0 && (
+          <View style={v.section}>
+            <View style={v.sectionHeader}>
+              <View style={v.sectionAccent} />
+              <Text style={v.sectionTitle}>İlgili Videolar</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={v.relatedRow}>
+              {related.map((r) => (
+                <Pressable key={r.id} style={v.relatedCard} onPress={onBack}>
+                  <View style={v.relatedImgWrap}>
+                    <Image source={{ uri: r.thumbnail }} style={v.relatedThumb} />
+                    <View style={v.relatedOverlay} />
+                    {r.duration && (
+                      <View style={v.relatedDuration}>
+                        <Text style={v.relatedDurationTxt}>{r.duration}</Text>
+                      </View>
+                    )}
                   </View>
-                </View>
-                <View style={v.relatedInfo}>
-                  <Text style={v.relatedCardTitle} numberOfLines={2}>{r.title}</Text>
-                  <Text style={v.relatedMeta}>{r.creator}  ·  {r.views} izlenme</Text>
-                </View>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+                  <View style={v.relatedInfo}>
+                    <Text style={v.relatedCardTitle} numberOfLines={2}>{r.title}</Text>
+                    <Text style={v.relatedMeta}>
+                      {r.creator.name}  ·  {r.stats?.views ? `${fmt(r.stats.views)} izlenme` : r.timeAgo}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* ── Comments ── */}
         <View style={v.commentsSection}>

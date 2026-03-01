@@ -182,14 +182,6 @@ const sc = StyleSheet.create({
 });
 
 // ─── Watchlist Strip ──────────────────────────────────────────────────────────
-// Tüm kategorilerde en az 1-2 takip edilen varlık
-const WATCH_IDS: Record<Tab, string[]> = {
-  crypto:      ['btc', 'eth', 'sol'],
-  stocks:      ['aapl', 'nvda', 'tsla'],
-  commodities: ['gold', 'oil'],
-  forex:       ['usdtry', 'eurusd'],
-};
-
 function WatchlistStrip({
   activeTab, seg, onPress,
 }: {
@@ -197,12 +189,12 @@ function WatchlistStrip({
   seg: typeof SEGMENTS[0];
   onPress: (a: MarketAsset) => void;
 }) {
-  const ids = WATCH_IDS[activeTab] ?? [];
+  const { watchlistIds } = useWatchlist();
+  const nav = useNavigation<any>();
   const { byCategory } = useMarketPrices();
   const liveAll = byCategory(activeTab as any).map(liveToMarketAsset);
-  const pool = liveAll;
-  const watched = pool.filter(
-    (a) => ids.includes(a.id) && a.category === activeTab
+  const watched = liveAll.filter(
+    (a) => watchlistIds.includes(a.id.toUpperCase()) || watchlistIds.includes(a.symbol.toUpperCase())
   );
 
   return (
@@ -221,7 +213,7 @@ function WatchlistStrip({
           </View>
           <View style={ws.badge}><Text style={ws.badgeTxt}>{watched.length}</Text></View>
         </View>
-        <Pressable style={ws.addBtn}>
+        <Pressable style={ws.addBtn} onPress={() => nav.navigate('Search')}>
           <Ionicons name="add" size={13} color={seg.color} />
           <Text style={[ws.addTxt, { color: seg.color }]}>Ekle</Text>
         </Pressable>
@@ -265,8 +257,20 @@ function WatchlistStrip({
           );
         })}
 
+        {watched.length === 0 && (
+          <View style={ws.emptyWrap}>
+            <Ionicons name="star-outline" size={28} color={seg.color + '80'} />
+            <Text style={[ws.emptyTxt, { color: seg.color }]}>
+              İzleme listeniz boş
+            </Text>
+            <Text style={ws.emptySubTxt}>
+              Varlık sayfasında ★ simgesine basarak ekleyin
+            </Text>
+          </View>
+        )}
+
         {/* Add more card */}
-        <Pressable style={[ws.addCard, { borderColor: seg.color + '30' }]}>
+        <Pressable style={[ws.addCard, { borderColor: seg.color + '30' }]} onPress={() => nav.navigate('Search')}>
           <View style={[ws.addCircle, { backgroundColor: seg.bgLight }]}>
             <Ionicons name="add" size={20} color={seg.color} />
           </View>
@@ -325,6 +329,13 @@ const ws = StyleSheet.create({
   },
   addCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   addCardTxt: { fontSize: 11, fontWeight: '700' },
+
+  emptyWrap: {
+    width: 200, alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 24, paddingHorizontal: 12,
+  },
+  emptyTxt: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  emptySubTxt: { fontSize: 11, color: colors.textMuted, textAlign: 'center', lineHeight: 16 },
 });
 
 // ─── Top Movers ───────────────────────────────────────────────────────────────

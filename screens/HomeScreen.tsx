@@ -597,6 +597,22 @@ export function HomeScreen() {
         {/* ── Video feed ── */}
         {feedTab !== 'Sinyaller' && (
           <>
+            {/* CANLI boş durum */}
+            {feedTab === 'CANLI' && !videosLoading && filtered.length === 0 && (
+              <View style={s.emptyFeed}>
+                <Text style={s.emptyFeedIcon}>📡</Text>
+                <Text style={s.emptyFeedTitle}>Şu an aktif yayın yok</Text>
+                <Text style={s.emptyFeedSub}>Canlı yayınlar başladığında burada görünecek</Text>
+                <Pressable
+                  style={s.discoverBtn}
+                  onPress={() => navigation.navigate('Live' as never)}
+                >
+                  <Ionicons name="radio-outline" size={14} color="#FFF" />
+                  <Text style={s.discoverBtnTxt}>Canlı Yayınlar</Text>
+                </Pressable>
+              </View>
+            )}
+
             {/* Featured card — full width, no horizontal padding */}
             {featured && (
               <View style={s.featuredWrap}>

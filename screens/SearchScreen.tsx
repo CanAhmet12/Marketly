@@ -10,6 +10,8 @@ import { useMarketPrices } from '../hooks/useMarketPrices';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { liveToMarketAsset } from '../services/marketService';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import type { VideoItem } from '../data/mockVideos';
 import { radius, shadow, colors } from '../constants/theme';
 
@@ -88,6 +90,37 @@ function AssetResult({ asset, onPress }: { asset: ReturnType<typeof liveToMarket
 
 function CreatorResult({ creator }: { creator: SimpleCreator }) {
   const [following, setFollowing] = useState(false);
+  const { user } = useAuth();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (!user?.id || !creator.id) return;
+    supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', user.id)
+      .eq('following_id', creator.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFollowing(true); });
+  }, [user?.id, creator.id]);
+
+  const handleFollow = async () => {
+    if (!user) { toast.info('Takip etmek için giriş yap'); return; }
+    const next = !following;
+    setFollowing(next);
+    if (next) {
+      await supabase.from('follows').upsert(
+        { follower_id: user.id, following_id: creator.id },
+        { onConflict: 'follower_id,following_id' }
+      );
+      toast.success(`${creator.name} takip ediliyor ✓`);
+    } else {
+      await supabase.from('follows').delete()
+        .eq('follower_id', user.id).eq('following_id', creator.id);
+      toast.info(`${creator.name} takipten çıkıldı`);
+    }
+  };
+
   return (
     <View style={r.creatorRow}>
       <Image source={{ uri: creator.avatar }} style={r.creatorAvatar} />
@@ -104,8 +137,9 @@ function CreatorResult({ creator }: { creator: SimpleCreator }) {
       </View>
       <Pressable
         style={[r.followBtn, following && r.followBtnActive]}
-        onPress={() => setFollowing(!following)}
+        onPress={handleFollow}
       >
+        {following && <Ionicons name="checkmark" size={11} color={colors.primaryDark} />}
         <Text style={[r.followBtnTxt, following && r.followBtnTxtActive]}>
           {following ? 'Takipte' : 'Takip Et'}
         </Text>
