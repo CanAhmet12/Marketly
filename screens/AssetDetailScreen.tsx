@@ -23,18 +23,36 @@ const { width: W } = Dimensions.get('window');
 // ─── Community Sentiment ─────────────────────────────────────────────────────
 function CommunitySentiment({ symbol }: { symbol: string }) {
   const [vote, setVote] = useState<'bull' | 'bear' | null>(null);
-  const [bull, setBull] = useState(67);
-  const [bear, setBear] = useState(33);
-  const [totalVotes, setTotalVotes] = useState(1200);
+  const [bull, setBull] = useState(50);
+  const [bear, setBear] = useState(50);
+  const [totalVotes, setTotalVotes] = useState(0);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const toast = useToast();
   const VOTE_KEY = `@sentiment_${symbol}`;
 
-  // Kaydedilmiş oyu yükle
+  // Supabase'den canlı sentiment verisi yükle
   useEffect(() => {
-    AsyncStorage.getItem(VOTE_KEY).then(v => {
-      if (v === 'bull' || v === 'bear') setVote(v);
-    });
+    const load = async () => {
+      // 1. Kullanıcının önceki oyu (local cache)
+      const saved = await AsyncStorage.getItem(VOTE_KEY);
+      if (saved === 'bull' || saved === 'bear') setVote(saved);
+
+      // 2. Gerçek oy sayılarını Supabase'den al
+      const { data } = await supabase
+        .from('sentiment_votes')
+        .select('direction')
+        .eq('symbol', symbol.toUpperCase());
+
+      if (data && data.length > 0) {
+        const total  = data.length;
+        const bullCt = data.filter((r: any) => r.direction === 'bull').length;
+        const bearCt = total - bullCt;
+        setTotalVotes(total);
+        setBull(Math.round((bullCt / total) * 100));
+        setBear(Math.round((bearCt / total) * 100));
+      }
+    };
+    load();
   }, [symbol]);
 
   const handleVote = async (v: 'bull' | 'bear') => {
@@ -46,6 +64,19 @@ function CommunitySentiment({ symbol }: { symbol: string }) {
     const prev = vote;
     setVote(v);
     await AsyncStorage.setItem(VOTE_KEY, v);
+
+    // Supabase'e kaydet — user_device_id olarak AsyncStorage cihaz ID kullan
+    let deviceId = await AsyncStorage.getItem('@device_id');
+    if (!deviceId) {
+      deviceId = `device_${Math.random().toString(36).slice(2)}`;
+      await AsyncStorage.setItem('@device_id', deviceId);
+    }
+    await supabase.from('sentiment_votes').upsert(
+      { symbol: symbol.toUpperCase(), device_id: deviceId, direction: v },
+      { onConflict: 'symbol,device_id' }
+    );
+
+    // Local optimistic update
     if (!prev) setTotalVotes(t => t + 1);
     if (v === 'bull') {
       setBull(b => Math.min(b + (prev === 'bear' ? 2 : 1), 99));
