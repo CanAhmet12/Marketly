@@ -23,6 +23,7 @@ import { SignalCard } from '../components/SignalCard';
 import { useSignals } from '../hooks/useSignals';
 import { useVideos } from '../hooks/useVideos';
 import { useMarketPrices } from '../hooks/useMarketPrices';
+import { LinearGradient } from 'expo-linear-gradient';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -182,23 +183,102 @@ const asc = StyleSheet.create({
 // ─── PortfolioTab ─────────────────────────────────────────────────────────────
 function PortfolioTab() {
   const navigation = useNavigation<any>();
+  const { holdings, totalValue, totalPnL, totalPnLPct, loading } = usePortfolio();
+
+  function fmtUSD(n: number) {
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
+    return `$${n.toFixed(2)}`;
+  }
+
+  const ASSET_COLORS = ['#F7931A','#627EEA','#14F195','#E84142','#9945FF','#00FFA3','#2775CA','#26A17B'];
+  const assetColor = (sym: string) => ASSET_COLORS[sym.charCodeAt(0) % ASSET_COLORS.length];
+
+  if (loading) {
+    return (
+      <View style={{ padding: 40, alignItems: 'center' }}>
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (holdings.length === 0) {
+    return (
+      <View style={pt.wrap}>
+        <View style={pt.openPortfolio}>
+          <Ionicons name="wallet" size={36} color={colors.primary} />
+          <Text style={pt.openTitle}>Portföy Takibi</Text>
+          <Text style={pt.openSub}>Yatırımlarını ekle, gerçek P&L değerlerini takip et</Text>
+          <Pressable style={pt.openBtn} onPress={() => navigation.navigate('Portfolio')}>
+            <Text style={pt.openBtnTxt}>Portföyüme Git</Text>
+            <Ionicons name="arrow-forward" size={14} color="#fff" />
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  const isUp = totalPnL >= 0;
   return (
     <View style={pt.wrap}>
-      <View style={pt.openPortfolio}>
-        <Ionicons name="wallet" size={36} color={colors.primary} />
-        <Text style={pt.openTitle}>Portföy Takibi</Text>
-        <Text style={pt.openSub}>Yatırımlarını ekle, gerçek P&L değerlerini takip et</Text>
-        <Pressable style={pt.openBtn} onPress={() => navigation.navigate('Portfolio')}>
-          <Text style={pt.openBtnTxt}>Portföyüme Git</Text>
-          <Ionicons name="arrow-forward" size={14} color="#fff" />
-        </Pressable>
-      </View>
+      {/* Özet kart */}
+      <Pressable style={pt.summaryCard} onPress={() => navigation.navigate('Portfolio')}>
+        <View style={pt.summaryRow}>
+          <View>
+            <Text style={pt.summaryLabel}>Toplam Değer</Text>
+            <Text style={pt.summaryValue}>{fmtUSD(totalValue)}</Text>
+          </View>
+          <View style={[pt.pnlBadge, { backgroundColor: isUp ? '#34C75920' : '#FF3B3B20' }]}>
+            <Ionicons name={isUp ? 'trending-up' : 'trending-down'} size={14} color={isUp ? '#34C759' : '#FF3B3B'} />
+            <Text style={[pt.pnlTxt, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
+              {isUp ? '+' : ''}{totalPnLPct.toFixed(2)}%
+            </Text>
+          </View>
+        </View>
+        {/* Mini allocation bar */}
+        <View style={pt.allocBar}>
+          {holdings.map((h, i) => (
+            <View
+              key={h.id}
+              style={[pt.allocSlice, {
+                flex: h.allocation / 100,
+                backgroundColor: assetColor(h.symbol),
+                borderRadius: i === 0 ? 3 : i === holdings.length - 1 ? 3 : 0,
+              }]}
+            />
+          ))}
+        </View>
+        {/* Top 3 holding */}
+        <View style={pt.holdingsList}>
+          {holdings.slice(0, 3).map(h => {
+            const hUp = h.pnl >= 0;
+            return (
+              <View key={h.id} style={pt.holdingRow}>
+                <View style={[pt.holdingDot, { backgroundColor: assetColor(h.symbol) }]} />
+                <Text style={pt.holdingSym}>{h.symbol}</Text>
+                <Text style={pt.holdingQty}>{h.quantity} adet</Text>
+                <Text style={[pt.holdingPnl, { color: hUp ? '#34C759' : '#FF3B3B' }]}>
+                  {hUp ? '+' : ''}{h.pnl_pct.toFixed(1)}%
+                </Text>
+                <Text style={pt.holdingVal}>{fmtUSD(h.current_value)}</Text>
+              </View>
+            );
+          })}
+          {holdings.length > 3 && (
+            <Text style={pt.moreHoldings}>+{holdings.length - 3} varlık daha</Text>
+          )}
+        </View>
+        <View style={pt.seeAllRow}>
+          <Text style={pt.seeAllTxt}>Tümünü Gör</Text>
+          <Ionicons name="arrow-forward" size={13} color={colors.primary} />
+        </View>
+      </Pressable>
     </View>
   );
 }
 
 const pt = StyleSheet.create({
-  wrap:          { paddingBottom: 20, paddingTop: 16 },
+  wrap:         { paddingBottom: 20, paddingTop: 8 },
   openPortfolio: {
     marginHorizontal: 14, backgroundColor: colors.bgPure,
     borderRadius: radius.lg, padding: 24,
@@ -213,6 +293,28 @@ const pt = StyleSheet.create({
     paddingHorizontal: 20, paddingVertical: 10, marginTop: 4,
   },
   openBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  summaryCard: {
+    marginHorizontal: 14, backgroundColor: colors.bgPure,
+    borderRadius: radius.lg, padding: 16,
+    borderWidth: 1, borderColor: colors.border, ...shadow.sm, gap: 12,
+  },
+  summaryRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  summaryLabel: { fontSize: 11, color: colors.textMuted, fontWeight: '600' },
+  summaryValue: { fontSize: 22, fontWeight: '800', color: colors.text, marginTop: 2 },
+  pnlBadge:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  pnlTxt:       { fontSize: 13, fontWeight: '700' },
+  allocBar:     { flexDirection: 'row', height: 5, borderRadius: 3, overflow: 'hidden', gap: 1 },
+  allocSlice:   { height: '100%' },
+  holdingsList: { gap: 8 },
+  holdingRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  holdingDot:   { width: 8, height: 8, borderRadius: 4 },
+  holdingSym:   { width: 52, fontSize: 13, fontWeight: '700', color: colors.text },
+  holdingQty:   { flex: 1, fontSize: 11, color: colors.textMuted },
+  holdingPnl:   { fontSize: 12, fontWeight: '700', width: 52, textAlign: 'right' },
+  holdingVal:   { fontSize: 13, fontWeight: '700', color: colors.text, width: 68, textAlign: 'right' },
+  moreHoldings: { fontSize: 11, color: colors.textMuted, textAlign: 'center', paddingTop: 4 },
+  seeAllRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 4 },
+  seeAllTxt:    { fontSize: 13, fontWeight: '700', color: colors.primary },
 });
 
 // ─── StatsTab ─────────────────────────────────────────────────────────────────
@@ -523,11 +625,20 @@ export function ProfileScreen() {
 
         {/* ══ COVER ══ */}
         <View style={s.coverWrap}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' }}
-            style={s.cover}
-            resizeMode="cover"
-          />
+          {(profile as any)?.cover_url ? (
+            <Image
+              source={{ uri: (profile as any).cover_url }}
+              style={s.cover}
+              resizeMode="cover"
+            />
+          ) : (
+            <LinearGradient
+              colors={['#0D1F3C', '#1A1050', '#0A2040']}
+              style={s.cover}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+          )}
           <View style={s.coverOverlay} />
           {/* Gradient bars decoration */}
           <View style={s.coverTickerBar}>
