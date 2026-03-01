@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, Image, Pressable, StyleSheet, ScrollView,
-  ActivityIndicator, FlatList,
+  ActivityIndicator, FlatList, Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,7 @@ import { BadgesRow } from '../components/BadgesRow';
 import { useToast } from '../contexts/ToastContext';
 import { notifyFollower } from '../services/notificationService';
 import { radius, shadow, colors } from '../constants/theme';
+import { supabase } from '../lib/supabase';
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -36,9 +37,16 @@ export function UserProfileScreen({ userId, onBack }: Props) {
   const navigation = useNavigation<any>();
 
   const { isFollowing, followersCount, followingCount, toggle, loading: followLoading } = useFollow(userId);
-  const { posts: userPosts, toggleLike } = usePosts(undefined, 'all', userId);
+  const { posts: userPosts, toggleLike, refresh: refreshPosts } = usePosts(undefined, 'all', userId);
   const { profile, loading: profileLoading } = useUserProfile(userId);
   const { signals: userSignals } = useSignals({ creatorId: userId });
+
+  // Bu kullanıcının rozetlerini yükle
+  const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.from('user_badges').select('badge_id').eq('user_id', userId)
+      .then(({ data }) => setEarnedBadgeIds((data ?? []).map((b: any) => b.badge_id)));
+  }, [userId]);
 
   // Profil bilgisi: Supabase'den çekildi ise kullan, yoksa post verisinden al
   const displayName = profile?.displayName ?? userPosts[0]?.author_name ?? 'Kullanıcı';
@@ -76,7 +84,10 @@ export function UserProfileScreen({ userId, onBack }: Props) {
         <Text style={s.headerTitle}>{handle}</Text>
         <Pressable
           style={s.moreBtn}
-          onPress={() => toast.info('Profil paylaşıldı 🔗')}
+          onPress={() => Share.share({
+            message: `${displayName} (${handle}) — Marketly'de takip et`,
+            title: displayName,
+          })}
           hitSlop={10}
         >
           <Ionicons name="share-social-outline" size={20} color={colors.text} />
@@ -172,9 +183,11 @@ export function UserProfileScreen({ userId, onBack }: Props) {
         </View>
 
         {/* Badges */}
-        <View style={{ marginTop: 12, marginBottom: 4 }}>
-          <BadgesRow earnedIds={[]} compact />
-        </View>
+        {earnedBadgeIds.length > 0 && (
+          <View style={{ marginTop: 12, marginBottom: 4 }}>
+            <BadgesRow earnedIds={earnedBadgeIds} compact />
+          </View>
+        )}
 
         {/* Posts */}
         <View style={s.postsSection}>
@@ -186,7 +199,7 @@ export function UserProfileScreen({ userId, onBack }: Props) {
             </View>
           ) : (
             userPosts.map(p => (
-              <PostCard key={p.id} post={p} onLike={toggleLike} />
+              <PostCard key={p.id} post={p} onLike={toggleLike} onCommentAdded={refreshPosts} />
             ))
           )}
         </View>

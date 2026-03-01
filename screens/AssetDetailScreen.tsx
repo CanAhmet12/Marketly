@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
   StatusBar, Dimensions, Image, Animated,
-  Modal, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
+  Modal, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Share,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -195,7 +195,20 @@ function RelatedVideos({ symbol }: { symbol: string }) {
       });
   }, [symbol]);
 
-  if (videos.length === 0) return null;
+  if (videos.length === 0) return (
+    <View style={rv.wrap}>
+      <View style={rv.header}>
+        <View style={[rv.iconBox, { backgroundColor: '#FF3B3B18' }]}>
+          <Ionicons name="play-circle" size={13} color="#FF3B3B" />
+        </View>
+        <Text style={rv.title}>{symbol} Videoları</Text>
+      </View>
+      <View style={rv.emptyState}>
+        <Ionicons name="videocam-outline" size={28} color={colors.textMuted} />
+        <Text style={rv.emptyTxt}>Bu varlık için henüz video yok</Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={rv.wrap}>
@@ -244,6 +257,8 @@ const rv = StyleSheet.create({
   cardBody:    { padding: 8 },
   videoTitle:  { fontSize: 12, fontWeight: '700', color: '#0D0D0D', lineHeight: 16, marginBottom: 4 },
   creator:     { fontSize: 10, color: '#9AA0AF', fontWeight: '600' },
+  emptyState:  { alignItems: 'center', paddingVertical: 20, gap: 6 },
+  emptyTxt:    { fontSize: 12, color: colors.textMuted, textAlign: 'center' },
 });
 
 // ─── Top Analysts Row ─────────────────────────────────────────────────────────
@@ -271,7 +286,20 @@ function TopAnalystsRow({ symbol, onMarketplacePress }: { symbol: string; onMark
       });
   }, [symbol]);
 
-  if (analysts.length === 0) return null;
+  if (analysts.length === 0) return (
+    <View style={ta.wrap}>
+      <View style={ta.header}>
+        <View style={[ta.iconBox, { backgroundColor: '#34C75918' }]}>
+          <Ionicons name="people" size={13} color="#34C759" />
+        </View>
+        <Text style={ta.title}>{symbol} Analistleri</Text>
+      </View>
+      <View style={rv.emptyState}>
+        <Ionicons name="person-outline" size={28} color={colors.textMuted} />
+        <Text style={rv.emptyTxt}>Henüz analist yok</Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={ta.wrap}>
@@ -714,9 +742,22 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
     [range, asset.priceNum, asset.changePercent, seed]
   );
 
-  const high24 = (asset.priceNum * 1.032).toFixed(asset.priceNum > 100 ? 0 : 4);
-  const low24  = (asset.priceNum * 0.968).toFixed(asset.priceNum > 100 ? 0 : 4);
-  const ath    = (asset.priceNum * 1.22).toFixed(asset.priceNum > 100 ? 0 : 4);
+  // 24 saatlik gerçek high/low (Supabase'den spark verisi ile hesaplanır)
+  const [high24, setHigh24] = useState((asset.priceNum * 1.032).toFixed(asset.priceNum > 100 ? 0 : 4));
+  const [low24,  setLow24]  = useState((asset.priceNum * 0.968).toFixed(asset.priceNum > 100 ? 0 : 4));
+  const ath = (asset.priceNum * 1.22).toFixed(asset.priceNum > 100 ? 0 : 4);
+
+  useEffect(() => {
+    supabase.from('asset_prices').select('spark').eq('asset_id', initialAsset.id.toUpperCase()).single()
+      .then(({ data }) => {
+        const spark: number[] = data?.spark ?? [];
+        if (spark.length > 1) {
+          const dp = asset.priceNum > 100 ? 0 : 4;
+          setHigh24(Math.max(...spark, asset.priceNum).toFixed(dp));
+          setLow24(Math.max(0.0001, Math.min(...spark, asset.priceNum)).toFixed(dp));
+        }
+      });
+  }, [initialAsset.id, asset.priceNum]);
 
   const { videos: relatedVideos } = useVideos({ assetTag: asset.symbol });
   const about = ABOUT[asset.id] ?? `${asset.name} (${asset.symbol}), ${seg.label} kategorisinde işlem gören bir varlıktır.`;
@@ -781,6 +822,15 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
             </Pressable>
             <Pressable style={s.headerBtn} onPress={onAlert}>
               <Ionicons name={hasAlerts ? 'notifications' : 'notifications-outline'} size={20} color={hasAlerts ? '#FF9500' : '#FFF'} />
+            </Pressable>
+            <Pressable
+              style={s.headerBtn}
+              onPress={() => Share.share({
+                message: `${asset.symbol} — ${asset.price} (${up ? '+' : ''}${asset.changePercent}%) | Marketly'de takip et`,
+                title: `${asset.name} fiyatı`,
+              })}
+            >
+              <Ionicons name="share-outline" size={20} color="#FFF" />
             </Pressable>
           </View>
         </View>
