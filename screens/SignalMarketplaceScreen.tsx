@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   FlatList, ActivityIndicator, Modal,
@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '../contexts/ToastContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
+import { supabase } from '../lib/supabase';
 import { shadow, colors } from '../constants/theme';
 
 interface AnalystPackage {
@@ -250,6 +251,61 @@ export function SignalMarketplaceScreen() {
   const [filterKey,  setFilterKey]  = useState<FilterKey>('all');
   const [selectedPkg, setSelectedPkg] = useState<AnalystPackage | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [analystPicks, setAnalystPicks]   = useState<Record<string, { symbol: string; pct: number; up: boolean }[]>>({});
+  const [analystPrices, setAnalystPrices] = useState<Record<string, number>>({});
+
+  // Analist başarı oranına göre makul aylık fiyat hesapla
+  const calcPrice = (accuracy: number, signals: number): number => {
+    const base  = accuracy >= 80 ? 299 : accuracy >= 70 ? 199 : accuracy >= 60 ? 149 : 99;
+    const bonus = signals >= 100 ? 50 : signals >= 50 ? 25 : 0;
+    return base + bonus;
+  };
+
+  // Analistlerin son sinyallerini ve DB fiyatlarını yükle
+  useEffect(() => {
+    if (analysts.length === 0) return;
+    const ids = analysts.map(a => a.id);
+
+    // Son 5 sinyali her analist için çek (top_picks için)
+    supabase
+      .from('signals')
+      .select('creator_id, asset_id, symbol, direction, entry_price, target_price')
+      .in('creator_id', ids)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        if (!data) return;
+        const map: Record<string, { symbol: string; pct: number; up: boolean }[]> = {};
+        for (const sig of data) {
+          const cid = sig.creator_id;
+          if (!map[cid]) map[cid] = [];
+          if (map[cid].length >= 3) continue;
+          const entry  = Number(sig.entry_price  ?? 0);
+          const target = Number(sig.target_price ?? 0);
+          const pct    = entry > 0 && target > 0 ? parseFloat(Math.abs((target - entry) / entry * 100).toFixed(1)) : 0;
+          const up     = sig.direction === 'BUY';
+          map[cid].push({ symbol: (sig.symbol ?? sig.asset_id ?? '').toUpperCase(), pct, up });
+        }
+        setAnalystPicks(map);
+      });
+
+    // Profil tablosundan subscription_price çek (varsa)
+    supabase
+      .from('profiles')
+      .select('id, subscription_price')
+      .in('id', ids)
+      .then(({ data }) => {
+        if (!data) return;
+        const priceMap: Record<string, number> = {};
+        for (const p of data) {
+          if (p.subscription_price && p.subscription_price > 0) {
+            priceMap[p.id] = p.subscription_price;
+          }
+        }
+        setAnalystPrices(priceMap);
+      });
+  }, [analysts.length]);
 
   // Leaderboard analistlerini AnalystPackage formatına dönüştür
   const livePackages: AnalystPackage[] = useMemo(() => analysts.map((a, i) => ({
@@ -268,7 +324,7 @@ export function SignalMarketplaceScreen() {
       if (f.toUpperCase().endsWith('K')) return Math.round(num * 1_000);
       return Math.round(num) || 0;
     })(),
-    price_monthly: 149 + (i % 4) * 50,
+    price_monthly: analystPrices[a.id] ?? calcPrice(a.accuracy, a.signals),
     description:   `${a.name} tarafından profesyonel sinyal paketi. ${a.accuracy}% başarı oranı ile ${a.signals} sinyal yayımlandı.`,
     tags:          (() => {
       const spec = (a.specialty ?? '').toLowerCase();
@@ -281,9 +337,9 @@ export function SignalMarketplaceScreen() {
       return [a.handle?.replace('@','').toUpperCase().slice(0,4) ?? 'BTC', 'ETH'];
     })(),
     is_verified:   a.verified,
-    top_picks:     [],
+    top_picks:     analystPicks[a.id] ?? [],
     tier_required: i < 2 ? 'free' : i < 4 ? 'pro' : 'elite',
-  })), [analysts]);
+  })), [analysts, analystPicks, analystPrices]);
 
   const allPackages = livePackages;
 

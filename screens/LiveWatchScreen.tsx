@@ -104,6 +104,37 @@ export function LiveWatchScreen() {
     };
   }, [postId]);
 
+  // Yayın bitiş durumunu Supabase'den dinle
+  useEffect(() => {
+    if (!postId) return;
+    const ended = supabase
+      .channel(`session_end_${postId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public',
+        table: 'live_sessions', filter: `post_id=eq.${postId}`,
+      }, (payload) => {
+        if ((payload.new as any)?.is_active === false) {
+          toast.info('Yayın sona erdi');
+          leaveChannel().finally(() => navigation.goBack());
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ended); };
+  }, [postId, leaveChannel, navigation, toast]);
+
+  // Giriş: viewer_count artır
+  useEffect(() => {
+    if (!postId) return;
+    supabase.from('live_sessions')
+      .update({ viewer_count: (viewers || 0) + 1 })
+      .eq('post_id', postId)
+      .then(() => {});
+    return () => {
+      // Çıkış: viewer_count azalt
+      supabase.rpc('decrement_viewers', { session_post_id: postId }).then(() => {});
+    };
+  }, [postId]);
+
   const handleLeave = useCallback(async () => {
     await leaveChannel();
     navigation.goBack();
@@ -155,12 +186,17 @@ export function LiveWatchScreen() {
             {hostAvatar ? (
               <Image source={{ uri: hostAvatar }} style={s.hostAvatar} />
             ) : (
-              <Ionicons name="radio" size={56} color="rgba(255,255,255,0.4)" />
+              <Ionicons name={state.error ? 'wifi-outline' : 'radio'} size={56} color="rgba(255,255,255,0.4)" />
             )}
-            <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 16 }} />
+            {!state.error && <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 16 }} />}
             <Text style={s.waitingTxt}>
-              {state.error ? state.error : `${hostName} yayına bağlanıyor…`}
+              {state.error ? 'Bağlantı kurulamadı' : `${hostName} yayına bağlanıyor…`}
             </Text>
+            {state.error && (
+              <Pressable style={s.retryBtn} onPress={() => navigation.goBack()}>
+                <Text style={s.retryTxt}>Geri Dön</Text>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -276,6 +312,8 @@ const s = StyleSheet.create({
   waiting: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#111', gap: 8 },
   hostAvatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: '#FF3B3B' },
   waitingTxt: { color: '#FFFFFF99', fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 32 },
+  retryBtn: { marginTop: 20, paddingHorizontal: 28, paddingVertical: 12, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  retryTxt: { color: '#FFF', fontSize: 15, fontWeight: '600' },
 
   topGrad:    { position: 'absolute', top: 0, left: 0, right: 0, height: 100, backgroundColor: 'rgba(0,0,0,0.5)' },
   bottomGrad: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', backgroundColor: 'rgba(0,0,0,0.5)' },

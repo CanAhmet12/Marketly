@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, Pressable,
-  Image, StatusBar, Dimensions, Animated,
+  Image, StatusBar, Dimensions, Animated, Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,8 @@ import type { ShortItem } from '../data/mockShorts';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { colors, radius } from '../constants/theme';
 
 // ─── TikTok-style video oynatıcı ─────────────────────────────────────────────
@@ -248,14 +250,27 @@ function ShortCard({
 }: {
   item: ShortItem; screenHeight: number; isActive: boolean;
 }) {
-  const toast = useToast();
-  const [liked, setLiked]     = useState(false);
-  const [saved, setSaved]     = useState(false);
-  const [following, setFollow] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const toast        = useToast();
+  const { user }     = useAuth();
+  const [liked, setLiked]           = useState(false);
+  const [saved, setSaved]           = useState(false);
+  const [following, setFollow]      = useState(false);
+  const [copied, setCopied]         = useState(false);
   const [showSignal, setShowSignal] = useState(true);
-  const [progress, setProgress] = useState(0);
   const progressAnim = useRef(new Animated.Value(0)).current;
+
+  // Başlangıç durumlarını DB'den yükle
+  useEffect(() => {
+    if (!user?.id || !item.id) return;
+    supabase.from('video_likes').select('id').eq('user_id', user.id).eq('video_id', item.id).maybeSingle()
+      .then(({ data }) => { if (data) setLiked(true); });
+    supabase.from('saved_videos').select('id').eq('user_id', user.id).eq('video_id', item.id).maybeSingle()
+      .then(({ data }) => { if (data) setSaved(true); });
+    if (item.creator?.id) {
+      supabase.from('follows').select('id').eq('follower_id', user.id).eq('following_id', item.creator.id).maybeSingle()
+        .then(({ data }) => { if (data) setFollow(true); });
+    }
+  }, [user?.id, item.id, item.creator?.id]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -274,9 +289,85 @@ function ShortCard({
   const isSell = item.signal?.direction === 'SELL';
   const sigColor = isBuy ? '#00E676' : isSell ? '#FF6B6B' : '#FFB74D';
 
-  const handleCopyTrade = () => {
-    setCopied(true);
-    toast.success(`${item.assetTags[0]} trade'i kopyalandı 📋`);
+  const handleLike = async () => {
+    if (!user) { toast.info('Beğenmek için giriş yap'); return; }
+    const newLiked = !liked;
+    setLiked(newLiked);
+    if (newLiked) {
+      await supabase.from('video_likes').upsert({ user_id: user.id, video_id: item.id }, { onConflict: 'user_id,video_id' });
+      await supabase.from('videos').update({ likes_count: (item.stats.likes || 0) + 1 }).eq('id', item.id);
+      toast.success('Short beğenildi ❤️');
+    } else {
+      await supabase.from('video_likes').delete().eq('user_id', user.id).eq('video_id', item.id);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) { toast.info('Kaydetmek için giriş yap'); return; }
+    const newSaved = !saved;
+    setSaved(newSaved);
+    if (newSaved) {
+      await supabase.from('saved_videos').upsert({ user_id: user.id, video_id: item.id }, { onConflict: 'user_id,video_id' });
+      toast.success('Kaydedildi 🔖');
+    } else {
+      await supabase.from('saved_videos').delete().eq('user_id', user.id).eq('video_id', item.id);
+      toast.info('Kaydedilenlerden çıkarıldı');
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!user) { toast.info('Takip için giriş yap'); return; }
+    if (!item.creator?.id || following) return;
+    setFollow(true);
+    await supabase.from('follows').upsert(
+      { follower_id: user.id, following_id: item.creator.id },
+      { onConflict: 'follower_id,following_id' }
+    );
+    toast.success(`${item.creator.name} takip ediliyor ✓`);
+  };
+
+  const handleCopyTrade = async () => {
+    if (!user) { toast.info('Kopyalamak için giriş yap'); return; }
+    if (!item.signal) return;
+    const newCopied = !copied;
+    setCopied(newCopied);
+    if (newCopied) {
+      const sig = item.signal as any;
+      await supabase.from('signal_copies').upsert(
+        { user_id: user.id, signal_id: sig.id ?? item.id },
+        { onConflict: 'user_id,signal_id' }
+      );
+      const entryP = Number(sig.entry_price ?? sig.entryPrice ?? 0);
+      if (entryP > 0) {
+        Alert.alert(
+          'Portföye Ekle?',
+          `${item.assetTags[0] ?? 'Varlık'} sinyalini portföye de eklemek ister misin?`,
+          [
+            { text: 'Sadece Kopyala', style: 'cancel', onPress: () => toast.success(`Sinyal kopyalandı 📋`) },
+            {
+              text: 'Portföye Ekle',
+              onPress: async () => {
+                await supabase.from('portfolio_holdings').insert({
+                  user_id:  user.id,
+                  asset_id: (item.assetTags[0] ?? '').replace('#', '').toUpperCase(),
+                  symbol:   (item.assetTags[0] ?? '').replace('#', '').toUpperCase(),
+                  name:     item.assetTags[0] ?? '',
+                  quantity: 1,
+                  avg_cost: entryP,
+                });
+                toast.success('Portföye eklendi ✓');
+              },
+            },
+          ]
+        );
+      } else {
+        toast.success(`Sinyal kopyalandı 📋`);
+      }
+    } else {
+      const sig = item.signal as any;
+      await supabase.from('signal_copies').delete().eq('user_id', user.id).eq('signal_id', sig.id ?? item.id);
+      toast.info('Sinyal kopyası iptal edildi');
+    }
   };
 
   return (
@@ -345,7 +436,7 @@ function ShortCard({
             {!following && (
               <Pressable
                 style={sc.followPlus}
-                onPress={() => { setFollow(true); toast.success(`${item.creator.name} takip ediliyor ✓`); }}
+                onPress={handleFollow}
               >
                 <Ionicons name="add" size={12} color="#FFF" />
               </Pressable>
@@ -407,12 +498,9 @@ function ShortCard({
           icon={liked ? 'heart' : 'heart-outline'}
           label={fmt(liked ? item.stats.likes + 1 : item.stats.likes)}
           active={liked}
-          onPress={() => {
-            setLiked(!liked);
-            if (!liked) toast.success('Short beğenildi ❤️');
-          }}
+          onPress={handleLike}
         />
-        <ActionBtn icon="chatbubble-outline" label={fmt(item.stats.comments)} />
+        <ActionBtn icon="chatbubble-outline" label={fmt(item.stats.comments)} onPress={() => toast.info('Yorumlar yakında')} />
         <ActionBtn
           icon="share-social-outline"
           label={fmt(item.stats.shares)}
@@ -422,10 +510,7 @@ function ShortCard({
           icon={saved ? 'bookmark' : 'bookmark-outline'}
           label="Kaydet"
           active={saved}
-          onPress={() => {
-            setSaved(!saved);
-            toast.success(saved ? 'Kaydedilenlerden çıkarıldı' : 'Kaydedildi 🔖');
-          }}
+          onPress={handleSave}
         />
         {item.signal && (
           <ActionBtn
@@ -583,6 +668,7 @@ export function ShortsScreen() {
 
   const [activeIndex, setActiveIndex]   = useState(0);
   const [activeCat, setActiveCat]       = useState('Tümü');
+  const flatListRef = useRef<FlatList>(null);
 
   const { videos: liveShorts } = useVideos({ type: 'short' });
 
@@ -609,6 +695,12 @@ export function ShortsScreen() {
   const filtered = activeCat === 'Tümü'
     ? allShorts
     : allShorts.filter((s) => s.category === activeCat);
+
+  // Kategori değişince en başa dön
+  useEffect(() => {
+    setActiveIndex(0);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [activeCat]);
 
   const onViewRef = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) setActiveIndex(viewableItems[0].index ?? 0);
@@ -663,26 +755,42 @@ export function ShortsScreen() {
       </View>
 
       {/* Full-screen FlatList */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        pagingEnabled
-        snapToInterval={ITEM_H}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        showsVerticalScrollIndicator={false}
-        onViewableItemsChanged={onViewRef.current}
-        viewabilityConfig={viewConfigRef.current}
-        getItemLayout={(_, index) => ({ length: ITEM_H, offset: ITEM_H * index, index })}
-        style={{ flex: 1 }}
-      />
+      {filtered.length === 0 ? (
+        <View style={ss.emptyWrap}>
+          <Ionicons name="videocam-outline" size={52} color="rgba(255,255,255,0.3)" />
+          <Text style={ss.emptyTitle}>Henüz Short Yok</Text>
+          <Text style={ss.emptyDesc}>
+            {activeCat === 'Tümü'
+              ? 'Topluluk shortları burada görünecek'
+              : `${activeCat} kategorisinde henüz short paylaşılmamış`}
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          pagingEnabled
+          snapToInterval={ITEM_H}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          showsVerticalScrollIndicator={false}
+          onViewableItemsChanged={onViewRef.current}
+          viewabilityConfig={viewConfigRef.current}
+          getItemLayout={(_, index) => ({ length: ITEM_H, offset: ITEM_H * index, index })}
+          style={{ flex: 1 }}
+        />
+      )}
     </View>
   );
 }
 
 const ss = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000' },
+  emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, paddingHorizontal: 32 },
+  emptyTitle: { color: 'rgba(255,255,255,0.7)', fontSize: 18, fontWeight: '700', textAlign: 'center' },
+  emptyDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 20 },
 
   topBar: {
     position: 'absolute', left: 0, right: 0, zIndex: 20,

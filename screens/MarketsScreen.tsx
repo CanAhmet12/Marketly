@@ -573,6 +573,7 @@ export function MarketsScreen() {
 
   const [tab, setTab]       = useState<Tab>('crypto');
   const [search, setSearch] = useState('');
+  const searchInputRef      = useRef<any>(null);
 
   // ── Gerçek veri hook'u ──
   const { byCategory, topMovers, allAssets, isLoading: pricesLoading, lastUpdate } = useMarketPrices();
@@ -650,10 +651,10 @@ export function MarketsScreen() {
               <View style={s.liveDot} />
               <Text style={s.livePillTxt}>CANLI</Text>
             </View>
-            <Pressable style={s.iconBtn}>
+            <Pressable style={s.iconBtn} onPress={() => searchInputRef.current?.focus()}>
               <Ionicons name="search-outline" size={20} color="#FFF" />
             </Pressable>
-            <Pressable style={s.iconBtn}>
+            <Pressable style={s.iconBtn} onPress={() => navigation.navigate('Bildirimler' as any)}>
               <Ionicons name="notifications-outline" size={20} color="#FFF" />
             </Pressable>
           </View>
@@ -676,6 +677,7 @@ export function MarketsScreen() {
           <View style={s.searchBar}>
             <Ionicons name="search" size={15} color="#9AA0AF" />
             <TextInput
+              ref={searchInputRef}
               style={s.searchInput}
               placeholder="Varlık ara: BTC, AAPL, Altın..."
               placeholderTextColor="#B0B8C4"

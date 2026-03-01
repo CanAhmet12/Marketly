@@ -319,7 +319,7 @@ export function CreateScreen() {
           entry_price:  sigEntry  ? parseFloat(sigEntry)  : undefined,
           target_price: sigTarget ? parseFloat(sigTarget) : undefined,
           stop_loss:    sigStop   ? parseFloat(sigStop)   : undefined,
-          timeframe:    category || '1G',
+          timeframe:    sigTimeframe === 'Kısa Vade' ? '1G' : sigTimeframe === 'Uzun Vade' ? '1A' : '1H',
           rationale:    sigRationale.trim(),
         });
         if (ok) {
@@ -350,17 +350,19 @@ export function CreateScreen() {
             user_id: user.id, content: contentText,
           }).select('id').single();
           if (fbErr) { toast.error('Yayın oluşturulamadı: ' + fbErr.message); setPublishing(false); return; }
-          // live_sessions tablosuna yaz
-          try { await supabase.from('live_sessions').insert({
+          // live_sessions tablosuna yaz (hata olursa yine de yayına başla)
+          const { error: sessErr1 } = await supabase.from('live_sessions').insert({
             post_id: fb?.id, channel_name: channelName, host_id: user.id,
             title: contentText, is_active: true, viewer_count: 0,
-          }); } catch { /* ignore */ }
+          });
+          if (sessErr1) console.warn('[CreateScreen] live_sessions insert:', sessErr1.message);
           navigation.replace('LiveBroadcast', { channelName, title: contentText, postId: fb?.id ?? '' });
         } else {
-          try { await supabase.from('live_sessions').insert({
+          const { error: sessErr2 } = await supabase.from('live_sessions').insert({
             post_id: postData?.id, channel_name: channelName, host_id: user.id,
             title: contentText, is_active: true, viewer_count: 0,
-          }); } catch { /* ignore */ }
+          });
+          if (sessErr2) console.warn('[CreateScreen] live_sessions insert:', sessErr2.message);
           navigation.replace('LiveBroadcast', { channelName, title: contentText, postId: postData?.id ?? '' });
         }
 
