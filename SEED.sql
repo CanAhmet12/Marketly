@@ -362,19 +362,22 @@ UPDATE profiles SET marketcoin = 440  WHERE id = '66666666-6666-6666-6666-666666
 
 
 -- ─── 9. NOTIFICATIONS ────────────────────────────────────────────────────────
-INSERT INTO notifications (user_id, type, title, body, read, created_at) VALUES
+-- "read" kolonu yoksa ALTER TABLE ile ekle, sonra INSERT yap
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS read BOOLEAN DEFAULT false;
+
+INSERT INTO notifications (user_id, type, title, body, created_at) VALUES
   ('77777777-7777-7777-7777-777777777777', 'follow',
    'Crypto Guru sizi takip ediyor',
    'cryptoguru sizin profilinizi takip etmeye basladi.',
-   false, NOW() - INTERVAL '5 minutes'),
+   NOW() - INTERVAL '5 minutes'),
   ('77777777-7777-7777-7777-777777777777', 'like',
    'Borsa Master gonderinizi begendi',
-   'Gonderiniz beğenildi.',
-   false, NOW() - INTERVAL '20 minutes'),
+   'Gonderiniz begendi.',
+   NOW() - INTERVAL '20 minutes'),
   ('77777777-7777-7777-7777-777777777777', 'system',
    'Marketlye Hos Geldiniz!',
    'Baslamak icin profilinizi tamamlayin ve ilk gonderinizi paylasin.',
-   true, NOW() - INTERVAL '1 day')
+   NOW() - INTERVAL '1 day')
 ON CONFLICT DO NOTHING;
 
 
