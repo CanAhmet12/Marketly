@@ -132,16 +132,17 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
   const createPost = useCallback(async (
     content: string,
     asset_tag?: string,
+    image_url?: string,
   ): Promise<boolean> => {
     if (!user?.id) return false;
     try {
-      const { error } = await supabase
-        .from('posts')
-        .insert({
-          user_id:   user.id,
-          content:   content.trim(),
-          asset_tag: asset_tag?.toUpperCase() ?? null,
-        });
+      const payload: Record<string, any> = {
+        user_id:   user.id,
+        content:   content.trim(),
+        asset_tag: asset_tag?.toUpperCase() ?? null,
+      };
+      if (image_url) payload.image_url = image_url;
+      const { error } = await supabase.from('posts').insert(payload);
       if (error) throw error;
       await fetchPosts(true);
       return true;

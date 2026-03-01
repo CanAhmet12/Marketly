@@ -715,8 +715,8 @@ export function HomeScreen() {
       <CreatePostModal
         visible={showCreatePost}
         onClose={() => setShowCreatePost(false)}
-        onSubmit={async (content, tag) => {
-          const ok = await createPost(content, tag);
+        onSubmit={async (content, tag, imageUrl) => {
+          const ok = await createPost(content, tag, imageUrl);
           if (ok) refreshPosts();
           return ok;
         }}

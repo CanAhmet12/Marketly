@@ -2,30 +2,34 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, Pressable, StyleSheet, TextInput,
   Modal, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Image, Animated,
+  ActivityIndicator, Image, Animated, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, shadow } from '../constants/theme';
+import { supabase } from '../lib/supabase';
 
 const QUICK_TAGS = ['BTC', 'ETH', 'AAPL', 'NVDA', 'TSLA', 'XAU', 'USDTRY'];
 
 interface Props {
   visible:     boolean;
   onClose:     () => void;
-  onSubmit:    (content: string, assetTag?: string) => Promise<boolean>;
+  onSubmit:    (content: string, assetTag?: string, imageUrl?: string) => Promise<boolean>;
   defaultTag?: string;
 }
 
 export function CreatePostModal({ visible, onClose, onSubmit, defaultTag }: Props) {
   const insets     = useSafeAreaInsets();
   const { user, profile } = useAuth();
-  const [content,  setContent]  = useState('');
-  const [tag,      setTag]      = useState(defaultTag ?? '');
-  const [saving,   setSaving]   = useState(false);
+  const [content,   setContent]   = useState('');
+  const [tag,       setTag]       = useState(defaultTag ?? '');
+  const [saving,    setSaving]    = useState(false);
   const [charCount, setCharCount] = useState(0);
+  const [imageUri,  setImageUri]  = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const MAX = 280;
 
   const handleChange = (t: string) => {
@@ -34,15 +38,53 @@ export function CreatePostModal({ visible, onClose, onSubmit, defaultTag }: Prop
     setCharCount(t.length);
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('İzin gerekli', 'Galeriye erişim izni ver');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'] as any,
+      quality: 0.8, allowsEditing: true,
+    });
+    if (!result.canceled && result.assets?.[0]) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (uri: string): Promise<string | null> => {
+    if (!user?.id) return null;
+    try {
+      setUploading(true);
+      const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const fileName = `post-images/${user.id}/${Date.now()}.${ext}`;
+      const formData = new FormData();
+      formData.append('file', { uri, type: `image/${ext}`, name: fileName } as any);
+      const { error } = await supabase.storage.from('avatars').upload(fileName, formData as any, { contentType: `image/${ext}`, upsert: true });
+      if (error) return null;
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      return data.publicUrl;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!content.trim()) return;
     setSaving(true);
-    const ok = await onSubmit(content.trim(), tag || undefined);
+    let imageUrl: string | undefined;
+    if (imageUri) {
+      const uploaded = await uploadImage(imageUri);
+      imageUrl = uploaded ?? undefined;
+    }
+    const ok = await onSubmit(content.trim(), tag || undefined, imageUrl);
     setSaving(false);
     if (ok) {
       setContent('');
       setTag('');
       setCharCount(0);
+      setImageUri(null);
       onClose();
     }
   };
@@ -107,6 +149,22 @@ export function CreatePostModal({ visible, onClose, onSubmit, defaultTag }: Prop
             textAlignVertical="top"
           />
 
+          {/* Seçilen görsel önizleme */}
+          {imageUri && (
+            <View style={s.imagePreviewWrap}>
+              <Image source={{ uri: imageUri }} style={s.imagePreview} resizeMode="cover" />
+              <Pressable style={s.imageRemove} onPress={() => setImageUri(null)} hitSlop={8}>
+                <Ionicons name="close-circle" size={22} color="#fff" />
+              </Pressable>
+              {uploading && (
+                <View style={s.imageUploadOverlay}>
+                  <ActivityIndicator color="#fff" />
+                  <Text style={s.imageUploadTxt}>Yükleniyor...</Text>
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Asset tag row */}
           <View style={s.tagSection}>
             <Text style={s.tagLabel}>Varlık Etiketi</Text>
@@ -128,14 +186,12 @@ export function CreatePostModal({ visible, onClose, onSubmit, defaultTag }: Prop
           {/* Footer */}
           <View style={s.footer}>
             <View style={s.footerLeft}>
-              <Pressable style={s.footerBtn} hitSlop={10}>
-                <Ionicons name="image-outline" size={20} color={colors.primary} />
-              </Pressable>
-              <Pressable style={s.footerBtn} hitSlop={10}>
-                <Ionicons name="bar-chart-outline" size={20} color={colors.primary} />
-              </Pressable>
-              <Pressable style={s.footerBtn} hitSlop={10}>
-                <Ionicons name="link-outline" size={20} color={colors.primary} />
+              <Pressable style={s.footerBtn} hitSlop={10} onPress={pickImage}>
+                <Ionicons
+                  name="image-outline"
+                  size={20}
+                  color={imageUri ? colors.primary : colors.textMuted}
+                />
               </Pressable>
             </View>
             <Text style={[s.charCount, { color: charColor }]}>
@@ -208,4 +264,19 @@ const s = StyleSheet.create({
   footerLeft: { flex: 1, flexDirection: 'row', gap: 16 },
   footerBtn:  { padding: 4 },
   charCount:  { fontSize: 14, fontWeight: '700' },
+
+  imagePreviewWrap: {
+    marginHorizontal: 16, borderRadius: 12, overflow: 'hidden', position: 'relative',
+  },
+  imagePreview: { width: '100%', height: 180, borderRadius: 12 },
+  imageRemove: {
+    position: 'absolute', top: 8, right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12,
+  },
+  imageUploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center', alignItems: 'center', gap: 8,
+  },
+  imageUploadTxt: { color: '#fff', fontSize: 13, fontWeight: '600' },
 });
