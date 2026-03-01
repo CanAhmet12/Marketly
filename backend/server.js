@@ -21,13 +21,17 @@ app.use((req, _res, next) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
-    status: 'ok',
-    service: 'Marketly API',
-    version: '1.0.0',
+    status:    'ok',
+    service:   'Marketly Price API',
+    version:   '1.1.0',
     timestamp: new Date().toISOString(),
-    uptime: Math.floor(process.uptime()),
+    uptime:    `${Math.floor(process.uptime())}s`,
+    env:       process.env.NODE_ENV || 'development',
   });
 });
+
+// Kısa alias — /api/health
+app.get('/api/health', (_req, res) => res.redirect('/health'));
 
 app.use('/api/prices', pricesRouter);
 

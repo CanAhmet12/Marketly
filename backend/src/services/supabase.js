@@ -35,22 +35,41 @@ async function updatePrices(assets) {
   }
 }
 
+// Coin bazında bireysel renkler (kategori rengiyle ezilmemeli)
+const COIN_COLORS = {
+  BTC:     '#F7931A', ETH:  '#627EEA', BNB:  '#F3BA2F', SOL:  '#9945FF',
+  XRP:     '#00AAE4', ADA:  '#0033AD', DOGE: '#C2A633', AVAX: '#E84142',
+  DOT:     '#E6007A', UNI:  '#FF007A', LINK: '#2A5ADA', LTC:  '#BFBBBB',
+  TRX:     '#EB0029', XLM:  '#7D00FF', MATIC:'#8247E5',
+  // Hisse
+  AAPL:    '#555555', NVDA: '#76B900', TSLA: '#CC0000', MSFT: '#00A4EF',
+  AMZN:    '#FF9900', META: '#1877F2', GOOGL:'#4285F4', NFLX: '#E50914',
+  // Emtia
+  XAU:     '#D4AF37', XAG:  '#C0C0C0', WTI:  '#333333',
+  // Forex
+  USDTRY:  '#E53935', EURTRY:'#1565C0', EURUSD:'#1A73E8', GBPTRY:'#6A1B9A',
+};
+
 /**
  * Asset metadata'yı güncelle (ilk kurulumda veya yeni coin eklenince)
+ * logo_color: coin'e özgü renk varsa onu kullan, yoksa kategori rengine düş.
  * @param {Array} assets
  */
 async function upsertAssets(assets) {
   if (!assets || assets.length === 0) return;
 
-  const rows = assets.map((a) => ({
-    id: a.id,
-    symbol: a.symbol,
-    name: a.name,
-    category: a.category,
-    logo_url: a.logo_url || null,
-    logo_letter: a.symbol.charAt(0).toUpperCase(),
-    logo_color: categoryColor(a.category),
-  }));
+  const rows = assets.map((a) => {
+    const coinColor = COIN_COLORS[a.id?.toUpperCase()] || COIN_COLORS[a.symbol?.toUpperCase()];
+    return {
+      id:          a.id,
+      symbol:      a.symbol,
+      name:        a.name,
+      category:    a.category,
+      logo_url:    a.logo_url  || null,
+      logo_letter: a.symbol.charAt(0).toUpperCase(),
+      logo_color:  coinColor || categoryColor(a.category),
+    };
+  });
 
   const { error } = await supabase
     .from('assets')
