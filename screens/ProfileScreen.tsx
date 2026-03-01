@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, ScrollView, Pressable, Image,
-  StyleSheet, Dimensions, StatusBar, ActivityIndicator,
+  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Share, Clipboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ import { CreatePostModal } from '../components/CreatePostModal';
 import { SignalCard } from '../components/SignalCard';
 import { useSignals } from '../hooks/useSignals';
 import { useVideos } from '../hooks/useVideos';
+import { useMarketPrices } from '../hooks/useMarketPrices';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -383,6 +384,7 @@ const st = StyleSheet.create({
 // ─── Content Grid (real videos from Supabase) ────────────────────────────────
 function ContentGrid({ userId }: { userId?: string }) {
   const { videos, loading } = useVideos({ creatorId: userId });
+  const navigation = useNavigation<any>();
   const CELL_W = (W - 4) / 3;
 
   if (loading) {
@@ -408,7 +410,7 @@ function ContentGrid({ userId }: { userId?: string }) {
   return (
     <View style={cg.grid}>
       {videos.map((v) => (
-        <Pressable key={v.id} style={[cg.cell, { width: CELL_W, height: CELL_W * 0.65 }]}>
+        <Pressable key={v.id} style={[cg.cell, { width: CELL_W, height: CELL_W * 0.65 }]} onPress={() => navigation.navigate('VideoDetail', { item: v })}>
           <Image source={{ uri: v.thumbnail }} style={cg.thumb} />
           <View style={cg.overlay} />
           {v.isLive && (
@@ -464,6 +466,7 @@ export function ProfileScreen() {
   const { watchlist } = useWatchlist();
   const { holdings } = usePortfolio();
   const { signals: mySignals } = useSignals({ creatorId: user?.id });
+  const { allAssets } = useMarketPrices();
   const toast = useToast();
 
   // Yeni rozet kazanılınca bildirim göster
@@ -528,7 +531,12 @@ export function ProfileScreen() {
           <View style={s.coverOverlay} />
           {/* Gradient bars decoration */}
           <View style={s.coverTickerBar}>
-            {['BTC +2.4%', 'ETH +1.8%', 'BIST +0.7%', 'XAU +0.4%', 'SOL -0.6%'].map((t, i) => (
+            {(allAssets.length > 0
+              ? allAssets.slice(0, 5).map(a =>
+                  `${a.symbol} ${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(1)}%`
+                )
+              : ['BTC +2.4%', 'ETH +1.8%', 'BIST +0.7%', 'XAU +0.4%', 'SOL -0.6%']
+            ).map((t, i) => (
               <Text key={i} style={s.coverTickerItem}>{t}</Text>
             ))}
           </View>
@@ -577,10 +585,23 @@ export function ProfileScreen() {
             <Ionicons name="pencil-outline" size={14} color={colors.text} />
             <Text style={s.editBtnTxt}>Profili Düzenle</Text>
           </Pressable>
-          <Pressable style={s.shareBtn}>
+          <Pressable
+            style={s.shareBtn}
+            onPress={() => Share.share({
+              message: `${profile?.full_name ?? user.name} — Marketly profilim: marketly://profile/${user.id}`,
+              title: `${profile?.full_name ?? user.name} | Marketly`,
+            })}
+          >
             <Ionicons name="share-social-outline" size={14} color={colors.text} />
           </Pressable>
-          <Pressable style={s.shareBtn}>
+          <Pressable
+            style={s.shareBtn}
+            onPress={() => {
+              const link = `marketly://profile/${profile?.username ?? user.id}`;
+              Clipboard.setString(link);
+              toast.success('Profil linki kopyalandı 🔗');
+            }}
+          >
             <Ionicons name="link-outline" size={14} color={colors.text} />
           </Pressable>
         </View>
@@ -611,7 +632,21 @@ export function ProfileScreen() {
         </View>
 
         {/* ══ ANALYST STAT CARD ══ */}
-        <AnalystStatCard winRate={82} total={248} followers="2.4K" following="318" />
+        {mySignals.length > 0 && (() => {
+          const totalSigs = mySignals.length;
+          const accuracy  = (profile as any)?.signal_accuracy ?? 0;
+          const fmtFollowers = followersCount > 999
+            ? `${(followersCount / 1000).toFixed(1)}K`
+            : String(followersCount);
+          return (
+            <AnalystStatCard
+              winRate={Math.round(accuracy)}
+              total={totalSigs}
+              followers={fmtFollowers}
+              following={String(followingCount)}
+            />
+          );
+        })()}
 
         {/* ══ CONTENT TABS ══ */}
         <View style={s.tabsBar}>

@@ -254,6 +254,20 @@ function ShortCard({
   const [following, setFollow] = useState(false);
   const [copied, setCopied]   = useState(false);
   const [showSignal, setShowSignal] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isActive) return;
+    progressAnim.setValue(0);
+    const anim = Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: 30000,
+      useNativeDriver: false,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [isActive, progressAnim]);
 
   const up = (item.changePercent ?? 0) >= 0;
   const isBuy  = item.signal?.direction === 'BUY';
@@ -427,7 +441,9 @@ function ShortCard({
 
       {/* Progress bar (video progress simulation) */}
       <View style={sc.progressBar}>
-        <View style={[sc.progressFill, { width: `${(Math.random() * 60 + 20).toFixed(0)}%` as any }]} />
+        <Animated.View style={[sc.progressFill, {
+          width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) as any,
+        }]} />
       </View>
     </View>
   );

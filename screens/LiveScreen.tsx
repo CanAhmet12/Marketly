@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { colors, radius, shadow } from '../constants/theme';
 
 const LIVE_CATS = ['Tümü', 'Kripto', 'Hisseler', 'Emtia', 'Döviz', 'Analiz'];
@@ -94,6 +96,7 @@ function LiveCard({
   const up = (item.changePercent ?? 0) >= 0;
   const [followed, setFollowed] = useState(false);
   const toast = useToast();
+  const { user } = useAuth();
 
   return (
     <Pressable onPress={onPress} style={[lc.wrap, featured && lc.wrapFeatured]}>
@@ -176,9 +179,20 @@ function LiveCard({
             {!featured && (
               <Pressable
                 style={[lc.followBtn, followed && lc.followBtnActive]}
-                onPress={() => {
-                  setFollowed(!followed);
-                  toast.success(followed ? `${item.creator.name} takipten çıkıldı` : `${item.creator.name} takip ediliyor ✓`);
+                onPress={async () => {
+                  if (!user) { toast.info('Takip etmek için giriş yap'); return; }
+                  const newFollowed = !followed;
+                  setFollowed(newFollowed);
+                  if (newFollowed) {
+                    await supabase.from('follows').upsert(
+                      { follower_id: user.id, following_id: item.creator?.id },
+                      { onConflict: 'follower_id,following_id' }
+                    );
+                  } else {
+                    await supabase.from('follows').delete()
+                      .eq('follower_id', user.id).eq('following_id', item.creator?.id);
+                  }
+                  toast.success(newFollowed ? `${item.creator.name} takip ediliyor ✓` : `${item.creator.name} takipten çıkıldı`);
                 }}
               >
                 <Text style={[lc.followTxt, followed && lc.followTxtActive]}>

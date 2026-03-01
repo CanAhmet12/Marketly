@@ -261,10 +261,25 @@ export function SignalMarketplaceScreen() {
     speciality:    a.specialty ?? 'Finansal Analiz',
     accuracy:      a.accuracy,
     total_signals: a.signals,
-    subscribers:   parseInt(a.followers.replace(/[KM]/g, m => m === 'K' ? '000' : '000000'), 10) || 0,
+    subscribers:   (() => {
+      const f = a.followers ?? '0';
+      const num = parseFloat(f);
+      if (f.toUpperCase().endsWith('M')) return Math.round(num * 1_000_000);
+      if (f.toUpperCase().endsWith('K')) return Math.round(num * 1_000);
+      return Math.round(num) || 0;
+    })(),
     price_monthly: 149 + (i % 4) * 50,
     description:   `${a.name} tarafından profesyonel sinyal paketi. ${a.accuracy}% başarı oranı ile ${a.signals} sinyal yayımlandı.`,
-    tags:          ['BTC', 'ETH', 'SOL'].slice(0, 2),
+    tags:          (() => {
+      const spec = (a.specialty ?? '').toLowerCase();
+      if (spec.includes('kripto') || spec.includes('bitcoin') || spec.includes('btc')) return ['BTC', 'ETH'];
+      if (spec.includes('bist') || spec.includes('hisse') || spec.includes('borsa')) return ['BIST100', 'THYAO'];
+      if (spec.includes('forex') || spec.includes('fx') || spec.includes('döviz')) return ['EURUSD', 'GBPUSD'];
+      if (spec.includes('solana') || spec.includes('sol') || spec.includes('defi')) return ['SOL', 'BNB'];
+      if (spec.includes('altın') || spec.includes('emtia') || spec.includes('gold')) return ['XAU', 'OIL'];
+      if (spec.includes('nasdaq') || spec.includes('tech') || spec.includes('us')) return ['NVDA', 'AAPL'];
+      return [a.handle?.replace('@','').toUpperCase().slice(0,4) ?? 'BTC', 'ETH'];
+    })(),
     is_verified:   a.verified,
     top_picks:     [],
     tier_required: i < 2 ? 'free' : i < 4 ? 'pro' : 'elite',

@@ -347,8 +347,11 @@ function generateCandles(priceNum: number, changePercent: number, count: number,
 }
 
 // ─── Price display formatter (with currency symbol) ──────────────────────────
-function formatPriceDisplay(price: number, category: string): string {
-  const prefix = category === 'forex' && ['USDTRY','EURTRY','GBPTRY'].some(c => true) ? '' : '$';
+const TRY_FOREX_PAIRS = ['USDTRY','EURTRY','GBPTRY','XAUTRY','BIST100'];
+function formatPriceDisplay(price: number, category: string, symbol?: string): string {
+  const isTry = category === 'forex' && symbol != null && TRY_FOREX_PAIRS.includes(symbol.toUpperCase());
+  const isBist = category === 'stocks' && symbol != null && !['AAPL','NVDA','TSLA','MSFT','GOOGL','AMZN'].includes(symbol.toUpperCase());
+  const prefix = (isTry || isBist) ? '₺' : '$';
   if (price >= 10000) return `${prefix}${price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   if (price >= 1000)  return `${prefix}${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
   if (price >= 100)   return `${prefix}${price.toFixed(2)}`;
@@ -806,7 +809,7 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
               { label: '24s Hacim',    value: asset.volume,                      icon: 'bar-chart',          color: '#007AFF'    },
               { label: 'Piyasa Değ.',  value: asset.marketCap ?? '—',            icon: 'globe',              color: '#7C3AED'    },
               { label: 'Tüm Zamanlar Yük.', value: `${pricePrefix}${ath}`,       icon: 'trophy',             color: '#FFB800'    },
-              { label: 'Kategori Sır.', value: `#${([...Array(20)].findIndex((_, i) => i + 1 > 0) + 1)}`,   icon: 'ribbon', color: seg.color },
+              { label: 'Kategori Sır.', value: `#${Math.max(1, Math.abs(asset.id.charCodeAt(0) % 20) + 1)}`, icon: 'ribbon', color: seg.color },
             ].map((st, i) => (
               <View key={i} style={[s.statCell, i % 3 !== 2 && s.statCellBorderR, i < 3 && s.statCellBorderB]}>
                 <View style={[s.statIcon, { backgroundColor: st.color + '15' }]}>

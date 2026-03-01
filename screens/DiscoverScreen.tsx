@@ -18,6 +18,8 @@ import { useVideos } from '../hooks/useVideos';
 import { useSignals } from '../hooks/useSignals';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { useMarketPrices } from '../hooks/useMarketPrices';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -140,6 +142,7 @@ export function DiscoverScreen() {
   const [search, setSearch]           = useState('');
   const [tab, setTab]                 = useState<DiscoverTab>('kesfet');
   const [following, setFollowing]     = useState<Record<string, boolean>>({});
+  const { user } = useAuth();
   const [bannerIndex, setBannerIndex] = useState(0);
   const [sigFilter, setSigFilter]     = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
   const bannerRef                     = useRef<ScrollView>(null);
@@ -374,7 +377,7 @@ export function DiscoverScreen() {
 
             {/* Trending Topics */}
             <View style={s.section}>
-              <SecHeader icon="flame-outline" title="Trend Konular" onMore={() => {}} />
+              <SecHeader icon="flame-outline" title="Trend Konular" onMore={() => navigation.navigate('Search')} />
               <ScrollView
                 horizontal showsHorizontalScrollIndicator={false}
                 contentContainerStyle={s.tagsScroll}
@@ -442,7 +445,7 @@ export function DiscoverScreen() {
 
             {/* Trend Videos */}
             <View style={s.section}>
-              <SecHeader icon="play-circle-outline" title="Trend Videolar" onMore={() => {}} />
+              <SecHeader icon="play-circle-outline" title="Trend Videolar" onMore={() => navigation.navigate('LiveFeed')} />
               <View style={s.trendVideos}>
                 {trendVideos.map((item) => (
                   <FeaturedVideoCard
@@ -501,7 +504,7 @@ export function DiscoverScreen() {
 
             {/* Trend Videos as news substitute */}
             <View style={s.section}>
-              <SecHeader icon="play-circle-outline" title="Trend Analizler" onMore={() => {}} />
+              <SecHeader icon="play-circle-outline" title="Trend Analizler" onMore={() => navigation.navigate('Search')} />
               {displayVideos.slice(0, 4).map((item) => (
                 <Pressable key={item.id} style={s.newsCard} onPress={() => navigation.navigate('VideoDetail', { item })}>
                   <Image source={{ uri: item.thumbnail }} style={s.newsThumbnail} />
@@ -649,9 +652,19 @@ export function DiscoverScreen() {
                   {/* Follow */}
                   <Pressable
                     style={[s.followBtn, following[c.id] && s.followBtnOn]}
-                    onPress={() => {
+                    onPress={async () => {
+                      if (!user) { navigation.navigate('Login'); return; }
                       const nowF = !following[c.id];
                       setFollowing((f) => ({ ...f, [c.id]: nowF }));
+                      if (nowF) {
+                        await supabase.from('follows').upsert(
+                          { follower_id: user.id, following_id: c.id },
+                          { onConflict: 'follower_id,following_id' }
+                        );
+                      } else {
+                        await supabase.from('follows').delete()
+                          .eq('follower_id', user.id).eq('following_id', c.id);
+                      }
                       toast.success(nowF ? `${c.name} takip ediliyor ✓` : `${c.name} takipten çıkıldı`);
                     }}
                   >

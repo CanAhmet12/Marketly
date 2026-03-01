@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, ScrollView, Switch, Image,
+  View, Text, Pressable, StyleSheet, ScrollView, Switch, Image, Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { radius, shadow, colors } from '../constants/theme';
+
+const NOTIF_PREFS_KEY = '@marketly_notif_prefs';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -43,6 +47,28 @@ export function SettingsScreen() {
   const [biometric, setBiometric]        = useState(false);
   const [twoFactor, setTwoFactor]        = useState(false);
   const [analyticsOpt, setAnalyticsOpt] = useState(true);
+
+  // AsyncStorage'dan bildirim tercihlerini yükle
+  useEffect(() => {
+    AsyncStorage.getItem(NOTIF_PREFS_KEY).then(raw => {
+      if (!raw) return;
+      try {
+        const prefs = JSON.parse(raw);
+        if (typeof prefs.priceAlerts  === 'boolean') setPriceAlerts(prefs.priceAlerts);
+        if (typeof prefs.socialNotifs === 'boolean') setSocialNotifs(prefs.socialNotifs);
+        if (typeof prefs.marketNews   === 'boolean') setMarketNews(prefs.marketNews);
+        if (typeof prefs.analyticsOpt === 'boolean') setAnalyticsOpt(prefs.analyticsOpt);
+      } catch {}
+    });
+  }, []);
+
+  const saveNotifPref = async (key: string, value: boolean) => {
+    try {
+      const raw = await AsyncStorage.getItem(NOTIF_PREFS_KEY);
+      const prefs = raw ? JSON.parse(raw) : {};
+      await AsyncStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify({ ...prefs, [key]: value }));
+    } catch {}
+  };
 
   const handleLogout = () => {
     logout();
@@ -106,19 +132,19 @@ export function SettingsScreen() {
           id: 'price_alerts_toggle', icon: 'notifications-outline', iconBg: '#FF9500',
           label: 'Alarm Bildirimleri', sublabel: 'Tetiklenince push bildirim',
           type: 'toggle', value: priceAlerts,
-          onToggle: (v) => { setPriceAlerts(v); toast.success(v ? 'Alarm bildirimleri açıldı' : 'Kapatıldı'); },
+          onToggle: (v) => { setPriceAlerts(v); saveNotifPref('priceAlerts', v); toast.success(v ? 'Alarm bildirimleri açıldı' : 'Kapatıldı'); },
         },
         {
           id: 'social_notifs', icon: 'heart-outline', iconBg: '#FF3B3B',
           label: 'Sosyal Bildirimler', sublabel: 'Beğeni, yorum, takip',
           type: 'toggle', value: socialNotifs,
-          onToggle: (v) => setSocialNotifs(v),
+          onToggle: (v) => { setSocialNotifs(v); saveNotifPref('socialNotifs', v); },
         },
         {
           id: 'market_news', icon: 'newspaper-outline', iconBg: '#5A5F6E',
           label: 'Piyasa Haberleri', sublabel: 'Breaking news bildirimleri',
           type: 'toggle', value: marketNews,
-          onToggle: (v) => setMarketNews(v),
+          onToggle: (v) => { setMarketNews(v); saveNotifPref('marketNews', v); },
         },
       ],
     },
@@ -139,8 +165,16 @@ export function SettingsScreen() {
         },
         {
           id: 'password', icon: 'lock-closed-outline', iconBg: '#FF9500',
-          label: 'Şifre Değiştir', type: 'arrow',
-          onPress: () => toast.info('Yakında: Şifre değiştirme'),
+          label: 'Şifre Değiştir', sublabel: user?.email ? `${user.email} adresine link gönder` : undefined,
+          type: 'arrow',
+          onPress: async () => {
+            if (!user?.email) { toast.error('E-posta adresi bulunamadı'); return; }
+            const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+              redirectTo: 'marketly://reset-password',
+            });
+            if (error) { toast.error('E-posta gönderilemedi'); }
+            else { toast.success('Şifre sıfırlama linki gönderildi ✉️'); }
+          },
         },
       ],
     },
@@ -168,17 +202,17 @@ export function SettingsScreen() {
           id: 'analytics', icon: 'analytics-outline', iconBg: '#5A5F6E',
           label: 'Analitik Paylaşımı', sublabel: 'Uygulama iyileştirme için',
           type: 'toggle', value: analyticsOpt,
-          onToggle: setAnalyticsOpt,
+          onToggle: (v) => { setAnalyticsOpt(v); saveNotifPref('analyticsOpt', v); },
         },
         {
           id: 'privacy', icon: 'eye-off-outline', iconBg: '#5A5F6E',
           label: 'Gizlilik Politikası', type: 'arrow',
-          onPress: () => toast.info('marketly.io/privacy'),
+          onPress: () => Linking.openURL('https://marketly.io/privacy').catch(() => toast.error('Link açılamadı')),
         },
         {
           id: 'terms', icon: 'document-text-outline', iconBg: '#9AA0AF',
           label: 'Kullanım Koşulları', type: 'arrow',
-          onPress: () => toast.info('marketly.io/terms'),
+          onPress: () => Linking.openURL('https://marketly.io/terms').catch(() => toast.error('Link açılamadı')),
         },
         {
           id: 'data', icon: 'trash-outline', iconBg: '#FF3B3B',

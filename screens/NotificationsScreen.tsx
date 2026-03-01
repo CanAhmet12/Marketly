@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator,
+  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,10 +23,18 @@ interface Notif {
 }
 
 
-const SECTIONS = [
-  { label: 'Bugün', filter: (n: Notif) => ['2 dk önce', '15 dk önce', '1 sa önce', '2 sa önce', '3 sa önce'].some(t => n.time === t) },
-  { label: 'Dün', filter: (n: Notif) => n.time.startsWith('Dün') },
-  { label: 'Bu Hafta', filter: (n: Notif) => n.time.includes('gün önce') },
+function daysBetween(isoStr: string): number {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  return Math.floor(diff / 86400000);
+}
+
+interface NotifWithDate extends Notif { created_at: string; }
+
+const SECTIONS: { label: string; filter: (n: NotifWithDate) => boolean }[] = [
+  { label: 'Bugün',    filter: (n) => daysBetween(n.created_at) === 0 },
+  { label: 'Dün',     filter: (n) => daysBetween(n.created_at) === 1 },
+  { label: 'Bu Hafta', filter: (n) => daysBetween(n.created_at) >= 2 && daysBetween(n.created_at) <= 6 },
+  { label: 'Daha Eski', filter: (n) => daysBetween(n.created_at) >= 7 },
 ];
 
 function NotifIcon({ notif }: { notif: Notif }) {
@@ -96,6 +104,7 @@ function timeAgo(isoStr: string): string {
 
 export function NotificationsScreen({ onBack }: Props) {
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
   const {
     notifications: liveNotifs,
     loading,
@@ -103,19 +112,27 @@ export function NotificationsScreen({ onBack }: Props) {
     markRead,
     markAllRead,
     deleteNotif,
+    refetch,
   } = useNotifications();
 
-  const notifications = liveNotifs.map(n => ({
-    id:       n.id,
-    type:     n.type,
-    title:    n.title,
-    body:     n.body,
-    time:     timeAgo(n.created_at),
-    read:     n.read,
-    icon:     (n.meta as any)?.icon,
-    iconBg:   (n.meta as any)?.iconBg,
-    avatar:   (n.meta as any)?.avatar,
-    badge:    (n.meta as any)?.badge,
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
+
+  const notifications: NotifWithDate[] = liveNotifs.map(n => ({
+    id:         n.id,
+    type:       n.type,
+    title:      n.title,
+    body:       n.body,
+    time:       timeAgo(n.created_at),
+    read:       n.read,
+    created_at: n.created_at,
+    icon:       (n.meta as any)?.icon,
+    iconBg:     (n.meta as any)?.iconBg,
+    avatar:     (n.meta as any)?.avatar,
+    badge:      (n.meta as any)?.badge,
   }));
 
   return (
@@ -141,7 +158,12 @@ export function NotificationsScreen({ onBack }: Props) {
       {loading ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+          }
+        >
           {SECTIONS.map((sec) => {
             const items = notifications.filter(sec.filter);
             if (items.length === 0) return null;
@@ -178,14 +200,14 @@ export function NotificationsScreen({ onBack }: Props) {
             );
           })}
 
-          {/* Empty state */}
-          {notifications.length === 0 || notifications.every((n) => n.read) ? (
+          {/* Empty state — sadece bildirim yoksa göster */}
+          {notifications.length === 0 && (
             <View style={s.emptyState}>
               <Text style={s.emptyIcon}>🔔</Text>
-              <Text style={s.emptyTitle}>Tüm bildirimler okundu</Text>
+              <Text style={s.emptyTitle}>Henüz bildirim yok</Text>
               <Text style={s.emptySub}>Yeni bildirimler burada görünecek</Text>
             </View>
-          ) : null}
+          )}
 
           <View style={{ height: 30 }} />
         </ScrollView>

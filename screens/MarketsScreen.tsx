@@ -32,22 +32,20 @@ const SEGMENTS: {
 ];
 
 // ─── Scrolling Ticker ──────────────────────────────────────────────────────────
-const TICKER_DATA = [
+const TICKER_FALLBACK = [
   { sym: 'BTC',     price: '$66,482', change: '+3.18%', up: true  },
   { sym: 'ETH',     price: '$3,521',  change: '+2.45%', up: true  },
-  { sym: 'S&P500',  price: '5,234',   change: '+0.42%', up: true  },
-  { sym: 'NASDAQ',  price: '16,420',  change: '+0.58%', up: true  },
   { sym: 'BIST100', price: '9,450',   change: '-0.34%', up: false },
   { sym: 'ALTIN',   price: '$2,345',  change: '+0.28%', up: true  },
-  { sym: 'PETROL',  price: '$83.20',  change: '+1.85%', up: true  },
   { sym: 'USD/TRY', price: '₺32.45',  change: '+0.31%', up: true  },
 ];
 const TW = 145;
 
-function LiveTicker() {
+function LiveTicker({ assets }: { assets: { sym: string; price: string; change: string; up: boolean }[] }) {
   const tx = useRef(new Animated.Value(0)).current;
-  const total = TICKER_DATA.length * TW;
-  const items = [...TICKER_DATA, ...TICKER_DATA, ...TICKER_DATA];
+  const data = assets.length > 0 ? assets : TICKER_FALLBACK;
+  const total = data.length * TW;
+  const items = [...data, ...data, ...data];
 
   useEffect(() => {
     const a = Animated.loop(
@@ -55,7 +53,7 @@ function LiveTicker() {
     );
     a.start();
     return () => a.stop();
-  }, []);
+  }, [total]);
 
   return (
     <View style={tk.root}>
@@ -566,7 +564,7 @@ export function MarketsScreen() {
   const [search, setSearch] = useState('');
 
   // ── Gerçek veri hook'u ──
-  const { byCategory, topMovers, isLoading: pricesLoading, lastUpdate } = useMarketPrices();
+  const { byCategory, topMovers, allAssets, isLoading: pricesLoading, lastUpdate } = useMarketPrices();
   const { isWatched, toggle: toggleWatch } = useWatchlist();
 
   const liveAssets = useMemo(() => {
@@ -576,6 +574,18 @@ export function MarketsScreen() {
   const liveMoverAssets = useMemo(() => {
     return topMovers(tab as any, 6).map(liveToMarketAsset);
   }, [topMovers, tab]);
+
+  const tickerData = useMemo(() => {
+    const TICKER_SYMBOLS = ['BTC','ETH','BNB','SOL','BIST100','XAU','USDTRY'];
+    const filtered = allAssets.filter(a => TICKER_SYMBOLS.includes(a.symbol.toUpperCase()));
+    const rest = allAssets.filter(a => !TICKER_SYMBOLS.includes(a.symbol.toUpperCase())).slice(0, 5);
+    return [...filtered, ...rest].map(a => ({
+      sym:    a.symbol,
+      price:  a.priceFormatted,
+      change: `${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%`,
+      up:     a.change_percent >= 0,
+    }));
+  }, [allAssets]);
 
   // Scroll-driven dark header animation
   const scrollY   = useRef(new Animated.Value(0)).current;
@@ -637,7 +647,7 @@ export function MarketsScreen() {
             </Pressable>
           </View>
         </View>
-        <LiveTicker />
+        <LiveTicker assets={tickerData} />
       </Animated.View>
 
       <Animated.ScrollView

@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, Animated,
+  KeyboardAvoidingView, Platform, ScrollView, Animated, ActivityIndicator, Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
 import { colors, radius, shadow, spacing } from '../constants/theme';
 
 interface LoginScreenProps {
@@ -24,6 +25,8 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
+  const passwordRef = useRef<TextInput>(null);
   const btnScale = useRef(new Animated.Value(1)).current;
   const errorShake = useRef(new Animated.Value(0)).current;
 
@@ -42,6 +45,23 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
 
   const animateBtn = (toValue: number) => {
     Animated.spring(btnScale, { toValue, useNativeDriver: true, speed: 50 }).start();
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('E-posta Gerekli', 'Şifre sıfırlama için önce e-posta adresinizi girin.');
+      return;
+    }
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: 'marketly://reset-password',
+    });
+    setResetLoading(false);
+    if (error) {
+      Alert.alert('Hata', 'Şifre sıfırlama e-postası gönderilemedi. E-postanızı kontrol edin.');
+    } else {
+      Alert.alert('E-posta Gönderildi', `${email.trim()} adresine şifre sıfırlama linki gönderildi.`);
+    }
   };
 
   const handleSubmit = async () => {
@@ -115,6 +135,8 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current?.focus()}
                 onFocus={() => setFocusedField('email')}
                 onBlur={() => setFocusedField(null)}
               />
@@ -123,12 +145,15 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
             <View style={[s.inputWrap, focusedField === 'pass' && s.inputFocused]}>
               <Ionicons name="lock-closed-outline" size={18} color={focusedField === 'pass' ? colors.primary : colors.textMuted} style={s.inputIcon} />
               <TextInput
+                ref={passwordRef}
                 style={[s.input, { flex: 1 }]}
                 placeholder="Şifre"
                 placeholderTextColor={colors.textMuted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPass}
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
                 onFocus={() => setFocusedField('pass')}
                 onBlur={() => setFocusedField(null)}
               />
@@ -138,8 +163,11 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
             </View>
           </View>
 
-          <Pressable style={s.forgotRow}>
-            <Text style={s.forgotTxt}>Şifremi Unuttum</Text>
+          <Pressable style={s.forgotRow} onPress={handleForgotPassword} disabled={resetLoading}>
+            {resetLoading
+              ? <ActivityIndicator size="small" color={colors.primary} />
+              : <Text style={s.forgotTxt}>Şifremi Unuttum</Text>
+            }
           </Pressable>
 
           {/* Login button */}
@@ -151,15 +179,17 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
               onPressIn={() => animateBtn(0.97)}
               onPressOut={() => animateBtn(1)}
             >
-              {loading
-                ? <Text style={s.submitBtnTxt}>Giriş yapılıyor...</Text>
-                : (
-                  <View style={s.submitBtnInner}>
-                    <Text style={s.submitBtnTxt}>Giriş Yap</Text>
-                    <Ionicons name="arrow-forward" size={18} color="#FFF" />
-                  </View>
-                )
-              }
+              {loading ? (
+                <View style={s.submitBtnInner}>
+                  <ActivityIndicator size="small" color="#FFF" />
+                  <Text style={s.submitBtnTxt}>Giriş yapılıyor...</Text>
+                </View>
+              ) : (
+                <View style={s.submitBtnInner}>
+                  <Text style={s.submitBtnTxt}>Giriş Yap</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                </View>
+              )}
             </Pressable>
           </Animated.View>
 

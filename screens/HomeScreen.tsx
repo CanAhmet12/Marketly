@@ -19,6 +19,7 @@ import { usePosts } from '../hooks/usePosts';
 import { useVideos } from '../hooks/useVideos';
 import { useSignals } from '../hooks/useSignals';
 import { useFollow } from '../hooks/useFollow';
+import { useNotifications } from '../hooks/useNotifications';
 import { supabase } from '../lib/supabase';
 import { colors, radius, shadow } from '../constants/theme';
 
@@ -157,6 +158,7 @@ const ASSET_STORIES = [
 ];
 
 function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; userId?: string }) {
+  const navigation = useNavigation<any>();
   const { allAssets } = useMarketPrices();
   const [followingUsers, setFollowingUsers] = useState<{ id: string; username: string; avatar_url: string | null }[]>([]);
 
@@ -217,7 +219,20 @@ function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; user
             <Pressable
               key={s.id}
               style={st.item}
-              onPress={s.type === 'shorts' ? onShortsPress : undefined}
+              onPress={
+                s.type === 'shorts' ? onShortsPress
+                : s.type === 'creator' ? () => navigation.navigate('ProfileView', { userId: s.id, username: (s as any).label })
+                : s.type === 'asset' ? () => {
+                    const live = allAssets.find(x => x.symbol === (s as any).label || x.id.toUpperCase() === (s as any).label);
+                    if (live) {
+                      const { liveToMarketAsset } = require('../services/marketService');
+                      navigation.navigate('AssetDetail', { asset: liveToMarketAsset(live) });
+                    } else {
+                      navigation.navigate('Search');
+                    }
+                  }
+                : undefined
+              }
             >
               <View style={[st.ring, { borderColor: ringColor }]}>
                 {s.type === 'creator' && (s as any).avatar ? (
@@ -365,7 +380,8 @@ export function HomeScreen() {
 
   // Gerçek video ve sinyal verileri
   const { videos: liveVideos, loading: videosLoading, refetch: refetchVideos } = useVideos({ type: feedTab === 'CANLI' ? 'live' : 'all' });
-  const { signals: liveSignals, loading: signalsLoading } = useSignals({ activeOnly: true });
+  const { signals: liveSignals, loading: signalsLoading, refetch: refetchSignals } = useSignals({ activeOnly: true });
+  const { unreadCount: notifCount } = useNotifications();
 
   const displayVideos = liveVideos;
 
@@ -422,7 +438,7 @@ export function HomeScreen() {
     setRefreshing(true);
     resetTabBar();
     scrollY.setValue(0);
-    await Promise.all([refreshPosts(), refetchVideos()]).catch(() => {});
+    await Promise.all([refreshPosts(), refetchVideos(), refetchSignals()]).catch(() => {});
     setRefreshing(false);
   }, [scrollY, resetTabBar, refreshPosts, refetchVideos]);
 
@@ -459,8 +475,8 @@ export function HomeScreen() {
         ]}
       >
         <Header
-          hasNotification
-          notificationCount={3}
+          hasNotification={notifCount > 0}
+          notificationCount={notifCount}
           avatarUri={user?.avatar ?? `https://i.pravatar.cc/80?u=${user?.id ?? 'default'}`}
           onProfilePress={() => navigation.navigate('Profil')}
           onNotificationPress={() => navigation.navigate('Notifications')}
