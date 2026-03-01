@@ -1,12 +1,15 @@
-import React, { useRef, useCallback, memo } from 'react';
+import React, { useRef, useCallback, memo, useState } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, Image, Animated, Alert,
+  View, Text, Pressable, StyleSheet, Image, Animated, Alert, Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, shadow } from '../constants/theme';
 import type { Post } from '../hooks/usePosts';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import { useToast } from '../contexts/ToastContext';
+import { CommentSheet } from './CommentSheet';
 
 const TIER_COLOR: Record<string, string> = {
   elite: '#FFD700',
@@ -26,15 +29,21 @@ function timeAgo(isoStr: string): string {
 }
 
 interface Props {
-  post:       Post;
-  onLike:     (id: string) => void;
-  onDelete?:  (id: string) => void;
+  post:         Post;
+  onLike:       (id: string) => void;
+  onDelete?:    (id: string) => void;
+  onCommentAdded?: () => void;
 }
 
-export const PostCard = memo(function PostCard({ post: p, onLike, onDelete }: Props) {
-  const { user } = useAuth();
+export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCommentAdded }: Props) {
+  const { user }   = useAuth();
   const navigation = useNavigation<any>();
-  const scale = useRef(new Animated.Value(1)).current;
+  const toast      = useToast();
+  const scale      = useRef(new Animated.Value(1)).current;
+
+  const [commentVisible, setCommentVisible] = useState(false);
+  const [localComments,  setLocalComments]  = useState(p.comments);
+  const [saved,          setSaved]          = useState(false);
 
   const handleLike = useCallback(() => {
     Animated.sequence([
@@ -43,6 +52,32 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete }: Pr
     ]).start();
     onLike(p.id);
   }, [onLike, p.id, scale]);
+
+  const handleShare = useCallback(async () => {
+    try {
+      await Share.share({
+        message: `${p.author_name}: "${p.content.slice(0, 120)}${p.content.length > 120 ? '…' : ''}" — Marketly'de görüntüle`,
+        title: 'Marketly Gönderi',
+      });
+    } catch { /* kullanıcı iptal etti */ }
+  }, [p]);
+
+  const handleBookmark = useCallback(async () => {
+    if (!user?.id) { toast.info('Kaydetmek için giriş yap'); return; }
+    const newSaved = !saved;
+    setSaved(newSaved);
+    if (newSaved) {
+      await supabase.from('saved_posts').upsert(
+        { user_id: user.id, post_id: p.id },
+        { onConflict: 'user_id,post_id' }
+      );
+      toast.success('Gönderi kaydedildi 🔖');
+    } else {
+      await supabase.from('saved_posts').delete()
+        .eq('user_id', user.id).eq('post_id', p.id);
+      toast.info('Kaydedilenlerden çıkarıldı');
+    }
+  }, [user?.id, p.id, saved, toast]);
 
   const tierColor = TIER_COLOR[p.author_tier] ?? TIER_COLOR.free;
   const isOwner   = user?.id === p.user_id;
@@ -123,6 +158,7 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete }: Pr
 
       {/* Actions */}
       <View style={s.actions}>
+        {/* Beğen */}
         <Pressable style={s.actionBtn} onPress={handleLike}>
           <Animated.View style={{ transform: [{ scale }] }}>
             <Ionicons
@@ -136,19 +172,37 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete }: Pr
           </Text>
         </Pressable>
 
-        <Pressable style={s.actionBtn}>
+        {/* Yorum */}
+        <Pressable style={s.actionBtn} onPress={() => setCommentVisible(true)}>
           <Ionicons name="chatbubble-outline" size={19} color={colors.textMuted} />
-          <Text style={s.actionTxt}>{p.comments > 0 ? p.comments : ''}</Text>
+          <Text style={s.actionTxt}>{localComments > 0 ? localComments : ''}</Text>
         </Pressable>
 
-        <Pressable style={s.actionBtn}>
-          <Ionicons name="repeat-outline" size={20} color={colors.textMuted} />
+        {/* Paylaş */}
+        <Pressable style={s.actionBtn} onPress={handleShare}>
+          <Ionicons name="share-social-outline" size={20} color={colors.textMuted} />
         </Pressable>
 
-        <Pressable style={[s.actionBtn, { marginLeft: 'auto' }]}>
-          <Ionicons name="bookmark-outline" size={19} color={colors.textMuted} />
+        {/* Kaydet */}
+        <Pressable style={[s.actionBtn, { marginLeft: 'auto' }]} onPress={handleBookmark}>
+          <Ionicons
+            name={saved ? 'bookmark' : 'bookmark-outline'}
+            size={19}
+            color={saved ? colors.primary : colors.textMuted}
+          />
         </Pressable>
       </View>
+
+      {/* Yorum sayfası */}
+      <CommentSheet
+        postId={commentVisible ? p.id : null}
+        visible={commentVisible}
+        onClose={() => setCommentVisible(false)}
+        onCommentAdded={() => {
+          setLocalComments(n => n + 1);
+          onCommentAdded?.();
+        }}
+      />
     </View>
   );
 });

@@ -461,7 +461,7 @@ export function ProfileScreen() {
   const { showTabBar, resetTabBar } = useTabBar();
   const { tierLabel, tierColor }    = useSubscription();
   const { followersCount, followingCount }  = useFollow(user?.id);
-  const { posts, toggleLike, deletePost, createPost } = usePosts();
+  const { posts, toggleLike, deletePost, createPost, refresh } = usePosts();
   const { earnedBadges, newBadges, checkAndAward } = useBadges();
   const { watchlist } = useWatchlist();
   const { holdings } = usePortfolio();
@@ -675,6 +675,7 @@ export function ProfileScreen() {
                     post={post}
                     onLike={toggleLike}
                     onDelete={deletePost}
+                    onCommentAdded={refresh}
                   />
                 ))
               ) : (

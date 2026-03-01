@@ -578,6 +578,7 @@ export function HomeScreen() {
                   post={post}
                   onLike={toggleLike}
                   onDelete={post.user_id === user?.id ? deletePost : undefined}
+                  onCommentAdded={refreshPosts}
                 />
               ))
             )}
@@ -585,20 +586,40 @@ export function HomeScreen() {
         )}
 
         {/* ── Senin İçin tab → Popülerlik algoritmali Supabase postları ── */}
-        {feedTab === 'Senin İçin' && forYouPosts.length > 0 && (
+        {feedTab === 'Senin İçin' && (
           <View style={{ marginTop: 8 }}>
             <View style={s.tabSectionHeader}>
               <Ionicons name="chatbubbles-outline" size={15} color={colors.primary} />
               <Text style={s.tabSectionTitle}>Topluluk Gönderileri</Text>
             </View>
-            {forYouPosts.slice(0, 5).map(post => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onLike={toggleLike}
-                onDelete={post.user_id === user?.id ? deletePost : undefined}
-              />
-            ))}
+            {postsLoading && forYouPosts.length === 0 ? (
+              <View style={s.emptyFeed}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : forYouPosts.length === 0 ? (
+              <View style={s.emptyFeed}>
+                <Text style={s.emptyFeedIcon}>✍️</Text>
+                <Text style={s.emptyFeedTitle}>Henüz gönderi yok</Text>
+                <Text style={s.emptyFeedSub}>Topluluk gönderileri burada görünecek</Text>
+                <Pressable
+                  style={s.discoverBtn}
+                  onPress={() => setShowCreatePost(true)}
+                >
+                  <Ionicons name="add" size={14} color="#FFF" />
+                  <Text style={s.discoverBtnTxt}>İlk Gönderiyi Sen Yaz</Text>
+                </Pressable>
+              </View>
+            ) : (
+              forYouPosts.slice(0, 8).map(post => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={toggleLike}
+                  onDelete={post.user_id === user?.id ? deletePost : undefined}
+                  onCommentAdded={refreshPosts}
+                />
+              ))
+            )}
           </View>
         )}
 
