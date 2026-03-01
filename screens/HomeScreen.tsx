@@ -20,6 +20,7 @@ import { usePosts } from '../hooks/usePosts';
 import { useVideos } from '../hooks/useVideos';
 import { useSignals } from '../hooks/useSignals';
 import { useFollow } from '../hooks/useFollow';
+import { supabase } from '../lib/supabase';
 import { colors, radius, shadow } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -157,15 +158,33 @@ const ASSET_STORIES = [
 ];
 
 function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; userId?: string }) {
-  const { following } = useFollow(userId ?? '');
-  const { allAssets }  = useMarketPrices();
+  const { allAssets } = useMarketPrices();
+  const [followingUsers, setFollowingUsers] = useState<{ id: string; username: string; avatar_url: string | null }[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .limit(6)
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) return;
+        const ids = data.map((r: any) => r.following_id);
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .in('id', ids);
+        setFollowingUsers(profs ?? []);
+      });
+  }, [userId]);
 
   // Takip edilen kullanıcıları story olarak göster
-  const followStories = following.slice(0, 6).map((f) => ({
+  const followStories = followingUsers.map((f) => ({
     id:     f.id,
     type:   'creator' as const,
-    label:  f.username || f.name || 'Kullanıcı',
-    avatar: f.avatar || `https://i.pravatar.cc/80?u=${f.id}`,
+    label:  f.username || 'Kullanıcı',
+    avatar: f.avatar_url || `https://i.pravatar.cc/80?u=${f.id}`,
     live:   false,
     up:     true,
   }));
