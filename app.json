@@ -27,7 +27,6 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
       "package": "com.marketly.app",
       "permissions": [
         "android.permission.CAMERA",
@@ -61,7 +60,9 @@
           "icon": "./assets/icon.png",
           "color": "#00C853"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-font"
     ],
     "extra": {
       "eas": {
