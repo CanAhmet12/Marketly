@@ -153,11 +153,40 @@ function PackageDetailModal({
   const canSubscribe = pkg.tier_required === 'free' || !isFree;
   const accColor = pkg.accuracy >= 75 ? '#34C759' : pkg.accuracy >= 65 ? '#FF9500' : '#FF3B3B';
 
-  const handleSubscribe = () => {
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleSubscribe = async () => {
     if (!user) { onClose(); navigation.navigate('Login'); return; }
     if (!canSubscribe) { onClose(); navigation.navigate('Paywall'); return; }
-    toast.success(`${pkg.analyst_name} paketine abone oldun! ✅`);
-    onClose();
+    setSubscribing(true);
+    try {
+      // Daha önce abone mi?
+      const { data: existing } = await supabase
+        .from('analyst_subscriptions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('analyst_id', pkg.id)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from('analyst_subscriptions').insert({
+          user_id:     user.id,
+          analyst_id:  pkg.id,
+          analyst_name: pkg.analyst_name,
+          tier:        pkg.tier_required,
+        });
+        // Abone sayısını artır
+        await supabase.from('profiles')
+          .update({ subscriber_count: (pkg.subscribers ?? 0) + 1 })
+          .eq('id', pkg.id);
+      }
+      toast.success(`${pkg.analyst_name} paketine abone oldun! ✅`);
+    } catch {
+      toast.error('Abonelik oluşturulamadı');
+    } finally {
+      setSubscribing(false);
+      onClose();
+    }
   };
 
   return (
@@ -214,18 +243,21 @@ function PackageDetailModal({
 
           {/* Subscribe button */}
           <View style={[dm.footer, { borderTopColor: colors.border }]}>
-            <Pressable style={dm.subscribeBtn} onPress={handleSubscribe}>
+            <Pressable style={dm.subscribeBtn} onPress={handleSubscribe} disabled={subscribing}>
               <LinearGradient
                 colors={canSubscribe ? ['#007AFF', '#5856D6'] : ['#FF9500', '#FF6B2B']}
                 style={dm.subscribeGrad}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               >
-                <Text style={dm.subscribeTxt}>
-                  {!canSubscribe
-                    ? `Pro'ya Geç — ₺${pkg.price_monthly}/ay`
-                    : `Abone Ol — ₺${pkg.price_monthly}/ay`
-                  }
-                </Text>
+                {subscribing
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={dm.subscribeTxt}>
+                      {!canSubscribe
+                        ? `Pro'ya Geç — ₺${pkg.price_monthly}/ay`
+                        : `Abone Ol — ₺${pkg.price_monthly}/ay`
+                      }
+                    </Text>
+                }
               </LinearGradient>
             </Pressable>
             {canSubscribe && (
@@ -433,15 +465,30 @@ export function SignalMarketplaceScreen() {
       </ScrollView>
 
       {/* Package list */}
-      <FlatList
-        data={sorted}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <PackageCard pkg={item} onPress={() => openDetail(item)} />
-        )}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 90, gap: 14 }}
-        showsVerticalScrollIndicator={false}
-      />
+      {analystsLoading && sorted.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Analistler yükleniyor...</Text>
+        </View>
+      ) : sorted.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32 }}>
+          <Ionicons name="people-outline" size={44} color={colors.textMuted} />
+          <Text style={{ fontSize: 17, fontWeight: '700', color: colors.text }}>Analist Bulunamadı</Text>
+          <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
+            Farklı bir filtre deneyin veya daha sonra tekrar kontrol edin.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={sorted}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <PackageCard pkg={item} onPress={() => openDetail(item)} />
+          )}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 90, gap: 14 }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       <PackageDetailModal
         pkg={selectedPkg}

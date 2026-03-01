@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Animated, TextInput, Modal, KeyboardAvoidingView,
@@ -37,8 +37,57 @@ function fmtUSD(n: number) {
   if (Math.abs(n) >= 1_000)     return `$${(n / 1_000).toFixed(2)}K`;
   return `$${n.toFixed(2)}`;
 }
-function fmtPct(n: number, sign = true) {
-  return `${sign && n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+function fmtPct(n: number) {
+  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
+// ─── Edit Holding Modal ───────────────────────────────────────────────────────
+interface EditModalProps {
+  visible:  boolean;
+  holding:  { id: string; symbol: string; quantity: number; avg_cost: number } | null;
+  onClose:  () => void;
+  onSave:   (id: string, qty: number, cost: number) => Promise<void>;
+}
+function EditHoldingModal({ visible, holding, onClose, onSave }: EditModalProps) {
+  const [qty,    setQty]    = useState('');
+  const [cost,   setCost]   = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (holding) { setQty(String(holding.quantity)); setCost(String(holding.avg_cost)); }
+  }, [holding]);
+
+  const handle = async () => {
+    const qtyNum  = parseFloat(qty);
+    const costNum = parseFloat(cost);
+    if (isNaN(qtyNum) || qtyNum <= 0 || isNaN(costNum) || costNum <= 0) return;
+    if (!holding) return;
+    setSaving(true);
+    await onSave(holding.id, qtyNum, costNum);
+    setSaving(false);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent presentationStyle="overFullScreen">
+      <KeyboardAvoidingView style={m.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Pressable style={m.backdrop} onPress={onClose} />
+        <View style={m.sheet}>
+          <View style={m.handle} />
+          <Text style={m.title}>{holding?.symbol} Düzenle</Text>
+          <MInput label="Yeni Miktar" value={qty} onChangeText={setQty}
+            placeholder="0.00" keyboardType="decimal-pad" />
+          <MInput label="Ortalama Maliyet ($)" value={cost} onChangeText={setCost}
+            placeholder="65000" keyboardType="decimal-pad" />
+          <Pressable style={m.addBtn} onPress={handle} disabled={saving}>
+            <LinearGradient colors={['#007AFF','#5856D6']} style={m.addGrad} start={{x:0,y:0}} end={{x:1,y:0}}>
+              {saving ? <ActivityIndicator color="#fff" /> : <Text style={m.addTxt}>Kaydet</Text>}
+            </LinearGradient>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
 }
 
 // ─── Add Holding Modal ────────────────────────────────────────────────────────
@@ -131,11 +180,12 @@ export function PortfolioScreen() {
   const toast      = useToast();
   const {
     holdings, loading, totalValue, totalCost, totalPnL, totalPnLPct,
-    addHolding, removeHolding, refetch,
+    addHolding, removeHolding, updateHolding, refetch,
   } = usePortfolio();
   const { allAssets } = useMarketPrices();
 
   const [addModal,    setAddModal]    = useState(false);
+  const [editTarget,  setEditTarget]  = useState<{ id: string; symbol: string; quantity: number; avg_cost: number } | null>(null);
   const [activeTab,   setActiveTab]   = useState<'holdings' | 'allocation' | 'share'>('holdings');
   const [refreshing,  setRefreshing]  = useState(false);
 
@@ -169,6 +219,12 @@ export function PortfolioScreen() {
     const ok = await addHolding(asset, qty, cost);
     if (ok) toast.success(`${asset} portföye eklendi ✓`);
     else    toast.error('Eklenemedi. Sembolü kontrol et.');
+  };
+
+  const handleEdit = async (id: string, qty: number, cost: number) => {
+    const ok = await updateHolding(id, qty, cost);
+    if (ok) toast.success('Güncellendi ✓');
+    else    toast.error('Güncellenemedi');
   };
 
   if (!user) {
@@ -275,20 +331,14 @@ export function PortfolioScreen() {
           </View>
         ) : activeTab === 'holdings' ? (
           <View style={s.list}>
-            {holdings.map(h => {
-              const live = allAssets.find(a =>
-                a.symbol.toUpperCase() === h.symbol.toUpperCase() ||
-                a.id.toUpperCase() === h.asset_id.toUpperCase()
-              );
-              return (
-                <HoldingRow
-                  key={h.id}
-                  holding={h}
-                  onRemove={() => handleRemove(h.id, h.symbol)}
-                  onPress={live ? () => navigation.navigate('AssetDetail', { asset: liveToMarketAsset(live) }) : undefined}
-                />
-              );
-            })}
+            {holdings.map(h => (
+              <HoldingRow
+                key={h.id}
+                holding={h}
+                onRemove={() => handleRemove(h.id, h.symbol)}
+                onEdit={() => setEditTarget({ id: h.id, symbol: h.symbol, quantity: h.quantity, avg_cost: h.avg_cost })}
+              />
+            ))}
           </View>
         ) : activeTab === 'allocation' ? (
           <AllocationView holdings={holdings} />
@@ -325,38 +375,74 @@ export function PortfolioScreen() {
         onClose={() => setAddModal(false)}
         onAdd={handleAdd}
       />
+      <EditHoldingModal
+        visible={editTarget !== null}
+        holding={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSave={handleEdit}
+      />
     </View>
   );
 }
 
 // ─── HoldingRow ────────────────────────────────────────────────────────────────
-function HoldingRow({ holding: h, onRemove, onPress }: { holding: any; onRemove: () => void; onPress?: () => void }) {
-  const isUp = h.pnl >= 0;
+function HoldingRow({ holding: h, onRemove, onEdit }: { holding: any; onRemove: () => void; onEdit: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const isUp  = h.pnl >= 0;
   const color = assetColor(h.symbol);
+  const pnlAbs = Math.abs(h.pnl);
   return (
-    <Pressable
-      style={s.holdingRow}
-      onPress={onPress}
-      onLongPress={onRemove}
-      delayLongPress={600}
-    >
-      <View style={[s.holdingLogo, { backgroundColor: color + '22' }]}>
-        <Text style={[s.holdingLogoTxt, { color }]}>{assetLetter(h.symbol)}</Text>
-      </View>
-      <View style={s.holdingInfo}>
-        <Text style={s.holdingSym}>{h.symbol}</Text>
-        <Text style={s.holdingQty}>{h.quantity} adet · maliyet ${h.avg_cost.toFixed(2)}</Text>
-      </View>
-      <View style={s.holdingRight}>
-        <Text style={s.holdingValue}>{fmtUSD(h.current_value)}</Text>
-        <View style={[s.holdingPill, { backgroundColor: isUp ? '#34C75918' : '#FF3B3B18' }]}>
-          <Text style={[s.holdingPnl, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
-            {h.pnl >= 0 ? '+' : ''}{fmtPct(h.pnl_pct)}
-          </Text>
+    <View>
+      <Pressable
+        style={s.holdingRow}
+        onPress={() => setExpanded(e => !e)}
+      >
+        <View style={[s.holdingLogo, { backgroundColor: color + '22' }]}>
+          <Text style={[s.holdingLogoTxt, { color }]}>{assetLetter(h.symbol)}</Text>
         </View>
-      </View>
-      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 4 }} />
-    </Pressable>
+        <View style={s.holdingInfo}>
+          <Text style={s.holdingSym}>{h.symbol}</Text>
+          <Text style={s.holdingQty}>{h.quantity} adet · ort. {fmtUSD(h.avg_cost)}</Text>
+        </View>
+        <View style={s.holdingRight}>
+          <Text style={s.holdingValue}>{fmtUSD(h.current_value)}</Text>
+          <View style={[s.holdingPill, { backgroundColor: isUp ? '#34C75918' : '#FF3B3B18' }]}>
+            <Text style={[s.holdingPnl, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
+              {fmtPct(h.pnl_pct)}
+            </Text>
+          </View>
+        </View>
+        <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} style={{ marginLeft: 4 }} />
+      </Pressable>
+      {expanded && (
+        <View style={s.holdingExpanded}>
+          <View style={s.holdingDetail}>
+            <Text style={s.holdingDetailLbl}>Mevcut Fiyat</Text>
+            <Text style={s.holdingDetailVal}>{fmtUSD(h.current_price)}</Text>
+          </View>
+          <View style={s.holdingDetail}>
+            <Text style={s.holdingDetailLbl}>Kâr/Zarar</Text>
+            <Text style={[s.holdingDetailVal, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
+              {isUp ? '+' : '-'}{fmtUSD(pnlAbs)}
+            </Text>
+          </View>
+          <View style={s.holdingDetail}>
+            <Text style={s.holdingDetailLbl}>Maliyet Bazı</Text>
+            <Text style={s.holdingDetailVal}>{fmtUSD(h.cost_basis)}</Text>
+          </View>
+          <View style={s.holdingActions}>
+            <Pressable style={s.holdingEditBtn} onPress={onEdit}>
+              <Ionicons name="create-outline" size={14} color={colors.primary} />
+              <Text style={[s.holdingActionTxt, { color: colors.primary }]}>Düzenle</Text>
+            </Pressable>
+            <Pressable style={s.holdingDelBtn} onPress={onRemove}>
+              <Ionicons name="trash-outline" size={14} color={colors.fall} />
+              <Text style={[s.holdingActionTxt, { color: colors.fall }]}>Sil</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -442,6 +528,27 @@ const s = StyleSheet.create({
   holdingValue:   { fontSize: 15, fontWeight: '700', color: colors.text },
   holdingPill:    { borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
   holdingPnl:     { fontSize: 12, fontWeight: '700' },
+
+  holdingExpanded: {
+    marginHorizontal: 16, marginTop: -4, marginBottom: 8,
+    backgroundColor: colors.bgInput,
+    borderRadius: 12, padding: 14, gap: 8,
+  },
+  holdingDetail: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  holdingDetailLbl: { fontSize: 12, color: colors.textMuted },
+  holdingDetailVal: { fontSize: 13, fontWeight: '700', color: colors.text },
+  holdingActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  holdingEditBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 5, paddingVertical: 8, borderRadius: 10,
+    backgroundColor: colors.primary + '15',
+  },
+  holdingDelBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 5, paddingVertical: 8, borderRadius: 10,
+    backgroundColor: colors.fall + '15',
+  },
+  holdingActionTxt: { fontSize: 13, fontWeight: '700' },
 
   allocList: { paddingHorizontal: 16, gap: 14, paddingTop: 8 },
   allocRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },

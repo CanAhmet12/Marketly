@@ -42,7 +42,11 @@ export function usePortfolio() {
 
       // Enrich with live prices
       const enriched: Holding[] = (data ?? []).map(row => {
-        const live = assets.find(a => a.id === row.asset_id || a.symbol === row.asset_id);
+        const aid = (row.asset_id ?? '').toUpperCase();
+        const live = assets.find(a =>
+          a.id?.toUpperCase() === aid ||
+          a.symbol?.toUpperCase() === aid
+        );
         const currentPrice = live?.price ?? row.avg_cost;
         const currentValue = currentPrice * row.quantity;
         const costBasis    = row.avg_cost  * row.quantity;
@@ -110,27 +114,49 @@ export function usePortfolio() {
   }, [user?.id, fetchHoldings]);
 
   const removeHolding = useCallback(async (id: string): Promise<boolean> => {
+    if (!user?.id) return false;
     try {
       const { error: err } = await supabase
         .from('portfolio_holdings')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (err) throw err;
       setHoldings(prev => prev.filter(h => h.id !== id));
       return true;
     } catch { return false; }
-  }, []);
+  }, [user?.id]);
+
+  const updateHolding = useCallback(async (
+    id: string,
+    quantity: number,
+    avgCost: number,
+  ): Promise<boolean> => {
+    if (!user?.id) return false;
+    try {
+      const { error: err } = await supabase
+        .from('portfolio_holdings')
+        .update({ quantity, avg_cost: avgCost })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (err) throw err;
+      await fetchHoldings();
+      return true;
+    } catch { return false; }
+  }, [user?.id, fetchHoldings]);
 
   // Assets değişince holdings'i yeniden hesapla (live fiyat güncellemesi)
   useEffect(() => {
     if (holdings.length === 0 || assets.length === 0) return;
     setHoldings((prev) => {
       const totalVal = prev.reduce((s, h) => {
-        const live = assets.find((a) => a.id === h.asset_id || a.symbol === h.asset_id);
+        const aid  = h.asset_id?.toUpperCase() ?? '';
+        const live = assets.find((a) => a.id?.toUpperCase() === aid || a.symbol?.toUpperCase() === aid);
         return s + (live?.price ?? h.current_price) * h.quantity;
       }, 0);
       return prev.map((h) => {
-        const live         = assets.find((a) => a.id === h.asset_id || a.symbol === h.asset_id);
+        const aid          = h.asset_id?.toUpperCase() ?? '';
+        const live         = assets.find((a) => a.id?.toUpperCase() === aid || a.symbol?.toUpperCase() === aid);
         const currentPrice = live?.price ?? h.current_price;
         const currentValue = currentPrice * h.quantity;
         const pnl          = currentValue - h.cost_basis;
@@ -156,6 +182,6 @@ export function usePortfolio() {
   return {
     holdings, loading, error,
     totalValue, totalCost, totalPnL, totalPnLPct,
-    addHolding, removeHolding, refetch: fetchHoldings,
+    addHolding, removeHolding, updateHolding, refetch: fetchHoldings,
   };
 }

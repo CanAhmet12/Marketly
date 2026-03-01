@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
   Image, ImageBackground, StatusBar, Animated, Modal,
@@ -97,6 +97,18 @@ function LiveCard({
   const [followed, setFollowed] = useState(false);
   const toast = useToast();
   const { user } = useAuth();
+
+  // Başlangıçta takip durumunu yükle
+  useEffect(() => {
+    if (!user?.id || !item.creator?.id) return;
+    supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', user.id)
+      .eq('following_id', item.creator.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFollowed(true); });
+  }, [user?.id, item.creator?.id]);
 
   return (
     <Pressable onPress={onPress} style={[lc.wrap, featured && lc.wrapFeatured]}>
@@ -451,14 +463,25 @@ export function LiveScreen() {
 
   const { videos: liveVideos } = useVideos({ type: 'live' });
 
-  const allLive = liveVideos.map((v) => ({
-    ...v,
-    viewers: v.stats.views,
-    category: v.assetTags?.length > 0
-      ? (['BTC','ETH','SOL','XRP','BNB'].some(c => v.assetTags.map((t:string)=>t.toUpperCase()).includes(c)) ? 'Kripto' : 'Hisseler')
-      : 'Analiz',
-    startedAgo: v.timeAgo ?? 'Canlı',
-  }));
+  const allLive = liveVideos.map((v) => {
+    const tags = (v.assetTags ?? []).map((t: string) => t.toUpperCase());
+    let category = 'Analiz';
+    if (['BTC','ETH','SOL','XRP','BNB','ADA','DOT','AVAX','MATIC','LINK'].some(c => tags.includes(c))) {
+      category = 'Kripto';
+    } else if (['THYAO','BIST100','EREGL','ASELS','KCHOL','AAPL','TSLA','NVDA','AMZN','GOOGL'].some(c => tags.includes(c))) {
+      category = 'Hisseler';
+    } else if (['XAU','GOLD','OIL','SILVER','WTI','BRENT'].some(c => tags.includes(c))) {
+      category = 'Emtia';
+    } else if (['USD','EUR','GBP','TRY','JPY','USDTRY','EURTRY'].some(c => tags.some(t => t.includes(c)))) {
+      category = 'Döviz';
+    }
+    return {
+      ...v,
+      viewers: v.stats.views,
+      category,
+      startedAgo: v.timeAgo ?? 'Canlı',
+    };
+  });
   const filtered = cat === 'Tümü' ? allLive : allLive.filter((v) => v.category === cat);
   const [featured, ...rest] = filtered;
 
