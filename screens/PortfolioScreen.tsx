@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Animated, TextInput, Modal, KeyboardAvoidingView,
-  Platform, ActivityIndicator, Alert, Dimensions,
+  Platform, ActivityIndicator, Alert, Dimensions, RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -135,8 +135,15 @@ export function PortfolioScreen() {
   } = usePortfolio();
   const { allAssets } = useMarketPrices();
 
-  const [addModal, setAddModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'holdings' | 'allocation' | 'share'>('holdings');
+  const [addModal,    setAddModal]    = useState(false);
+  const [activeTab,   setActiveTab]   = useState<'holdings' | 'allocation' | 'share'>('holdings');
+  const [refreshing,  setRefreshing]  = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const isUp = totalPnL >= 0;
 
@@ -189,7 +196,13 @@ export function PortfolioScreen() {
         </Pressable>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
 
         {/* ── Summary Card ── */}
         <View style={s.summaryCard}>
@@ -288,7 +301,7 @@ export function PortfolioScreen() {
               holdings={holdings.map(h => ({
                 symbol:     h.symbol,
                 allocation: h.allocation,
-                color:      '',
+                color:      assetColor(h.symbol),
               }))}
             />
           </View>

@@ -149,21 +149,40 @@ export function useLeaderboard() {
         setTopSignals(mapped);
       }
 
-      // ── Portföy kazananları ──
+      // ── Portföy kazananları (gerçek PnL) ──
       const { data: holdingsData } = await supabase
         .from('portfolio_holdings')
         .select('user_id, quantity, avg_cost, asset_id');
 
       if (holdingsData && holdingsData.length > 0) {
-        const userStats: Record<string, { invested: number; quantity: number }> = {};
+        // Tüm unique asset_id'lerin güncel fiyatlarını çek
+        const assetIds = [...new Set(holdingsData.map((h: any) => h.asset_id))];
+        const { data: priceData } = await supabase
+          .from('asset_prices')
+          .select('asset_id, price')
+          .in('asset_id', assetIds);
+        const priceMap: Record<string, number> = {};
+        for (const p of priceData ?? []) priceMap[p.asset_id] = p.price;
+
+        // Kullanıcı bazında: maliyet ve güncel değer topla
+        const userStats: Record<string, { cost: number; current: number }> = {};
         for (const h of holdingsData) {
-          if (!userStats[h.user_id]) userStats[h.user_id] = { invested: 0, quantity: 0 };
-          userStats[h.user_id].invested  += (h.quantity ?? 0) * (h.avg_cost ?? 0);
-          userStats[h.user_id].quantity  += (h.quantity ?? 0);
+          const qty  = h.quantity ?? 0;
+          const cost = qty * (h.avg_cost ?? 0);
+          const curr = qty * (priceMap[h.asset_id] ?? h.avg_cost ?? 0);
+          if (!userStats[h.user_id]) userStats[h.user_id] = { cost: 0, current: 0 };
+          userStats[h.user_id].cost    += cost;
+          userStats[h.user_id].current += curr;
         }
 
+        // En yüksek kazanç oranına göre sırala
         const topUserIds = Object.entries(userStats)
-          .sort(([, a], [, b]) => b.invested - a.invested)
+          .filter(([, s]) => s.cost > 0)
+          .sort(([, a], [, b]) => {
+            const gainA = (a.current - a.cost) / a.cost;
+            const gainB = (b.current - b.cost) / b.cost;
+            return gainB - gainA;
+          })
           .slice(0, 5)
           .map(([id]) => id);
 
@@ -182,8 +201,8 @@ export function useLeaderboard() {
               .slice(0, 5)
               .map((uid, i) => {
                 const stats   = userStats[uid];
-                const gainPct = stats.invested > 0
-                  ? Math.round(((stats.quantity * 100) / stats.invested - 1) * 100) / 100
+                const gainPct = stats.cost > 0
+                  ? ((stats.current - stats.cost) / stats.cost) * 100
                   : 0;
                 return {
                   rank:   i + 1,
@@ -192,7 +211,7 @@ export function useLeaderboard() {
                   handle: `@${profMap[uid]?.username || 'user'}`,
                   avatar: profMap[uid]?.avatar_url || `https://i.pravatar.cc/80?u=${uid}`,
                   gain:   gainPct >= 0 ? `+${gainPct.toFixed(1)}%` : `${gainPct.toFixed(1)}%`,
-                  value:  `$${stats.invested.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                  value:  `$${stats.current.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
                   badge:  i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : '',
                 };
               });

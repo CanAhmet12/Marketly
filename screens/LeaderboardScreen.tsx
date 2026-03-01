@@ -137,9 +137,17 @@ export function LeaderboardScreen() {
         {tab === 'Sinyaller' && (
           <>
             <Text style={[s.sectionTitle, { marginTop: 16 }]}>Bu Haftanın Sinyalleri</Text>
-            {topSignals.map(sig => (
-              <SignalRow key={sig.id} signal={sig} />
-            ))}
+            {loading ? (
+              <ActivityIndicator color={colors.primary} style={{ marginVertical: 24 }} />
+            ) : topSignals.length === 0 ? (
+              <View style={s.emptyTab}>
+                <Ionicons name="pulse-outline" size={36} color={colors.textMuted} />
+                <Text style={s.emptyTabTitle}>Henüz sinyal yok</Text>
+                <Text style={s.emptyTabSub}>En çok kopyalanan sinyaller burada sıralanır</Text>
+              </View>
+            ) : (
+              topSignals.map(sig => <SignalRow key={sig.id} signal={sig} />)
+            )}
           </>
         )}
 
@@ -147,9 +155,17 @@ export function LeaderboardScreen() {
         {tab === 'Kazananlar' && (
           <>
             <Text style={[s.sectionTitle, { marginTop: 16 }]}>Bu Haftanın Kazananları</Text>
-            {gainers.map(g => (
-              <GainerRow key={g.id} gainer={g} />
-            ))}
+            {loading ? (
+              <ActivityIndicator color={colors.primary} style={{ marginVertical: 24 }} />
+            ) : gainers.length === 0 ? (
+              <View style={s.emptyTab}>
+                <Ionicons name="trophy-outline" size={36} color={colors.textMuted} />
+                <Text style={s.emptyTabTitle}>Henüz veri yok</Text>
+                <Text style={s.emptyTabSub}>Portföy oluşturan kullanıcılar burada görünür</Text>
+              </View>
+            ) : (
+              gainers.map(g => <GainerRow key={g.id} gainer={g} />)
+            )}
             <View style={s.rewardBox}>
               <Text style={s.rewardTitle}>🎁 Haftalık Ödüller</Text>
               <Text style={s.rewardItem}>🥇 1. → 1 Ay Marketly Pro</Text>
@@ -191,8 +207,12 @@ function AnalystRow({ analyst: a }: { analyst: { rank: number; id: string; name:
 }
 
 function SignalRow({ signal: sig }: { signal: { id: string; rank: number; analystName: string; analystId: string; symbol: string; direction: string; gain: string; copies: number; timeAgo: string; color: string; badge: string } }) {
+  const navigation = useNavigation<any>();
   return (
-    <View style={s.signalRow}>
+    <Pressable
+      style={s.signalRow}
+      onPress={() => navigation.navigate('ProfileView', { userId: sig.analystId })}
+    >
       <Text style={s.rowRankLg}>{sig.badge || `#${sig.rank}`}</Text>
       <View style={[s.sigAsset, { backgroundColor: sig.color + '20' }]}>
         <Text style={[s.sigAssetTxt, { color: sig.color }]}>{sig.symbol}</Text>
@@ -207,7 +227,7 @@ function SignalRow({ signal: sig }: { signal: { id: string; rank: number; analys
         <Text style={s.rowHandle}>{sig.copies} kopya · {sig.timeAgo}</Text>
       </View>
       <Text style={[s.sigGain, { color: '#34C759' }]}>{sig.gain}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -288,6 +308,14 @@ const s = StyleSheet.create({
   dirPill: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   dirTxt:  { fontSize: 10, fontWeight: '800' },
   sigGain: { fontSize: 14, fontWeight: '800' },
+
+  emptyTab: {
+    alignItems: 'center', paddingVertical: 48, gap: 10,
+    backgroundColor: colors.bgPure, marginHorizontal: 16,
+    marginVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: colors.border,
+  },
+  emptyTabTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+  emptyTabSub:   { fontSize: 12, color: colors.textMuted, textAlign: 'center', paddingHorizontal: 24 },
 
   rewardBox: {
     margin: 16, backgroundColor: colors.bgPure,

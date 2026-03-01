@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator, RefreshControl,
+  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -107,6 +107,7 @@ export function NotificationsScreen({ onBack }: Props) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
+  const handleBack = onBack ?? (() => navigation.goBack());
   const {
     notifications: liveNotifs,
     loading,
@@ -163,7 +164,7 @@ export function NotificationsScreen({ onBack }: Props) {
     <View style={[s.root, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
+        <Pressable onPress={handleBack} style={s.backBtn} hitSlop={10}>
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <View style={s.headerCenter}>
@@ -202,7 +203,14 @@ export function NotificationsScreen({ onBack }: Props) {
                     key={n.id}
                     style={[s.card, !n.read && s.cardUnread]}
                     onPress={() => handleNotifPress(n)}
-                    onLongPress={() => deleteNotif(n.id)}
+                    onLongPress={() => Alert.alert(
+                      'Bildirimi Sil',
+                      'Bu bildirimi silmek istiyor musun?',
+                      [
+                        { text: 'İptal', style: 'cancel' },
+                        { text: 'Sil', style: 'destructive', onPress: () => deleteNotif(n.id) },
+                      ]
+                    )}
                   >
                     {!n.read && <View style={s.unreadDot} />}
                     <NotifIcon notif={n} />

@@ -25,6 +25,26 @@ export function EditProfileScreen() {
   const [saving,        setSaving]        = useState(false);
   const [uploadingAvt,  setUploadingAvt]  = useState(false);
   const [errors,        setErrors]        = useState<Record<string, string>>({});
+  const [showUrlInput,  setShowUrlInput]  = useState(false);
+
+  const hasChanges = (
+    (profile?.full_name  ?? '') !== fullName  ||
+    (profile?.username   ?? '') !== username  ||
+    ((profile as any)?.bio ?? '') !== bio     ||
+    (profile?.avatar_url ?? '') !== avatarUrl
+  );
+
+  const handleBack = () => {
+    if (!hasChanges) { navigation.goBack(); return; }
+    Alert.alert(
+      'Değişiklikler Kaydedilmedi',
+      'Yaptığın değişiklikler kaybolacak. Çıkmak istiyor musun?',
+      [
+        { text: 'Devam Et', style: 'cancel' },
+        { text: 'Çık', style: 'destructive', onPress: () => navigation.goBack() },
+      ]
+    );
+  };
 
   // ── Avatar fotoğrafı seç ve Supabase Storage'a yükle ─────────────────────
   const pickAvatar = async () => {
@@ -75,6 +95,7 @@ export function EditProfileScreen() {
       setUsername(profile.username  ?? '');
       setBio((profile as any).bio   ?? '');
       setAvatarUrl(profile.avatar_url ?? '');
+      if (profile.avatar_url) setShowUrlInput(true);
     }
   }, [profile]);
 
@@ -136,7 +157,7 @@ export function EditProfileScreen() {
     >
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => navigation.goBack()} style={s.backBtn} hitSlop={10}>
+        <Pressable onPress={handleBack} style={s.backBtn} hitSlop={10}>
           <Ionicons name="close" size={22} color={colors.text} />
         </Pressable>
         <Text style={s.headerTitle}>Profili Düzenle</Text>
@@ -165,8 +186,8 @@ export function EditProfileScreen() {
 
         {/* Avatar URL — yalnızca manuel URL girişi istenirse göster */}
         {avatarUrl.startsWith('http') ? null : (
-          avatarUrl.trim() === '' ? (
-            <Pressable style={s.pasteUrlBtn} onPress={() => setAvatarUrl(' ')}>
+          !showUrlInput ? (
+            <Pressable style={s.pasteUrlBtn} onPress={() => setShowUrlInput(true)}>
               <Ionicons name="link-outline" size={14} color={colors.textMuted} />
               <Text style={s.pasteUrlTxt}>URL ile fotoğraf ekle (isteğe bağlı)</Text>
             </Pressable>

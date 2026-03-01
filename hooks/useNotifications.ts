@@ -46,6 +46,8 @@ export function useNotifications() {
 
       if (!error && data) {
         setNotifications(data.map(normalize));
+      } else if (error) {
+        console.warn('[useNotifications] fetch error:', error.message);
       }
     } finally {
       setLoading(false);
@@ -54,7 +56,7 @@ export function useNotifications() {
 
   useEffect(() => { fetchNotifs(); }, [fetchNotifs]);
 
-  // Realtime: yeni bildirim gelince güncelle
+  // Realtime: yeni/güncellenen/silinen bildirimler
   useEffect(() => {
     if (!user?.id) return;
     const channel = supabase
@@ -66,6 +68,24 @@ export function useNotifications() {
         filter: `user_id=eq.${user.id}`,
       }, (payload) => {
         setNotifications(prev => [normalize(payload.new), ...prev]);
+      })
+      .on('postgres_changes', {
+        event:  'UPDATE',
+        schema: 'public',
+        table:  'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        setNotifications(prev =>
+          prev.map(n => n.id === payload.new.id ? normalize(payload.new) : n)
+        );
+      })
+      .on('postgres_changes', {
+        event:  'DELETE',
+        schema: 'public',
+        table:  'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
