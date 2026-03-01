@@ -30,7 +30,7 @@ const BANNERS = [
   {
     id: 'b1',
     title: 'Kripto Piyasasını Anla',
-    desc: 'Bitcoin 70K\'ya yaklaşırken fırsatları kaçırma',
+    desc: 'Canlı fiyatlar, sinyal analizleri ve uzman görüşleri',
     label: 'ÖNE ÇIKAN',
     labelColor: '#7B61FF',
     thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800',
@@ -45,11 +45,19 @@ const BANNERS = [
   },
   {
     id: 'b3',
-    title: 'Altın & Emtia 2025',
-    desc: 'Merkez bankası alımları ve fiyat tahminleri',
-    label: 'ANALIZ',
+    title: 'Altın & Emtia',
+    desc: 'Merkez bankası kararları, jeopolitik riskler ve fiyat analizleri',
+    label: 'ANALİZ',
     labelColor: '#D4AF37',
     thumbnail: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800',
+  },
+  {
+    id: 'b4',
+    title: 'Döviz Piyasaları',
+    desc: 'USD/TRY, EUR/TRY ve küresel forex güncellemeleri',
+    label: 'FOREX',
+    labelColor: '#E53935',
+    thumbnail: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=800',
   },
 ];
 

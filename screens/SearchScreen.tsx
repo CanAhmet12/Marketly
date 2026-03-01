@@ -15,8 +15,8 @@ import { useToast } from '../contexts/ToastContext';
 import type { VideoItem } from '../data/mockVideos';
 import { radius, shadow, colors } from '../constants/theme';
 
-// ── Data ─────────────────────────────────────────────────────────────────────
-const TRENDING_SEARCHES = [
+// ── Static fallback (piyasa verisi yokken) ───────────────────────────────────
+const STATIC_TRENDING = [
   '#Bitcoin', '#BIST100', '#Tesla', '$ETH', '#Altın', '#Nasdaq', '#DolarTL', '#SOL',
 ];
 
@@ -159,8 +159,17 @@ export function SearchScreen({ onBack }: Props) {
   const [activeTab, setActiveTab] = useState<ResultTab>('videos');
   const [dbCreators, setDbCreators] = useState<SimpleCreator[]>([]);
   const [dbVideos,   setDbVideos]   = useState<VideoItem[]>([]);
-  const { assets: liveAssets } = useMarketPrices();
+  const { assets: liveAssets, allAssets } = useMarketPrices();
   const { analysts } = useLeaderboard();
+
+  // Trend aramalar: piyasada en çok hareket eden varlıklar
+  const trendingSearches = React.useMemo(() => {
+    if (allAssets.length === 0) return STATIC_TRENDING;
+    return [...allAssets]
+      .sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent))
+      .slice(0, 8)
+      .map(a => `#${a.symbol}`);
+  }, [allAssets]);
 
   // Featured creators from leaderboard (real data)
   const featuredCreators: SimpleCreator[] = analysts.slice(0, 5).map((a) => ({
@@ -298,8 +307,8 @@ export function SearchScreen({ onBack }: Props) {
               <Text style={s.sectionTitle}>🔥 Trend Aramalar</Text>
             </View>
             <View style={s.trendGrid}>
-              {TRENDING_SEARCHES.map((t) => (
-                <Pressable key={t} style={s.trendChip} onPress={() => setQuery(t)}>
+              {trendingSearches.map((t) => (
+                <Pressable key={t} style={s.trendChip} onPress={() => setQuery(t.replace('#', ''))}>
                   <Text style={s.trendChipTxt}>{t}</Text>
                 </Pressable>
               ))}
@@ -310,7 +319,9 @@ export function SearchScreen({ onBack }: Props) {
           <View style={s.section}>
             <View style={s.sectionRow}>
               <Text style={s.sectionTitle}>⭐ Öne Çıkan Creator'lar</Text>
-              <Text style={s.seeAll}>Tümü</Text>
+              <Pressable onPress={() => navigation.navigate('Leaderboard' as any)} hitSlop={8}>
+                <Text style={s.seeAll}>Tümü →</Text>
+              </Pressable>
             </View>
             {featuredCreators.map((c) => <CreatorResult key={c.id} creator={c} />)}
           </View>
@@ -358,8 +369,8 @@ export function SearchScreen({ onBack }: Props) {
                 <Text style={s.noResultsTitle}>Sonuç bulunamadı</Text>
                 <Text style={s.noResultsSub}>"{query}" için eşleşme bulunamadı</Text>
                 <View style={[s.trendGrid, { justifyContent: 'center', marginTop: 12 }]}>
-                  {TRENDING_SEARCHES.slice(0, 4).map((t) => (
-                    <Pressable key={t} style={s.trendChip} onPress={() => setQuery(t)}>
+                  {trendingSearches.slice(0, 4).map((t: string) => (
+                    <Pressable key={t} style={s.trendChip} onPress={() => setQuery(t.replace('#', ''))}>
                       <Text style={s.trendChipTxt}>{t}</Text>
                     </Pressable>
                   ))}
