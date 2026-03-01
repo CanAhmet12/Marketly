@@ -266,16 +266,25 @@ function WatchlistStrip({
             <Text style={ws.emptySubTxt}>
               Varlık sayfasında ★ simgesine basarak ekleyin
             </Text>
+            <Pressable
+              style={[ws.emptyBtn, { backgroundColor: seg.color + '20', borderColor: seg.color + '40' }]}
+              onPress={() => nav.navigate('Search')}
+            >
+              <Ionicons name="search-outline" size={13} color={seg.color} />
+              <Text style={[ws.emptyBtnTxt, { color: seg.color }]}>Varlık Ara</Text>
+            </Pressable>
           </View>
         )}
 
-        {/* Add more card */}
-        <Pressable style={[ws.addCard, { borderColor: seg.color + '30' }]} onPress={() => nav.navigate('Search')}>
-          <View style={[ws.addCircle, { backgroundColor: seg.bgLight }]}>
-            <Ionicons name="add" size={20} color={seg.color} />
-          </View>
-          <Text style={[ws.addCardTxt, { color: seg.color }]}>Varlık Ekle</Text>
-        </Pressable>
+        {/* "Varlık Ekle" kartı — boş durumda gizle, empty state'in kendi butonu var */}
+        {watched.length > 0 && (
+          <Pressable style={[ws.addCard, { borderColor: seg.color + '30' }]} onPress={() => nav.navigate('Search')}>
+            <View style={[ws.addCircle, { backgroundColor: seg.bgLight }]}>
+              <Ionicons name="add" size={20} color={seg.color} />
+            </View>
+            <Text style={[ws.addCardTxt, { color: seg.color }]}>Varlık Ekle</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );
@@ -334,8 +343,14 @@ const ws = StyleSheet.create({
     width: 200, alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 24, paddingHorizontal: 12,
   },
-  emptyTxt: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  emptyTxt:    { fontSize: 13, fontWeight: '700', textAlign: 'center' },
   emptySubTxt: { fontSize: 11, color: colors.textMuted, textAlign: 'center', lineHeight: 16 },
+  emptyBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 10, borderWidth: 1, marginTop: 4,
+  },
+  emptyBtnTxt: { fontSize: 12, fontWeight: '700' },
 });
 
 // ─── Top Movers ───────────────────────────────────────────────────────────────
@@ -576,7 +591,7 @@ export function MarketsScreen() {
   const searchInputRef      = useRef<any>(null);
 
   // ── Gerçek veri hook'u ──
-  const { byCategory, topMovers, allAssets, isLoading: pricesLoading, lastUpdate } = useMarketPrices();
+  const { byCategory, topMovers, allAssets, isLoading: pricesLoading } = useMarketPrices();
   const { isWatched, toggle: toggleWatch } = useWatchlist();
 
   const liveAssets = useMemo(() => {
@@ -632,7 +647,7 @@ export function MarketsScreen() {
 
   return (
     <View style={[s.root, { backgroundColor: colors.bg }]}>
-      <StatusBar barStyle={false ? 'light-content' : 'light-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* ── Animated Dark Header ── */}
       <Animated.View
@@ -700,7 +715,7 @@ export function MarketsScreen() {
               <View style={s.segGrid}>
                 {SEGMENTS.map((sg) => {
                   const assets = byCategory(sg.key as any).map(liveToMarketAsset);
-                  const top = assets.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))[0] ?? null;
+                  const top = [...assets].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))[0] ?? null;
                   return (
                     <SegmentCard
                       key={sg.key}
