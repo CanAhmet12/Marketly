@@ -289,10 +289,16 @@ export function CreateScreen() {
   const selectedType = CONTENT_TYPES.find((t) => t.id === contentType)!;
 
   // Step 2 validity
+  const sigEntryNum  = parseFloat(sigEntry);
+  const sigTargetNum = parseFloat(sigTarget);
   const canNext2 = contentType === 'live'
     ? true
     : contentType === 'signal'
-    ? sigAsset.trim().length > 0 && sigEntry.trim().length > 0 && sigTarget.trim().length > 0
+    ? (
+        sigAsset.trim().length > 0 &&
+        !isNaN(sigEntryNum)  && sigEntryNum  > 0 &&
+        !isNaN(sigTargetNum) && sigTargetNum > 0
+      )
     : videoUri !== null;
 
   // Step 3 validity

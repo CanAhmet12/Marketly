@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
@@ -24,17 +24,7 @@ import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const TRENDING_TAGS = [
-  { tag: '#Bitcoin',  count: '48.2K', color: '#F7931A', up: true  },
-  { tag: '#BIST100',  count: '32.1K', color: '#E81F2A', up: true  },
-  { tag: '#Tesla',    count: '21.8K', color: '#CC0000', up: true  },
-  { tag: '#Nasdaq',   count: '19.4K', color: '#007AFF', up: true  },
-  { tag: '#Altın',    count: '17.2K', color: '#D4AF37', up: true  },
-  { tag: '#Ethereum', count: '15.9K', color: '#627EEA', up: true  },
-  { tag: '#Petrol',   count: '11.3K', color: '#2D6A4F', up: false },
-  { tag: '#DolarTL',  count: '9.8K',  color: '#6B7280', up: false },
-];
+// ─── Static BANNERS (banner içerikleri tutuldu, TRENDING_TAGS artık dinamik) ──
 
 const BANNERS = [
   {
@@ -153,6 +143,22 @@ export function DiscoverScreen() {
   const { analysts }             = useLeaderboard();
   const { allAssets }            = useMarketPrices();
 
+  // Mevcut follow durumlarını Supabase'den yükle
+  React.useEffect(() => {
+    if (!user?.id || analysts.length === 0) return;
+    supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id)
+      .in('following_id', analysts.map(a => a.id))
+      .then(({ data }) => {
+        if (!data) return;
+        const map: Record<string, boolean> = {};
+        data.forEach((r: any) => { map[r.following_id] = true; });
+        setFollowing(map);
+      });
+  }, [user?.id, analysts.length]);
+
   const displayVideos  = liveVideos;
   const liveStreams     = liveVideos.filter((v) => v.isLive);
 
@@ -160,6 +166,24 @@ export function DiscoverScreen() {
   const marketMovers = [...(allAssets ?? [])]
     .sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent))
     .slice(0, 6);
+
+  // Trending tags: gerçek piyasa verisinden dinamik — en büyük hareket edenlerin etiketleri
+  const ASSET_TAG_COLORS: Record<string, string> = {
+    BTC: '#F7931A', ETH: '#627EEA', SOL: '#9945FF', BNB: '#F3BA2F',
+    BIST100: '#E81F2A', XAU: '#D4AF37', USDTRY: '#6B7280', OIL: '#2D6A4F',
+    AAPL: '#555555', NVDA: '#76B900', TSLA: '#CC0000', MSFT: '#00A4EF',
+  };
+  const trendingTags = useMemo(() => {
+    const top8 = [...(allAssets ?? [])]
+      .sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent))
+      .slice(0, 8);
+    return top8.map(a => ({
+      tag:   `#${a.symbol}`,
+      count: `${Math.abs(a.change_percent).toFixed(2)}%`,
+      color: ASSET_TAG_COLORS[a.symbol.toUpperCase()] ?? colors.primary,
+      up:    a.change_percent >= 0,
+    }));
+  }, [allAssets]);
 
   // Signals for SignalCard (SignalCardData format)
   const displaySignals = liveSignals.map(s => ({
@@ -382,11 +406,29 @@ export function DiscoverScreen() {
                 horizontal showsHorizontalScrollIndicator={false}
                 contentContainerStyle={s.tagsScroll}
               >
-                {TRENDING_TAGS.map((t) => (
-                  <Pressable key={t.tag} style={[s.tagChip, { borderColor: t.color + '40', backgroundColor: t.color + '0D' }]}>
+                {(trendingTags.length > 0 ? trendingTags : [
+                  { tag: '#Bitcoin', count: '48.2K', color: '#F7931A', up: true },
+                  { tag: '#BIST100', count: '32.1K', color: '#E81F2A', up: true },
+                  { tag: '#Altın',   count: '17.2K', color: '#D4AF37', up: true },
+                  { tag: '#Ethereum',count: '15.9K', color: '#627EEA', up: true },
+                ]).map((t) => (
+                  <Pressable
+                    key={t.tag}
+                    style={[s.tagChip, { borderColor: t.color + '40', backgroundColor: t.color + '0D' }]}
+                    onPress={() => navigation.navigate('Search')}
+                  >
                     <Text style={[s.tagChipTxt, { color: t.color }]}>{t.tag}</Text>
                     <View style={s.tagChipDivider} />
-                    <Text style={s.tagChipCount}>{t.count}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <Ionicons
+                        name={t.up ? 'trending-up' : 'trending-down'}
+                        size={9}
+                        color={t.up ? '#34C759' : '#FF3B3B'}
+                      />
+                      <Text style={[s.tagChipCount, { color: t.up ? '#34C759' : '#FF3B3B' }]}>
+                        {t.up ? '+' : ''}{(allAssets.find(a => `#${a.symbol}` === t.tag)?.change_percent ?? 0).toFixed(2)}%
+                      </Text>
+                    </View>
                   </Pressable>
                 ))}
               </ScrollView>
