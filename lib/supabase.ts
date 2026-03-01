@@ -40,7 +40,6 @@ export type Profile = {
   following_count: number;
   signal_accuracy: number;
   referral_code:   string | null;
-  marketcoin:      number;
   streak_days:     number;
   created_at:      string;
 };

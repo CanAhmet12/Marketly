@@ -86,12 +86,6 @@ export function SettingsScreen() {
           onPress: () => navigation.navigate('AIAssistant'),
         },
         {
-          id: 'marketcoin', icon: 'logo-bitcoin' as any, iconBg: '#D4AF37',
-          label: 'MarketCoin', sublabel: 'Kazan, harca, ilerle',
-          type: 'arrow',
-          onPress: () => navigation.navigate('MarketCoin'),
-        },
-        {
           id: 'signal_mkt', icon: 'flash' as any, iconBg: '#007AFF',
           label: 'Sinyal Marketplace', sublabel: 'Ücretli analist paketleri',
           type: 'arrow',
@@ -211,7 +205,7 @@ export function SettingsScreen() {
         {/* User card */}
         <View style={[s.userCard, { backgroundColor: colors.bgPure, borderColor: colors.border }]}>
           <Image
-            source={{ uri: 'https://i.pravatar.cc/200?u=marketly_user' }}
+            source={{ uri: (user as any)?.avatar_url ?? (user as any)?.user_metadata?.avatar_url ?? `https://i.pravatar.cc/200?u=${user?.id ?? 'default'}` }}
             style={s.userAvatar}
           />
           <View style={s.userInfo}>

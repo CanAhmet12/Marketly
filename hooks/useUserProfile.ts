@@ -16,7 +16,6 @@ export interface UserProfile {
   follower_count:  number;
   following_count: number;
   signal_accuracy: number;
-  marketcoin:      number;
   streak_days:     number;
   created_at:      string;
   // Computed

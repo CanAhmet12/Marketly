@@ -10,11 +10,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { FeaturedVideoCard } from '../components/VideoCard';
+import { SignalCard } from '../components/SignalCard';
+import { liveToMarketAsset } from '../services/marketService';
 import { useToast } from '../contexts/ToastContext';
 import { useTabBar } from '../contexts/TabBarContext';
 import { useVideos } from '../hooks/useVideos';
 import { useSignals } from '../hooks/useSignals';
 import { useLeaderboard } from '../hooks/useLeaderboard';
+import { useMarketPrices } from '../hooks/useMarketPrices';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -58,99 +61,6 @@ const BANNERS = [
   },
 ];
 
-const EXTRA_LIVE = [
-  {
-    id: 'l1', title: 'BIST100 Günlük Özet',
-    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=500',
-    creator: { name: 'Borsa Uzmanı', avatar: 'https://i.pravatar.cc/60?u=bu99' },
-    viewers: 3400, category: 'Hisseler', changePercent: -0.34, up: false,
-  },
-  {
-    id: 'l2', title: 'Altın & Gümüş Fırsat Analizi',
-    thumbnail: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=500',
-    creator: { name: 'Emtia Pro', avatar: 'https://i.pravatar.cc/60?u=ep99' },
-    viewers: 1820, category: 'Emtia', changePercent: 0.42, up: true,
-  },
-  {
-    id: 'l3', title: 'Dolar/TL Nereye Gidiyor?',
-    thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500',
-    creator: { name: 'FX Master', avatar: 'https://i.pravatar.cc/60?u=fm99' },
-    viewers: 942, category: 'Döviz', changePercent: 0.31, up: true,
-  },
-  {
-    id: 'l4', title: 'Solana & DeFi: 2025 Deep Dive',
-    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=500',
-    creator: { name: 'DeFi Guru', avatar: 'https://i.pravatar.cc/60?u=dg99' },
-    viewers: 5240, category: 'Kripto', changePercent: 5.67, up: true,
-  },
-];
-
-const MARKET_MOVERS = [
-  { sym: 'NVDA',  name: 'Nvidia',    price: '$875',   change: +4.2, color: '#76B900' },
-  { sym: 'SOL',   name: 'Solana',    price: '$142',   change: +3.1, color: '#9945FF' },
-  { sym: 'AVAX',  name: 'Avalanche', price: '$37.2',  change: +3.0, color: '#E84142' },
-  { sym: 'THYAO', name: 'THY',       price: '₺248',   change: +1.8, color: '#E81F2A' },
-  { sym: 'DOGE',  name: 'Dogecoin',  price: '$0.158', change: -2.0, color: '#C2A633' },
-  { sym: 'XRP',   name: 'Ripple',    price: '$0.624', change: -1.2, color: '#006097' },
-];
-
-const MARKET_NEWS = [
-  {
-    id: 'n1', tag: 'Kripto', tagColor: '#F7931A', tagBg: '#FFF3E0',
-    title: 'Bitcoin 70K eşiğine yaklaşıyor — analistler ne diyor?',
-    time: '32 dk önce', source: 'CoinDesk',
-    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=200',
-  },
-  {
-    id: 'n2', tag: 'Piyasa', tagColor: '#007AFF', tagBg: '#E8F0FF',
-    title: 'Fed faiz kararı öncesi S&P500\'de volatilite belirgin biçimde arttı',
-    time: '1 sa önce', source: 'Bloomberg',
-    thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200',
-  },
-  {
-    id: 'n3', tag: 'Emtia', tagColor: '#D4AF37', tagBg: '#FFFBEB',
-    title: 'Altın yeni rekor seviyede: Merkez bankaları alımı sürüyor',
-    time: '2 sa önce', source: 'Reuters',
-    thumbnail: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=200',
-  },
-  {
-    id: 'n4', tag: 'Türkiye', tagColor: '#E81F2A', tagBg: '#FFE8E8',
-    title: 'BIST100 kritik direnç seviyesini test ediyor, hacim yüksek seyretti',
-    time: '3 sa önce', source: 'Borsa İstanbul',
-    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=200',
-  },
-];
-
-const CREATORS = [
-  {
-    id: 'c1', name: 'Crypto Guru',  handle: '@cryptoguru',
-    followers: '124K', signals: 342, winRate: 78,
-    bio: 'BTC & ETH odaklı teknik analist. 5+ yıl deneyim.',
-    avatar: 'https://i.pravatar.cc/120?u=c1', verified: true, badge: 'PRO',
-    cover: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400',
-  },
-  {
-    id: 'c2', name: 'Borsa Master', handle: '@borsam',
-    followers: '89K',  signals: 218, winRate: 72,
-    bio: 'BIST uzmanı. Temelden tekniğe her şey.',
-    avatar: 'https://i.pravatar.cc/120?u=c2', verified: true, badge: 'PRO',
-    cover: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400',
-  },
-  {
-    id: 'c3', name: 'Gold Trader',  handle: '@goldtr',
-    followers: '67K',  signals: 156, winRate: 68,
-    bio: 'Altın & emtia piyasalarında uzman.',
-    avatar: 'https://i.pravatar.cc/120?u=c3', verified: false, badge: '',
-    cover: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=400',
-  },
-  {
-    id: 'c4', name: 'FX Analyst',   handle: '@fxanalyst',
-    followers: '45K',  signals: 290, winRate: 74,
-    bio: 'Döviz piyasaları ve forex stratejileri.',
-    avatar: 'https://i.pravatar.cc/120?u=c4', verified: true, badge: 'PRO',
-    cover: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400',
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtV(n: number) { return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n); }
@@ -238,16 +148,33 @@ export function DiscoverScreen() {
   const { videos: liveVideos }   = useVideos({ type: 'all' });
   const { signals: liveSignals } = useSignals({ activeOnly: true });
   const { analysts }             = useLeaderboard();
+  const { allAssets }            = useMarketPrices();
 
   const displayVideos  = liveVideos;
+  const liveStreams     = liveVideos.filter((v) => v.isLive);
+
+  // Market movers: top 6 by absolute change
+  const marketMovers = [...(allAssets ?? [])]
+    .sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent))
+    .slice(0, 6);
+
+  // Signals for SignalCard (SignalCardData format)
   const displaySignals = liveSignals.map(s => ({
-    id: s.id, symbol: s.symbol, direction: s.direction,
-    confidence: s.confidence, entry: s.entry_price ?? 0,
-    target: s.target_price ?? 0, stopLoss: s.stop_loss ?? 0,
-    timeframe: s.timeframe, rationale: s.rationale ?? '',
-    copies: s.copies_count, likes: s.likes_count,
-    creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
-    isNew: true, createdAt: s.created_at,
+    id:           s.id,
+    asset_id:     s.asset_id,
+    symbol:       s.symbol,
+    direction:    s.direction as 'BUY' | 'SELL' | 'HOLD',
+    confidence:   s.confidence,
+    entry_price:  s.entry_price  ?? null,
+    target_price: s.target_price ?? null,
+    stop_loss:    s.stop_loss    ?? null,
+    timeframe:    s.timeframe,
+    rationale:    s.rationale    ?? null,
+    copies_count: s.copies_count,
+    likes_count:  s.likes_count,
+    creator:      { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
+    isNew:        true,
+    created_at:   s.created_at,
   }));
 
   // Scroll-driven header animation
@@ -463,62 +390,55 @@ export function DiscoverScreen() {
             </View>
 
             {/* Live Now */}
-            <View style={[s.section, { paddingHorizontal: 0 }]}>
-              <View style={{ paddingHorizontal: 16 }}>
-                <SecHeader
-                  icon="radio-outline"
-                  title="Şu An Canlı"
-                  count={EXTRA_LIVE.length}
-                  onMore={() => navigation.navigate('LiveFeed')}
-                />
-              </View>
-              <ScrollView
-                horizontal showsHorizontalScrollIndicator={false}
-                contentContainerStyle={s.liveScroll}
-              >
-                {EXTRA_LIVE.map((item) => (
-                  <Pressable key={item.id} style={s.liveCard}>
-                    <View style={s.liveThumbWrap}>
-                      <Image source={{ uri: item.thumbnail }} style={s.liveThumb} />
-                      {/* Gradient sim */}
-                      <View style={s.liveGrad} />
-                      {/* Top row */}
-                      <View style={s.liveTopRow}>
-                        <View style={s.liveBadge}>
-                          <View style={s.livePulse} />
-                          <Text style={s.liveBadgeTxt}>CANLI</Text>
-                        </View>
-                        <View style={s.viewerBadge}>
-                          <Ionicons name="eye-outline" size={9} color="#FFF" />
-                          <Text style={s.viewerTxt}>{fmtV(item.viewers)}</Text>
-                        </View>
-                      </View>
-                      {/* Category pill */}
-                      <View style={s.catPill}>
-                        <Text style={s.catPillTxt}>{item.category}</Text>
-                      </View>
-                    </View>
-                    {/* Info */}
-                    <View style={s.liveInfo}>
-                      <View style={s.liveCreatorRow}>
-                        <Image source={{ uri: item.creator.avatar }} style={s.liveAvatar} />
-                        <Text style={s.liveCreator} numberOfLines={1}>{item.creator.name}</Text>
-                        {item.up ? (
-                          <View style={s.liveChange}>
-                            <Text style={s.liveChangeTxt}>▲ {item.changePercent}%</Text>
+            {liveStreams.length > 0 && (
+              <View style={[s.section, { paddingHorizontal: 0 }]}>
+                <View style={{ paddingHorizontal: 16 }}>
+                  <SecHeader
+                    icon="radio-outline"
+                    title="Şu An Canlı"
+                    count={liveStreams.length}
+                    onMore={() => navigation.navigate('LiveFeed')}
+                  />
+                </View>
+                <ScrollView
+                  horizontal showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.liveScroll}
+                >
+                  {liveStreams.map((item) => (
+                    <Pressable key={item.id} style={s.liveCard} onPress={() => navigation.navigate('LiveFeed')}>
+                      <View style={s.liveThumbWrap}>
+                        <Image source={{ uri: item.thumbnail }} style={s.liveThumb} />
+                        <View style={s.liveGrad} />
+                        <View style={s.liveTopRow}>
+                          <View style={s.liveBadge}>
+                            <View style={s.livePulse} />
+                            <Text style={s.liveBadgeTxt}>CANLI</Text>
                           </View>
-                        ) : (
-                          <View style={[s.liveChange, s.liveChangeFall]}>
-                            <Text style={[s.liveChangeTxt, s.liveChangeTxtFall]}>▼ {Math.abs(item.changePercent)}%</Text>
+                          {item.stats.views > 0 && (
+                            <View style={s.viewerBadge}>
+                              <Ionicons name="eye-outline" size={9} color="#FFF" />
+                              <Text style={s.viewerTxt}>{fmtV(item.stats.views)}</Text>
+                            </View>
+                          )}
+                        </View>
+                        {item.assetTags.length > 0 && (
+                          <View style={s.catPill}>
+                            <Text style={s.catPillTxt}>{item.assetTags[0]}</Text>
                           </View>
                         )}
                       </View>
-                      <Text style={s.liveTitle} numberOfLines={2}>{item.title}</Text>
-                    </View>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
+                      <View style={s.liveInfo}>
+                        <View style={s.liveCreatorRow}>
+                          <Image source={{ uri: item.creator.avatar }} style={s.liveAvatar} />
+                          <Text style={s.liveCreator} numberOfLines={1}>{item.creator.name}</Text>
+                        </View>
+                        <Text style={s.liveTitle} numberOfLines={2}>{item.title}</Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
             {/* Trend Videos */}
             <View style={s.section}>
@@ -540,58 +460,73 @@ export function DiscoverScreen() {
         {search.length === 0 && tab === 'haberler' && (
           <>
             {/* Market Movers */}
-            <View style={[s.section, { paddingHorizontal: 0 }]}>
-              <View style={{ paddingHorizontal: 16 }}>
-                <SecHeader icon="trending-up-outline" title="Piyasa Hareketlileri" onMore={() => {}} />
+            {marketMovers.length > 0 && (
+              <View style={[s.section, { paddingHorizontal: 0 }]}>
+                <View style={{ paddingHorizontal: 16 }}>
+                  <SecHeader icon="trending-up-outline" title="Piyasa Hareketlileri" onMore={() => navigation.navigate('Piyasalar' as never)} />
+                </View>
+                <ScrollView
+                  horizontal showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.moversScroll}
+                >
+                  {marketMovers.map((m) => {
+                    const up    = m.change_percent >= 0;
+                    const color = m.logo_color ?? (up ? colors.rise : colors.fall);
+                    const price = m.price >= 10000
+                      ? `$${m.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                      : m.price >= 1 ? `$${m.price.toFixed(2)}`
+                      : `$${m.price.toFixed(4)}`;
+                    return (
+                      <Pressable key={m.id} style={s.moverCard}
+                        onPress={() => navigation.navigate('AssetDetail', { asset: liveToMarketAsset(m) })}
+                      >
+                        <View style={[s.moverIcon, { backgroundColor: color + '18' }]}>
+                          <Text style={[s.moverIconTxt, { color }]}>{m.logo_letter ?? m.symbol.slice(0, 3)}</Text>
+                        </View>
+                        <Text style={s.moverSym}>{m.symbol}</Text>
+                        <Text style={s.moverName} numberOfLines={1}>{m.name}</Text>
+                        <Text style={s.moverPrice}>{price}</Text>
+                        <View style={[s.moverBadge, { backgroundColor: up ? colors.riseLight : colors.fallLight }]}>
+                          <Ionicons name={up ? 'caret-up' : 'caret-down'} size={8} color={up ? colors.rise : colors.fall} />
+                          <Text style={[s.moverChange, { color: up ? colors.rise : colors.fall }]}>
+                            {up ? '+' : ''}{m.change_percent.toFixed(2)}%
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
               </View>
-              <ScrollView
-                horizontal showsHorizontalScrollIndicator={false}
-                contentContainerStyle={s.moversScroll}
-              >
-                {MARKET_MOVERS.map((m) => {
-                  const up = m.change >= 0;
-                  return (
-                    <Pressable key={m.sym} style={s.moverCard}>
-                      <View style={[s.moverIcon, { backgroundColor: m.color + '18' }]}>
-                        <Text style={[s.moverIconTxt, { color: m.color }]}>
-                          {m.sym.slice(0, 3)}
-                        </Text>
-                      </View>
-                      <Text style={s.moverSym}>{m.sym}</Text>
-                      <Text style={s.moverName}>{m.name}</Text>
-                      <Text style={s.moverPrice}>{m.price}</Text>
-                      <View style={[s.moverBadge, { backgroundColor: up ? colors.riseLight : colors.fallLight }]}>
-                        <Ionicons name={up ? 'caret-up' : 'caret-down'} size={8} color={up ? colors.rise : colors.fall} />
-                        <Text style={[s.moverChange, { color: up ? colors.rise : colors.fall }]}>
-                          {up ? '+' : ''}{m.change}%
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
+            )}
 
-            {/* Breaking News */}
+            {/* Trend Videos as news substitute */}
             <View style={s.section}>
-              <SecHeader icon="newspaper-outline" title="Piyasa Haberleri" onMore={() => {}} />
-              {MARKET_NEWS.map((news) => (
-                <Pressable key={news.id} style={s.newsCard}>
-                  <Image source={{ uri: news.thumbnail }} style={s.newsThumbnail} />
+              <SecHeader icon="play-circle-outline" title="Trend Analizler" onMore={() => {}} />
+              {displayVideos.slice(0, 4).map((item) => (
+                <Pressable key={item.id} style={s.newsCard} onPress={() => navigation.navigate('VideoDetail', { item })}>
+                  <Image source={{ uri: item.thumbnail }} style={s.newsThumbnail} />
                   <View style={s.newsBody}>
-                    <View style={[s.newsTag, { backgroundColor: news.tagBg }]}>
-                      <Text style={[s.newsTagTxt, { color: news.tagColor }]}>{news.tag}</Text>
-                    </View>
-                    <Text style={s.newsTitle} numberOfLines={2}>{news.title}</Text>
+                    {item.assetTags.length > 0 && (
+                      <View style={[s.newsTag, { backgroundColor: colors.primaryLight }]}>
+                        <Text style={[s.newsTagTxt, { color: colors.primary }]}>{item.assetTags[0]}</Text>
+                      </View>
+                    )}
+                    <Text style={s.newsTitle} numberOfLines={2}>{item.title}</Text>
                     <View style={s.newsMeta}>
-                      <Text style={s.newsSource}>{news.source}</Text>
+                      <Text style={s.newsSource}>{item.creator.name}</Text>
                       <View style={s.newsDot} />
-                      <Text style={s.newsTime}>{news.time}</Text>
+                      <Text style={s.newsTime}>{item.timeAgo}</Text>
                     </View>
                   </View>
                   <Ionicons name="chevron-forward" size={14} color="#C8CDD8" />
                 </Pressable>
               ))}
+              {displayVideos.length === 0 && (
+                <View style={{ alignItems: 'center', paddingVertical: 30 }}>
+                  <Ionicons name="newspaper-outline" size={32} color={colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13 }}>Henüz analiz yok</Text>
+                </View>
+              )}
             </View>
           </>
         )}
@@ -628,72 +563,16 @@ export function DiscoverScreen() {
               })}
             </View>
 
-            {filteredSigs.map((sig) => {
-              const isBuy   = sig.direction === 'BUY';
-              const isSell  = sig.direction === 'SELL';
-              const dirColor= isBuy ? colors.rise : isSell ? colors.fall : '#FF9500';
-              const dirBg   = isBuy ? colors.riseLight : isSell ? colors.fallLight : '#FFF5E0';
-              const up      = sig.priceChange >= 0;
-              const conf    = sig.creator.successRate ?? 70;
-              const confW   = Math.min(conf, 100);
-
-              return (
-                <Pressable key={sig.id} style={s.sigCard}>
-                  {/* Left accent */}
-                  <View style={[s.sigAccent, { backgroundColor: dirColor }]} />
-
-                  {/* Logo */}
-                  <View style={[s.sigLogo, { backgroundColor: sig.logoColor + '18' }]}>
-                    <Text style={[s.sigLogoTxt, { color: sig.logoColor }]}>{sig.logoLetter}</Text>
-                  </View>
-
-                  {/* Body */}
-                  <View style={s.sigBody}>
-                    <View style={s.sigTopRow}>
-                      <Text style={s.sigAsset}>{sig.asset}</Text>
-                      <View style={[s.sigDirBadge, { backgroundColor: dirBg }]}>
-                        <Text style={[s.sigDirTxt, { color: dirColor }]}>{sig.direction}</Text>
-                      </View>
-                    </View>
-
-                    {/* Prices */}
-                    {'entryPrice' in sig && (
-                      <View style={s.sigPrices}>
-                        <Text style={s.sigPriceLabel}>Giriş</Text>
-                        <Text style={s.sigPriceVal}>{(sig as any).entryPrice ?? '—'}</Text>
-                        <View style={s.sigPriceSep} />
-                        <Text style={s.sigPriceLabel}>Hedef</Text>
-                        <Text style={[s.sigPriceVal, { color: dirColor }]}>{(sig as any).targetPrice ?? '—'}</Text>
-                      </View>
-                    )}
-
-                    {/* Creator */}
-                    <View style={s.sigCreatorRow}>
-                      <Image source={{ uri: sig.creator.avatar }} style={s.sigCreatorAvatar} />
-                      <Text style={s.sigCreatorTxt}>{sig.creator.name}</Text>
-                    </View>
-
-                    {/* Confidence bar */}
-                    <View style={s.confRow}>
-                      <View style={s.confBarBg}>
-                        <View style={[s.confBarFill, { width: `${confW}%` as any, backgroundColor: dirColor }]} />
-                      </View>
-                      <Text style={[s.confPct, { color: dirColor }]}>%{conf}</Text>
-                    </View>
-                  </View>
-
-                  {/* Right */}
-                  <View style={s.sigRight}>
-                    <View style={[s.sigPerfPill, { backgroundColor: up ? colors.riseLight : colors.fallLight }]}>
-                      <Text style={[s.sigPerfTxt, { color: up ? colors.rise : colors.fall }]}>
-                        {up ? '+' : ''}{sig.priceChange}%
-                      </Text>
-                    </View>
-                    <Text style={s.sigTime}>{sig.postedAt}</Text>
-                  </View>
-                </Pressable>
-              );
-            })}
+            {filteredSigs.length === 0 ? (
+              <View style={{ alignItems: 'center', paddingVertical: 30 }}>
+                <Ionicons name="pulse-outline" size={32} color={colors.textMuted} />
+                <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13 }}>Henüz sinyal yok</Text>
+              </View>
+            ) : (
+              filteredSigs.map((sig) => (
+                <SignalCard key={sig.id} signal={sig as any} />
+              ))
+            )}
           </View>
         )}
 

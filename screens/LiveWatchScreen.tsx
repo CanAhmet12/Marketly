@@ -13,19 +13,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RtcSurfaceView } from 'react-native-agora';
 import { useAgoraLive } from '../hooks/useAgoraLive';
-import { useMarketCoin } from '../hooks/useMarketCoin';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { colors, radius } from '../constants/theme';
 
 const GIFTS = [
-  { id: 'g1', icon: '💎', name: 'Elmas',  cost: 500, color: '#00BFFF' },
-  { id: 'g2', icon: '🚀', name: 'Roket',  cost: 200, color: '#FF6B35' },
-  { id: 'g3', icon: '🏆', name: 'Kupa',   cost: 100, color: '#FFB800' },
-  { id: 'g4', icon: '❤️', name: 'Kalp',   cost: 50,  color: '#FF3B6F' },
-  { id: 'g5', icon: '🌟', name: 'Yıldız', cost: 20,  color: '#FFD700' },
-  { id: 'g6', icon: '👏', name: 'Alkış',  cost: 10,  color: '#00C853' },
+  { id: 'g1', icon: '💎', name: 'Elmas',  color: '#00BFFF' },
+  { id: 'g2', icon: '🚀', name: 'Roket',  color: '#FF6B35' },
+  { id: 'g3', icon: '🏆', name: 'Kupa',   color: '#FFB800' },
+  { id: 'g4', icon: '❤️', name: 'Kalp',   color: '#FF3B6F' },
+  { id: 'g5', icon: '🌟', name: 'Yıldız', color: '#FFD700' },
+  { id: 'g6', icon: '👏', name: 'Alkış',  color: '#00C853' },
 ];
 
 interface ChatMsg { id: string; user: string; text: string; avatar?: string; isGift?: boolean }
@@ -36,8 +35,6 @@ export function LiveWatchScreen() {
   const route      = useRoute<any>();
   const toast      = useToast();
   const { user, profile } = useAuth();
-  const { balance, spend } = useMarketCoin();
-
   const channelName: string = route.params?.channelName ?? '';
   const postId:      string = route.params?.postId ?? '';
   const streamTitle: string = route.params?.title ?? 'Canlı Yayın';
@@ -126,13 +123,6 @@ export function LiveWatchScreen() {
   };
 
   const sendGift = async (gift: typeof GIFTS[0]) => {
-    if (balance < gift.cost) {
-      toast.error(`Yetersiz MarketCoin (${gift.cost} MC gerekiyor, ${balance} MC var)`);
-      return;
-    }
-    const ok = await spend(gift.cost, `${gift.name} hediyesi — ${streamTitle}`);
-    if (!ok) { toast.error('Hediye gönderilemedi'); return; }
-
     await supabase.from('live_messages').insert({
       post_id:   postId,
       user_id:   user?.id,
@@ -141,9 +131,7 @@ export function LiveWatchScreen() {
       is_gift:   true,
       gift_icon: gift.icon,
       gift_name: gift.name,
-      gift_cost: gift.cost,
     }).catch(() => {});
-
     toast.success(`${gift.icon} "${gift.name}" gönderildi!`);
     setShowGifts(false);
   };
@@ -267,19 +255,14 @@ export function LiveWatchScreen() {
             {GIFTS.map(g => (
               <Pressable
                 key={g.id}
-                style={[gm.card, balance < g.cost && gm.cardDisabled]}
+                style={gm.card}
                 onPress={() => sendGift(g)}
-                disabled={balance < g.cost}
               >
                 <Text style={gm.giftIcon}>{g.icon}</Text>
                 <Text style={gm.giftName}>{g.name}</Text>
-                <View style={[gm.cost, { backgroundColor: g.color + '20' }]}>
-                  <Text style={[gm.costTxt, { color: g.color }]}>🪙 {g.cost}</Text>
-                </View>
               </Pressable>
             ))}
           </View>
-          <Text style={gm.hint}>MarketCoin kazan → Profil → MarketCoin</Text>
         </View>
       </Modal>
     </View>

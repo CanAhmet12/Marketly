@@ -152,13 +152,13 @@ export function useLeaderboard() {
       // ── Portföy kazananları ──
       const { data: holdingsData } = await supabase
         .from('portfolio_holdings')
-        .select('user_id, quantity, buy_price, asset_id');
+        .select('user_id, quantity, avg_cost, asset_id');
 
       if (holdingsData && holdingsData.length > 0) {
         const userStats: Record<string, { invested: number; quantity: number }> = {};
         for (const h of holdingsData) {
           if (!userStats[h.user_id]) userStats[h.user_id] = { invested: 0, quantity: 0 };
-          userStats[h.user_id].invested  += (h.quantity ?? 0) * (h.buy_price ?? 0);
+          userStats[h.user_id].invested  += (h.quantity ?? 0) * (h.avg_cost ?? 0);
           userStats[h.user_id].quantity  += (h.quantity ?? 0);
         }
 

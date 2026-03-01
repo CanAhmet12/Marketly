@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useMarketPrices } from '../hooks/useMarketPrices';
+import { useLeaderboard } from '../hooks/useLeaderboard';
 import { liveToMarketAsset } from '../services/marketService';
 import { supabase } from '../lib/supabase';
 import type { VideoItem } from '../data/mockVideos';
@@ -15,14 +16,6 @@ import { radius, shadow, colors } from '../constants/theme';
 // ── Data ─────────────────────────────────────────────────────────────────────
 const TRENDING_SEARCHES = [
   '#Bitcoin', '#BIST100', '#Tesla', '$ETH', '#Altın', '#Nasdaq', '#DolarTL', '#SOL',
-];
-
-const HOT_CREATORS = [
-  { id: 'c1', name: 'Crypto Guru',  handle: '@cryptoguru',  followers: '124K', avatar: 'https://i.pravatar.cc/80?u=c1', verified: true },
-  { id: 'c2', name: 'Borsa Master', handle: '@borsam',      followers: '89K',  avatar: 'https://i.pravatar.cc/80?u=c2', verified: true },
-  { id: 'c3', name: 'Gold Trader',  handle: '@goldtr',      followers: '67K',  avatar: 'https://i.pravatar.cc/80?u=c3', verified: false },
-  { id: 'c4', name: 'FX Analyst',   handle: '@fxanalyst',   followers: '45K',  avatar: 'https://i.pravatar.cc/80?u=c4', verified: true },
-  { id: 'c5', name: 'Hisse Uzmanı', handle: '@hisseuzman',  followers: '38K',  avatar: 'https://i.pravatar.cc/80?u=c5', verified: false },
 ];
 
 type ResultTab = 'videos' | 'assets' | 'creators';
@@ -122,15 +115,28 @@ function CreatorResult({ creator }: { creator: typeof HOT_CREATORS[0] }) {
 }
 
 // ── Main SearchScreen ─────────────────────────────────────────────────────────
+type SimpleCreator = { id: string; name: string; handle: string; followers: string; avatar: string; verified: boolean };
+
 export function SearchScreen({ onBack }: Props) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const inputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ResultTab>('videos');
-  const [dbCreators, setDbCreators] = useState<typeof HOT_CREATORS>([]);
+  const [dbCreators, setDbCreators] = useState<SimpleCreator[]>([]);
   const [dbVideos,   setDbVideos]   = useState<VideoItem[]>([]);
   const { assets: liveAssets } = useMarketPrices();
+  const { analysts } = useLeaderboard();
+
+  // Featured creators from leaderboard (real data)
+  const featuredCreators: SimpleCreator[] = analysts.slice(0, 5).map((a) => ({
+    id:        a.id,
+    name:      a.name,
+    handle:    a.handle,
+    followers: a.followers,
+    avatar:    a.avatar,
+    verified:  a.verified,
+  }));
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -272,7 +278,7 @@ export function SearchScreen({ onBack }: Props) {
               <Text style={s.sectionTitle}>⭐ Öne Çıkan Creator'lar</Text>
               <Text style={s.seeAll}>Tümü</Text>
             </View>
-            {HOT_CREATORS.map((c) => <CreatorResult key={c.id} creator={c} />)}
+            {featuredCreators.map((c) => <CreatorResult key={c.id} creator={c} />)}
           </View>
 
           {/* Popular assets */}

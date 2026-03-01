@@ -27,7 +27,6 @@ import { PortfolioScreen }       from '../screens/PortfolioScreen';
 import { LeaderboardScreen }     from '../screens/LeaderboardScreen';
 import { PriceAlertsScreen }     from '../screens/PriceAlertsScreen';
 import { AIAssistantScreen }     from '../screens/AIAssistantScreen';
-import { MarketCoinScreen }         from '../screens/MarketCoinScreen';
 import { SignalMarketplaceScreen }  from '../screens/SignalMarketplaceScreen';
 import { UserProfileScreen }        from '../screens/UserProfileScreen';
 import { LiveBroadcastScreen }      from '../screens/LiveBroadcastScreen';
@@ -60,7 +59,6 @@ export type RootStackParamList = {
   Leaderboard:   undefined;
   PriceAlerts:   undefined;
   AIAssistant:   undefined;
-  MarketCoin:         undefined;
   SignalMarketplace:  undefined;
   Settings:      undefined;
   Search:        undefined;
@@ -318,11 +316,6 @@ export function RootNavigator() {
         name="AIAssistant"
         component={AIAssistantScreen}
         options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-      />
-      <Stack.Screen
-        name="MarketCoin"
-        component={MarketCoinScreen}
-        options={{ animation: 'slide_from_right' }}
       />
       <Stack.Screen
         name="SignalMarketplace"

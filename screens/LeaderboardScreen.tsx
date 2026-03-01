@@ -15,34 +15,6 @@ const { width: W } = Dimensions.get('window');
 type LBTab = 'Analistler' | 'Sinyaller' | 'Kazananlar';
 const LB_TABS: LBTab[] = ['Analistler', 'Sinyaller', 'Kazananlar'];
 
-// ─── Mock data (gerçek Supabase sorgusuna hazır yapı) ─────────────────────────
-const TOP_ANALYSTS = [
-  { rank: 1,  id: 'a1', name: 'CryptoGuru',   handle: '@cryptoguru',   avatar: 'https://i.pravatar.cc/80?u=cg1', accuracy: 91.2, signals: 247, followers: '48.2K', gain: '+284%', tier: 'elite',  verified: true,  badge: '🏆' },
-  { rank: 2,  id: 'a2', name: 'BorsaMaster',  handle: '@borsam',       avatar: 'https://i.pravatar.cc/80?u=bm2', accuracy: 87.4, signals: 183, followers: '31.7K', gain: '+196%', tier: 'pro',    verified: true,  badge: '🥈' },
-  { rank: 3,  id: 'a3', name: 'FXWizard',     handle: '@fxwizard',     avatar: 'https://i.pravatar.cc/80?u=fw3', accuracy: 84.9, signals: 156, followers: '22.4K', gain: '+162%', tier: 'pro',    verified: true,  badge: '🥉' },
-  { rank: 4,  id: 'a4', name: 'TechTrader',   handle: '@techtrader',   avatar: 'https://i.pravatar.cc/80?u=tt4', accuracy: 82.3, signals: 201, followers: '18.9K', gain: '+138%', tier: 'pro',    verified: false, badge: '' },
-  { rank: 5,  id: 'a5', name: 'DeFiHunter',   handle: '@defihunter',   avatar: 'https://i.pravatar.cc/80?u=dh5', accuracy: 79.8, signals: 134, followers: '15.3K', gain: '+121%', tier: 'pro',    verified: false, badge: '' },
-  { rank: 6,  id: 'a6', name: 'GoldAnalyst',  handle: '@goldanalyst',  avatar: 'https://i.pravatar.cc/80?u=ga6', accuracy: 77.1, signals: 98,  followers: '11.2K', gain: '+98%',  tier: 'free',   verified: false, badge: '' },
-  { rank: 7,  id: 'a7', name: 'StockHunter',  handle: '@stockhunter',  avatar: 'https://i.pravatar.cc/80?u=sh7', accuracy: 75.6, signals: 112, followers: '8.7K',  gain: '+87%',  tier: 'free',   verified: false, badge: '' },
-  { rank: 8,  id: 'a8', name: 'CoinScout',    handle: '@coinscout',    avatar: 'https://i.pravatar.cc/80?u=cs8', accuracy: 73.2, signals: 89,  followers: '6.4K',  gain: '+72%',  tier: 'free',   verified: false, badge: '' },
-];
-
-const TOP_SIGNALS = [
-  { rank: 1, analyst: 'CryptoGuru',  asset: 'SOL', dir: 'AL',  gain: '+68.4%', copies: 1284, time: '12 gün önce', color: '#9945FF', badge: '🔥' },
-  { rank: 2, analyst: 'FXWizard',    asset: 'EUR/USD', dir: 'SAT', gain: '+31.2%', copies: 892, time: '5 gün önce',  color: '#1A73E8', badge: '⚡' },
-  { rank: 3, analyst: 'BorsaMaster', asset: 'NVDA', dir: 'AL',  gain: '+44.7%', copies: 741, time: '18 gün önce', color: '#76B900', badge: '📈' },
-  { rank: 4, analyst: 'TechTrader',  asset: 'BTC',  dir: 'AL',  gain: '+28.9%', copies: 623, time: '8 gün önce',  color: '#F7931A', badge: '' },
-  { rank: 5, analyst: 'DeFiHunter',  asset: 'MATIC',dir: 'AL',  gain: '+52.3%', copies: 487, time: '22 gün önce', color: '#8247E5', badge: '' },
-];
-
-const TOP_GAINERS = [
-  { rank: 1, name: 'MehmetK',    handle: '@mehmetk',    avatar: 'https://i.pravatar.cc/80?u=mk1', gain: '+342%', value: '$48.2K', badge: '🏆' },
-  { rank: 2, name: 'AliTrader',  handle: '@alitrd',     avatar: 'https://i.pravatar.cc/80?u=at2', gain: '+287%', value: '$31.7K', badge: '🥈' },
-  { rank: 3, name: 'YildizFX',   handle: '@yildizfx',   avatar: 'https://i.pravatar.cc/80?u=yx3', gain: '+213%', value: '$22.1K', badge: '🥉' },
-  { rank: 4, name: 'KriptoAslan',handle: '@kraslan',    avatar: 'https://i.pravatar.cc/80?u=ka4', gain: '+178%', value: '$18.5K', badge: '' },
-  { rank: 5, name: 'BorsaUzman', handle: '@borsauzm',   avatar: 'https://i.pravatar.cc/80?u=bu5', gain: '+156%', value: '$14.9K', badge: '' },
-];
-
 // ─── Podium bileşeni (ilk 3 için) ────────────────────────────────────────────
 function Podium({ data }: { data: { rank: number; id: string; name: string; avatar: string; accuracy: number; verified: boolean; badge: string; tier?: string }[] }) {
   const top3   = data.slice(0, 3);
@@ -173,7 +145,7 @@ export function LeaderboardScreen() {
             <View style={s.rewardBox}>
               <Text style={s.rewardTitle}>🎁 Haftalık Ödüller</Text>
               <Text style={s.rewardItem}>🥇 1. → 1 Ay Marketly Pro</Text>
-              <Text style={s.rewardItem}>🥈 2-3. → 3.000 MarketCoin</Text>
+              <Text style={s.rewardItem}>🥈 2-3. → 3 Ay Marketly Pro</Text>
               <Text style={s.rewardItem}>🏅 Top 10 → "Haftalık Şampiyon" rozeti</Text>
             </View>
           </>

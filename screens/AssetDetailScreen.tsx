@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabase';
 import { liveToMarketAsset } from '../services/marketService';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { usePriceAlerts } from '../hooks/usePriceAlerts';
+import { useVideos } from '../hooks/useVideos';
 import type { MarketAsset } from '../data/mockMarkets';
 
 const { width: W } = Dimensions.get('window');
@@ -384,33 +385,6 @@ const ABOUT: Record<string, string> = {
   eurusd: 'EUR/USD, dünyanın en çok işlem gören döviz çiftidir. Eurozone ve ABD ekonomilerinin performansı, faiz oranları ve jeopolitik gelişmelere duyarlıdır.',
 };
 
-// ─── Asset-specific news ──────────────────────────────────────────────────────
-const NEWS_BY_CAT: Record<string, { id: string; title: string; time: string; source: string; tag: string; color: string; img: string }[]> = {
-  crypto: [
-    { id: 'c1', title: 'Bitcoin ETF\'lerine rekor fon girişi: Haftalık 2.3 milyar dolar', time: '25 dk önce', source: 'CoinDesk', tag: 'BTC', color: '#F7931A', img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=120' },
-    { id: 'c2', title: 'Fed toplantısı sonrası kripto piyasası yükseldi', time: '1 sa önce', source: 'CryptoNews', tag: 'Piyasa', color: '#627EEA', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-    { id: 'c3', title: 'Ethereum\'da staking getirileri artışını sürdürüyor', time: '2 sa önce', source: 'Decrypt', tag: 'ETH', color: '#627EEA', img: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=120' },
-    { id: 'c4', title: 'Solana ağında işlem hacmi rekor kırdı — DeFi patlaması mı?', time: '3 sa önce', source: 'The Block', tag: 'SOL', color: '#9945FF', img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=120' },
-  ],
-  stocks: [
-    { id: 's1', title: 'S&P 500 yeni zirveye koşuyor: AI hisselerinde ralli sürüyor', time: '40 dk önce', source: 'Bloomberg', tag: 'S&P500', color: '#007AFF', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-    { id: 's2', title: 'NVIDIA çeyrek karı beklentilerin çok üzerinde geldi', time: '2 sa önce', source: 'Reuters', tag: 'NVDA', color: '#76B900', img: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=120' },
-    { id: 's3', title: 'Apple Vision Pro satışlarında güçlü başlangıç', time: '4 sa önce', source: 'CNBC', tag: 'AAPL', color: '#555', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-    { id: 's4', title: 'Tesla Cybertruck üretiminde kapasite artışı planlandı', time: '5 sa önce', source: 'MarketWatch', tag: 'TSLA', color: '#CC0000', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-  ],
-  commodities: [
-    { id: 'm1', title: 'Altın merkez bankası alımlarıyla yeni rekorunu kırdı', time: '1 sa önce', source: 'Reuters', tag: 'Altın', color: '#D4AF37', img: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=120' },
-    { id: 'm2', title: 'OPEC+ üretim kısıtlamalarını uzattı: Petrol fiyatları yükseldi', time: '2 sa önce', source: 'Bloomberg', tag: 'Petrol', color: '#222', img: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=120' },
-    { id: 'm3', title: 'Gümüş endüstriyel talebi artıyor, yenilenebilir enerji etkisi', time: '3 sa önce', source: 'Kitco', tag: 'Gümüş', color: '#AAA', img: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=120' },
-    { id: 'm4', title: 'Jeopolitik gerginlik emtia piyasasında volatiliteyi artırdı', time: '5 sa önce', source: 'FT', tag: 'Emtia', color: '#D4AF37', img: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=120' },
-  ],
-  forex: [
-    { id: 'f1', title: 'TCMB faiz kararı sonrası Türk Lirası değer kazandı', time: '30 dk önce', source: 'Bloomberg HT', tag: 'TRY', color: '#E53935', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-    { id: 'f2', title: 'Fed tutanakları dolar endeksinde oynaklığa yol açtı', time: '1 sa önce', source: 'Reuters', tag: 'USD', color: '#007AFF', img: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=120' },
-    { id: 'f3', title: 'Euro Bölgesi büyüme verileri beklentilerin üzerinde geldi', time: '3 sa önce', source: 'ECB', tag: 'EUR', color: '#1A73E8', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120' },
-    { id: 'f4', title: 'Döviz kurlarında küresel merkez bankası koordinasyonu tartışılıyor', time: '4 sa önce', source: 'FT', tag: 'Döviz', color: '#7C3AED', img: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=120' },
-  ],
-};
 
 // ─── Candlestick Chart Component ──────────────────────────────────────────────
 const CHART_H = 200;
@@ -697,7 +671,7 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
   const low24  = (asset.priceNum * 0.968).toFixed(asset.priceNum > 100 ? 0 : 4);
   const ath    = (asset.priceNum * 1.22).toFixed(asset.priceNum > 100 ? 0 : 4);
 
-  const news = NEWS_BY_CAT[asset.category] ?? [];
+  const { videos: relatedVideos } = useVideos({ assetTag: asset.symbol });
   const about = ABOUT[asset.id] ?? `${asset.name} (${asset.symbol}), ${seg.label} kategorisinde işlem gören bir varlıktır.`;
 
   const onWatchlist = useCallback(async () => {
@@ -859,29 +833,44 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
             <View style={[s.sectionIconWrap, { backgroundColor: '#FFF5E0' }]}>
               <Ionicons name="newspaper" size={13} color="#FF9500" />
             </View>
-            <Text style={s.sectionTitle}>İlgili Haberler</Text>
-            <View style={s.sectionBadge}>
-              <Text style={s.sectionBadgeTxt}>{news.length} yeni</Text>
-            </View>
+            <Text style={s.sectionTitle}>İlgili Analizler</Text>
+            {relatedVideos.length > 0 && (
+              <View style={s.sectionBadge}>
+                <Text style={s.sectionBadgeTxt}>{relatedVideos.length} analiz</Text>
+              </View>
+            )}
           </View>
 
-          {news.map((n, i) => (
-            <Pressable key={n.id} style={[s.newsItem, i < news.length - 1 && s.newsItemBorder]}>
-              <Image source={{ uri: n.img }} style={s.newsImg} />
-              <View style={s.newsBody}>
-                <View style={[s.newsTag, { backgroundColor: n.color + '15' }]}>
-                  <Text style={[s.newsTagTxt, { color: n.color }]}>{n.tag}</Text>
+          {relatedVideos.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <Ionicons name="newspaper-outline" size={24} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6 }}>
+                {asset.symbol} için henüz analiz yok
+              </Text>
+            </View>
+          ) : (
+            relatedVideos.slice(0, 4).map((v, i) => (
+              <Pressable key={v.id} style={[s.newsItem, i < Math.min(relatedVideos.length, 4) - 1 && s.newsItemBorder]}
+                onPress={() => navigation.navigate('VideoDetail', { item: v })}
+              >
+                <Image source={{ uri: v.thumbnail }} style={s.newsImg} />
+                <View style={s.newsBody}>
+                  {v.assetTags.length > 0 && (
+                    <View style={[s.newsTag, { backgroundColor: seg.bgLight }]}>
+                      <Text style={[s.newsTagTxt, { color: seg.color }]}>{v.assetTags[0]}</Text>
+                    </View>
+                  )}
+                  <Text style={s.newsTitle} numberOfLines={2}>{v.title}</Text>
+                  <View style={s.newsMeta}>
+                    <Text style={s.newsSource}>{v.creator.name}</Text>
+                    <View style={s.newsDot} />
+                    <Text style={s.newsTime}>{v.timeAgo}</Text>
+                  </View>
                 </View>
-                <Text style={s.newsTitle} numberOfLines={2}>{n.title}</Text>
-                <View style={s.newsMeta}>
-                  <Text style={s.newsSource}>{n.source}</Text>
-                  <View style={s.newsDot} />
-                  <Text style={s.newsTime}>{n.time}</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={13} color="#D0D5DD" />
-            </Pressable>
-          ))}
+                <Ionicons name="chevron-forward" size={13} color="#D0D5DD" />
+              </Pressable>
+            ))
+          )}
         </View>
 
         {/* ── About ── */}

@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Header } from '../components/Header';
 import { FeaturedVideoCard, HorizontalVideoCard, SavingsCard } from '../components/VideoCard';
 import { SignalCard } from '../components/SignalCard';
-import { DailyTasksCard } from '../components/DailyTasksCard';
 import { PostCard } from '../components/PostCard';
 import { CreatePostModal } from '../components/CreatePostModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -462,7 +461,7 @@ export function HomeScreen() {
         <Header
           hasNotification
           notificationCount={3}
-          avatarUri="https://i.pravatar.cc/80?u=me"
+          avatarUri={user?.avatar ?? `https://i.pravatar.cc/80?u=${user?.id ?? 'default'}`}
           onProfilePress={() => navigation.navigate('Profil')}
           onNotificationPress={() => navigation.navigate('Notifications')}
           onSearchPress={() => navigation.navigate('Search')}
@@ -492,9 +491,6 @@ export function HomeScreen() {
         {/* ── Ticker & Stories at top of feed ── */}
         <MarketTicker />
         <StoriesRow onShortsPress={() => navigation.navigate('Shorts')} userId={user?.id} />
-
-        {/* ── Günlük görevler (sadece Senin İçin tab'ında) ── */}
-        {feedTab === 'Senin İçin' && <DailyTasksCard />}
 
         {/* ── Gönderi yaz butonu (Senin İçin + Takip) ── */}
         {(feedTab === 'Senin İçin' || feedTab === 'Takip') && user && (

@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RtcSurfaceView } from 'react-native-agora';
 import { useAgoraLive } from '../hooks/useAgoraLive';
-import { useMarketCoin } from '../hooks/useMarketCoin';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';

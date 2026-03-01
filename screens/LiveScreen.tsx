@@ -8,93 +8,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
-import { useMarketCoin } from '../hooks/useMarketCoin';
 import { colors, radius, shadow } from '../constants/theme';
 
 const LIVE_CATS = ['Tümü', 'Kripto', 'Hisseler', 'Emtia', 'Döviz', 'Analiz'];
 
-const EXTRA_LIVE = [
-  {
-    id: 'l1', title: 'BIST100 Günlük Özet – Piyasa Kapanışı Canlı!',
-    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=700',
-    creator: { id: 'ul1', name: 'Borsa Uzmanı', avatar: 'https://i.pravatar.cc/60?u=bu99', verified: true, successRate: 78 },
-    viewers: 3400, category: 'Hisseler', isLive: true,
-    assetTags: ['BIST100', 'THYAO'], price: '₺9,450', changePercent: -0.34,
-    stats: { likes: 1200, comments: 87, shares: 54, views: 3400 },
-    startedAgo: '32 dk önce',
-  },
-  {
-    id: 'l2', title: 'Altın & Gümüş Fırsat Analizi – Teknik Seviyeler',
-    thumbnail: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=700',
-    creator: { id: 'ul2', name: 'Emtia Pro', avatar: 'https://i.pravatar.cc/60?u=ep99', verified: true, successRate: 72 },
-    viewers: 1820, category: 'Emtia', isLive: true,
-    assetTags: ['XAU', 'XAG'], price: '$2,345', changePercent: 0.42,
-    stats: { likes: 890, comments: 43, shares: 29, views: 1820 },
-    startedAgo: '1s 15dk önce',
-  },
-  {
-    id: 'l3', title: 'Dolar/TL Nereye Gidiyor? Canlı Forex Analizi',
-    thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=700',
-    creator: { id: 'ul3', name: 'FX Master', avatar: 'https://i.pravatar.cc/60?u=fm99', verified: true, successRate: 81 },
-    viewers: 942, category: 'Döviz', isLive: true,
-    assetTags: ['USD/TRY'], price: '₺32.45', changePercent: 0.31,
-    stats: { likes: 410, comments: 21, shares: 14, views: 942 },
-    startedAgo: '45 dk önce',
-  },
-  {
-    id: 'l4', title: 'Solana & DeFi: 2025 Deep Dive – Canlı AMA',
-    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=700',
-    creator: { id: 'ul4', name: 'DeFi Guru', avatar: 'https://i.pravatar.cc/60?u=dg99', verified: true, successRate: 69 },
-    viewers: 5240, category: 'Kripto', isLive: true,
-    assetTags: ['SOL', 'ETH'], price: '$189', changePercent: 5.67,
-    stats: { likes: 2800, comments: 196, shares: 143, views: 5240 },
-    startedAgo: '2s 4dk önce',
-  },
-  {
-    id: 'l5', title: 'S&P500 ve Nasdaq Haftalık Teknik Analiz',
-    thumbnail: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=700',
-    creator: { id: 'ul5', name: 'Wall St. Insider', avatar: 'https://i.pravatar.cc/60?u=wsi7', verified: true, successRate: 84 },
-    viewers: 7120, category: 'Analiz', isLive: true,
-    assetTags: ['S&P500', 'NASDAQ'], price: '5,234', changePercent: 0.42,
-    stats: { likes: 3400, comments: 248, shares: 191, views: 7120 },
-    startedAgo: '58 dk önce',
-  },
-];
-
-const SCHEDULE = [
-  {
-    id: 'sch1',
-    title: 'Bitcoin Halving Sonrası BTC Hedef Analizi',
-    creator: { name: 'Crypto Guru', avatar: 'https://i.pravatar.cc/60?u=cg1' },
-    time: '20:00', countdown: '1s 24dk',
-    assetTags: ['BTC'], category: 'Kripto',
-    notified: false,
-  },
-  {
-    id: 'sch2',
-    title: 'BIST100 Sabah Seansı Hazırlık',
-    creator: { name: 'Borsa Master', avatar: 'https://i.pravatar.cc/60?u=bm2' },
-    time: '09:00', countdown: 'Yarın 09:00',
-    assetTags: ['BIST100'], category: 'Hisseler',
-    notified: true,
-  },
-  {
-    id: 'sch3',
-    title: 'Fed Faiz Kararı Canlı Takip & Analiz',
-    creator: { name: 'FX Master', avatar: 'https://i.pravatar.cc/60?u=fx5' },
-    time: '21:30', countdown: '3s 12dk',
-    assetTags: ['USD', 'FOREX'], category: 'Döviz',
-    notified: false,
-  },
-];
 
 const GIFTS = [
-  { id: 'g1', icon: '💎', name: 'Elmas', cost: 500, color: '#00BFFF' },
-  { id: 'g2', icon: '🚀', name: 'Roket', cost: 200, color: '#FF6B35' },
-  { id: 'g3', icon: '🏆', name: 'Kupa', cost: 100, color: '#FFB800' },
-  { id: 'g4', icon: '❤️', name: 'Kalp', cost: 50, color: '#FF3B6F' },
-  { id: 'g5', icon: '🌟', name: 'Yıldız', cost: 20, color: '#FFD700' },
-  { id: 'g6', icon: '👏', name: 'Alkış', cost: 10, color: '#00C853' },
+  { id: 'g1', icon: '💎', name: 'Elmas',  color: '#00BFFF' },
+  { id: 'g2', icon: '🚀', name: 'Roket',  color: '#FF6B35' },
+  { id: 'g3', icon: '🏆', name: 'Kupa',   color: '#FFB800' },
+  { id: 'g4', icon: '❤️', name: 'Kalp',   color: '#FF3B6F' },
+  { id: 'g5', icon: '🌟', name: 'Yıldız', color: '#FFD700' },
+  { id: 'g6', icon: '👏', name: 'Alkış',  color: '#00C853' },
 ];
 
 function fmtV(n: number) {
@@ -109,21 +34,11 @@ function GiftModal({
 }: {
   visible: boolean; onClose: () => void; streamTitle: string;
 }) {
-  const toast            = useToast();
-  const { balance, spend } = useMarketCoin();
+  const toast = useToast();
 
-  const handleGift = async (gift: typeof GIFTS[0]) => {
-    if (balance < gift.cost) {
-      toast.error(`Yetersiz MarketCoin! Gereken: ${gift.cost} 🪙`);
-      return;
-    }
-    const ok = await spend(gift.cost, `"${gift.name}" hediyesi - ${streamTitle}`);
-    if (ok) {
-      toast.success(`${gift.icon} "${gift.name}" gönderildi! (-${gift.cost} MC)`);
-      onClose();
-    } else {
-      toast.error('Hediye gönderilemedi, tekrar dene');
-    }
+  const handleGift = (gift: typeof GIFTS[0]) => {
+    toast.success(`${gift.icon} "${gift.name}" gönderildi!`);
+    onClose();
   };
 
   return (
@@ -133,11 +48,7 @@ function GiftModal({
         <View style={gm.handle} />
         <View style={gm.header}>
           <Ionicons name="gift" size={20} color="#FFB800" />
-          <Text style={gm.title}>Gift Gönder</Text>
-          <View style={gm.coins}>
-            <Text style={gm.coinsIcon}>🪙</Text>
-            <Text style={gm.coinsVal}>{balance}</Text>
-          </View>
+          <Text style={gm.title}>Reaksiyon Gönder</Text>
         </View>
         <Text style={gm.subtitle} numberOfLines={1}>{streamTitle}</Text>
         <View style={gm.grid}>
@@ -145,15 +56,8 @@ function GiftModal({
             <Pressable key={g.id} style={gm.giftCard} onPress={() => handleGift(g)}>
               <Text style={gm.giftIcon}>{g.icon}</Text>
               <Text style={gm.giftName}>{g.name}</Text>
-              <View style={[gm.giftCost, { backgroundColor: g.color + '20' }]}>
-                <Text style={[gm.giftCostTxt, { color: g.color }]}>🪙 {g.cost}</Text>
-              </View>
             </Pressable>
           ))}
-        </View>
-        <View style={gm.buyRow}>
-          <Ionicons name="information-circle-outline" size={13} color={colors.textMuted} />
-          <Text style={gm.buyInfo}>Koin satın almak için profil &gt; Premium.</Text>
         </View>
       </View>
     </Modal>
@@ -170,9 +74,6 @@ const gm = StyleSheet.create({
   handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D0D0D0', marginBottom: 16 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   title: { fontSize: 17, fontWeight: '800', color: '#0D0D0D', flex: 1 },
-  coins: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF9E6', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: '#FFB80040' },
-  coinsIcon: { fontSize: 13 },
-  coinsVal: { fontSize: 13, fontWeight: '800', color: '#FFB800' },
   subtitle: { fontSize: 12, color: colors.textMuted, marginBottom: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
   giftCard: {
@@ -182,10 +83,6 @@ const gm = StyleSheet.create({
   },
   giftIcon: { fontSize: 28 },
   giftName: { fontSize: 11, fontWeight: '700', color: '#0D0D0D' },
-  giftCost: { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 3 },
-  giftCostTxt: { fontSize: 10, fontWeight: '800' },
-  buyRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  buyInfo: { fontSize: 11, color: colors.textMuted },
 });
 
 // ── Live Card ─────────────────────────────────────────────────────────────────
@@ -380,7 +277,7 @@ const lc = StyleSheet.create({
 });
 
 // ── Schedule Card ─────────────────────────────────────────────────────────────
-function ScheduleCard({ item, onNotify }: { item: typeof SCHEDULE[0]; onNotify: () => void }) {
+function ScheduleCard({ item, onNotify }: { item: { id: string; title: string; creator: { name: string; avatar: string }; time: string; countdown: string; assetTags: string[]; category: string; notified: boolean }; onNotify: () => void }) {
   const [notified, setNotified] = useState(item.notified);
   const toast = useToast();
   return (
@@ -436,30 +333,25 @@ const sch = StyleSheet.create({
 });
 
 // ── Top Streamers Bar ─────────────────────────────────────────────────────────
-const TOP_STREAMERS = [
-  { id: 't1', name: 'CryptoGuru', avatar: 'https://i.pravatar.cc/60?u=cg1', viewers: '5.2K', isOnline: true },
-  { id: 't2', name: 'WallStInsider', avatar: 'https://i.pravatar.cc/60?u=wsi7', viewers: '7.1K', isOnline: true },
-  { id: 't3', name: 'BorsaMaster', avatar: 'https://i.pravatar.cc/60?u=bm2', viewers: '3.4K', isOnline: true },
-  { id: 't4', name: 'FXMaster', avatar: 'https://i.pravatar.cc/60?u=fx5', viewers: '0.9K', isOnline: true },
-  { id: 't5', name: 'EmtiaPro', avatar: 'https://i.pravatar.cc/60?u=ep3', viewers: '1.8K', isOnline: true },
-];
-
-function TopStreamersBar() {
+function TopStreamersBar({ liveItems }: { liveItems: any[] }) {
+  if (liveItems.length === 0) return null;
   return (
     <View style={ts.wrap}>
       <Text style={ts.label}>🔴 Şu An Canlı</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ts.scroll}>
-        {TOP_STREAMERS.map((s) => (
+        {liveItems.map((s) => (
           <View key={s.id} style={ts.card}>
             <View style={ts.avatarWrap}>
-              <Image source={{ uri: s.avatar }} style={ts.avatar} />
+              <Image source={{ uri: s.creator.avatar }} style={ts.avatar} />
               <View style={ts.onlineDot} />
             </View>
-            <Text style={ts.name} numberOfLines={1}>{s.name}</Text>
-            <View style={ts.viewerPill}>
-              <Ionicons name="eye" size={8} color="#FF3B3B" />
-              <Text style={ts.viewers}>{s.viewers}</Text>
-            </View>
+            <Text style={ts.name} numberOfLines={1}>{s.creator.name}</Text>
+            {s.viewers > 0 && (
+              <View style={ts.viewerPill}>
+                <Ionicons name="eye" size={8} color="#FF3B3B" />
+                <Text style={ts.viewers}>{s.viewers >= 1000 ? `${(s.viewers / 1000).toFixed(1)}K` : String(s.viewers)}</Text>
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -513,7 +405,7 @@ function LiveStatsBanner({ totalViewers, liveCount }: { totalViewers: number; li
           <Ionicons name="calendar" size={16} color="#FF9500" />
         </View>
         <View>
-          <Text style={lb.val}>{SCHEDULE.length}</Text>
+          <Text style={lb.val}>0</Text>
           <Text style={lb.lbl}>yaklaşan yayın</Text>
         </View>
       </View>
@@ -545,14 +437,14 @@ export function LiveScreen() {
 
   const { videos: liveVideos } = useVideos({ type: 'live' });
 
-  const baseVideos = liveVideos.map((v) => ({
+  const allLive = liveVideos.map((v) => ({
     ...v,
     viewers: v.stats.views,
-    category: v.assetTags?.length > 0 ? 'Kripto' : 'Analiz',
-    creator: { ...v.creator, verified: v.creator.verified, successRate: 76 },
-    startedAgo: 'Canlı',
+    category: v.assetTags?.length > 0
+      ? (['BTC','ETH','SOL','XRP','BNB'].some(c => v.assetTags.map((t:string)=>t.toUpperCase()).includes(c)) ? 'Kripto' : 'Hisseler')
+      : 'Analiz',
+    startedAgo: v.timeAgo ?? 'Canlı',
   }));
-  const allLive  = [...EXTRA_LIVE, ...baseVideos];
   const filtered = cat === 'Tümü' ? allLive : allLive.filter((v) => v.category === cat);
   const [featured, ...rest] = filtered;
 
@@ -585,7 +477,7 @@ export function LiveScreen() {
       </View>
 
       {/* ── Top Streamers ── */}
-      <TopStreamersBar />
+      <TopStreamersBar liveItems={allLive} />
 
       {/* ── Category filter ── */}
       <ScrollView
@@ -684,19 +576,14 @@ export function LiveScreen() {
               </>
             )}
 
-            {/* Schedule */}
+            {/* Schedule - coming soon */}
             <View style={[ls.sectionHeader, { marginTop: 20 }]}>
               <Ionicons name="calendar" size={14} color="#FF9500" />
               <Text style={ls.sectionTitle}>Yaklaşan Yayınlar</Text>
             </View>
-            <View style={ls.scheduleList}>
-              {SCHEDULE.map((s) => (
-                <ScheduleCard
-                  key={s.id}
-                  item={s}
-                  onNotify={() => {}}
-                />
-              ))}
+            <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#FFF', borderRadius: 12, marginHorizontal: 14 }}>
+              <Ionicons name="calendar-outline" size={28} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 8 }}>Henüz planlanan yayın yok</Text>
             </View>
 
             {/* Disclaimer */}
