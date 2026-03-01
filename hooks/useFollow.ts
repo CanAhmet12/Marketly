@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { createNotification } from '../lib/notifications';
 
 export function useFollow(targetUserId?: string) {
   const { user } = useAuth();
@@ -61,6 +62,15 @@ export function useFollow(targetUserId?: string) {
           .from('follows')
           .insert({ follower_id: user.id, following_id: targetUserId });
         if (error) throw error;
+        // Takip edilen kişiye bildirim gönder
+        createNotification({
+          recipientId: targetUserId,
+          senderId:    user.id,
+          type:        'follow',
+          title:       'Seni takip etmeye başladı 👤',
+          body:        'Profilini ziyaret et',
+          relatedId:   user.id,
+        });
       }
       return !wasFollowing;
     } catch {

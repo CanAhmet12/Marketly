@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { createNotification } from '../lib/notifications';
 
 export interface Comment {
   id:           string;
@@ -95,11 +96,23 @@ export function useComments(postId: string | null) {
         const { error: rpcErr } = await supabase.rpc('increment_comments', { post_id: postId });
         if (rpcErr) throw rpcErr;
       } catch {
-        // RPC yoksa manuel güncelle
         const { data: postData } = await supabase
-          .from('posts').select('comments_count').eq('id', postId).single();
+          .from('posts').select('comments_count, user_id').eq('id', postId).single();
         const current = (postData as any)?.comments_count ?? 0;
         await supabase.from('posts').update({ comments_count: current + 1 }).eq('id', postId);
+
+        // Post sahibine yorum bildirimi
+        const postOwnerId = (postData as any)?.user_id;
+        if (postOwnerId && postOwnerId !== user.id) {
+          createNotification({
+            recipientId: postOwnerId,
+            senderId:    user.id,
+            type:        'comment',
+            title:       'Gönderine yorum yaptı 💬',
+            body:        content.trim().slice(0, 80),
+            relatedId:   postId,
+          });
+        }
       }
 
       await fetchComments();

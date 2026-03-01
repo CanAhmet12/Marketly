@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { createNotification } from '../lib/notifications';
 
 export interface Post {
   id:          string;
@@ -171,6 +172,17 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         await supabase.from('post_likes').insert({ user_id: user.id, post_id: postId });
         await supabase.from('posts')
           .update({ likes: post.likes + 1 }).eq('id', postId);
+        // Post sahibine bildirim gönder
+        if (post.user_id !== user.id) {
+          createNotification({
+            recipientId: post.user_id,
+            senderId:    user.id,
+            type:        'like',
+            title:       'Gönderini beğendi ❤️',
+            body:        post.content.slice(0, 80),
+            relatedId:   postId,
+          });
+        }
       }
     } catch {
       // Rollback
