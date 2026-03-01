@@ -280,22 +280,36 @@ INSERT INTO signals (
 
 -- ─── 5. ASSETS + ASSET_PRICES ────────────────────────────────────────────────
 INSERT INTO assets (id, symbol, name, category, logo_letter, logo_color) VALUES
-  ('BTC',    'BTC',     'Bitcoin',      'crypto',      'B',   '#F7931A'),
-  ('ETH',    'ETH',     'Ethereum',     'crypto',      'Ξ',   '#627EEA'),
-  ('BNB',    'BNB',     'BNB',          'crypto',      'B',   '#F3BA2F'),
-  ('SOL',    'SOL',     'Solana',       'crypto',      'S',   '#9945FF'),
-  ('XRP',    'XRP',     'XRP',          'crypto',      'X',   '#00AAE4'),
-  ('AAPL',   'AAPL',    'Apple Inc.',   'stocks',      'A',   '#555555'),
-  ('NVDA',   'NVDA',    'NVIDIA Corp.', 'stocks',      'N',   '#76B900'),
-  ('TSLA',   'TSLA',    'Tesla Inc.',   'stocks',      'T',   '#CC0000'),
-  ('MSFT',   'MSFT',    'Microsoft',    'stocks',      'M',   '#00A4EF'),
-  ('AMZN',   'AMZN',    'Amazon',       'stocks',      'A',   '#FF9900'),
-  ('XAU',    'XAU/USD', 'Altın',        'commodities', 'Au',  '#FFD700'),
-  ('XAG',    'XAG/USD', 'Gümüş',        'commodities', 'Ag',  '#C0C0C0'),
-  ('WTI',    'WTI',     'Ham Petrol',   'commodities', 'P',   '#333333'),
-  ('USDTRY', 'USD/TRY', 'Dolar/TL',     'forex',       '$',   '#007AFF'),
-  ('EURTRY', 'EUR/TRY', 'Euro/TL',      'forex',       '€',   '#003399'),
-  ('EURUSD', 'EUR/USD', 'Euro/Dolar',   'forex',       '€',   '#1A73E8')
+  -- Kripto
+  ('BTC',     'BTC',      'Bitcoin',           'crypto',      'B',   '#F7931A'),
+  ('ETH',     'ETH',      'Ethereum',          'crypto',      'Ξ',   '#627EEA'),
+  ('BNB',     'BNB',      'BNB',               'crypto',      'B',   '#F3BA2F'),
+  ('SOL',     'SOL',      'Solana',            'crypto',      'S',   '#9945FF'),
+  ('XRP',     'XRP',      'XRP',               'crypto',      'X',   '#00AAE4'),
+  -- Hisseler (global)
+  ('AAPL',    'AAPL',     'Apple Inc.',        'stocks',      'A',   '#555555'),
+  ('NVDA',    'NVDA',     'NVIDIA Corp.',      'stocks',      'N',   '#76B900'),
+  ('TSLA',    'TSLA',     'Tesla Inc.',        'stocks',      'T',   '#CC0000'),
+  ('MSFT',    'MSFT',     'Microsoft',         'stocks',      'M',   '#00A4EF'),
+  ('AMZN',    'AMZN',     'Amazon',            'stocks',      'A',   '#FF9900'),
+  -- Türk hisseleri
+  ('THYAO',   'THYAO',    'Türk Hava Yolları', 'stocks',      'TK',  '#E81F2A'),
+  ('EREGL',   'EREGL',    'Ereğli Demir Çelik','stocks',      'E',   '#5C7A99'),
+  ('GARAN',   'GARAN',    'Garanti Bankası',   'stocks',      'G',   '#00A651'),
+  ('ASELS',   'ASELS',    'Aselsan',           'stocks',      'A',   '#003DA5'),
+  ('KCHOL',   'KCHOL',    'Koç Holding',       'stocks',      'K',   '#E40521'),
+  -- Endeksler
+  ('BIST100', 'BIST100',  'BIST 100',          'stocks',      'B',   '#E81F2A'),
+  ('NASDAQ',  'NASDAQ',   'Nasdaq Composite',  'stocks',      'N',   '#007AFF'),
+  ('SPX',     'S&P500',   'S&P 500',           'stocks',      'S',   '#4CAF50'),
+  -- Emtialar
+  ('XAU',     'XAU/USD',  'Altın',             'commodities', 'Au',  '#FFD700'),
+  ('XAG',     'XAG/USD',  'Gümüş',             'commodities', 'Ag',  '#C0C0C0'),
+  ('WTI',     'WTI',      'Ham Petrol',        'commodities', 'P',   '#333333'),
+  -- Döviz
+  ('USDTRY',  'USD/TRY',  'Dolar/TL',          'forex',       '$',   '#007AFF'),
+  ('EURTRY',  'EUR/TRY',  'Euro/TL',           'forex',       '€',   '#003399'),
+  ('EURUSD',  'EUR/USD',  'Euro/Dolar',        'forex',       '€',   '#1A73E8')
 ON CONFLICT (id) DO UPDATE SET
   symbol     = EXCLUDED.symbol,
   name       = EXCLUDED.name,
