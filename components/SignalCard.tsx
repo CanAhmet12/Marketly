@@ -1,7 +1,9 @@
 import React, { useState, memo } from 'react';
-import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { colors, radius, shadow } from '../constants/theme';
 
 // ─── Unified signal type (RealSignal + legacy TradeSignal compatible) ─────────
@@ -81,8 +83,60 @@ function timeAgo(iso?: string): string {
 
 export const SignalCard = memo(function SignalCard({ signal }: { signal: SignalCardData }) {
   const toast = useToast();
+  const { user } = useAuth();
   const [liked, setLiked]   = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!user) { toast.info('Kopyalamak için giriş yap'); return; }
+    const newCopied = !copied;
+    setCopied(newCopied);
+
+    if (newCopied) {
+      // Supabase'e kopyalama kaydı
+      await supabase.from('signal_copies').upsert(
+        { user_id: user.id, signal_id: signal.id },
+        { onConflict: 'user_id,signal_id' }
+      );
+      // copies_count güncelle
+      await supabase.rpc('increment_signal_copies', { signal_id: signal.id });
+
+      // Portföye eklemeyi sor
+      const entryP = Number(signal.entry_price ?? signal.entryPrice ?? 0);
+      if (entryP > 0) {
+        Alert.alert(
+          'Portföye Ekle?',
+          `${assetSymbol} sinyalini giriş fiyatıyla portföye de eklemek ister misin?`,
+          [
+            { text: 'Sadece Kopyala', style: 'cancel', onPress: () => toast.success(`${assetSymbol} sinyali kopyalandı 📋`) },
+            {
+              text: 'Portföye Ekle',
+              onPress: async () => {
+                const { error } = await supabase.from('portfolio_holdings').insert({
+                  user_id:  user.id,
+                  asset_id: (signal.asset_id ?? signal.symbol ?? signal.asset ?? '').toUpperCase(),
+                  symbol:   (signal.symbol ?? signal.asset_id ?? signal.asset ?? '').toUpperCase(),
+                  name:     signal.assetName ?? signal.symbol ?? '',
+                  quantity: 1,
+                  avg_cost: entryP,
+                });
+                if (!error) toast.success(`${assetSymbol} portföye eklendi ✓`);
+                else toast.success(`${assetSymbol} sinyali kopyalandı 📋`);
+              },
+            },
+          ]
+        );
+      } else {
+        toast.success(`${assetSymbol} sinyali kopyalandı 📋`);
+      }
+    } else {
+      await supabase.from('signal_copies')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('signal_id', signal.id);
+      toast.info('Sinyal kopyası iptal edildi');
+    }
+  };
 
   // ── Normalize fields (real vs legacy) ────────────────────────────────────
   const assetSymbol  = signal.asset   ?? signal.asset_id ?? signal.symbol ?? '?';
@@ -222,10 +276,7 @@ export const SignalCard = memo(function SignalCard({ signal }: { signal: SignalC
 
         <Pressable
           style={[sc.copyBtn, copied && sc.copyBtnActive]}
-          onPress={() => {
-            setCopied(!copied);
-            toast.success(copied ? 'Sinyal kopyası iptal edildi' : `${assetSymbol} sinyali kopyalandı 📋`);
-          }}
+          onPress={handleCopy}
         >
           <Ionicons name={copied ? 'copy' : 'copy-outline'} size={14} color={copied ? '#FFF' : colors.primary} />
           <Text style={[sc.copyTxt, copied && sc.copyTxtActive]}>
