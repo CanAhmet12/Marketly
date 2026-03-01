@@ -10,15 +10,19 @@ export function useWatchlist() {
   // İlk yükleme — Supabase'den çek
   useEffect(() => {
     if (!user?.id) { setWatchlist(new Set()); return; }
-    setLoading(true);
-    supabase
-      .from('watchlists')
-      .select('asset_id')
-      .eq('user_id', user.id)
-      .then(({ data }) => {
-        if (data) setWatchlist(new Set(data.map(r => r.asset_id)));
-      })
-      .finally(() => setLoading(false));
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { data } = await supabase
+          .from('watchlists')
+          .select('asset_id')
+          .eq('user_id', user.id);
+        if (data) setWatchlist(new Set(data.map((r: any) => r.asset_id)));
+      } catch { /* ignore */ } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [user?.id]);
 
   const isWatched = useCallback((assetId: string) =>

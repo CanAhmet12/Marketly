@@ -17,6 +17,14 @@ const LB_TABS: LBTab[] = ['Analistler', 'Sinyaller', 'Kazananlar'];
 
 // ─── Podium bileşeni (ilk 3 için) ────────────────────────────────────────────
 function Podium({ data }: { data: { rank: number; id: string; name: string; avatar: string; accuracy: number; verified: boolean; badge: string; tier?: string }[] }) {
+  if (data.length < 3) {
+    return (
+      <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13 }}>Veri yükleniyor...</Text>
+      </View>
+    );
+  }
   const top3   = data.slice(0, 3);
   const order  = [top3[1], top3[0], top3[2]]; // 2-1-3 dizisi
   const heights = [80, 100, 64];

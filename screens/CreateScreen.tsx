@@ -309,7 +309,7 @@ export function CreateScreen() {
         const ok = await createSignal({
           asset_id:     sigAsset.toUpperCase(),
           direction:    sigDir as 'BUY' | 'SELL' | 'HOLD',
-          confidence:   sigConf,
+          confidence:   sigConfidence,
           entry_price:  sigEntry  ? parseFloat(sigEntry)  : undefined,
           target_price: sigTarget ? parseFloat(sigTarget) : undefined,
           stop_loss:    sigStop   ? parseFloat(sigStop)   : undefined,
@@ -345,16 +345,16 @@ export function CreateScreen() {
           }).select('id').single();
           if (fbErr) { toast.error('Yayın oluşturulamadı: ' + fbErr.message); setPublishing(false); return; }
           // live_sessions tablosuna yaz
-          await supabase.from('live_sessions').insert({
+          try { await supabase.from('live_sessions').insert({
             post_id: fb?.id, channel_name: channelName, host_id: user.id,
             title: contentText, is_active: true, viewer_count: 0,
-          }).catch(() => {});
+          }); } catch { /* ignore */ }
           navigation.replace('LiveBroadcast', { channelName, title: contentText, postId: fb?.id ?? '' });
         } else {
-          await supabase.from('live_sessions').insert({
+          try { await supabase.from('live_sessions').insert({
             post_id: postData?.id, channel_name: channelName, host_id: user.id,
             title: contentText, is_active: true, viewer_count: 0,
-          }).catch(() => {});
+          }); } catch { /* ignore */ }
           navigation.replace('LiveBroadcast', { channelName, title: contentText, postId: postData?.id ?? '' });
         }
 

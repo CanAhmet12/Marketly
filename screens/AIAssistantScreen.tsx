@@ -166,7 +166,7 @@ export function AIAssistantScreen() {
   // Karşılama mesajı
   useEffect(() => {
     const topAssets = assets.slice(0, 3).map(a =>
-      `${a.symbol}: ${a.price} (${a.changePercent >= 0 ? '+' : ''}${a.changePercent}%)`
+      `${a.symbol}: ${a.priceFormatted} (${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%)`
     ).join(', ');
 
     setMessages([{
@@ -209,7 +209,7 @@ export function AIAssistantScreen() {
     const context    = [
       'PIYASA_VERILERI:',
       ...allContext.map(a =>
-        `${a.symbol}: $${a.price} (${a.changePercent >= 0 ? '+' : ''}${a.changePercent?.toFixed(2)}%)`
+        `${a.symbol}: ${a.priceFormatted} (${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%)`
       ),
       `TARIH: ${new Date().toLocaleDateString('tr-TR')}`,
     ].join(' | ');

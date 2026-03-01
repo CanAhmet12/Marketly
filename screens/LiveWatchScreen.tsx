@@ -113,25 +113,29 @@ export function LiveWatchScreen() {
     if (!chatMsg.trim()) return;
     const text = chatMsg.trim();
     setChatMsg('');
-    await supabase.from('live_messages').insert({
-      post_id:  postId,
-      user_id:  user?.id,
-      username: profile?.username ?? 'İzleyici',
-      content:  text,
-      is_gift:  false,
-    }).catch(() => {});
+    try {
+      await supabase.from('live_messages').insert({
+        post_id:  postId,
+        user_id:  user?.id,
+        username: profile?.username ?? 'İzleyici',
+        content:  text,
+        is_gift:  false,
+      });
+    } catch { /* ignore */ }
   };
 
   const sendGift = async (gift: typeof GIFTS[0]) => {
-    await supabase.from('live_messages').insert({
-      post_id:   postId,
-      user_id:   user?.id,
-      username:  profile?.username ?? 'İzleyici',
-      content:   `${gift.icon} ${gift.name} gönderdi!`,
-      is_gift:   true,
-      gift_icon: gift.icon,
-      gift_name: gift.name,
-    }).catch(() => {});
+    try {
+      await supabase.from('live_messages').insert({
+        post_id:   postId,
+        user_id:   user?.id,
+        username:  profile?.username ?? 'İzleyici',
+        content:   `${gift.icon} ${gift.name} gönderdi!`,
+        is_gift:   true,
+        gift_icon: gift.icon,
+        gift_name: gift.name,
+      });
+    } catch { /* ignore */ }
     toast.success(`${gift.icon} "${gift.name}" gönderildi!`);
     setShowGifts(false);
   };
@@ -246,10 +250,6 @@ export function LiveWatchScreen() {
           <View style={gm.handle} />
           <View style={gm.header}>
             <Text style={gm.title}>🎁 Hediye Gönder</Text>
-            <View style={gm.balance}>
-              <Text style={gm.balIcon}>🪙</Text>
-              <Text style={gm.balVal}>{balance} MC</Text>
-            </View>
           </View>
           <View style={gm.grid}>
             {GIFTS.map(g => (

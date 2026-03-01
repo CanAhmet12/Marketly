@@ -164,7 +164,7 @@ function PackageDetailModal({
       <View style={dm.overlay}>
         <Pressable style={dm.backdrop} onPress={onClose} />
         <View style={[dm.sheet, { backgroundColor: colors.bgPure }]}>
-          <View style={[dm.handle, { backgroundColor: colors.border }]} />
+          <View style={[dm.dragHandle, { backgroundColor: colors.border }]} />
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header */}
@@ -261,7 +261,7 @@ export function SignalMarketplaceScreen() {
     speciality:    a.specialty ?? 'Finansal Analiz',
     accuracy:      a.accuracy,
     total_signals: a.signals,
-    subscribers:   a.followers,
+    subscribers:   parseInt(a.followers.replace(/[KM]/g, m => m === 'K' ? '000' : '000000'), 10) || 0,
     price_monthly: 149 + (i % 4) * 50,
     description:   `${a.name} tarafından profesyonel sinyal paketi. ${a.accuracy}% başarı oranı ile ${a.signals} sinyal yayımlandı.`,
     tags:          ['BTC', 'ETH', 'SOL'].slice(0, 2),
@@ -461,7 +461,7 @@ const dm = StyleSheet.create({
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingTop: 12, maxHeight: '90%',
   },
-  handle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
+  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
 
   header:    { flexDirection: 'row', gap: 14, paddingHorizontal: 20, marginBottom: 16 },
   avatar:    { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },

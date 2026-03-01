@@ -86,7 +86,7 @@ function AssetResult({ asset, onPress }: { asset: ReturnType<typeof liveToMarket
   );
 }
 
-function CreatorResult({ creator }: { creator: typeof HOT_CREATORS[0] }) {
+function CreatorResult({ creator }: { creator: SimpleCreator }) {
   const [following, setFollowing] = useState(false);
   return (
     <View style={r.creatorRow}>

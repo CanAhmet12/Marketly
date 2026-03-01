@@ -99,13 +99,15 @@ export function LiveBroadcastScreen() {
 
   const sendMessage = async () => {
     if (!chatMsg.trim() || !postId) return;
-    await supabase.from('live_messages').insert({
-      post_id:  postId,
-      user_id:  user?.id,
-      username: profile?.username ?? 'Yayıncı',
-      content:  chatMsg.trim(),
-      is_gift:  false,
-    }).catch(() => {});
+    try {
+      await supabase.from('live_messages').insert({
+        post_id:  postId,
+        user_id:  user?.id,
+        username: profile?.username ?? 'Yayıncı',
+        content:  chatMsg.trim(),
+        is_gift:  false,
+      });
+    } catch { /* ignore */ }
     setChatMsg('');
   };
 
@@ -116,9 +118,11 @@ export function LiveBroadcastScreen() {
         text: 'Sonlandır',
         style: 'destructive',
         onPress: async () => {
-          await supabase.from('live_sessions')
-            .update({ is_active: false, ended_at: new Date().toISOString() })
-            .eq('channel_name', channelName).catch(() => {});
+          try {
+            await supabase.from('live_sessions')
+              .update({ is_active: false, ended_at: new Date().toISOString() })
+              .eq('channel_name', channelName);
+          } catch { /* ignore */ }
           await leaveChannel();
           navigation.goBack();
           toast.success('Yayın sonlandırıldı');

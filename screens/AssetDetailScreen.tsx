@@ -586,8 +586,9 @@ interface Props {
 }
 
 export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
-  const insets = useSafeAreaInsets();
-  const toast  = useToast();
+  const insets     = useSafeAreaInsets();
+  const toast      = useToast();
+  const navigation = useNavigation<any>();
 
   const [range, setRange]     = useState<Range>('1G');
   const [alertModal, setAlertModal] = useState(false);
