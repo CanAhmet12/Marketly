@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, ScrollView, Switch, Image, Linking,
+  View, Text, Pressable, StyleSheet, ScrollView, Switch, Image, Linking, Alert, TextInput, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +47,9 @@ export function SettingsScreen() {
   const [biometric, setBiometric]        = useState(false);
   const [twoFactor, setTwoFactor]        = useState(false);
   const [analyticsOpt, setAnalyticsOpt] = useState(true);
+  const [deleteModal, setDeleteModal]   = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting]         = useState(false);
 
   // AsyncStorage'dan bildirim tercihlerini yükle
   useEffect(() => {
@@ -216,9 +219,9 @@ export function SettingsScreen() {
         },
         {
           id: 'data', icon: 'trash-outline', iconBg: '#FF3B3B',
-          label: 'Verileri Sil', sublabel: 'Hesabı kalıcı olarak sil',
+          label: 'Hesabı Sil', sublabel: 'Tüm verilerini kalıcı olarak sil',
           type: 'danger',
-          onPress: () => toast.error('Bu işlem geri alınamaz! Destek ile iletişime geçin.'),
+          onPress: () => setDeleteModal(true),
         },
       ],
     },
@@ -296,6 +299,60 @@ export function SettingsScreen() {
 
         <View style={{ height: insets.bottom + 30 }} />
       </ScrollView>
+
+      {/* Delete Account Modal */}
+      <Modal visible={deleteModal} transparent animationType="fade">
+        <KeyboardAvoidingView
+          style={dm.overlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={dm.sheet}>
+            <View style={dm.iconWrap}>
+              <Ionicons name="warning" size={34} color="#FF3B3B" />
+            </View>
+            <Text style={dm.title}>Hesabı Sil</Text>
+            <Text style={dm.body}>
+              Bu işlem geri alınamaz. Tüm verileriniz (portföy, sinyaller, gönderiler) kalıcı olarak silinecek.
+            </Text>
+            <Text style={dm.confirmLabel}>Onaylamak için <Text style={{ fontWeight: '800' }}>SİL</Text> yazın:</Text>
+            <TextInput
+              style={dm.confirmInput}
+              placeholder="SİL"
+              placeholderTextColor="#888"
+              value={deleteConfirm}
+              onChangeText={setDeleteConfirm}
+              autoCapitalize="characters"
+            />
+            <View style={dm.btnRow}>
+              <Pressable style={dm.cancelBtn} onPress={() => { setDeleteModal(false); setDeleteConfirm(''); }}>
+                <Text style={dm.cancelTxt}>İptal</Text>
+              </Pressable>
+              <Pressable
+                style={[dm.deleteBtn, deleteConfirm !== 'SİL' && dm.deleteBtnDisabled]}
+                disabled={deleteConfirm !== 'SİL' || deleting}
+                onPress={async () => {
+                  setDeleting(true);
+                  try {
+                    await supabase.from('portfolio_holdings').delete().eq('user_id', user!.id);
+                    await supabase.from('posts').delete().eq('user_id', user!.id);
+                    await supabase.from('signals').delete().eq('creator_id', user!.id);
+                    await supabase.from('profiles').delete().eq('id', user!.id);
+                    await supabase.auth.signOut();
+                    toast.success('Hesabınız silindi');
+                    setDeleteModal(false);
+                  } catch {
+                    toast.error('Hesap silinemedi. Destek ile iletişime geçin.');
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+              >
+                <Text style={dm.deleteTxt}>{deleting ? 'Siliniyor...' : 'Hesabı Sil'}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -401,4 +458,40 @@ const si = StyleSheet.create({
   mid: { flex: 1 },
   label: { fontSize: 14, fontWeight: '600' },
   sub: { fontSize: 12, marginTop: 1 },
+});
+
+const dm = StyleSheet.create({
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24,
+  },
+  sheet: {
+    backgroundColor: colors.bgPure, borderRadius: 20, padding: 24, width: '100%',
+    alignItems: 'center',
+  },
+  iconWrap: {
+    width: 68, height: 68, borderRadius: 34, backgroundColor: '#FF3B3B18',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
+  title: { fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 8 },
+  body: {
+    fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20, marginBottom: 20,
+  },
+  confirmLabel: { fontSize: 13, color: colors.textMuted, alignSelf: 'flex-start', marginBottom: 6 },
+  confirmInput: {
+    width: '100%', borderWidth: 1.5, borderColor: colors.border, borderRadius: 10,
+    padding: 12, fontSize: 15, fontWeight: '700', color: colors.text,
+    backgroundColor: colors.bg, letterSpacing: 2, marginBottom: 20,
+  },
+  btnRow: { flexDirection: 'row', gap: 12, width: '100%' },
+  cancelBtn: {
+    flex: 1, paddingVertical: 13, borderRadius: 12, borderWidth: 1.5,
+    borderColor: colors.border, alignItems: 'center',
+  },
+  cancelTxt: { fontSize: 14, fontWeight: '700', color: colors.text },
+  deleteBtn: {
+    flex: 1, paddingVertical: 13, borderRadius: 12, backgroundColor: '#FF3B3B', alignItems: 'center',
+  },
+  deleteBtnDisabled: { backgroundColor: '#FF3B3B55' },
+  deleteTxt: { fontSize: 14, fontWeight: '800', color: '#FFF' },
 });

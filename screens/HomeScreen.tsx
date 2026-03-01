@@ -151,11 +151,23 @@ const tk = StyleSheet.create({
 });
 
 // ─── Stories / Highlights row ─────────────────────────────────────────────────
-const ASSET_STORIES = [
+const FALLBACK_ASSET_STORIES = [
   { id: 'as_btc',  label: 'BTC',    color: '#F7931A', icon: 'logo-bitcoin' },
-  { id: 'as_xau',  label: 'Altın',  color: '#D4AF37', icon: 'star' },
-  { id: 'as_bist', label: 'BIST',   color: '#E81F2A', icon: 'trending-up' },
+  { id: 'as_xau',  label: 'XAU',    color: '#D4AF37', icon: 'star' },
+  { id: 'as_bist', label: 'BIST100',color: '#E81F2A', icon: 'trending-up' },
 ];
+
+const ASSET_ICON_MAP: Record<string, string> = {
+  BTC: 'logo-bitcoin', ETH: 'logo-ethereum', SOL: 'flash', BNB: 'star',
+  XAU: 'star', BIST100: 'trending-up', USDTRY: 'swap-horizontal', AAPL: 'phone-portrait',
+  NVDA: 'hardware-chip', TSLA: 'car', MSFT: 'grid',
+};
+
+const ASSET_COLOR_MAP: Record<string, string> = {
+  BTC: '#F7931A', ETH: '#627EEA', SOL: '#9945FF', BNB: '#F3BA2F',
+  XAU: '#D4AF37', BIST100: '#E81F2A', USDTRY: '#6B7280', AAPL: '#555',
+  NVDA: '#76B900', TSLA: '#CC0000', MSFT: '#00A4EF',
+};
 
 function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; userId?: string }) {
   const navigation = useNavigation<any>();
@@ -190,12 +202,28 @@ function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; user
     up:     true,
   }));
 
-  // Canlı piyasa fiyatlarından asset stories oluştur
-  const assetStories = ASSET_STORIES.map((a) => {
-    const live = allAssets.find(x => x.symbol === a.label || x.id.toUpperCase() === a.label);
-    const pct  = live ? live.change_percent : 0;
-    return { ...a, type: 'asset' as const, change: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`, up: pct >= 0 };
-  });
+  // Canlı piyasa verisinden top 4 hareketli varlığı seç
+  const assetStories = useMemo(() => {
+    const baseAssets = allAssets.length > 0
+      ? [...allAssets].sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent)).slice(0, 4)
+      : null;
+
+    if (!baseAssets || baseAssets.length === 0) {
+      return FALLBACK_ASSET_STORIES.map(a => ({
+        ...a, type: 'asset' as const, change: '', up: true,
+      }));
+    }
+
+    return baseAssets.map(a => ({
+      id:     `as_${a.symbol.toLowerCase()}`,
+      label:  a.symbol,
+      color:  ASSET_COLOR_MAP[a.symbol.toUpperCase()] ?? '#007AFF',
+      icon:   ASSET_ICON_MAP[a.symbol.toUpperCase()] ?? 'trending-up',
+      type:   'asset' as const,
+      change: `${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(1)}%`,
+      up:     a.change_percent >= 0,
+    }));
+  }, [allAssets]);
 
   const allStories = [
     { id: 'sh1', type: 'shorts' as const, label: 'Shorts', color: '#FF3B3B', icon: 'play' },

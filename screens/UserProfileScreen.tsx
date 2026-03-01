@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFollow } from '../hooks/useFollow';
 import { usePosts } from '../hooks/usePosts';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useSignals } from '../hooks/useSignals';
 import { PostCard } from '../components/PostCard';
 import { BadgesRow } from '../components/BadgesRow';
 import { useToast } from '../contexts/ToastContext';
@@ -37,6 +38,7 @@ export function UserProfileScreen({ userId, onBack }: Props) {
   const { isFollowing, followersCount, followingCount, toggle, loading: followLoading } = useFollow(userId);
   const { posts: userPosts, toggleLike } = usePosts(undefined, 'all', userId);
   const { profile, loading: profileLoading } = useUserProfile(userId);
+  const { signals: userSignals } = useSignals({ creatorId: userId });
 
   // Profil bilgisi: Supabase'den çekildi ise kullan, yoksa post verisinden al
   const displayName = profile?.displayName ?? userPosts[0]?.author_name ?? 'Kullanıcı';
@@ -156,7 +158,8 @@ export function UserProfileScreen({ userId, onBack }: Props) {
             { val: fmt(profile?.follower_count  ?? followersCount), lbl: 'Takipçi' },
             { val: fmt(profile?.following_count ?? followingCount), lbl: 'Takip' },
             { val: String(userPosts.length), lbl: 'Gönderi' },
-            ...(profile?.signal_accuracy ? [{ val: `${profile.signal_accuracy.toFixed(1)}%`, lbl: 'Doğruluk' }] : []),
+            ...(userSignals.length > 0 ? [{ val: String(userSignals.length), lbl: 'Sinyal' }] : []),
+            ...(profile?.signal_accuracy != null ? [{ val: `${profile.signal_accuracy.toFixed(1)}%`, lbl: 'Doğruluk' }] : []),
           ].map((st, i) => (
             <React.Fragment key={st.lbl}>
               {i > 0 && <View style={s.statsDivider} />}
