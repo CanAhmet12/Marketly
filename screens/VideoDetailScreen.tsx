@@ -280,11 +280,12 @@ const ab = StyleSheet.create({
 });
 
 // ─── Comment Row ──────────────────────────────────────────────────────────────
-function CommentRow({ c, liked, onLike, onDelete }: {
+function CommentRow({ c, liked, onLike, onDelete, onReply }: {
   c: { id: string; user: string; avatar: string; time: string; text: string; likes: number; isPinned: boolean };
   liked: boolean;
   onLike: () => void;
   onDelete?: () => void;
+  onReply?: () => void;
 }) {
   return (
     <View style={cm.row}>
@@ -311,7 +312,7 @@ function CommentRow({ c, liked, onLike, onDelete }: {
             <Ionicons name={liked ? 'heart' : 'heart-outline'} size={13} color={liked ? colors.fall : colors.textMuted} />
             <Text style={[cm.likeTxt, liked && { color: colors.fall }]}>{liked ? c.likes + 1 : c.likes}</Text>
           </Pressable>
-          <Pressable>
+          <Pressable onPress={onReply} hitSlop={8}>
             <Text style={cm.reply}>Yanıtla</Text>
           </Pressable>
         </View>
@@ -690,6 +691,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
                   if (!likedCmts[c.id]) likeComment(c.id);
                 }}
                 onDelete={(c as any).isOwn ? () => deleteComment(c.id) : undefined}
+                onReply={() => setComment(`@${c.user} `)}
               />
             ))
           )}

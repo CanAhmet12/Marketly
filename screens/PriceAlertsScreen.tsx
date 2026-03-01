@@ -240,6 +240,9 @@ function AlertRow({ alert: a, onRemove, currentPrice }: {
   const isAbove = a.condition === 'above';
   const color   = isAbove ? '#34C759' : '#FF3B3B';
   const target  = a.target ?? a.target_price ?? 0;
+  const sym     = (a.asset_id ?? a.symbol ?? '').toUpperCase();
+  const isTRY   = ['USDTRY','EURTRY','GBPTRY','XAUTRY','BIST100','THYAO','SASA','KCHOL'].some(t => sym.includes(t));
+  const prefix  = isTRY ? '₺' : '$';
 
   // Hedefe ne kadar uzak?
   const pctAway = currentPrice && target
@@ -273,10 +276,10 @@ function AlertRow({ alert: a, onRemove, currentPrice }: {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
           <Text style={s.alertDesc}>
             {isAbove ? 'Üzerine çıkınca' : 'Altına düşünce'} ·{' '}
-            <Text style={{ color, fontWeight: '700' }}>${target.toLocaleString()}</Text>
+            <Text style={{ color, fontWeight: '700' }}>{prefix}{target.toLocaleString()}</Text>
           </Text>
           {currentPrice != null && (
-            <Text style={s.currentPriceTxt}>Şu an: ${currentPrice >= 1000
+            <Text style={s.currentPriceTxt}>Şu an: {prefix}{currentPrice >= 1000
               ? currentPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })
               : currentPrice.toFixed(2)
             }</Text>

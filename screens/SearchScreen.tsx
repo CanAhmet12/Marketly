@@ -266,6 +266,21 @@ export function SearchScreen({ onBack }: Props) {
     { key: 'creators', label: 'Creator',   count: creatorResults.length },
   ];
 
+  // Arama sonuçları gelince en çok sonucu olan tab'ı otomatik seç
+  React.useEffect(() => {
+    if (query.length < 2) return;
+    const counts: Record<ResultTab, number> = {
+      videos:   videoResults.length,
+      assets:   assetResults.length,
+      creators: creatorResults.length,
+    };
+    const best = (Object.entries(counts) as [ResultTab, number][])
+      .sort(([, a], [, b]) => b - a)[0];
+    if (best && best[1] > 0 && counts[activeTab] === 0) {
+      setActiveTab(best[0]);
+    }
+  }, [videoResults.length, assetResults.length, creatorResults.length, query]);
+
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
       {/* Search bar */}

@@ -182,32 +182,75 @@ export function useSignals(opts: {
   }, [user?.id, fetchSignals]);
 
   const likeSignal = useCallback(async (signalId: string): Promise<boolean> => {
+    if (!user?.id) return false;
     try {
       const sig = signals.find(s => s.id === signalId);
       if (!sig) return false;
-      await supabase.from('signals')
-        .update({ likes_count: sig.likes_count + 1 })
-        .eq('id', signalId);
-      setSignals(prev =>
-        prev.map(s => s.id === signalId ? { ...s, likes_count: s.likes_count + 1 } : s)
-      );
+
+      // Daha önce beğenip beğenmediğini kontrol et
+      const { data: existing } = await supabase
+        .from('signal_likes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('signal_id', signalId)
+        .maybeSingle();
+
+      if (existing) {
+        // Beğeniyi geri al
+        await supabase.from('signal_likes').delete()
+          .eq('user_id', user.id).eq('signal_id', signalId);
+        await supabase.from('signals')
+          .update({ likes_count: Math.max(0, sig.likes_count - 1) })
+          .eq('id', signalId);
+        setSignals(prev =>
+          prev.map(s => s.id === signalId ? { ...s, likes_count: Math.max(0, s.likes_count - 1) } : s)
+        );
+      } else {
+        // Yeni beğeni
+        await supabase.from('signal_likes').upsert(
+          { user_id: user.id, signal_id: signalId },
+          { onConflict: 'user_id,signal_id' }
+        );
+        await supabase.from('signals')
+          .update({ likes_count: sig.likes_count + 1 })
+          .eq('id', signalId);
+        setSignals(prev =>
+          prev.map(s => s.id === signalId ? { ...s, likes_count: s.likes_count + 1 } : s)
+        );
+      }
       return true;
     } catch { return false; }
-  }, [signals]);
+  }, [user?.id, signals]);
 
   const copySignal = useCallback(async (signalId: string): Promise<boolean> => {
+    if (!user?.id) return false;
     try {
       const sig = signals.find(s => s.id === signalId);
       if (!sig) return false;
-      await supabase.from('signals')
-        .update({ copies_count: sig.copies_count + 1 })
-        .eq('id', signalId);
-      setSignals(prev =>
-        prev.map(s => s.id === signalId ? { ...s, copies_count: s.copies_count + 1 } : s)
-      );
+
+      // Aynı kullanıcı aynı sinyali iki kez kopyalayamasın
+      const { data: existing } = await supabase
+        .from('signal_copies')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('signal_id', signalId)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from('signal_copies').upsert(
+          { user_id: user.id, signal_id: signalId },
+          { onConflict: 'user_id,signal_id' }
+        );
+        await supabase.from('signals')
+          .update({ copies_count: sig.copies_count + 1 })
+          .eq('id', signalId);
+        setSignals(prev =>
+          prev.map(s => s.id === signalId ? { ...s, copies_count: s.copies_count + 1 } : s)
+        );
+      }
       return true;
     } catch { return false; }
-  }, [signals]);
+  }, [user?.id, signals]);
 
   return {
     signals, loading, hasMore,
