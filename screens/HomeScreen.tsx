@@ -383,20 +383,21 @@ export function HomeScreen() {
   }, [posts, feedTab]);
 
   const displaySignals = liveSignals.map(s => ({
-    id: s.id,
-    symbol: s.symbol,
-    direction: s.direction as 'BUY' | 'SELL' | 'HOLD',
-    confidence: s.confidence,
-    entry: s.entry_price ?? 0,
-    target: s.target_price ?? 0,
-    stopLoss: s.stop_loss ?? 0,
-    timeframe: s.timeframe,
-    rationale: s.rationale ?? '',
-    copies: s.copies_count,
-    likes: s.likes_count,
-    creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
-    isNew: true,
-    createdAt: s.created_at,
+    id:           s.id,
+    asset_id:     s.asset_id,
+    symbol:       s.symbol,
+    direction:    s.direction as 'BUY' | 'SELL' | 'HOLD',
+    confidence:   s.confidence,
+    entry_price:  s.entry_price  ?? null,
+    target_price: s.target_price ?? null,
+    stop_loss:    s.stop_loss    ?? null,
+    timeframe:    s.timeframe,
+    rationale:    s.rationale    ?? null,
+    copies_count: s.copies_count,
+    likes_count:  s.likes_count,
+    creator:      { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
+    isNew:        true,
+    created_at:   s.created_at,
   }));
 
   // Show tab bar when screen comes into focus
