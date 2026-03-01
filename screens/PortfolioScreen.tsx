@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { usePortfolio } from '../hooks/usePortfolio';
+import { useMarketPrices } from '../hooks/useMarketPrices';
+import { liveToMarketAsset } from '../services/marketService';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { PortfolioShareCard } from '../components/PortfolioShareCard';
@@ -131,6 +133,7 @@ export function PortfolioScreen() {
     holdings, loading, totalValue, totalCost, totalPnL, totalPnLPct,
     addHolding, removeHolding, refetch,
   } = usePortfolio();
+  const { allAssets } = useMarketPrices();
 
   const [addModal, setAddModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'holdings' | 'allocation' | 'share'>('holdings');
@@ -259,13 +262,20 @@ export function PortfolioScreen() {
           </View>
         ) : activeTab === 'holdings' ? (
           <View style={s.list}>
-            {holdings.map(h => (
-              <HoldingRow
-                key={h.id}
-                holding={h}
-                onRemove={() => handleRemove(h.id, h.symbol)}
-              />
-            ))}
+            {holdings.map(h => {
+              const live = allAssets.find(a =>
+                a.symbol.toUpperCase() === h.symbol.toUpperCase() ||
+                a.id.toUpperCase() === h.asset_id.toUpperCase()
+              );
+              return (
+                <HoldingRow
+                  key={h.id}
+                  holding={h}
+                  onRemove={() => handleRemove(h.id, h.symbol)}
+                  onPress={live ? () => navigation.navigate('AssetDetail', { asset: liveToMarketAsset(live) }) : undefined}
+                />
+              );
+            })}
           </View>
         ) : activeTab === 'allocation' ? (
           <AllocationView holdings={holdings} />
@@ -307,12 +317,13 @@ export function PortfolioScreen() {
 }
 
 // ─── HoldingRow ────────────────────────────────────────────────────────────────
-function HoldingRow({ holding: h, onRemove }: { holding: any; onRemove: () => void }) {
+function HoldingRow({ holding: h, onRemove, onPress }: { holding: any; onRemove: () => void; onPress?: () => void }) {
   const isUp = h.pnl >= 0;
   const color = assetColor(h.symbol);
   return (
     <Pressable
       style={s.holdingRow}
+      onPress={onPress}
       onLongPress={onRemove}
       delayLongPress={600}
     >
@@ -327,10 +338,11 @@ function HoldingRow({ holding: h, onRemove }: { holding: any; onRemove: () => vo
         <Text style={s.holdingValue}>{fmtUSD(h.current_value)}</Text>
         <View style={[s.holdingPill, { backgroundColor: isUp ? '#34C75918' : '#FF3B3B18' }]}>
           <Text style={[s.holdingPnl, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
-            {fmtPct(h.pnl_pct)}
+            {h.pnl >= 0 ? '+' : ''}{fmtPct(h.pnl_pct)}
           </Text>
         </View>
       </View>
+      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 4 }} />
     </Pressable>
   );
 }
