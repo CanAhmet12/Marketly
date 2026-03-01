@@ -52,22 +52,22 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO profiles (
   id, username, full_name, bio, avatar_url,
   tier, verified, follower_count, following_count,
-  signal_accuracy, signal_count, streak_days, last_login
+  signal_accuracy, streak_days, last_login
 ) VALUES
   (u1, 'cryptoguru',  'Crypto Guru',     'Bitcoin & Ethereum odaklı teknik analist. 8 yıl kripto deneyimi. 🚀',
-   'https://i.pravatar.cc/200?u=cg1', 'elite', true,  124000, 420, 82.4, 248, 12, NOW()),
+   'https://i.pravatar.cc/200?u=cg1', 'elite', true,  124000, 420, 82.4, 12, NOW()),
   (u2, 'borsamaster', 'Borsa Master',    'BIST 30 uzmanı. Temel ve teknik analiz bir arada. Günlük raporlar. 📈',
-   'https://i.pravatar.cc/200?u=bm2', 'pro',   true,   89000, 310, 74.1, 183, 7,  NOW()),
+   'https://i.pravatar.cc/200?u=bm2', 'pro',   true,   89000, 310, 74.1, 7,  NOW()),
   (u3, 'fxwizard',    'FX Wizard',       'Forex trader. EUR/USD, GBP/TRY, XAU/USD üzerine uzmanlaşmış. 💱',
-   'https://i.pravatar.cc/200?u=fw3', 'pro',   true,   67000, 280, 79.3, 312, 5,  NOW()),
+   'https://i.pravatar.cc/200?u=fw3', 'pro',   true,   67000, 280, 79.3, 5,  NOW()),
   (u4, 'techtrader',  'Tech Trader',     'Nasdaq & S&P500 hisseleri. NVDA, AAPL, TSLA analizi. 💻',
-   'https://i.pravatar.cc/200?u=tt4', 'pro',   false,  45000, 190, 72.6, 201, 3,  NOW()),
+   'https://i.pravatar.cc/200?u=tt4', 'pro',   false,  45000, 190, 72.6, 3,  NOW()),
   (u5, 'defihunter',  'DeFi Hunter',     'Solana ekosistemi ve DeFi protokolleri. Yeni projeleri erken yakala. 💎',
-   'https://i.pravatar.cc/200?u=dh5', 'pro',   true,   38000, 150, 71.2, 156, 9,  NOW()),
+   'https://i.pravatar.cc/200?u=dh5', 'pro',   true,   38000, 150, 71.2, 9,  NOW()),
   (u6, 'emtiapro',    'Emtia Pro',       'Altın, gümüş ve petrol piyasası analizi. Makroekonomik yaklaşım. 🥇',
-   'https://i.pravatar.cc/200?u=ep6', 'pro',   false,  29000, 120, 68.5, 134, 2,  NOW()),
+   'https://i.pravatar.cc/200?u=ep6', 'pro',   false,  29000, 120, 68.5, 2,  NOW()),
   (u7, 'demouser',    'Demo Kullanıcı',  'Marketly''yi keşfediyorum 👋',
-   'https://i.pravatar.cc/200?u=du7', 'free',  false,      0,   0,  0.0,   0, 1,  NOW())
+   'https://i.pravatar.cc/200?u=du7', 'free',  false,      0,   0,  0.0,  1,  NOW())
 ON CONFLICT (id) DO UPDATE SET
   username        = EXCLUDED.username,
   full_name       = EXCLUDED.full_name,
@@ -76,8 +76,7 @@ ON CONFLICT (id) DO UPDATE SET
   tier            = EXCLUDED.tier,
   verified        = EXCLUDED.verified,
   follower_count  = EXCLUDED.follower_count,
-  signal_accuracy = EXCLUDED.signal_accuracy,
-  signal_count    = EXCLUDED.signal_count;
+  signal_accuracy = EXCLUDED.signal_accuracy;
 
 END $$;
 
@@ -94,145 +93,144 @@ INSERT INTO follows (follower_id, following_id) VALUES
 ON CONFLICT DO NOTHING;
 
 
--- ─── 3. POSTS (video, short, text, sinyal) ───────────────────────────────────
+-- ─── 3. POSTS (video, short, text) ───────────────────────────────────────────
+-- Not: content kolonu NOT NULL, bu yüzden her satırda dolu olmalı.
+-- creator_id kolonu ADD_TABLES.sql çalıştırıldıktan sonra var olur;
+-- yoksa bu INSERT başarısız olur — önce ADD_TABLES.sql çalıştırın.
+
 INSERT INTO posts (
-  id, user_id, creator_id, type, title, description, content,
-  asset_tag, asset_tags, thumbnail_url, image_url,
+  user_id, creator_id, type, title, description, content,
+  asset_tag, asset_tags, thumbnail_url,
   likes_count, comments_count, views_count, shares_count,
   is_premium, created_at
 ) VALUES
-  -- Videolar
-  (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
-   'video', 'Bitcoin & Ethereum canlı analiz! Kritik seviyeler ve sonraki hamle 🔴',
+  -- ── Videolar ──
+  ('11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+   'video', 'Bitcoin & Ethereum canlı analiz! Kritik seviyeler 🔴',
    'BTC 70K yolunda mı? Kritik destek ve direnç seviyelerini analiz ediyoruz.',
-   'Bitcoin bugün kritik bir seviyeye yaklaşıyor. RSI aşırı alım bölgesinde mi? Fibonacci retracement seviyelerine bakıyoruz.',
+   'Bitcoin bugün kritik bir seviyeye yaklaşıyor. RSI aşırı alım bölgesinde mi?',
    'BTC', ARRAY['BTC','ETH'],
-   'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800', NULL,
+   'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800',
    2490, 376, 47600, 248, false, NOW() - INTERVAL '2 hours'),
 
-  (gen_random_uuid(), '22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
+  ('22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
    'video', 'BIST100 kritik direnç kırıldı! Ne bekliyoruz? 📈',
    'BIST100 önemli bir seviyeyi kırdı. Hangi hisseler öne çıkacak?',
    'BIST100 teknik analiz. Destek seviyeleri ve olası hedefler.',
    'BIST100', ARRAY['BIST100','THYAO'],
-   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600', NULL,
+   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600',
    5100, 234, 51000, 189, false, NOW() - INTERVAL '5 hours'),
 
-  (gen_random_uuid(), '33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
+  ('33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
    'video', 'Altın 3000$''a çıkar mı? XAU/USD teknik analiz 🥇',
    'Fed faiz kararı sonrası altın fiyatları için kritik analiz.',
    'XAU/USD''de kritik seviyeler. Yükseliş devam edecek mi?',
    'XAU', ARRAY['XAU','XAG'],
-   'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=600', NULL,
+   'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=600',
    1890, 89, 11200, 67, false, NOW() - INTERVAL '8 hours'),
 
-  (gen_random_uuid(), '44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
+  ('44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
    'video', 'NVDA $1000''ı görür mü? Yapay zeka rüzgarı devam ediyor 🚀',
    'NVIDIA hissesi için detaylı teknik ve temel analiz.',
    'Yapay zeka talebi NVDA''yı nereye taşır? Beklentiler ve riskler.',
    'NVDA', ARRAY['NVDA','AAPL'],
-   'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600', NULL,
+   'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600',
    12300, 890, 123000, 640, false, NOW() - INTERVAL '3 hours'),
 
-  (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
+  ('55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
    'video', 'Solana ekosistemi patlamada! $SOL için hedef fiyatlar 💎',
-   'SOL tabanlı DeFi projeleri ve meme coin''ler. 2025 hedef analiz.',
+   'SOL tabanlı DeFi projeleri ve meme coinler. 2025 hedef analiz.',
    'Solana''da yüksek işlem hacmi ve yeni projeler. Fiyat nereye gider?',
    'SOL', ARRAY['SOL'],
-   'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600', NULL,
+   'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600',
    4200, 312, 42000, 198, false, NOW() - INTERVAL '6 hours'),
 
-  (gen_random_uuid(), '66666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666',
+  ('66666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666',
    'video', 'Ham Petrol analizi: WTI nereye gidiyor? 🛢️',
    'OPEC kararları ve jeopolitik riskler bağlamında petrol analizi.',
    'WTI ham petrolde kritik destek seviyeleri ve olası hareket.',
    'WTI', ARRAY['WTI','XAU'],
-   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600', NULL,
+   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600',
    980, 67, 9800, 45, false, NOW() - INTERVAL '12 hours'),
 
-  -- Shorts
-  (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+  -- ── Shorts ──
+  ('11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
    'short', 'Bitcoin 70K''a koşuyor mu? 🚀',
    'BTC teknik analizde kilit destek kırıldı! İşte hedef fiyatlar.',
    'BTC destek kırılması ve olası hedefler hakkında kısa analiz.',
    'BTC', ARRAY['BTC','ETH'],
-   'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=1400&fit=crop',
    48200, 1840, 428000, 3200, false, NOW() - INTERVAL '1 hour'),
 
-  (gen_random_uuid(), '22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
+  ('22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
    'short', 'BIST100''de bu hisseler uçuyor! 📈',
    'Günün en çok yükselen 3 hissesi ve teknik analizi.',
    'THYAO ve GARAN''da güçlü yükseliş. Devam eder mi?',
    'THYAO', ARRAY['BIST100','THYAO'],
-   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=1400&fit=crop',
    32100, 920, 218000, 1800, false, NOW() - INTERVAL '4 hours'),
 
-  (gen_random_uuid(), '33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
+  ('33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
    'short', 'Altın 3000$''a çıkar mı? 🥇',
    'Fed faiz kararı sonrası altın fiyatları için kritik analiz.',
    'XAU/USD teknik görünüm ve olası senaryolar.',
    'XAU', ARRAY['XAU'],
-   'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=1400&fit=crop',
    19800, 640, 142000, 980, false, NOW() - INTERVAL '7 hours'),
 
-  (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
+  ('55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
    'short', 'Ethereum 4000$ yolunda mı? ⚡',
    'ETH staking getirileri ve DeFi ekosistemi güncel durum.',
    'Ethereum''da yükseliş trendi devam ediyor mu? Kısa analiz.',
    'ETH', ARRAY['ETH'],
-   'https://images.unsplash.com/photo-1639762681057-408e52192e55?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1639762681057-408e52192e55?w=800&h=1400&fit=crop',
    38900, 1560, 384000, 2800, false, NOW() - INTERVAL '9 hours'),
 
-  (gen_random_uuid(), '44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
+  ('44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
    'short', 'Nasdaq 20000 direnç kırdı! 🔥',
    'Nasdaq tarihi zirveyi aştı, teknoloji hisseleri için ne anlama geliyor?',
    'NVDA ve AAPL''ye bakış. Yeni ATH geliyor mu?',
    'NASDAQ', ARRAY['NASDAQ','NVDA'],
-   'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=1400&fit=crop',
    27500, 1120, 305000, 2100, false, NOW() - INTERVAL '11 hours'),
 
-  (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
+  ('55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
    'short', 'Solana ekosistemi patlamada! 💎',
    'SOL tabanlı yeni DeFi projeleri ve meme coinler.',
    '2025 için SOL hedef fiyat analizi.',
    'SOL', ARRAY['SOL'],
-   'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=1400&fit=crop', NULL,
+   'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=1400&fit=crop',
    52100, 2340, 512000, 4100, false, NOW() - INTERVAL '14 hours'),
 
-  -- Text posts (sosyal medya gönderileri)
-  (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+  -- ── Text posts ──
+  ('11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
    'text', NULL, NULL,
    'Bitcoin bugün $65,000 desteğini test ediyor. RSI haftalık grafikte 52 seviyesinde. Yükseliş trendi sağlam görünüyor. Hedefim $72,000. #BTC #Kripto 🚀',
-   'BTC', ARRAY['BTC'],
-   NULL, NULL,
+   'BTC', ARRAY['BTC'], NULL,
    847, 134, 0, 89, false, NOW() - INTERVAL '30 minutes'),
 
-  (gen_random_uuid(), '22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
+  ('22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
    'text', NULL, NULL,
    'THYAO bugün %3.2 yükseldi. Kargo gelirlerindeki artış ve yeni hat açılımları olumlu. Teknik olarak 265₺ hedefi geçerli. Takipte kalın! #THYAO #BIST',
-   'THYAO', ARRAY['THYAO'],
-   NULL, NULL,
+   'THYAO', ARRAY['THYAO'], NULL,
    523, 87, 0, 45, false, NOW() - INTERVAL '1 hour'),
 
-  (gen_random_uuid(), '33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
+  ('33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
    'text', NULL, NULL,
-   'Altın bu hafta merkez bankası alımlarıyla destekleniyor. Fed faiz indirimi beklentisi arttıkça XAU/USD''de yükseliş baskısı güçleniyor. $2,500 hedefi yakın! #Altın #XAU',
-   'XAU', ARRAY['XAU'],
-   NULL, NULL,
+   'Altın bu hafta merkez bankası alımlarıyla destekleniyor. $2,500 hedefi yakın! #Altın #XAU',
+   'XAU', ARRAY['XAU'], NULL,
    412, 56, 0, 38, false, NOW() - INTERVAL '2 hours'),
 
-  (gen_random_uuid(), '44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
+  ('44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
    'text', NULL, NULL,
-   'NVDA Q4 sonuçları beklentilerin üzerinde geldi. AI chip talebi %200 arttı. Önümüzdeki çeyrekte $1000 hedefi güçlü görünüyor. Portföyümde tutmaya devam ediyorum 💻 #NVDA',
-   'NVDA', ARRAY['NVDA'],
-   NULL, NULL,
+   'NVDA Q4 sonuçları beklentilerin üzerinde geldi. AI chip talebi %200 arttı. $1000 hedefi güçlü! #NVDA 💻',
+   'NVDA', ARRAY['NVDA'], NULL,
    1240, 198, 0, 156, false, NOW() - INTERVAL '3 hours'),
 
-  (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
+  ('55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
    'text', NULL, NULL,
-   'Solana''da TVL (Total Value Locked) son 30 günde %45 arttı. DeFi aktivitesi tarihi zirveye yakın. $SOL için bullish devam ediyor 💎 #Solana #DeFi',
-   'SOL', ARRAY['SOL'],
-   NULL, NULL,
+   'Solana''da TVL son 30 günde %45 arttı. DeFi aktivitesi tarihi zirveye yakın. $SOL için bullish! 💎 #Solana',
+   'SOL', ARRAY['SOL'], NULL,
    678, 102, 0, 67, false, NOW() - INTERVAL '4 hours');
 
 
@@ -331,7 +329,7 @@ ON CONFLICT (asset_id) DO UPDATE SET
 
 
 -- ─── 6. PORTFOLIO HOLDINGS ───────────────────────────────────────────────────
-INSERT INTO portfolio_holdings (user_id, asset_id, symbol, name, quantity, buy_price, created_at) VALUES
+INSERT INTO portfolio_holdings (user_id, asset_id, symbol, name, quantity, avg_cost, created_at) VALUES
   ('77777777-7777-7777-7777-777777777777', 'BTC',  'BTC',  'Bitcoin',   0.18, 62000, NOW() - INTERVAL '30 days'),
   ('77777777-7777-7777-7777-777777777777', 'ETH',  'ETH',  'Ethereum',  2.50, 3100,  NOW() - INTERVAL '25 days'),
   ('77777777-7777-7777-7777-777777777777', 'SOL',  'SOL',  'Solana',    15.0, 155,   NOW() - INTERVAL '20 days'),
@@ -355,26 +353,24 @@ INSERT INTO price_alerts (user_id, symbol, asset_id, target_price, condition, is
 ON CONFLICT DO NOTHING;
 
 
--- ─── 8. MARKET COIN BALANCES ─────────────────────────────────────────────────
-INSERT INTO market_coins (user_id, balance, total_earned, total_spent, created_at) VALUES
-  ('77777777-7777-7777-7777-777777777777', 850,  1200,  350, NOW()),
-  ('11111111-1111-1111-1111-111111111111', 5240, 8500, 3260, NOW()),
-  ('22222222-2222-2222-2222-222222222222', 3120, 4800, 1680, NOW()),
-  ('33333333-3333-3333-3333-333333333333', 2890, 3900, 1010, NOW()),
-  ('44444444-4444-4444-4444-444444444444', 1560, 2100,  540, NOW()),
-  ('55555555-5555-5555-5555-555555555555', 980,  1400,  420, NOW()),
-  ('66666666-6666-6666-6666-666666666666', 440,   600,  160, NOW())
-ON CONFLICT (user_id) DO UPDATE SET balance = EXCLUDED.balance;
+-- ─── 8. MARKET COIN BALANCES (profiles.marketcoin) ──────────────────────────
+UPDATE profiles SET marketcoin = 850  WHERE id = '77777777-7777-7777-7777-777777777777';
+UPDATE profiles SET marketcoin = 5240 WHERE id = '11111111-1111-1111-1111-111111111111';
+UPDATE profiles SET marketcoin = 3120 WHERE id = '22222222-2222-2222-2222-222222222222';
+UPDATE profiles SET marketcoin = 2890 WHERE id = '33333333-3333-3333-3333-333333333333';
+UPDATE profiles SET marketcoin = 1560 WHERE id = '44444444-4444-4444-4444-444444444444';
+UPDATE profiles SET marketcoin = 980  WHERE id = '55555555-5555-5555-5555-555555555555';
+UPDATE profiles SET marketcoin = 440  WHERE id = '66666666-6666-6666-6666-666666666666';
 
 
 -- ─── 9. NOTIFICATIONS ────────────────────────────────────────────────────────
-INSERT INTO notifications (user_id, type, title, body, data, read, created_at) VALUES
+INSERT INTO notifications (user_id, type, title, body, read, created_at) VALUES
   ('77777777-7777-7777-7777-777777777777', 'follow', 'Crypto Guru sizi takip ediyor',
-   'cryptoguru sizin profilinizi takip etmeye başladı.', '{}', false, NOW() - INTERVAL '5 minutes'),
+   'cryptoguru sizin profilinizi takip etmeye başladı.', false, NOW() - INTERVAL '5 minutes'),
   ('77777777-7777-7777-7777-777777777777', 'like', 'Borsa Master gönderinizi beğendi',
-   'Gönderiniz beğenildi.', '{}', false, NOW() - INTERVAL '20 minutes'),
+   'Gönderiniz beğenildi.', false, NOW() - INTERVAL '20 minutes'),
   ('77777777-7777-7777-7777-777777777777', 'system', 'Marketly''ye Hoş Geldiniz! 🎉',
-   'Başlamak için profilinizi tamamlayın ve ilk gönderinizi paylaşın.', '{}', true, NOW() - INTERVAL '1 day')
+   'Başlamak için profilinizi tamamlayın ve ilk gönderinizi paylaşın.', true, NOW() - INTERVAL '1 day')
 ON CONFLICT DO NOTHING;
 
 
