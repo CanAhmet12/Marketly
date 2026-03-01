@@ -341,12 +341,13 @@ ON CONFLICT DO NOTHING;
 
 
 -- ─── 7. PRICE ALERTS ─────────────────────────────────────────────────────────
-INSERT INTO price_alerts (user_id, symbol, asset_id, target_price, condition, is_active, created_at) VALUES
-  ('77777777-7777-7777-7777-777777777777', 'BTC',  'BTC',  70000, 'above', true, NOW() - INTERVAL '2 days'),
-  ('77777777-7777-7777-7777-777777777777', 'ETH',  'ETH',  3500,  'above', true, NOW() - INTERVAL '1 day'),
-  ('77777777-7777-7777-7777-777777777777', 'SOL',  'SOL',  200,   'above', true, NOW() - INTERVAL '3 days'),
-  ('11111111-1111-1111-1111-111111111111', 'BTC',  'BTC',  60000, 'below', true, NOW() - INTERVAL '5 days'),
-  ('22222222-2222-2222-2222-222222222222', 'NVDA', 'NVDA', 900,   'above', true, NOW() - INTERVAL '4 days')
+-- "target" (eski kolon, NOT NULL) ve "target_price" (yeni kolon) ikisi birden dolu olmali.
+INSERT INTO price_alerts (user_id, symbol, asset_id, target, target_price, condition, is_active, created_at) VALUES
+  ('77777777-7777-7777-7777-777777777777', 'BTC',  'BTC',  70000, 70000, 'above', true, NOW() - INTERVAL '2 days'),
+  ('77777777-7777-7777-7777-777777777777', 'ETH',  'ETH',  3500,  3500,  'above', true, NOW() - INTERVAL '1 day'),
+  ('77777777-7777-7777-7777-777777777777', 'SOL',  'SOL',  200,   200,   'above', true, NOW() - INTERVAL '3 days'),
+  ('11111111-1111-1111-1111-111111111111', 'BTC',  'BTC',  60000, 60000, 'below', true, NOW() - INTERVAL '5 days'),
+  ('22222222-2222-2222-2222-222222222222', 'NVDA', 'NVDA', 900,   900,   'above', true, NOW() - INTERVAL '4 days')
 ON CONFLICT DO NOTHING;
 
 
