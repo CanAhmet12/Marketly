@@ -61,6 +61,7 @@ export function usePriceAlerts(assetId?: string) {
   ): Promise<boolean> => {
     if (!user?.id) return false;
     try {
+      // Önce yeni şema ile dene (target_price)
       const { error } = await supabase
         .from('price_alerts')
         .insert({
@@ -68,13 +69,31 @@ export function usePriceAlerts(assetId?: string) {
           asset_id:     asset.toUpperCase(),
           symbol:       asset.toUpperCase(),
           condition,
-          direction:    condition,      // eski şema uyumu
-          target_price: target,         // yeni sütun adı
-          target,                       // eski sütun adı (varsa)
+          direction:    condition,
+          target_price: target,
           is_active:    true,
           triggered:    false,
         });
-      if (error) throw error;
+
+      if (error?.message?.includes('target_price') || error?.message?.includes('column')) {
+        // Eski şema (target sütunu)
+        const { error: err2 } = await supabase
+          .from('price_alerts')
+          .insert({
+            user_id:   user.id,
+            asset_id:  asset.toUpperCase(),
+            symbol:    asset.toUpperCase(),
+            condition,
+            direction: condition,
+            target,
+            is_active: true,
+            triggered: false,
+          });
+        if (err2) throw err2;
+      } else if (error) {
+        throw error;
+      }
+
       await fetchAlerts();
       return true;
     } catch { return false; }

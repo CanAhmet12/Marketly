@@ -80,17 +80,31 @@ function MessageBubble({ msg }: { msg: Message }) {
     ]).start();
   }, []);
 
-  // Basit markdown renderer
+  // Geliştirilmiş markdown renderer — emoji ile biten başlıkları da yakalar
   const renderContent = (text: string) => {
     const lines = text.split('\n');
     return lines.map((line, i) => {
-      if (line.startsWith('**') && line.endsWith('**')) {
+      // **Başlık** veya **Başlık** 📊 gibi emoji ile bitenler
+      if (/^\*\*(.+)\*\*/.test(line)) {
         return <Text key={i} style={[mb.msgTxt, { fontWeight: '800', fontSize: 15 }]}>
           {line.replace(/\*\*/g, '')}
         </Text>;
       }
-      if (line.startsWith('• ') || line.startsWith('* ')) {
-        return <Text key={i} style={mb.msgTxt}>{line}</Text>;
+      // Inline bold: metinin ortasındaki **bold** kısımları işle
+      if (line.includes('**')) {
+        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+        return (
+          <Text key={i} style={mb.msgTxt}>
+            {parts.map((part, j) =>
+              part.startsWith('**') && part.endsWith('**')
+                ? <Text key={j} style={{ fontWeight: '800' }}>{part.replace(/\*\*/g, '')}</Text>
+                : part
+            )}
+          </Text>
+        );
+      }
+      if (line.startsWith('• ') || line.startsWith('* ') || line.startsWith('- ')) {
+        return <Text key={i} style={[mb.msgTxt, { paddingLeft: 4 }]}>{'  ' + line}</Text>;
       }
       if (line.startsWith('_') && line.endsWith('_')) {
         return <Text key={i} style={[mb.msgTxt, { fontStyle: 'italic', color: colors.textMuted }]}>
@@ -258,7 +272,7 @@ export function AIAssistantScreen() {
     <KeyboardAvoidingView
       style={[s.root, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      keyboardVerticalOffset={insets.top + 56}
     >
       {/* Header */}
       <LinearGradient colors={['#0A0A1A', '#0D1F3C']} style={s.header}>

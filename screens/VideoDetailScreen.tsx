@@ -1,11 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, Image, Pressable, StyleSheet, ScrollView,
-  TextInput, StatusBar, ImageBackground, Animated, ActivityIndicator,
+  TextInput, StatusBar, ImageBackground, Animated, ActivityIndicator, Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import { useNavigation } from '@react-navigation/native';
 import type { VideoItem } from '../data/mockVideos';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -73,6 +74,7 @@ function timeAgo(isoDate: string): string {
 
 // ─── Asset Mini Card ──────────────────────────────────────────────────────────
 function AssetMiniCard({ tag, price, change }: { tag: string; price?: string; change?: number }) {
+  const navigation = useNavigation<any>();
   if (!price) return null;
   const up = (change ?? 0) >= 0;
   return (
@@ -97,9 +99,13 @@ function AssetMiniCard({ tag, price, change }: { tag: string; price?: string; ch
           </View>
         )}
       </View>
-      <View style={[am.alertBtn]}>
+      <Pressable
+        style={[am.alertBtn]}
+        onPress={() => navigation.navigate('PriceAlerts')}
+        hitSlop={8}
+      >
         <Ionicons name="notifications-outline" size={14} color={colors.textMuted} />
-      </View>
+      </Pressable>
     </View>
   );
 }
@@ -335,14 +341,15 @@ const cm = StyleSheet.create({
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export function VideoDetailScreen({ item, onBack }: Props) {
-  const insets  = useSafeAreaInsets();
-  const toast   = useToast();
+  const insets     = useSafeAreaInsets();
+  const toast      = useToast();
+  const navigation = useNavigation<any>();
   const { user, profile } = useAuth();
 
-  const [liked, setLiked]         = useState(false);
-  const [saved, setSaved]         = useState(false);
+  const [liked,     setLiked]     = useState(false);
+  const [saved,     setSaved]     = useState(false);
   const [following, setFollowing] = useState(false);
-  const [comment, setComment]     = useState('');
+  const [comment,   setComment]   = useState('');
   const [likedCmts, setLikedCmts] = useState<Record<string, boolean>>({});
 
   // İlgili videolar — aynı asset tag'e göre gerçek veriden çek
@@ -351,17 +358,24 @@ export function VideoDetailScreen({ item, onBack }: Props) {
   });
   const related = relatedRaw.filter(v => v.id !== item.id).slice(0, 4);
 
-  // Başlangıçta takip durumunu Supabase'den yükle
+  // Başlangıçta beğeni/kaydetme/takip durumlarını Supabase'den yükle
   useEffect(() => {
-    if (!user?.id || !item.creator?.id) return;
-    supabase
-      .from('follows')
-      .select('follower_id')
-      .eq('follower_id', user.id)
-      .eq('following_id', item.creator.id)
-      .maybeSingle()
-      .then(({ data }) => { if (data) setFollowing(true); });
-  }, [user?.id, item.creator?.id]);
+    if (!user?.id) return;
+    const videoId = item.id;
+    const creatorId = item.creator?.id;
+
+    Promise.all([
+      supabase.from('video_likes').select('id').eq('user_id', user.id).eq('video_id', videoId).maybeSingle(),
+      supabase.from('saved_videos').select('id').eq('user_id', user.id).eq('video_id', videoId).maybeSingle(),
+      creatorId
+        ? supabase.from('follows').select('follower_id').eq('follower_id', user.id).eq('following_id', creatorId).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]).then(([likeRes, saveRes, followRes]) => {
+      if (likeRes.data)   setLiked(true);
+      if (saveRes.data)   setSaved(true);
+      if (followRes.data) setFollowing(true);
+    });
+  }, [user?.id, item.id, item.creator?.id]);
 
   const {
     comments: liveComments,
@@ -546,9 +560,41 @@ export function VideoDetailScreen({ item, onBack }: Props) {
           likeCount={stats.likes}
           commentCount={stats.comments}
           shareCount={stats.shares}
-          onLike={() => { setLiked(!liked); if (!liked) toast.success('Video beğenildi ❤️'); }}
-          onSave={() => { setSaved(!saved); toast.success(saved ? 'Kaydedilenlerden çıkarıldı' : 'Kaydedildi 🔖'); }}
-          onShare={() => toast.success('Link paylaşıldı 🔗')}
+          onLike={async () => {
+            if (!user?.id) { toast.info('Beğenmek için giriş yap'); return; }
+            const newLiked = !liked;
+            setLiked(newLiked);
+            if (newLiked) {
+              await supabase.from('video_likes').upsert(
+                { user_id: user.id, video_id: item.id },
+                { onConflict: 'user_id,video_id' }
+              );
+              toast.success('Video beğenildi ❤️');
+            } else {
+              await supabase.from('video_likes').delete()
+                .eq('user_id', user.id).eq('video_id', item.id);
+            }
+          }}
+          onSave={async () => {
+            if (!user?.id) { toast.info('Kaydetmek için giriş yap'); return; }
+            const newSaved = !saved;
+            setSaved(newSaved);
+            if (newSaved) {
+              await supabase.from('saved_videos').upsert(
+                { user_id: user.id, video_id: item.id },
+                { onConflict: 'user_id,video_id' }
+              );
+              toast.success('Kaydedildi 🔖');
+            } else {
+              await supabase.from('saved_videos').delete()
+                .eq('user_id', user.id).eq('video_id', item.id);
+              toast.info('Kaydedilenlerden çıkarıldı');
+            }
+          }}
+          onShare={() => Share.share({
+            message: `${item.title} — Marketly'de izle`,
+            title: item.title,
+          })}
         />
 
         {/* ── Disclaimer ── */}
@@ -568,7 +614,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={v.relatedRow}>
               {related.map((r) => (
-                <Pressable key={r.id} style={v.relatedCard} onPress={onBack}>
+                <Pressable key={r.id} style={v.relatedCard} onPress={() => navigation.push('VideoDetail', { item: r })}>
                   <View style={v.relatedImgWrap}>
                     <Image source={{ uri: r.thumbnail }} style={v.relatedThumb} />
                     <View style={v.relatedOverlay} />
