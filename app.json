@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Marketly",
+    "slug": "Marketly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#00C853"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.marketly.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#00C853",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.marketly.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-video"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bb3ee77c-fd0e-4ecf-8a1f-8d09b5b7f9c2"
+      }
+    }
+  }
+}

@@ -1,0 +1,461 @@
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  View, Text, Pressable, StyleSheet, ScrollView,
+  TextInput, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Animated, Dimensions,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
+import { useMarketPrices } from '../hooks/useMarketPrices';
+import { colors, shadow } from '../constants/theme';
+
+const { width: W } = Dimensions.get('window');
+
+// ─── Öneri soruları ──────────────────────────────────────────────────────────
+const SUGGESTIONS = [
+  { icon: '📈', text: 'BTC bu hafta ne yapar?' },
+  { icon: '💼', text: 'Portföyümü nasıl çeşitlendirmeliyim?' },
+  { icon: '⚡', text: 'En iyi DCA stratejisi nedir?' },
+  { icon: '🏆', text: 'Altın mı Bitcoin mi?' },
+  { icon: '🔍', text: 'NVIDIA hissesi hakkında analiz?' },
+  { icon: '💱', text: 'Dolar/TL nereye gider?' },
+];
+
+// ─── Mesaj tipi ────────────────────────────────────────────────────────────
+interface Message {
+  id:      string;
+  role:    'user' | 'assistant';
+  content: string;
+  time:    string;
+}
+
+// ─── Supabase Edge Function üzerinden AI cevabı ─────────────────────────────
+import { supabase } from '../lib/supabase';
+
+async function callAI(messages: { role: string; content: string }[], context: string): Promise<string> {
+  try {
+    const { data, error } = await supabase.functions.invoke('ai-chat', {
+      body: { messages, context },
+    });
+    if (error) throw error;
+    return data?.reply ?? 'Yanıt alınamadı.';
+  } catch {
+    // Demo fallback — Edge Function kurulmadan çalışır
+    return generateDemoReply(messages[messages.length - 1]?.content ?? '');
+  }
+}
+
+function generateDemoReply(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes('btc') || q.includes('bitcoin')) {
+    return '**Bitcoin Analizi** 📊\n\nBitcoin şu an kritik bir destek seviyesinde. Teknik göstergeler:\n\n• **RSI:** 58 (nötr bölge)\n• **MACD:** Pozitif kesişim yakın\n• **Destek:** $60,000–$62,000\n• **Direnç:** $68,000–$70,000\n\nKısa vadede konsolidasyon bekleniyor. DCA stratejisi için iyi bir dönem.';
+  }
+  if (q.includes('portföy') || q.includes('çeşitlendirme')) {
+    return '**Portföy Çeşitlendirmesi** 💼\n\nOptimal dağılım önerisi:\n\n• **%40** — Kripto (BTC %25, ETH %15)\n• **%30** — Hisseler (teknoloji ağırlıklı)\n• **%20** — Altın / emtia\n• **%10** — Nakit / stablecoin\n\nRisk toleransınıza göre bu oranları ayarlayın.';
+  }
+  if (q.includes('dca')) {
+    return '**DCA (Dollar-Cost Averaging) Stratejisi** ⚡\n\nDCA\'nın avantajları:\n\n1. Fiyat volatilitesini yumuşatır\n2. Duygusal kararları azaltır\n3. Uzun vadede maliyet ortalaması düşer\n\n**Öneri:** Aylık sabit bir miktar belirle ve piyasa koşulundan bağımsız al. Kripto için haftalık, hisseler için aylık ideal.';
+  }
+  if (q.includes('nvda') || q.includes('nvidia')) {
+    return '**NVIDIA (NVDA) Analizi** 🖥️\n\nAI chip liderliği devam ediyor:\n\n• **P/E Oranı:** Yüksek (premium değerleme)\n• **Büyüme:** Veri merkezi geliri rekor\n• **Risk:** Yüksek değerleme, rekabet artışı\n\n**Görüş:** Uzun vadeli potansiyel güçlü. Kısa vadede düzeltme riski var. Kademeli alım önerilebilir.';
+  }
+  return `**MarketAI Yanıtı** 🤖\n\n"${question}" sorunuz için analiz yapıyorum...\n\nBu konuda daha detaylı bir yanıt için lütfen konuyu daha spesifik belirtin. Örneğin: hangi zaman dilimi, hangi varlık, teknik mi temel analiz mi?\n\n_Pro üyeler için sınırsız soru hakkı mevcuttur._`;
+}
+
+// ─── Mesaj kabarcığı ──────────────────────────────────────────────────────────
+function MessageBubble({ msg }: { msg: Message }) {
+  const isUser = msg.role === 'user';
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim,  { toValue: 1, duration: 220, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 220, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  // Basit markdown renderer
+  const renderContent = (text: string) => {
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      if (line.startsWith('**') && line.endsWith('**')) {
+        return <Text key={i} style={[mb.msgTxt, { fontWeight: '800', fontSize: 15 }]}>
+          {line.replace(/\*\*/g, '')}
+        </Text>;
+      }
+      if (line.startsWith('• ') || line.startsWith('* ')) {
+        return <Text key={i} style={mb.msgTxt}>{line}</Text>;
+      }
+      if (line.startsWith('_') && line.endsWith('_')) {
+        return <Text key={i} style={[mb.msgTxt, { fontStyle: 'italic', color: colors.textMuted }]}>
+          {line.replace(/_/g, '')}
+        </Text>;
+      }
+      if (line === '') return <Text key={i} style={{ height: 6 }} />;
+      return <Text key={i} style={mb.msgTxt}>{line}</Text>;
+    });
+  };
+
+  return (
+    <Animated.View style={[
+      mb.wrap,
+      isUser ? mb.wrapUser : mb.wrapAI,
+      { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+    ]}>
+      {!isUser && (
+        <View style={mb.aiAvatar}>
+          <Text style={mb.aiAvatarTxt}>AI</Text>
+        </View>
+      )}
+      <View style={[mb.bubble, isUser ? mb.bubbleUser : mb.bubbleAI]}>
+        {renderContent(msg.content)}
+        <Text style={mb.time}>{msg.time}</Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+const mb = StyleSheet.create({
+  wrap:     { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginBottom: 12, paddingHorizontal: 16 },
+  wrapUser: { justifyContent: 'flex-end' },
+  wrapAI:   { justifyContent: 'flex-start' },
+
+  aiAvatar: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center',
+  },
+  aiAvatarTxt: { fontSize: 10, fontWeight: '900', color: '#fff' },
+
+  bubble: {
+    maxWidth: W * 0.75, borderRadius: 18, padding: 13, gap: 4,
+  },
+  bubbleUser: {
+    backgroundColor: colors.primary, borderBottomRightRadius: 4,
+  },
+  bubbleAI: {
+    backgroundColor: colors.bgPure, borderBottomLeftRadius: 4,
+    borderWidth: 1, borderColor: colors.border,
+    ...shadow.sm,
+  },
+  msgTxt: { fontSize: 14, color: colors.text, lineHeight: 20 },
+  time:   { fontSize: 10, color: colors.textMuted, alignSelf: 'flex-end', marginTop: 4 },
+});
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+export function AIAssistantScreen() {
+  const insets       = useSafeAreaInsets();
+  const navigation   = useNavigation<any>();
+  const { user }     = useAuth();
+  const { isFree }   = useSubscription();
+  const { assets }   = useMarketPrices();
+
+  const [messages,  setMessages]  = useState<Message[]>([]);
+  const [input,     setInput]     = useState('');
+  const [thinking,  setThinking]  = useState(false);
+  const [dailyCount, setDailyCount] = useState(0);
+  const FREE_LIMIT = 5;
+  const scrollRef  = useRef<ScrollView>(null);
+
+  const nowStr = () => new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+  // Karşılama mesajı
+  useEffect(() => {
+    const topAssets = assets.slice(0, 3).map(a =>
+      `${a.symbol}: ${a.price} (${a.changePercent >= 0 ? '+' : ''}${a.changePercent}%)`
+    ).join(', ');
+
+    setMessages([{
+      id:      'welcome',
+      role:    'assistant',
+      content: `Merhaba! Ben **MarketAI**'yım 🤖\n\nPiyasalar, yatırım stratejileri ve kripto hakkında her şeyi sorabilirsin.\n\n📊 Anlık: ${topAssets || 'Veri yükleniyor...'}`,
+      time:    nowStr(),
+    }]);
+  }, []);
+
+  const sendMessage = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || thinking) return;
+    if (isFree && dailyCount >= FREE_LIMIT) {
+      navigation.navigate('Paywall');
+      return;
+    }
+
+    const userMsg: Message = {
+      id:      Date.now().toString(),
+      role:    'user',
+      content: trimmed,
+      time:    nowStr(),
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setThinking(true);
+    setDailyCount(c => c + 1);
+
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+
+    const history = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }));
+
+    // Zengin piyasa bağlamı
+    const topCrypto  = assets.filter(a => a.category === 'crypto').slice(0, 5);
+    const topStocks  = assets.filter(a => a.category === 'stocks').slice(0, 3);
+    const topForex   = assets.filter(a => a.category === 'forex').slice(0, 2);
+    const allContext = [...topCrypto, ...topStocks, ...topForex];
+    const context    = [
+      'PIYASA_VERILERI:',
+      ...allContext.map(a =>
+        `${a.symbol}: $${a.price} (${a.changePercent >= 0 ? '+' : ''}${a.changePercent?.toFixed(2)}%)`
+      ),
+      `TARIH: ${new Date().toLocaleDateString('tr-TR')}`,
+    ].join(' | ');
+
+    const reply = await callAI(history, context);
+    setThinking(false);
+
+    const aiMsg: Message = {
+      id:      (Date.now() + 1).toString(),
+      role:    'assistant',
+      content: reply,
+      time:    nowStr(),
+    };
+    setMessages(prev => [...prev, aiMsg]);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+  }, [thinking, isFree, dailyCount, messages, assets, navigation]);
+
+  const isAtLimit = isFree && dailyCount >= FREE_LIMIT;
+
+  return (
+    <KeyboardAvoidingView
+      style={[s.root, { paddingTop: insets.top }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+      {/* Header */}
+      <LinearGradient colors={['#0A0A1A', '#0D1F3C']} style={s.header}>
+        <Pressable onPress={() => navigation.goBack()} style={s.backBtn} hitSlop={10}>
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </Pressable>
+        <View style={s.headerCenter}>
+          <View style={s.aiDot} />
+          <Text style={s.headerTitle}>MarketAI</Text>
+          <View style={s.onlinePill}>
+            <Text style={s.onlineTxt}>CANLI</Text>
+          </View>
+        </View>
+        {isFree && (
+          <Pressable onPress={() => navigation.navigate('Paywall')} style={s.proBtn}>
+            <Ionicons name="flash" size={13} color="#FFD700" />
+            <Text style={s.proTxt}>PRO</Text>
+          </Pressable>
+        )}
+        {!isFree && <View style={{ width: 52 }} />}
+      </LinearGradient>
+
+      {/* Soru sayacı (free) */}
+      {isFree && (
+        <View style={s.limitBar}>
+          <Text style={s.limitTxt}>
+            Günlük {dailyCount}/{FREE_LIMIT} soru · 
+          </Text>
+          <Pressable onPress={() => navigation.navigate('Paywall')}>
+            <Text style={s.limitLink}> Sınırsız için Pro'ya geç →</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Mesajlar */}
+      <ScrollView
+        ref={scrollRef}
+        style={s.msgList}
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 12 }}
+        showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+      >
+        {messages.map(msg => (
+          <MessageBubble key={msg.id} msg={msg} />
+        ))}
+
+        {thinking && (
+          <View style={s.thinkingWrap}>
+            <View style={s.thinkingBubble}>
+              <View style={s.dotRow}>
+                {[0, 1, 2].map(i => (
+                  <BounceDot key={i} delay={i * 150} />
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Öneri soruları (ilk giriş) */}
+      {messages.length <= 1 && !thinking && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.suggestionsRow}
+        >
+          {SUGGESTIONS.map((s, i) => (
+            <Pressable
+              key={i}
+              style={sug.chip}
+              onPress={() => sendMessage(s.text)}
+            >
+              <Text style={sug.icon}>{s.icon}</Text>
+              <Text style={sug.txt}>{s.text}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Input bar */}
+      <View style={[s.inputBar, { paddingBottom: insets.bottom + 8 }]}>
+        {isAtLimit ? (
+          <Pressable style={s.limitBtn} onPress={() => navigation.navigate('Paywall')}>
+            <LinearGradient colors={['#007AFF', '#5856D6']} style={s.limitBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+              <Ionicons name="flash" size={16} color="#fff" />
+              <Text style={s.limitBtnTxt}>Sınırsız Soru İçin Pro'ya Geç</Text>
+            </LinearGradient>
+          </Pressable>
+        ) : (
+          <>
+            <TextInput
+              style={s.input}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Piyasalar hakkında sor..."
+              placeholderTextColor={colors.textMuted}
+              multiline
+              maxLength={400}
+              onSubmitEditing={() => sendMessage(input)}
+              returnKeyType="send"
+            />
+            <Pressable
+              style={[s.sendBtn, (!input.trim() || thinking) && s.sendBtnDisabled]}
+              onPress={() => sendMessage(input)}
+              disabled={!input.trim() || thinking}
+            >
+              {thinking
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <Ionicons name="send" size={18} color="#fff" />
+              }
+            </Pressable>
+          </>
+        )}
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+function BounceDot({ delay }: { delay: number }) {
+  const y = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(y, { toValue: -5, duration: 250, useNativeDriver: true }),
+        Animated.timing(y, { toValue: 0,  duration: 250, useNativeDriver: true }),
+        Animated.delay(500 - delay),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, []);
+  return (
+    <Animated.View style={[s2.dot, { transform: [{ translateY: y }] }]} />
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
+
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 12, gap: 10,
+  },
+  backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  aiDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#34C759' },
+  headerTitle: { fontSize: 17, fontWeight: '800', color: '#fff' },
+  onlinePill: {
+    backgroundColor: '#34C75930', borderRadius: 6,
+    paddingHorizontal: 7, paddingVertical: 2,
+  },
+  onlineTxt: { fontSize: 9, fontWeight: '900', color: '#34C759', letterSpacing: 0.5 },
+  proBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#FFD70020', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#FFD70040',
+  },
+  proTxt: { fontSize: 11, fontWeight: '900', color: '#FFD700' },
+
+  limitBar: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FF950012', paddingHorizontal: 16, paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: '#FF950030',
+  },
+  limitTxt:  { fontSize: 12, color: colors.textMuted },
+  limitLink: { fontSize: 12, color: '#FF9500', fontWeight: '700' },
+
+  msgList: { flex: 1 },
+
+  thinkingWrap:   { paddingHorizontal: 16, marginBottom: 12 },
+  thinkingBubble: {
+    alignSelf: 'flex-start', backgroundColor: colors.bgPure,
+    borderRadius: 18, borderBottomLeftRadius: 4,
+    padding: 14, borderWidth: 1, borderColor: colors.border,
+    marginLeft: 38,
+  },
+  dotRow: { flexDirection: 'row', gap: 5, alignItems: 'center', height: 18 },
+
+  suggestionsRow: { paddingHorizontal: 16, paddingBottom: 10, gap: 8, alignItems: 'flex-start' },
+
+  inputBar: {
+    flexDirection: 'row', alignItems: 'flex-end', gap: 10,
+    paddingHorizontal: 12, paddingTop: 10,
+    backgroundColor: colors.bgPure,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    ...shadow.md,
+  },
+  input: {
+    flex: 1, minHeight: 44, maxHeight: 100,
+    backgroundColor: colors.bgInput, borderRadius: 22,
+    paddingHorizontal: 16, paddingVertical: 10,
+    fontSize: 14, color: colors.text,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  sendBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sendBtnDisabled: { backgroundColor: colors.textMuted },
+
+  limitBtn: { flex: 1, borderRadius: 14, overflow: 'hidden' },
+  limitBtnGrad: { height: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  limitBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+});
+
+const sug = StyleSheet.create({
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.bgPure, borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 9,
+    borderWidth: 1, borderColor: colors.border,
+    ...shadow.xs,
+  },
+  icon: { fontSize: 14 },
+  txt:  { fontSize: 12, fontWeight: '600', color: colors.text },
+});
+
+const s2 = StyleSheet.create({
+  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: colors.textMuted },
+});
