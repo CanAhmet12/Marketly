@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, ScrollView, Pressable, Image,
-  StyleSheet, Dimensions, StatusBar,
+  StyleSheet, Dimensions, StatusBar, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,23 +21,13 @@ import { BadgesRow } from '../components/BadgesRow';
 import { CreatePostModal } from '../components/CreatePostModal';
 import { SignalCard } from '../components/SignalCard';
 import { useSignals } from '../hooks/useSignals';
+import { useVideos } from '../hooks/useVideos';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 const COVER_H    = 170;
 const AVATAR_SIZE = 86;
 
-const CONTENT_GRID = [
-  { id: '1', thumb: 'https://picsum.photos/seed/pv1/300/180', views: '124K', isLive: false },
-  { id: '2', thumb: 'https://picsum.photos/seed/pv2/300/180', views: '89K',  isLive: false },
-  { id: '3', thumb: 'https://picsum.photos/seed/pv3/300/180', views: '56K',  isLive: true  },
-  { id: '4', thumb: 'https://picsum.photos/seed/pv4/300/180', views: '200K', isLive: false },
-  { id: '5', thumb: 'https://picsum.photos/seed/pv5/300/180', views: '41K',  isLive: false },
-  { id: '6', thumb: 'https://picsum.photos/seed/pv6/300/180', views: '73K',  isLive: false },
-  { id: '7', thumb: 'https://picsum.photos/seed/pv7/300/180', views: '93K',  isLive: false },
-  { id: '8', thumb: 'https://picsum.photos/seed/pv8/300/180', views: '35K',  isLive: false },
-  { id: '9', thumb: 'https://picsum.photos/seed/pv9/300/180', views: '61K',  isLive: false },
-];
 
 const PROFILE_TABS = ['Videolar', 'Sinyaller', 'Portföy', 'İstatistikler'] as const;
 type ProfileTab = typeof PROFILE_TABS[number];
@@ -225,26 +215,48 @@ const pt = StyleSheet.create({
 });
 
 // ─── StatsTab ─────────────────────────────────────────────────────────────────
-function StatsTab() {
-  const MONTHLY = [
-    { month: 'Eyl', winPct: 65, sigs: 12 },
-    { month: 'Eki', winPct: 72, sigs: 18 },
-    { month: 'Kas', winPct: 58, sigs: 14 },
-    { month: 'Ara', winPct: 80, sigs: 22 },
-    { month: 'Oca', winPct: 75, sigs: 16 },
-    { month: 'Şub', winPct: 82, sigs: 20 },
-  ];
-  const maxSigs = Math.max(...MONTHLY.map((m) => m.sigs));
+function StatsTab({ signals, followerCount }: { signals: any[]; followerCount: number }) {
+  // Gerçek sinyallerden aylık istatistik hesapla
+  const MONTH_NAMES = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const now = new Date();
+
+  const monthly = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const monthSigs = signals.filter((s) => {
+      const sd = new Date(s.created_at);
+      return sd.getFullYear() === d.getFullYear() && sd.getMonth() === d.getMonth();
+    });
+    const wins    = monthSigs.filter((s) => s.result === 'WIN').length;
+    const winPct  = monthSigs.length > 0 ? Math.round((wins / monthSigs.length) * 100) : 0;
+    return { month: MONTH_NAMES[d.getMonth()], winPct, sigs: monthSigs.length };
+  });
+
+  const maxSigs    = Math.max(...monthly.map((m) => m.sigs), 1);
+  const totalSigs  = signals.length;
+  const wins       = signals.filter((s) => s.result === 'WIN').length;
+  const accuracy   = totalSigs > 0 ? ((wins / totalSigs) * 100).toFixed(1) : '0.0';
+  const totalViews = signals.reduce((acc, s) => acc + (s.views_count ?? 0), 0);
+  const viewsStr   = totalViews >= 1_000_000 ? `${(totalViews / 1_000_000).toFixed(1)}M`
+                   : totalViews >= 1000       ? `${(totalViews / 1000).toFixed(1)}K`
+                   : String(totalViews);
+  const follStr    = followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : String(followerCount);
+
+  const recentSignals = signals.slice(0, 10);
+
+  function fmtDate(iso: string) {
+    const d = new Date(iso);
+    return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+  }
 
   return (
     <View style={st.wrap}>
       {/* Summary cards */}
       <View style={st.statCards}>
         {[
-          { icon: 'trending-up', val: '+$18.4K', lbl: 'Toplam Kazanç', color: colors.rise },
-          { icon: 'star',        val: '4.8/5',   lbl: 'Ortalama Puan', color: '#FFB800' },
-          { icon: 'eye',         val: '1.2M',    lbl: 'Toplam İzlenme', color: colors.info },
-          { icon: 'people',      val: '2.4K',    lbl: 'Takipçi',        color: colors.primary },
+          { icon: 'analytics',   val: String(totalSigs), lbl: 'Toplam Sinyal',  color: colors.primary },
+          { icon: 'star',        val: `%${accuracy}`,    lbl: 'Başarı Oranı',   color: '#FFB800' },
+          { icon: 'eye',         val: viewsStr || '0',   lbl: 'Toplam İzlenme', color: colors.info },
+          { icon: 'people',      val: follStr,            lbl: 'Takipçi',        color: colors.rise },
         ].map((c) => (
           <View key={c.lbl} style={st.statCard}>
             <View style={[st.statIcon, { backgroundColor: c.color + '18' }]}>
@@ -256,47 +268,74 @@ function StatsTab() {
         ))}
       </View>
 
-      {/* Signal history chart */}
+      {/* Monthly chart */}
       <View style={st.chartCard}>
-        <Text style={st.chartTitle}>Aylık Sinyal Performansı</Text>
-        <View style={st.bars}>
-          {MONTHLY.map((m) => {
-            const barH = (m.sigs / maxSigs) * 70;
-            const isGood = m.winPct >= 70;
-            return (
-              <View key={m.month} style={st.barGroup}>
-                <Text style={[st.barPct, { color: isGood ? colors.rise : colors.fall }]}>{m.winPct}%</Text>
-                <View style={st.barTrack}>
-                  <View style={[st.bar, { height: barH, backgroundColor: isGood ? colors.rise : colors.fall }]} />
+        <Text style={st.chartTitle}>Aylık Sinyal Dağılımı</Text>
+        {maxSigs === 1 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 13 }}>Henüz yeterli sinyal verisi yok</Text>
+          </View>
+        ) : (
+          <View style={st.bars}>
+            {monthly.map((m) => {
+              const barH  = (m.sigs / maxSigs) * 70;
+              const isGood = m.winPct >= 70;
+              return (
+                <View key={m.month} style={st.barGroup}>
+                  {m.sigs > 0 && (
+                    <Text style={[st.barPct, { color: isGood ? colors.rise : colors.fall }]}>{m.winPct}%</Text>
+                  )}
+                  <View style={st.barTrack}>
+                    {m.sigs > 0 && (
+                      <View style={[st.bar, { height: Math.max(barH, 4), backgroundColor: isGood ? colors.rise : colors.fall }]} />
+                    )}
+                  </View>
+                  <Text style={st.barMonth}>{m.month}</Text>
                 </View>
-                <Text style={st.barMonth}>{m.month}</Text>
+              );
+            })}
+          </View>
+        )}
+      </View>
+
+      {/* Recent signals list */}
+      {recentSignals.length > 0 && (
+        <>
+          <Text style={st.listTitle}>Son Sinyaller</Text>
+          {recentSignals.map((sig) => {
+            const isWin = sig.result === 'WIN';
+            const isBuy = sig.direction === 'BUY';
+            const assetLabel = sig.symbol ?? sig.asset_id ?? '-';
+            return (
+              <View key={sig.id} style={st.histRow}>
+                <View style={[st.dirBadge, { backgroundColor: isBuy ? colors.riseLight : colors.fallLight }]}>
+                  <Text style={[st.dirTxt, { color: isBuy ? colors.rise : colors.fall }]}>{sig.direction}</Text>
+                </View>
+                <Text style={st.histAsset}>{assetLabel}</Text>
+                {sig.result ? (
+                  <View style={[st.resultPill, { backgroundColor: isWin ? colors.riseLight : colors.fallLight }]}>
+                    <Ionicons name={isWin ? 'checkmark-circle' : 'close-circle'} size={12} color={isWin ? colors.rise : colors.fall} />
+                    <Text style={[st.resultTxt, { color: isWin ? colors.rise : colors.fall }]}>
+                      {isWin ? 'Kazandı' : 'Kaybetti'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={[st.resultPill, { backgroundColor: colors.primaryLight }]}>
+                    <Text style={[st.resultTxt, { color: colors.primary }]}>Aktif</Text>
+                  </View>
+                )}
+                <Text style={st.histDate}>{fmtDate(sig.created_at)}</Text>
               </View>
             );
           })}
+        </>
+      )}
+      {recentSignals.length === 0 && (
+        <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+          <Ionicons name="stats-chart-outline" size={40} color={colors.textMuted} />
+          <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 14 }}>Henüz sinyal paylaşılmadı</Text>
         </View>
-      </View>
-
-      {/* Signal history list */}
-      <Text style={st.listTitle}>Son Sinyaller</Text>
-      {SIGNAL_HISTORY.map((sig, i) => {
-        const isWin = sig.result === 'WIN';
-        const isBuy = sig.dir === 'BUY';
-        return (
-          <View key={i} style={st.histRow}>
-            <View style={[st.dirBadge, { backgroundColor: isBuy ? colors.riseLight : colors.fallLight }]}>
-              <Text style={[st.dirTxt, { color: isBuy ? colors.rise : colors.fall }]}>{sig.dir}</Text>
-            </View>
-            <Text style={st.histAsset}>{sig.asset}</Text>
-            <View style={[st.resultPill, { backgroundColor: isWin ? colors.riseLight : colors.fallLight }]}>
-              <Ionicons name={isWin ? 'checkmark-circle' : 'close-circle'} size={12} color={isWin ? colors.rise : colors.fall} />
-              <Text style={[st.resultTxt, { color: isWin ? colors.rise : colors.fall }]}>
-                {sig.gain}
-              </Text>
-            </View>
-            <Text style={st.histDate}>{sig.date}</Text>
-          </View>
-        );
-      })}
+      )}
     </View>
   );
 }
@@ -341,14 +380,36 @@ const st = StyleSheet.create({
   histDate: { fontSize: 10, color: colors.textMuted },
 });
 
-// ─── Content Grid ─────────────────────────────────────────────────────────────
-function ContentGrid() {
+// ─── Content Grid (real videos from Supabase) ────────────────────────────────
+function ContentGrid({ userId }: { userId?: string }) {
+  const { videos, loading } = useVideos({ creatorId: userId });
   const CELL_W = (W - 4) / 3;
+
+  if (loading) {
+    return (
+      <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (videos.length === 0) {
+    return (
+      <View style={{ alignItems: 'center', paddingVertical: 40, gap: 8 }}>
+        <Ionicons name="videocam-outline" size={40} color={colors.textMuted} />
+        <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: '600' }}>Henüz video yüklenmedi</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center', paddingHorizontal: 40 }}>
+          İlk videonuzu yükleyerek takipçilerinizle paylaşın
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={cg.grid}>
-      {CONTENT_GRID.map((v) => (
+      {videos.map((v) => (
         <Pressable key={v.id} style={[cg.cell, { width: CELL_W, height: CELL_W * 0.65 }]}>
-          <Image source={{ uri: v.thumb }} style={cg.thumb} />
+          <Image source={{ uri: v.thumbnail }} style={cg.thumb} />
           <View style={cg.overlay} />
           {v.isLive && (
             <View style={cg.liveBadge}>
@@ -358,7 +419,9 @@ function ContentGrid() {
           )}
           <View style={cg.meta}>
             <Ionicons name="play" size={9} color="#FFF" />
-            <Text style={cg.views}>{v.views}</Text>
+            <Text style={cg.views}>
+              {v.stats.views >= 1000 ? `${(v.stats.views / 1000).toFixed(0)}K` : String(v.stats.views)}
+            </Text>
           </View>
         </Pressable>
       ))}
@@ -580,7 +643,7 @@ export function ProfileScreen() {
                   />
                 ))
               ) : (
-                <ContentGrid />
+                <ContentGrid userId={user?.id} />
               )}
             </>
           )}
@@ -599,7 +662,7 @@ export function ProfileScreen() {
             </View>
           )}
           {activeTab === 'Portföy' && <PortfolioTab />}
-          {activeTab === 'İstatistikler' && <StatsTab />}
+          {activeTab === 'İstatistikler' && <StatsTab signals={mySignals} followerCount={followersCount} />}
         </View>
 
       </ScrollView>
