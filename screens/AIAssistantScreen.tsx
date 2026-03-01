@@ -4,6 +4,7 @@ import {
   TextInput, KeyboardAvoidingView, Platform,
   ActivityIndicator, Animated, Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -161,21 +162,35 @@ export function AIAssistantScreen() {
   const FREE_LIMIT = 5;
   const scrollRef  = useRef<ScrollView>(null);
 
+  // AsyncStorage'dan günlük soru sayısını yükle
+  useEffect(() => {
+    const key = `@ai_daily_${new Date().toISOString().slice(0, 10)}`;
+    AsyncStorage.getItem(key).then(v => {
+      if (v) setDailyCount(parseInt(v, 10) || 0);
+    });
+  }, []);
+
   const nowStr = () => new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-  // Karşılama mesajı
+  // Karşılama mesajı — assets yüklenince güncelle
   useEffect(() => {
     const topAssets = assets.slice(0, 3).map(a =>
       `${a.symbol}: ${a.priceFormatted} (${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%)`
     ).join(', ');
 
-    setMessages([{
-      id:      'welcome',
-      role:    'assistant',
-      content: `Merhaba! Ben **MarketAI**'yım 🤖\n\nPiyasalar, yatırım stratejileri ve kripto hakkında her şeyi sorabilirsin.\n\n📊 Anlık: ${topAssets || 'Veri yükleniyor...'}`,
-      time:    nowStr(),
-    }]);
-  }, []);
+    setMessages(prev => {
+      const welcomeMsg: Message = {
+        id:      'welcome',
+        role:    'assistant',
+        content: `Merhaba! Ben **MarketAI**'yım 🤖\n\nPiyasalar, yatırım stratejileri ve kripto hakkında her şeyi sorabilirsin.\n\n📊 Anlık: ${topAssets || 'Veri yükleniyor...'}`,
+        time:    nowStr(),
+      };
+      if (prev.length === 0) return [welcomeMsg];
+      // Sadece welcome mesajını güncelle, diğer mesajlara dokunma
+      if (prev[0]?.id === 'welcome') return [welcomeMsg, ...prev.slice(1)];
+      return prev;
+    });
+  }, [assets]);
 
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
@@ -195,7 +210,12 @@ export function AIAssistantScreen() {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setThinking(true);
-    setDailyCount(c => c + 1);
+    setDailyCount(c => {
+      const newCount = c + 1;
+      const key = `@ai_daily_${new Date().toISOString().slice(0, 10)}`;
+      AsyncStorage.setItem(key, String(newCount));
+      return newCount;
+    });
 
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 

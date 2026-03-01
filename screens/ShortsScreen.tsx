@@ -589,7 +589,7 @@ export function ShortsScreen() {
   const allShorts: ShortItem[] = liveShorts.map((v) => ({
     id:          v.id,
     title:       v.title,
-    description: '',
+    description: v.assetTags.length > 0 ? `#${v.assetTags.join(' #')}` : '',
     thumbnail:   v.thumbnail,
     videoUrl:    v.videoUrl,
     assetTags:   v.assetTags ?? [],

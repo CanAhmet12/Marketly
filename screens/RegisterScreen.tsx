@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, Animated,
+  KeyboardAvoidingView, Platform, ScrollView, Animated, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,11 +29,16 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passRef  = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
   const btnScale = useRef(new Animated.Value(1)).current;
   const errorShake = useRef(new Animated.Value(0)).current;
 
@@ -56,10 +61,12 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
   const handleSubmit = async () => {
     setLocalError(null);
     onClearError?.();
-    if (!agreed) { setLocalError('Kullanım koşullarını kabul etmelisiniz.'); return; }
     if (!name.trim()) { setLocalError('Ad Soyad boş olamaz.'); return; }
     if (!email.trim()) { setLocalError('E-posta adresi boş olamaz.'); return; }
     if (!password) { setLocalError('Şifre boş olamaz.'); return; }
+    if (password.length < 6) { setLocalError('Şifre en az 6 karakter olmalı.'); return; }
+    if (password !== confirmPassword) { setLocalError('Şifreler eşleşmiyor.'); return; }
+    if (!agreed) { setLocalError('Kullanım koşullarını kabul etmelisiniz.'); return; }
     setLoading(true);
     try {
       const success = await onSubmit(name.trim(), email.trim(), password);
@@ -132,6 +139,8 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
                 placeholderTextColor={colors.textMuted}
                 value={name}
                 onChangeText={setName}
+                returnKeyType="next"
+                onSubmitEditing={() => emailRef.current?.focus()}
                 onFocus={() => setFocusedField('name')}
                 onBlur={() => setFocusedField(null)}
               />
@@ -140,6 +149,7 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
             <View style={[s.inputWrap, focusedField === 'email' && s.inputFocused]}>
               <Ionicons name="mail-outline" size={18} color={focusedField === 'email' ? colors.primary : colors.textMuted} style={s.inputIcon} />
               <TextInput
+                ref={emailRef}
                 style={s.input}
                 placeholder="E-posta adresi"
                 placeholderTextColor={colors.textMuted}
@@ -148,6 +158,8 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => passRef.current?.focus()}
                 onFocus={() => setFocusedField('email')}
                 onBlur={() => setFocusedField(null)}
               />
@@ -157,12 +169,15 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
               <View style={[s.inputWrap, focusedField === 'pass' && s.inputFocused]}>
                 <Ionicons name="lock-closed-outline" size={18} color={focusedField === 'pass' ? colors.primary : colors.textMuted} style={s.inputIcon} />
                 <TextInput
+                  ref={passRef}
                   style={[s.input, { flex: 1 }]}
                   placeholder="Şifre (min. 6 karakter)"
                   placeholderTextColor={colors.textMuted}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPass}
+                  returnKeyType="next"
+                  onSubmitEditing={() => confirmRef.current?.focus()}
                   onFocus={() => setFocusedField('pass')}
                   onBlur={() => setFocusedField(null)}
                 />
@@ -189,6 +204,43 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
                 </View>
               )}
             </View>
+
+            {/* Confirm password */}
+            <View style={[
+              s.inputWrap,
+              focusedField === 'confirm' && s.inputFocused,
+              confirmPassword.length > 0 && confirmPassword !== password && s.inputError,
+            ]}>
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={18}
+                color={
+                  confirmPassword.length > 0 && confirmPassword !== password
+                    ? colors.fall
+                    : focusedField === 'confirm' ? colors.primary : colors.textMuted
+                }
+                style={s.inputIcon}
+              />
+              <TextInput
+                ref={confirmRef}
+                style={[s.input, { flex: 1 }]}
+                placeholder="Şifre tekrar"
+                placeholderTextColor={colors.textMuted}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPass}
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
+                onFocus={() => setFocusedField('confirm')}
+                onBlur={() => setFocusedField(null)}
+              />
+              <Pressable onPress={() => setShowConfirmPass(!showConfirmPass)} hitSlop={8}>
+                <Ionicons name={showConfirmPass ? 'eye-off-outline' : 'eye-outline'} size={18} color={colors.textMuted} />
+              </Pressable>
+              {confirmPassword.length > 0 && confirmPassword === password && (
+                <Ionicons name="checkmark-circle" size={18} color={colors.rise} style={{ marginLeft: 4 }} />
+              )}
+            </View>
           </View>
 
           {/* Terms */}
@@ -213,15 +265,17 @@ export function RegisterScreen({ onSubmit, onSwitchToLogin, onSuccess, onBack, e
               onPressIn={() => animateBtn(0.97)}
               onPressOut={() => animateBtn(1)}
             >
-              {loading
-                ? <Text style={s.submitBtnTxt}>Kayıt yapılıyor...</Text>
-                : (
-                  <View style={s.submitBtnInner}>
-                    <Text style={s.submitBtnTxt}>Kayıt Ol — Ücretsiz</Text>
-                    <Ionicons name="arrow-forward" size={18} color="#FFF" />
-                  </View>
-                )
-              }
+              {loading ? (
+                <View style={s.submitBtnInner}>
+                  <ActivityIndicator size="small" color="#FFF" />
+                  <Text style={s.submitBtnTxt}>Kayıt yapılıyor...</Text>
+                </View>
+              ) : (
+                <View style={s.submitBtnInner}>
+                  <Text style={s.submitBtnTxt}>Kayıt Ol — Ücretsiz</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                </View>
+              )}
             </Pressable>
           </Animated.View>
 
@@ -292,6 +346,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, height: 50,
   },
   inputFocused: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+  inputError:   { borderColor: colors.fall, backgroundColor: colors.fallLight },
   inputIcon: { marginRight: 8 },
   input: { flex: 1, fontSize: 15, color: colors.text },
 

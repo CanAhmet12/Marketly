@@ -50,16 +50,19 @@ function AddHoldingModal({ visible, onClose, onAdd }: AddModalProps) {
   const [qty,     setQty]     = useState('');
   const [cost,    setCost]    = useState('');
   const [saving,  setSaving]  = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
-  const reset = () => { setAsset(''); setQty(''); setCost(''); };
+  const reset = () => { setAsset(''); setQty(''); setCost(''); setFieldError(null); };
 
   const handleAdd = async () => {
+    setFieldError(null);
     const assetClean = asset.trim().toUpperCase();
     const qtyNum  = parseFloat(qty);
     const costNum = parseFloat(cost);
-    if (!assetClean) return;
-    if (isNaN(qtyNum) || qtyNum <= 0) return;
-    if (isNaN(costNum) || costNum <= 0) return;
+    if (!assetClean) { setFieldError('Varlık sembolü boş olamaz.'); return; }
+    if (!/^[A-Z0-9.]{1,12}$/.test(assetClean)) { setFieldError('Geçersiz sembol (örn: BTC, AAPL, THYAO.IS)'); return; }
+    if (isNaN(qtyNum) || qtyNum <= 0) { setFieldError('Miktar geçerli bir sayı olmalı.'); return; }
+    if (isNaN(costNum) || costNum <= 0) { setFieldError('Maliyet geçerli bir sayı olmalı.'); return; }
     setSaving(true);
     await onAdd(assetClean, qtyNum, costNum);
     setSaving(false);
@@ -78,14 +81,21 @@ function AddHoldingModal({ visible, onClose, onAdd }: AddModalProps) {
           <View style={m.handle} />
           <Text style={m.title}>Varlık Ekle</Text>
 
+          {fieldError && (
+            <View style={m.errorBanner}>
+              <Ionicons name="alert-circle-outline" size={14} color={colors.fall} />
+              <Text style={m.errorTxt}>{fieldError}</Text>
+            </View>
+          )}
+
           <MInput label="Sembol (örn: BTC, AAPL)" value={asset}
-            onChangeText={t => setAsset(t.toUpperCase())} placeholder="BTC"
+            onChangeText={t => { setAsset(t.toUpperCase()); setFieldError(null); }} placeholder="BTC"
             autoCapitalize="characters" />
           <MInput label="Miktar" value={qty}
-            onChangeText={setQty} placeholder="0.00"
+            onChangeText={t => { setQty(t); setFieldError(null); }} placeholder="0.00"
             keyboardType="decimal-pad" />
           <MInput label="Ortalama Maliyet ($)" value={cost}
-            onChangeText={setCost} placeholder="65000"
+            onChangeText={t => { setCost(t); setFieldError(null); }} placeholder="65000"
             keyboardType="decimal-pad" />
 
           <Pressable style={m.addBtn} onPress={handleAdd} disabled={saving}>
@@ -465,4 +475,10 @@ const m = StyleSheet.create({
   addBtn: { borderRadius: 14, overflow: 'hidden', marginTop: 4, ...shadow.sm },
   addGrad: { height: 52, alignItems: 'center', justifyContent: 'center' },
   addTxt: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: colors.fallLight, borderRadius: 10,
+    padding: 10, borderWidth: 1, borderColor: colors.fall + '40',
+  },
+  errorTxt: { flex: 1, fontSize: 13, color: colors.fall, fontWeight: '600' },
 });

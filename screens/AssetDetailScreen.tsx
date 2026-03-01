@@ -4,6 +4,7 @@ import {
   StatusBar, Dimensions, Image, Animated,
   Modal, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,10 +25,19 @@ function CommunitySentiment({ symbol }: { symbol: string }) {
   const [vote, setVote] = useState<'bull' | 'bear' | null>(null);
   const [bull, setBull] = useState(67);
   const [bear, setBear] = useState(33);
+  const [totalVotes, setTotalVotes] = useState(1200);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const toast = useToast();
+  const VOTE_KEY = `@sentiment_${symbol}`;
 
-  const handleVote = (v: 'bull' | 'bear') => {
+  // Kaydedilmiş oyu yükle
+  useEffect(() => {
+    AsyncStorage.getItem(VOTE_KEY).then(v => {
+      if (v === 'bull' || v === 'bear') setVote(v);
+    });
+  }, [symbol]);
+
+  const handleVote = async (v: 'bull' | 'bear') => {
     if (vote === v) return;
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.92, duration: 80, useNativeDriver: true }),
@@ -35,6 +45,8 @@ function CommunitySentiment({ symbol }: { symbol: string }) {
     ]).start();
     const prev = vote;
     setVote(v);
+    await AsyncStorage.setItem(VOTE_KEY, v);
+    if (!prev) setTotalVotes(t => t + 1);
     if (v === 'bull') {
       setBull(b => Math.min(b + (prev === 'bear' ? 2 : 1), 99));
       setBear(b => Math.max(b - (prev === 'bear' ? 2 : 1), 1));
@@ -52,7 +64,7 @@ function CommunitySentiment({ symbol }: { symbol: string }) {
           <Ionicons name="people" size={13} color="#007AFF" />
         </View>
         <Text style={cs.title}>Topluluk Sentiment</Text>
-        <Text style={cs.total}>1.2K oy</Text>
+        <Text style={cs.total}>{totalVotes >= 1000 ? `${(totalVotes/1000).toFixed(1)}K` : totalVotes} oy</Text>
       </View>
 
       {/* Progress bar */}

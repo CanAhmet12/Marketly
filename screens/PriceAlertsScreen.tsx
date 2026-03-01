@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { usePriceAlerts } from '../hooks/usePriceAlerts';
 import { useToast } from '../contexts/ToastContext';
+import { useMarketPrices } from '../hooks/useMarketPrices';
 import { shadow, colors } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -79,7 +80,12 @@ function AddAlertModal({ visible, onClose, onAdd }: AddModalProps) {
           </View>
 
           <View style={m.fieldWrap}>
-            <Text style={m.label}>Hedef Fiyat ($)</Text>
+            <Text style={m.label}>
+              Hedef Fiyat {
+                ['USDTRY','EURTRY','GBPTRY','THYAO','GARAN','AKBNK','BIST100'].includes(asset)
+                  ? '(₺)' : '($)'
+              }
+            </Text>
             <TextInput
               style={m.input} placeholderTextColor="#9AA0AF"
               placeholder="65000"
@@ -115,7 +121,16 @@ export function PriceAlertsScreen() {
   const { user }   = useAuth();
   const toast      = useToast();
   const { alerts, loading, addAlert, removeAlert } = usePriceAlerts();
+  const { allAssets } = useMarketPrices();
   const [addModal, setAddModal] = useState(false);
+
+  const getPriceForAsset = (assetId: string): number | undefined => {
+    const found = allAssets.find(a =>
+      a.symbol.toUpperCase() === assetId.toUpperCase() ||
+      a.id.toUpperCase() === assetId.toUpperCase()
+    );
+    return found?.price;
+  };
 
   const handleAdd = async (asset: string, cond: 'above' | 'below', target: number) => {
     const ok = await addAlert(asset, cond, target);
@@ -190,6 +205,7 @@ export function PriceAlertsScreen() {
               key={a.id}
               alert={a}
               onRemove={() => handleRemove(a.id, a.asset_id)}
+              currentPrice={getPriceForAsset(a.asset_id)}
             />
           ))}
         </ScrollView>
@@ -216,9 +232,20 @@ export function PriceAlertsScreen() {
   );
 }
 
-function AlertRow({ alert: a, onRemove }: { alert: any; onRemove: () => void }) {
+function AlertRow({ alert: a, onRemove, currentPrice }: {
+  alert: any;
+  onRemove: () => void;
+  currentPrice?: number;
+}) {
   const isAbove = a.condition === 'above';
   const color   = isAbove ? '#34C759' : '#FF3B3B';
+  const target  = a.target ?? a.target_price ?? 0;
+
+  // Hedefe ne kadar uzak?
+  const pctAway = currentPrice && target
+    ? ((target - currentPrice) / currentPrice * 100)
+    : null;
+
   return (
     <View style={s.alertRow}>
       <View style={[s.alertIcon, { backgroundColor: color + '18' }]}>
@@ -228,15 +255,33 @@ function AlertRow({ alert: a, onRemove }: { alert: any; onRemove: () => void }) 
         <View style={s.alertTop}>
           <Text style={s.alertSym}>{a.asset_id}</Text>
           {a.triggered && (
-            <View style={s.triggeredBadge}>
-              <Text style={s.triggeredTxt}>TETİKLENDİ</Text>
+            <Pressable
+              style={s.triggeredBadge}
+              onPress={onRemove}
+            >
+              <Text style={s.triggeredTxt}>✓ TETİKLENDİ · Sil</Text>
+            </Pressable>
+          )}
+          {pctAway !== null && !a.triggered && (
+            <View style={[s.distBadge, { backgroundColor: Math.abs(pctAway) < 5 ? '#FF950022' : colors.bgInput }]}>
+              <Text style={[s.distTxt, { color: Math.abs(pctAway) < 5 ? '#FF9500' : colors.textMuted }]}>
+                {pctAway >= 0 ? '+' : ''}{pctAway.toFixed(1)}% uzakta
+              </Text>
             </View>
           )}
         </View>
-        <Text style={s.alertDesc}>
-          {isAbove ? 'Üzerine çıkınca' : 'Altına düşünce'} ·{' '}
-          <Text style={{ color, fontWeight: '700' }}>${a.target.toLocaleString()}</Text>
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
+          <Text style={s.alertDesc}>
+            {isAbove ? 'Üzerine çıkınca' : 'Altına düşünce'} ·{' '}
+            <Text style={{ color, fontWeight: '700' }}>${target.toLocaleString()}</Text>
+          </Text>
+          {currentPrice != null && (
+            <Text style={s.currentPriceTxt}>Şu an: ${currentPrice >= 1000
+              ? currentPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })
+              : currentPrice.toFixed(2)
+            }</Text>
+          )}
+        </View>
       </View>
       <Pressable
         style={s.deleteBtn}
@@ -286,6 +331,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 6, paddingVertical: 2,
   },
   triggeredTxt: { fontSize: 9, fontWeight: '800', color: '#fff' },
+  distBadge: {
+    borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2,
+  },
+  distTxt: { fontSize: 9, fontWeight: '700' },
+  currentPriceTxt: { fontSize: 11, color: colors.textMuted, fontWeight: '500' },
   deleteBtn: { padding: 4 },
 
   emptyTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginTop: 12 },

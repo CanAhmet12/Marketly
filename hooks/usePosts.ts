@@ -32,7 +32,7 @@ async function fetchProfilesMap(userIds: string[]): Promise<Record<string, any>>
   return map;
 }
 
-export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all') {
+export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all', creatorId?: string) {
   const { user } = useAuth();
   const [posts,   setPosts]   = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,8 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         .order('created_at', { ascending: false })
         .range(currentPage * PAGE, currentPage * PAGE + PAGE - 1);
 
-      if (assetTag) q = q.eq('asset_tag', assetTag.toUpperCase());
+      if (assetTag)   q = q.eq('asset_tag', assetTag.toUpperCase());
+      if (creatorId)  q = q.eq('user_id', creatorId);
       if (feedMode === 'following' && followingIds.length > 0) {
         q = q.in('user_id', followingIds);
       }

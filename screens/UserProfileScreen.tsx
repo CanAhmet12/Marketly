@@ -35,11 +35,8 @@ export function UserProfileScreen({ userId, onBack }: Props) {
   const navigation = useNavigation<any>();
 
   const { isFollowing, followersCount, followingCount, toggle, loading: followLoading } = useFollow(userId);
-  const { posts } = usePosts();
+  const { posts: userPosts, toggleLike } = usePosts(undefined, 'all', userId);
   const { profile, loading: profileLoading } = useUserProfile(userId);
-
-  // Bu kullanıcının post'ları (Supabase gerçek + yerel filtreleme)
-  const userPosts = posts.filter(p => p.user_id === userId);
 
   // Profil bilgisi: Supabase'den çekildi ise kullan, yoksa post verisinden al
   const displayName = profile?.displayName ?? userPosts[0]?.author_name ?? 'Kullanıcı';
@@ -186,7 +183,7 @@ export function UserProfileScreen({ userId, onBack }: Props) {
             </View>
           ) : (
             userPosts.map(p => (
-              <PostCard key={p.id} post={p} onLike={() => {}} />
+              <PostCard key={p.id} post={p} onLike={toggleLike} />
             ))
           )}
         </View>
