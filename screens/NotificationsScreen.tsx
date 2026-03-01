@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { radius, shadow, colors } from '../constants/theme';
 import { useNotifications } from '../hooks/useNotifications';
 
@@ -104,6 +105,7 @@ function timeAgo(isoStr: string): string {
 
 export function NotificationsScreen({ onBack }: Props) {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
   const {
     notifications: liveNotifs,
@@ -114,6 +116,28 @@ export function NotificationsScreen({ onBack }: Props) {
     deleteNotif,
     refetch,
   } = useNotifications();
+
+  const handleNotifPress = useCallback((n: NotifWithDate) => {
+    markRead(n.id);
+    const meta = n as any;
+    switch (n.type) {
+      case 'price_alert':
+        if (meta.meta?.asset_id) navigation.navigate('PriceAlerts');
+        break;
+      case 'like':
+      case 'comment':
+        if (meta.meta?.post_id) navigation.navigate('Akış');
+        break;
+      case 'follow':
+        if (meta.meta?.actor_id) navigation.navigate('ProfileView', { userId: meta.meta.actor_id });
+        break;
+      case 'market':
+        if (meta.meta?.asset_id) navigation.navigate('Piyasalar');
+        break;
+      default:
+        break;
+    }
+  }, [markRead, navigation]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -177,7 +201,7 @@ export function NotificationsScreen({ onBack }: Props) {
                   <Pressable
                     key={n.id}
                     style={[s.card, !n.read && s.cardUnread]}
-                    onPress={() => markRead(n.id)}
+                    onPress={() => handleNotifPress(n)}
                     onLongPress={() => deleteNotif(n.id)}
                   >
                     {!n.read && <View style={s.unreadDot} />}

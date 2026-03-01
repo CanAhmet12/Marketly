@@ -234,7 +234,12 @@ export function AIAssistantScreen() {
       `TARIH: ${new Date().toLocaleDateString('tr-TR')}`,
     ].join(' | ');
 
-    const reply = await callAI(history, context);
+    let reply: string;
+    try {
+      reply = await callAI(history, context);
+    } catch {
+      reply = '⚠️ Bağlantı sorunu yaşandı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.';
+    }
     setThinking(false);
 
     const aiMsg: Message = {
