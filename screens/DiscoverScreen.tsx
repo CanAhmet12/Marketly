@@ -9,8 +9,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { mockVideos } from '../data/mockVideos';
-import { mockSignals } from '../data/mockSignals';
 import { FeaturedVideoCard } from '../components/VideoCard';
 import { useToast } from '../contexts/ToastContext';
 import { useTabBar } from '../contexts/TabBarContext';
@@ -241,19 +239,16 @@ export function DiscoverScreen() {
   const { signals: liveSignals } = useSignals({ activeOnly: true });
   const { analysts }             = useLeaderboard();
 
-  // Supabase'de veri varsa kullan, yoksa mock'a düş
-  const displayVideos  = liveVideos.length  > 0 ? liveVideos  : mockVideos;
-  const displaySignals = liveSignals.length > 0
-    ? liveSignals.map(s => ({
-        id: s.id, symbol: s.symbol, direction: s.direction,
-        confidence: s.confidence, entry: s.entry_price ?? 0,
-        target: s.target_price ?? 0, stopLoss: s.stop_loss ?? 0,
-        timeframe: s.timeframe, rationale: s.rationale ?? '',
-        copies: s.copies_count, likes: s.likes_count,
-        creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
-        isNew: true, createdAt: s.created_at,
-      }))
-    : mockSignals;
+  const displayVideos  = liveVideos;
+  const displaySignals = liveSignals.map(s => ({
+    id: s.id, symbol: s.symbol, direction: s.direction,
+    confidence: s.confidence, entry: s.entry_price ?? 0,
+    target: s.target_price ?? 0, stopLoss: s.stop_loss ?? 0,
+    timeframe: s.timeframe, rationale: s.rationale ?? '',
+    copies: s.copies_count, likes: s.likes_count,
+    creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
+    isNew: true, createdAt: s.created_at,
+  }));
 
   // Scroll-driven header animation
   const scrollY     = useRef(new Animated.Value(0)).current;

@@ -6,11 +6,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { mockVideos } from '../data/mockVideos';
-import { mockMarketAssets } from '../data/mockMarkets';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { liveToMarketAsset } from '../services/marketService';
 import { supabase } from '../lib/supabase';
+import type { VideoItem } from '../data/mockVideos';
 import { radius, shadow, colors } from '../constants/theme';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -31,7 +30,7 @@ type ResultTab = 'videos' | 'assets' | 'creators';
 interface Props { onBack?: () => void }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function VideoResult({ item, onPress }: { item: typeof mockVideos[0]; onPress: () => void }) {
+function VideoResult({ item, onPress }: { item: VideoItem; onPress: () => void }) {
   const up = (item.changePercent ?? 0) >= 0;
   return (
     <Pressable style={r.videoCard} onPress={onPress}>
@@ -69,7 +68,7 @@ function VideoResult({ item, onPress }: { item: typeof mockVideos[0]; onPress: (
   );
 }
 
-function AssetResult({ asset, onPress }: { asset: typeof mockMarketAssets[0]; onPress?: () => void }) {
+function AssetResult({ asset, onPress }: { asset: ReturnType<typeof liveToMarketAsset>; onPress?: () => void }) {
   const up = asset.changePercent >= 0;
   return (
     <Pressable style={r.assetRow} onPress={onPress}>
@@ -130,24 +129,58 @@ export function SearchScreen({ onBack }: Props) {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ResultTab>('videos');
   const [dbCreators, setDbCreators] = useState<typeof HOT_CREATORS>([]);
+  const [dbVideos,   setDbVideos]   = useState<VideoItem[]>([]);
   const { assets: liveAssets } = useMarketPrices();
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  // Gerçek creator araması (debounce)
+  // Supabase video + creator araması (debounce)
   useEffect(() => {
-    if (!query.trim()) { setDbCreators([]); return; }
+    if (!query.trim()) { setDbCreators([]); setDbVideos([]); return; }
     const t = setTimeout(async () => {
       const q2 = query.trim().toLowerCase();
-      const { data } = await supabase
+
+      // Video araması
+      const { data: vData } = await supabase
+        .from('posts')
+        .select('id, user_id, creator_id, type, title, content, asset_tag, thumbnail_url, image_url, video_url, likes_count, comments_count, views_count, created_at')
+        .or(`title.ilike.%${q2}%,content.ilike.%${q2}%,asset_tag.ilike.%${q2}%`)
+        .not('type', 'eq', 'text')
+        .limit(10);
+      if (vData && vData.length > 0) {
+        const uids = vData.map((r: any) => r.creator_id ?? r.user_id).filter(Boolean);
+        const { data: profs } = await supabase.from('profiles').select('id, username, full_name, avatar_url, verified').in('id', [...new Set(uids)]);
+        const pm: Record<string, any> = {};
+        for (const p of profs ?? []) pm[p.id] = p;
+        setDbVideos(vData.map((row: any): VideoItem => {
+          const prof = pm[row.creator_id ?? row.user_id];
+          return {
+            id: row.id,
+            title: row.title ?? row.content ?? 'Video',
+            thumbnail: row.thumbnail_url ?? row.image_url ?? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500',
+            videoUrl: row.video_url,
+            category: 'for_you',
+            assetTags: row.asset_tag ? [row.asset_tag] : [],
+            isLive: row.type === 'live',
+            timeAgo: '',
+            creator: { id: prof?.id ?? row.user_id, name: prof?.full_name ?? prof?.username ?? 'Kullanıcı', avatar: prof?.avatar_url ?? `https://i.pravatar.cc/80?u=${row.user_id}`, verified: prof?.verified ?? false },
+            stats: { likes: row.likes_count ?? 0, comments: row.comments_count ?? 0, shares: 0, views: row.views_count ?? 0 },
+          };
+        }));
+      } else {
+        setDbVideos([]);
+      }
+
+      // Creator araması
+      const { data: pData } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url, verified, follower_count')
         .or(`username.ilike.%${q2}%,full_name.ilike.%${q2}%`)
         .limit(10);
-      if (data && data.length > 0) {
-        setDbCreators(data.map((p: any) => ({
+      if (pData && pData.length > 0) {
+        setDbCreators(pData.map((p: any) => ({
           id:        p.id,
           name:      p.full_name ?? p.username,
           handle:    `@${p.username}`,
@@ -164,17 +197,9 @@ export function SearchScreen({ onBack }: Props) {
 
   const q = query.toLowerCase().trim();
 
-  const videoResults = q.length > 0
-    ? mockVideos.filter(
-        (v) => v.title.toLowerCase().includes(q)
-          || v.assetTags.some((t) => t.toLowerCase().includes(q))
-          || v.creator.name.toLowerCase().includes(q)
-      )
-    : [];
+  const videoResults = dbVideos;
 
-  const allMarketAssets = liveAssets.length > 0
-    ? liveAssets.map(liveToMarketAsset)
-    : mockMarketAssets;
+  const allMarketAssets = liveAssets.map(liveToMarketAsset);
 
   const assetResults = q.length > 0
     ? allMarketAssets.filter(
@@ -182,11 +207,7 @@ export function SearchScreen({ onBack }: Props) {
       )
     : [];
 
-  const creatorResults = q.length > 0
-    ? (dbCreators.length > 0 ? dbCreators : HOT_CREATORS).filter(
-        (c) => c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q)
-      )
-    : [];
+  const creatorResults = dbCreators;
 
   const hasResults = videoResults.length > 0 || assetResults.length > 0 || creatorResults.length > 0;
 

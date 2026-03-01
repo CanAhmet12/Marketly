@@ -66,29 +66,6 @@ function timeAgo(isoDate: string): string {
   return `${Math.floor(hrs / 24)} gün önce`;
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const MOCK_COMMENTS = [
-  {
-    id: '1', user: 'Ali Kaya',   avatar: 'https://i.pravatar.cc/40?u=ak1',
-    time: '2 sa önce', text: '🔥 Harika analiz! BTC için 70K hedefi gerçekçi görünüyor.', likes: 48,
-    isPinned: true,
-  },
-  {
-    id: '2', user: 'Zeynep M.',  avatar: 'https://i.pravatar.cc/40?u=zm1',
-    time: '3 sa önce', text: 'Ethereum için de analiz yapabilir misin? 🤔', likes: 23,
-    isPinned: false,
-  },
-  {
-    id: '3', user: 'Burak Sarı', avatar: 'https://i.pravatar.cc/40?u=bs1',
-    time: '5 sa önce', text: 'Stop loss 60K olarak aldım, hedef 72K. Teşekkürler! 💪', likes: 31,
-    isPinned: false,
-  },
-  {
-    id: '4', user: 'Selin Ak.',  avatar: 'https://i.pravatar.cc/40?u=sa1',
-    time: '7 sa önce', text: 'Uzun süredir bu kalitede içerik arıyordum ❤️', likes: 19,
-    isPinned: false,
-  },
-];
 
 const RELATED = [
   {
@@ -396,19 +373,16 @@ export function VideoDetailScreen({ item, onBack }: Props) {
     likeComment,
   } = useVideoComments(item.id);
 
-  // Gerçek yorum varsa onları göster, yoksa mock'a düş
-  const displayComments = liveComments.length > 0
-    ? liveComments.map(c => ({
-        id:       c.id,
-        user:     c.author_name,
-        avatar:   c.author_avatar ?? `https://i.pravatar.cc/40?u=${c.user_id}`,
-        time:     timeAgo(c.created_at),
-        text:     c.content,
-        likes:    c.likes,
-        isPinned: c.is_pinned,
-        isOwn:    c.user_id === user?.id,
-      }))
-    : MOCK_COMMENTS.map(c => ({ ...c, isOwn: false }));
+  const displayComments = liveComments.map(c => ({
+    id:       c.id,
+    user:     c.author_name,
+    avatar:   c.author_avatar ?? `https://i.pravatar.cc/40?u=${c.user_id}`,
+    time:     timeAgo(c.created_at),
+    text:     c.content,
+    likes:    c.likes,
+    isPinned: c.is_pinned,
+    isOwn:    c.user_id === user?.id,
+  }));
 
   const up    = (item.changePercent ?? 0) >= 0;
   const stats = item.stats ?? { likes: 0, comments: 0, shares: 0, views: 0 };

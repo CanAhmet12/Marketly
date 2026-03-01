@@ -6,7 +6,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { mockVideos } from '../data/mockVideos';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
 import { useMarketCoin } from '../hooks/useMarketCoin';
@@ -546,7 +545,7 @@ export function LiveScreen() {
 
   const { videos: liveVideos } = useVideos({ type: 'live' });
 
-  const baseVideos = (liveVideos.length > 0 ? liveVideos : mockVideos.filter((v) => v.isLive)).map((v) => ({
+  const baseVideos = liveVideos.map((v) => ({
     ...v,
     viewers: v.stats.views,
     category: v.assetTags?.length > 0 ? 'Kripto' : 'Analiz',

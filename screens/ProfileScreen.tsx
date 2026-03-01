@@ -20,30 +20,12 @@ import { PostCard } from '../components/PostCard';
 import { BadgesRow } from '../components/BadgesRow';
 import { CreatePostModal } from '../components/CreatePostModal';
 import { SignalCard } from '../components/SignalCard';
-import { mockSignals } from '../data/mockSignals';
+import { useSignals } from '../hooks/useSignals';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 const COVER_H    = 170;
 const AVATAR_SIZE = 86;
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const PORTFOLIO_HOLDINGS = [
-  { sym: 'BTC',   name: 'Bitcoin',       value: '$11,420', alloc: 42, change: +2.4,  color: '#F7931A', letter: '₿'  },
-  { sym: 'ETH',   name: 'Ethereum',      value: '$7,380',  alloc: 27, change: +1.8,  color: '#627EEA', letter: 'Ξ'  },
-  { sym: 'THYAO', name: 'Türk Hava Y.',  value: '$3,240',  alloc: 12, change: +3.1,  color: '#E81F2A', letter: 'TK' },
-  { sym: 'XAU',   name: 'Altın',         value: '$2,890',  alloc: 11, change: +0.4,  color: '#D4AF37', letter: '⬡'  },
-  { sym: 'SOL',   name: 'Solana',        value: '$1,620',  alloc: 6,  change: -0.6,  color: '#9945FF', letter: 'S'  },
-  { sym: 'DIĞER', name: 'Diğer',         value: '$630',    alloc: 2,  change: +0.0,  color: '#9AA0AF', letter: '+'  },
-];
-
-const SIGNAL_HISTORY = [
-  { asset: '$BTC', dir: 'BUY',  result: 'WIN',  gain: '+14.2%', date: '12 Şub' },
-  { asset: 'THYAO',dir: 'BUY',  result: 'WIN',  gain: '+8.7%',  date: '5 Şub'  },
-  { asset: '$ETH', dir: 'SELL', result: 'WIN',  gain: '+6.3%',  date: '28 Oca' },
-  { asset: 'XAU',  dir: 'BUY',  result: 'LOSS', gain: '-2.1%',  date: '20 Oca' },
-  { asset: '$SOL', dir: 'BUY',  result: 'WIN',  gain: '+21.5%', date: '10 Oca' },
-];
 
 const CONTENT_GRID = [
   { id: '1', thumb: 'https://picsum.photos/seed/pv1/300/180', views: '124K', isLive: false },
@@ -418,6 +400,7 @@ export function ProfileScreen() {
   const { earnedBadges, newBadges, checkAndAward } = useBadges();
   const { watchlist } = useWatchlist();
   const { holdings } = usePortfolio();
+  const { signals: mySignals } = useSignals({ creatorId: user?.id });
   const toast = useToast();
 
   // Yeni rozet kazanılınca bildirim göster
@@ -603,9 +586,16 @@ export function ProfileScreen() {
           )}
           {activeTab === 'Sinyaller' && (
             <View style={{ paddingTop: 10 }}>
-              {mockSignals.map((sig) => (
-                <SignalCard key={sig.id} signal={sig} />
-              ))}
+              {mySignals.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+                  <Ionicons name="analytics-outline" size={40} color={colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 14 }}>Henüz sinyal paylaşmadınız</Text>
+                </View>
+              ) : (
+                mySignals.map((sig) => (
+                  <SignalCard key={sig.id} signal={sig as any} />
+                ))
+              )}
             </View>
           )}
           {activeTab === 'Portföy' && <PortfolioTab />}

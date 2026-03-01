@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import { mockShorts, ShortItem } from '../data/mockShorts';
+import type { ShortItem } from '../data/mockShorts';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
@@ -570,28 +570,25 @@ export function ShortsScreen() {
 
   const { videos: liveShorts } = useVideos({ type: 'short' });
 
-  // Gerçek verilerden ShortItem formatı oluştur ya da mock'a düş
-  const allShorts: ShortItem[] = liveShorts.length > 0
-    ? liveShorts.map((v) => ({
-        id:          v.id,
-        title:       v.title,
-        description: '',
-        thumbnail:   v.thumbnail,
-        videoUrl:    v.videoUrl,
-        assetTags:   v.assetTags ?? [],
-        creator: {
-          id:          v.creator.id,
-          name:        v.creator.name,
-          avatar:      v.creator.avatar,
-          verified:    v.creator.verified,
-          followers:   v.creator.followers,
-        },
-        stats:    v.stats,
-        duration: v.duration ?? '0:30',
-        audio:    `${v.creator.name} · Orijinal ses`,
-        category: v.category === 'kripto' ? 'Kripto' : v.category === 'hisseler' ? 'Hisseler' : 'Tümü',
-      }))
-    : mockShorts;
+  const allShorts: ShortItem[] = liveShorts.map((v) => ({
+    id:          v.id,
+    title:       v.title,
+    description: '',
+    thumbnail:   v.thumbnail,
+    videoUrl:    v.videoUrl,
+    assetTags:   v.assetTags ?? [],
+    creator: {
+      id:          v.creator.id,
+      name:        v.creator.name,
+      avatar:      v.creator.avatar,
+      verified:    v.creator.verified ?? false,
+      followers:   v.creator.followers ?? '0',
+    },
+    stats:    v.stats,
+    duration: v.duration ?? '0:30',
+    audio:    `${v.creator.name} · Orijinal ses`,
+    category: v.category === 'kripto' ? 'Kripto' : v.category === 'hisseler' ? 'Hisseler' : 'Tümü',
+  }));
 
   const filtered = activeCat === 'Tümü'
     ? allShorts

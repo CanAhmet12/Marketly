@@ -124,14 +124,35 @@ const cs = StyleSheet.create({
 });
 
 // ─── Related Videos ───────────────────────────────────────────────────────────
-const MOCK_VIDEOS: { id: string; thumb: string; title: string; creator: string; views: string; duration: string }[] = [
-  { id: '1', thumb: 'https://picsum.photos/seed/btcv1/320/180', title: 'BTC Teknik Analiz — Destek/Direnç',  creator: '@btctrader', views: '12.4K', duration: '8:22' },
-  { id: '2', thumb: 'https://picsum.photos/seed/btcv2/320/180', title: 'Altcoin Sezonu Başlıyor mu?',        creator: '@crypto_pro', views: '8.1K',  duration: '5:48' },
-  { id: '3', thumb: 'https://picsum.photos/seed/btcv3/320/180', title: 'Fibonacci Seviyeleri Analizi',        creator: '@fintech_tr', views: '5.3K',  duration: '11:05' },
-];
-
 function RelatedVideos({ symbol }: { symbol: string }) {
   const navigation = useNavigation<any>();
+  const [videos, setVideos] = useState<{ id: string; thumb: string; title: string; creator: string; views: string; duration: string; videoUrl?: string }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('posts')
+      .select('id, title, content, thumbnail_url, image_url, video_url, duration, views_count, user_id, creator_id')
+      .or(`asset_tag.ilike.%${symbol}%,content.ilike.%${symbol}%,title.ilike.%${symbol}%`)
+      .not('video_url', 'is', null)
+      .order('views_count', { ascending: false })
+      .limit(5)
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) return;
+        const uids = data.map((r: any) => r.creator_id ?? r.user_id).filter(Boolean);
+        const { data: profs } = await supabase.from('profiles').select('id, username, full_name').in('id', [...new Set(uids)]);
+        const pm: Record<string, any> = {};
+        for (const p of profs ?? []) pm[p.id] = p;
+        setVideos(data.map((r: any) => {
+          const prof = pm[r.creator_id ?? r.user_id];
+          const dur = r.duration ? `${Math.floor(r.duration / 60)}:${String(r.duration % 60).padStart(2, '0')}` : '';
+          const views = r.views_count >= 1000 ? `${(r.views_count / 1000).toFixed(1)}K` : String(r.views_count ?? 0);
+          return { id: r.id, thumb: r.thumbnail_url ?? r.image_url ?? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=320', title: r.title ?? r.content ?? 'Video', creator: `@${prof?.username ?? 'kullanici'}`, views, duration: dur, videoUrl: r.video_url };
+        }));
+      });
+  }, [symbol]);
+
+  if (videos.length === 0) return null;
+
   return (
     <View style={rv.wrap}>
       <View style={rv.header}>
@@ -144,13 +165,15 @@ function RelatedVideos({ symbol }: { symbol: string }) {
         </Pressable>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 4 }}>
-        {MOCK_VIDEOS.map(v => (
-          <Pressable key={v.id} style={rv.card}>
+        {videos.map(v => (
+          <Pressable key={v.id} style={rv.card} onPress={() => navigation.navigate('VideoDetail', { item: v })}>
             <Image source={{ uri: v.thumb }} style={rv.thumb} />
             <View style={rv.overlay} />
-            <View style={rv.duration}>
-              <Text style={rv.durationTxt}>{v.duration}</Text>
-            </View>
+            {v.duration ? (
+              <View style={rv.duration}>
+                <Text style={rv.durationTxt}>{v.duration}</Text>
+              </View>
+            ) : null}
             <View style={rv.cardBody}>
               <Text style={rv.videoTitle} numberOfLines={2}>{v.title}</Text>
               <Text style={rv.creator}>{v.creator} · {v.views} izlenme</Text>
@@ -180,14 +203,32 @@ const rv = StyleSheet.create({
 });
 
 // ─── Top Analysts Row ─────────────────────────────────────────────────────────
-const MOCK_ANALYSTS = [
-  { id: '1', letter: 'M', color: '#F7931A', name: 'Mehmet Y.', accuracy: 78, verified: true },
-  { id: '2', letter: 'A', color: '#007AFF', name: 'Ayşe D.',   accuracy: 72, verified: true },
-  { id: '3', letter: 'C', color: '#D4AF37', name: 'Can Ö.',     accuracy: 83, verified: false },
-  { id: '4', letter: 'Z', color: '#9945FF', name: 'Zeynep Ç.', accuracy: 69, verified: true },
-];
-
 function TopAnalystsRow({ symbol, onMarketplacePress }: { symbol: string; onMarketplacePress: () => void }) {
+  const [analysts, setAnalysts] = useState<{ id: string; letter: string; color: string; name: string; accuracy: number; verified: boolean }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, verified, signal_accuracy, tier')
+      .gt('signal_accuracy', 0)
+      .order('signal_accuracy', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return;
+        const COLORS = ['#F7931A', '#007AFF', '#D4AF37', '#9945FF', '#34C759'];
+        setAnalysts(data.map((p: any, i: number) => ({
+          id: p.id,
+          letter: (p.full_name ?? p.username ?? '?')[0].toUpperCase(),
+          color: COLORS[i % COLORS.length],
+          name: p.full_name ?? p.username ?? 'Analist',
+          accuracy: Math.round(p.signal_accuracy ?? 0),
+          verified: p.verified ?? false,
+        })));
+      });
+  }, [symbol]);
+
+  if (analysts.length === 0) return null;
+
   return (
     <View style={ta.wrap}>
       <View style={ta.header}>
@@ -200,7 +241,7 @@ function TopAnalystsRow({ symbol, onMarketplacePress }: { symbol: string; onMark
         </Pressable>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-        {MOCK_ANALYSTS.map(a => (
+        {analysts.map(a => (
           <Pressable key={a.id} style={ta.analystCard}>
             <View style={[ta.avatar, { backgroundColor: a.color + '22' }]}>
               <Text style={[ta.avatarLetter, { color: a.color }]}>{a.letter}</Text>

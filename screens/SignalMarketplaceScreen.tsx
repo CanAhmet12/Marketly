@@ -14,7 +14,6 @@ import { useToast } from '../contexts/ToastContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { shadow, colors } from '../constants/theme';
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
 interface AnalystPackage {
   id:             string;
   analyst_name:   string;
@@ -32,94 +31,6 @@ interface AnalystPackage {
   top_picks:      { symbol: string; pct: number; up: boolean }[];
   tier_required:  'free' | 'pro' | 'elite';
 }
-
-const MOCK_PACKAGES: AnalystPackage[] = [
-  {
-    id: '1',
-    analyst_name: 'Mehmet Yıldız',
-    handle:        '@btctrader',
-    avatar_letter: 'M',
-    avatar_color:  '#F7931A',
-    speciality:    'Kripto Teknik Analiz',
-    accuracy:      78,
-    total_signals: 214,
-    subscribers:   1840,
-    price_monthly: 149,
-    description:   'Bitcoin ve Ethereum odaklı günlük teknik analiz sinyalleri. Destek/direnç seviyeleri, Fibonacci ve RSI bazlı giriş-çıkış noktaları.',
-    tags:          ['BTC', 'ETH', 'SOL'],
-    is_verified:   true,
-    top_picks:     [{ symbol: 'BTC', pct: 42, up: true }, { symbol: 'ETH', pct: 31, up: true }, { symbol: 'SOL', pct: -8, up: false }],
-    tier_required: 'free',
-  },
-  {
-    id: '2',
-    analyst_name: 'Ayşe Demir',
-    handle:        '@borsa_pro',
-    avatar_letter: 'A',
-    avatar_color:  '#007AFF',
-    speciality:    'BIST Hisse Senetleri',
-    accuracy:      72,
-    total_signals: 389,
-    subscribers:   3200,
-    price_monthly: 199,
-    description:   'BIST 30 hisseleri üzerine temel + teknik analiz. Bilanço dönemleri, haber akışı ve güçlü katalist fırsatları.',
-    tags:          ['THYAO', 'EREGL', 'KCHOL'],
-    is_verified:   true,
-    top_picks:     [{ symbol: 'THYAO', pct: 18, up: true }, { symbol: 'EREGL', pct: 24, up: true }, { symbol: 'ASELS', pct: -3, up: false }],
-    tier_required: 'free',
-  },
-  {
-    id: '3',
-    analyst_name: 'Can Özkan',
-    handle:        '@altfin',
-    avatar_letter: 'C',
-    avatar_color:  '#D4AF37',
-    speciality:    'Altın & Emtia',
-    accuracy:      83,
-    total_signals: 156,
-    subscribers:   920,
-    price_monthly: 249,
-    description:   'Altın, gümüş ve petrol piyasaları üzerine makro odaklı sinyal sistemi. Jeopolitik risk yönetimi dahil.',
-    tags:          ['XAU', 'XAG', 'WTI'],
-    is_verified:   false,
-    top_picks:     [{ symbol: 'XAU', pct: 12, up: true }, { symbol: 'XAG', pct: 28, up: true }, { symbol: 'WTI', pct: -5, up: false }],
-    tier_required: 'pro',
-  },
-  {
-    id: '4',
-    analyst_name: 'Zeynep Çelik',
-    handle:        '@forexqueen',
-    avatar_letter: 'Z',
-    avatar_color:  '#9945FF',
-    speciality:    'Forex & Kripto DeFi',
-    accuracy:      69,
-    total_signals: 502,
-    subscribers:   4750,
-    price_monthly: 99,
-    description:   'EUR/USD, GBP/TRY ve DeFi tokenları üzerine scalping sinyalleri. Günde 3-5 işlem fırsatı.',
-    tags:          ['EUR/TRY', 'AVAX', 'DOT'],
-    is_verified:   true,
-    top_picks:     [{ symbol: 'EUR/TRY', pct: 7, up: true }, { symbol: 'AVAX', pct: 55, up: true }, { symbol: 'GBP/TRY', pct: -2, up: false }],
-    tier_required: 'free',
-  },
-  {
-    id: '5',
-    analyst_name: 'Ali Kaya',
-    handle:        '@global_macro',
-    avatar_letter: 'A',
-    avatar_color:  '#E53935',
-    speciality:    'Global Makro',
-    accuracy:      76,
-    total_signals: 88,
-    subscribers:   610,
-    price_monthly: 399,
-    description:   'Fed kararları, enflasyon verileri ve makro analize dayalı uzun vadeli pozisyon sinyalleri. Elite üyelere özel.',
-    tags:          ['SPX', 'DXY', 'BTC'],
-    is_verified:   true,
-    top_picks:     [{ symbol: 'NVDA', pct: 92, up: true }, { symbol: 'AAPL', pct: 14, up: true }, { symbol: 'TSLA', pct: -22, up: false }],
-    tier_required: 'elite',
-  },
-];
 
 // ─── Sort / Filter ────────────────────────────────────────────────────────────
 type SortKey = 'accuracy' | 'subscribers' | 'price_low' | 'price_high';
@@ -359,7 +270,7 @@ export function SignalMarketplaceScreen() {
     tier_required: i < 2 ? 'free' : i < 4 ? 'pro' : 'elite',
   })), [analysts]);
 
-  const allPackages = livePackages.length > 0 ? livePackages : MOCK_PACKAGES;
+  const allPackages = livePackages;
 
   const sorted = useMemo(() => {
     let list = [...allPackages];

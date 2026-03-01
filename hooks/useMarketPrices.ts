@@ -84,26 +84,9 @@ function enrichAsset(raw: any): LiveAsset {
   };
 }
 
-// ─── Mock veri (backend hazır olmadan çalışması için) ────────────────────────
-const MOCK_ASSETS: LiveAsset[] = [
-  { id:'BTC',  symbol:'BTC',     name:'Bitcoin',        category:'crypto',       logo_url:null, logo_letter:'B', logo_color:'#F7931A', price:67420,  change_percent:2.4,   volume:'$28.5B',  market_cap:'$1.3T',  spark:[60,62,61,65,67,66,68,67,69,67], updated_at:new Date().toISOString(), priceFormatted:'$67,420.00', changeFormatted:'+2.40%', isUp:true  },
-  { id:'ETH',  symbol:'ETH',     name:'Ethereum',       category:'crypto',       logo_url:null, logo_letter:'E', logo_color:'#627EEA', price:3240,   change_percent:1.8,   volume:'$14.2B',  market_cap:'$389B',  spark:[30,31,32,31,33,32,34,33,35,32], updated_at:new Date().toISOString(), priceFormatted:'$3,240.00',  changeFormatted:'+1.80%', isUp:true  },
-  { id:'BNB',  symbol:'BNB',     name:'BNB',            category:'crypto',       logo_url:null, logo_letter:'B', logo_color:'#F3BA2F', price:415,    change_percent:-0.9,  volume:'$1.8B',   market_cap:'$62B',   spark:[42,41,43,42,41,40,41,42,41,42], updated_at:new Date().toISOString(), priceFormatted:'$415.00',    changeFormatted:'-0.90%', isUp:false },
-  { id:'SOL',  symbol:'SOL',     name:'Solana',         category:'crypto',       logo_url:null, logo_letter:'S', logo_color:'#9945FF', price:178,    change_percent:4.2,   volume:'$5.1B',   market_cap:'$82B',   spark:[16,17,17,18,17,18,19,18,19,18], updated_at:new Date().toISOString(), priceFormatted:'$178.00',    changeFormatted:'+4.20%', isUp:true  },
-  { id:'XRP',  symbol:'XRP',     name:'XRP',            category:'crypto',       logo_url:null, logo_letter:'X', logo_color:'#00AAE4', price:0.63,   change_percent:-1.2,  volume:'$2.4B',   market_cap:'$34B',   spark:[6,6,6,7,6,6,6,7,6,6],           updated_at:new Date().toISOString(), priceFormatted:'$0.630000',  changeFormatted:'-1.20%', isUp:false },
-  { id:'AAPL', symbol:'AAPL',    name:'Apple Inc.',     category:'stocks',       logo_url:null, logo_letter:'A', logo_color:'#555555', price:189.5,  change_percent:0.8,   volume:'$4.2B',   market_cap:'$2.9T',  spark:[18,19,19,19,19,19,19,19,19,19], updated_at:new Date().toISOString(), priceFormatted:'$189.50',    changeFormatted:'+0.80%', isUp:true  },
-  { id:'NVDA', symbol:'NVDA',    name:'NVIDIA Corp.',   category:'stocks',       logo_url:null, logo_letter:'N', logo_color:'#76B900', price:875,    change_percent:3.1,   volume:'$18.5B',  market_cap:'$2.1T',  spark:[82,83,85,84,86,86,87,87,88,88], updated_at:new Date().toISOString(), priceFormatted:'$875.00',    changeFormatted:'+3.10%', isUp:true  },
-  { id:'TSLA', symbol:'TSLA',    name:'Tesla Inc.',     category:'stocks',       logo_url:null, logo_letter:'T', logo_color:'#CC0000', price:242,    change_percent:-2.1,  volume:'$8.9B',   market_cap:'$770B',  spark:[25,24,24,25,25,24,24,24,24,24], updated_at:new Date().toISOString(), priceFormatted:'$242.00',    changeFormatted:'-2.10%', isUp:false },
-  { id:'MSFT', symbol:'MSFT',    name:'Microsoft',      category:'stocks',       logo_url:null, logo_letter:'M', logo_color:'#00A4EF', price:415,    change_percent:1.2,   volume:'$6.1B',   market_cap:'$3.1T',  spark:[40,40,41,41,41,41,41,41,42,42], updated_at:new Date().toISOString(), priceFormatted:'$415.00',    changeFormatted:'+1.20%', isUp:true  },
-  { id:'XAU',  symbol:'XAU/USD', name:'Altın',          category:'commodities',  logo_url:null, logo_letter:'A', logo_color:'#FFD700', price:2345,   change_percent:0.4,   volume:'-',       market_cap:'-',      spark:[233,234,234,234,234,235,235,235,235,235], updated_at:new Date().toISOString(), priceFormatted:'$2,345.00',  changeFormatted:'+0.40%', isUp:true  },
-  { id:'WTI',  symbol:'WTI',     name:'Ham Petrol',     category:'commodities',  logo_url:null, logo_letter:'P', logo_color:'#333333', price:78.4,   change_percent:-0.6,  volume:'-',       market_cap:'-',      spark:[79,78,79,78,79,78,79,78,79,78], updated_at:new Date().toISOString(), priceFormatted:'$78.40',     changeFormatted:'-0.60%', isUp:false },
-  { id:'USDTRY',symbol:'USD/TRY',name:'Dolar/TL',       category:'forex',        logo_url:null, logo_letter:'$', logo_color:'#007AFF', price:32.14,  change_percent:0.2,   volume:'-',       market_cap:'-',      spark:[32,32,32,32,32,32,32,32,32,32], updated_at:new Date().toISOString(), priceFormatted:'32.1400',    changeFormatted:'+0.20%', isUp:true  },
-  { id:'EURTRY',symbol:'EUR/TRY',name:'Euro/TL',        category:'forex',        logo_url:null, logo_letter:'€', logo_color:'#003399', price:34.82,  change_percent:0.3,   volume:'-',       market_cap:'-',      spark:[35,35,35,35,35,35,35,35,35,35], updated_at:new Date().toISOString(), priceFormatted:'34.8200',    changeFormatted:'+0.30%', isUp:true  },
-];
-
 // ─── Ana hook ─────────────────────────────────────────────────────────────────
 export function useMarketPrices(): UseMarketPricesResult {
-  const [assets,     setAssets]     = useState<LiveAsset[]>(MOCK_ASSETS);
+  const [assets,     setAssets]     = useState<LiveAsset[]>([]);
   const [isLoading,  setIsLoading]  = useState(true);
   const [error,      setError]      = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -153,7 +136,7 @@ export function useMarketPrices(): UseMarketPricesResult {
         return true;
       }
     } catch {
-      // Supabase de erişilemez — mock kalsın
+      // Supabase de erişilemez
     }
     return false;
   }, []);

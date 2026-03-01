@@ -64,37 +64,16 @@ function fmtFollowers(n: number): string {
   return String(n);
 }
 
-// ─── Mock fallback verisi ─────────────────────────────────────────────────────
-const MOCK_ANALYSTS: AnalystEntry[] = [
-  { rank:1,  id:'a1', name:'CryptoGuru',  handle:'@cryptoguru',  avatar:'https://i.pravatar.cc/80?u=cg1', accuracy:91.2, signals:247, followers:'48.2K', gain:'+284%', tier:'elite', verified:true,  badge:'🏆' },
-  { rank:2,  id:'a2', name:'BorsaMaster', handle:'@borsam',      avatar:'https://i.pravatar.cc/80?u=bm2', accuracy:87.4, signals:183, followers:'31.7K', gain:'+196%', tier:'pro',   verified:true,  badge:'🥈' },
-  { rank:3,  id:'a3', name:'FXWizard',    handle:'@fxwizard',    avatar:'https://i.pravatar.cc/80?u=fw3', accuracy:84.9, signals:156, followers:'22.4K', gain:'+162%', tier:'pro',   verified:true,  badge:'🥉' },
-  { rank:4,  id:'a4', name:'TechTrader',  handle:'@techtrader',  avatar:'https://i.pravatar.cc/80?u=tt4', accuracy:82.3, signals:201, followers:'18.9K', gain:'+138%', tier:'pro',   verified:false, badge:'' },
-  { rank:5,  id:'a5', name:'DeFiHunter',  handle:'@defihunter',  avatar:'https://i.pravatar.cc/80?u=dh5', accuracy:79.8, signals:134, followers:'15.3K', gain:'+121%', tier:'pro',   verified:false, badge:'' },
-];
-
-const MOCK_SIGNALS: SignalEntry[] = [
-  { rank:1, id:'s1', analystName:'CryptoGuru',  analystId:'a1', symbol:'SOL',  direction:'AL',  gain:'+68.4%', copies:1284, timeAgo:'12 gün önce', color:'#9945FF', badge:'🔥' },
-  { rank:2, id:'s2', analystName:'FXWizard',    analystId:'a3', symbol:'ETH',  direction:'AL',  gain:'+44.7%', copies:892,  timeAgo:'5 gün önce',  color:'#627EEA', badge:'⚡' },
-  { rank:3, id:'s3', analystName:'BorsaMaster', analystId:'a2', symbol:'BTC',  direction:'AL',  gain:'+28.9%', copies:741,  timeAgo:'8 gün önce',  color:'#F7931A', badge:'📈' },
-];
-
-const MOCK_GAINERS: GainerEntry[] = [
-  { rank:1, id:'g1', name:'MehmetK',    handle:'@mehmetk',   avatar:'https://i.pravatar.cc/80?u=mk1', gain:'+342%', value:'$48.2K', badge:'🏆' },
-  { rank:2, id:'g2', name:'AliTrader',  handle:'@alitrd',    avatar:'https://i.pravatar.cc/80?u=at2', gain:'+287%', value:'$31.7K', badge:'🥈' },
-  { rank:3, id:'g3', name:'YildizFX',   handle:'@yildizfx',  avatar:'https://i.pravatar.cc/80?u=yx3', gain:'+213%', value:'$22.1K', badge:'🥉' },
-];
-
 export function useLeaderboard() {
-  const [analysts, setAnalysts] = useState<AnalystEntry[]>(MOCK_ANALYSTS);
-  const [topSignals, setTopSignals] = useState<SignalEntry[]>(MOCK_SIGNALS);
-  const [gainers,    setGainers]    = useState<GainerEntry[]>(MOCK_GAINERS);
+  const [analysts,   setAnalysts]   = useState<AnalystEntry[]>([]);
+  const [topSignals, setTopSignals] = useState<SignalEntry[]>([]);
+  const [gainers,    setGainers]    = useState<GainerEntry[]>([]);
   const [loading,    setLoading]    = useState(true);
 
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
-      // ── Top analistler: signal_accuracy + follower_count'a göre sırala ──
+      // ── Top analistler ──
       const { data: analystData } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url, tier, verified, follower_count, signal_accuracy')
@@ -118,7 +97,6 @@ export function useLeaderboard() {
           badge:     i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : '',
         }));
 
-        // Sinyal sayısını ayrı sorgula
         const ids = analystData.map((p: any) => p.id);
         const { data: sigCounts } = await supabase
           .from('signals')
@@ -127,16 +105,14 @@ export function useLeaderboard() {
 
         if (sigCounts) {
           const countMap: Record<string, number> = {};
-          for (const s of sigCounts) {
-            countMap[s.creator_id] = (countMap[s.creator_id] || 0) + 1;
-          }
+          for (const s of sigCounts) countMap[s.creator_id] = (countMap[s.creator_id] || 0) + 1;
           mapped.forEach(a => { a.signals = countMap[a.id] || 0; });
         }
 
         setAnalysts(mapped);
       }
 
-      // ── Top sinyaller: copies_count'a göre sırala ──
+      // ── Top sinyaller ──
       const { data: sigData } = await supabase
         .from('signals')
         .select('id, creator_id, asset_id, direction, copies_count, created_at')
@@ -144,7 +120,6 @@ export function useLeaderboard() {
         .limit(5);
 
       if (sigData && sigData.length > 0) {
-        // Profiles + assets ayrı çek
         const profIds  = [...new Set(sigData.map((s: any) => s.creator_id))];
         const assetIds = [...new Set(sigData.map((s: any) => s.asset_id))];
 
@@ -174,66 +149,59 @@ export function useLeaderboard() {
         setTopSignals(mapped);
       }
 
-      // ── Portföy kazananları: en yüksek toplam değerli kullanıcılar ────────
-      try {
-        const { data: holdingsData } = await supabase
-          .from('portfolio_holdings')
-          .select('user_id, quantity, buy_price, asset_id');
+      // ── Portföy kazananları ──
+      const { data: holdingsData } = await supabase
+        .from('portfolio_holdings')
+        .select('user_id, quantity, buy_price, asset_id');
 
-        if (holdingsData && holdingsData.length > 0) {
-          // Kullanıcı başına toplam yatırım ve değer hesapla
-          const userStats: Record<string, { invested: number; quantity: number }> = {};
-          for (const h of holdingsData) {
-            if (!userStats[h.user_id]) userStats[h.user_id] = { invested: 0, quantity: 0 };
-            const buyP = h.buy_price ?? 0;
-            userStats[h.user_id].invested  += (h.quantity ?? 0) * buyP;
-            userStats[h.user_id].quantity  += (h.quantity ?? 0);
-          }
+      if (holdingsData && holdingsData.length > 0) {
+        const userStats: Record<string, { invested: number; quantity: number }> = {};
+        for (const h of holdingsData) {
+          if (!userStats[h.user_id]) userStats[h.user_id] = { invested: 0, quantity: 0 };
+          userStats[h.user_id].invested  += (h.quantity ?? 0) * (h.buy_price ?? 0);
+          userStats[h.user_id].quantity  += (h.quantity ?? 0);
+        }
 
-          const topUserIds = Object.entries(userStats)
-            .sort(([, a], [, b]) => b.quantity - a.quantity)
-            .slice(0, 5)
-            .map(([id]) => id);
+        const topUserIds = Object.entries(userStats)
+          .sort(([, a], [, b]) => b.invested - a.invested)
+          .slice(0, 5)
+          .map(([id]) => id);
 
-          if (topUserIds.length > 0) {
-            const { data: profData } = await supabase
-              .from('profiles')
-              .select('id, full_name, username, avatar_url')
-              .in('id', topUserIds);
+        if (topUserIds.length > 0) {
+          const { data: profData } = await supabase
+            .from('profiles')
+            .select('id, full_name, username, avatar_url')
+            .in('id', topUserIds);
 
-            if (profData && profData.length > 0) {
-              const profMap: Record<string, any> = {};
-              for (const p of profData) profMap[p.id] = p;
+          if (profData && profData.length > 0) {
+            const profMap: Record<string, any> = {};
+            for (const p of profData) profMap[p.id] = p;
 
-              const mapped: GainerEntry[] = topUserIds
-                .filter(uid => profMap[uid])
-                .slice(0, 3)
-                .map((uid, i) => {
-                  const stats   = userStats[uid];
-                  const gainPct = stats.invested > 0
-                    ? Math.round(((stats.quantity * 100) / stats.invested - 1) * 100) / 100
-                    : 0;
-                  return {
-                    rank:   i + 1,
-                    id:     uid,
-                    name:   profMap[uid]?.full_name || profMap[uid]?.username || 'Kullanıcı',
-                    handle: `@${profMap[uid]?.username || 'user'}`,
-                    avatar: profMap[uid]?.avatar_url || `https://i.pravatar.cc/80?u=${uid}`,
-                    gain:   gainPct >= 0 ? `+${gainPct.toFixed(1)}%` : `${gainPct.toFixed(1)}%`,
-                    value:  `${stats.quantity.toFixed(2)} birim`,
-                    badge:  i === 0 ? '🏆' : i === 1 ? '🥈' : '🥉',
-                  };
-                });
-              if (mapped.length > 0) setGainers(mapped);
-            }
+            const mapped: GainerEntry[] = topUserIds
+              .filter(uid => profMap[uid])
+              .slice(0, 5)
+              .map((uid, i) => {
+                const stats   = userStats[uid];
+                const gainPct = stats.invested > 0
+                  ? Math.round(((stats.quantity * 100) / stats.invested - 1) * 100) / 100
+                  : 0;
+                return {
+                  rank:   i + 1,
+                  id:     uid,
+                  name:   profMap[uid]?.full_name || profMap[uid]?.username || 'Kullanıcı',
+                  handle: `@${profMap[uid]?.username || 'user'}`,
+                  avatar: profMap[uid]?.avatar_url || `https://i.pravatar.cc/80?u=${uid}`,
+                  gain:   gainPct >= 0 ? `+${gainPct.toFixed(1)}%` : `${gainPct.toFixed(1)}%`,
+                  value:  `$${stats.invested.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                  badge:  i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : '',
+                };
+              });
+            if (mapped.length > 0) setGainers(mapped);
           }
         }
-      } catch {
-        // gainers mock'ta kalsın
       }
-
     } catch (e) {
-      console.warn('[useLeaderboard] Mock veriye düşülüyor:', e);
+      console.warn('[useLeaderboard] Hata:', e);
     } finally {
       setLoading(false);
     }

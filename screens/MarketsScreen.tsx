@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTabBar } from '../contexts/TabBarContext';
 import { Ionicons } from '@expo/vector-icons';
-import { mockMarketAssets, MarketAsset, trendingAssets } from '../data/mockMarkets';
+import type { MarketAsset } from '../data/mockMarkets';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { liveToMarketAsset } from '../services/marketService';
 import { useWatchlist } from '../hooks/useWatchlist';
@@ -202,7 +202,7 @@ function WatchlistStrip({
   const ids = WATCH_IDS[activeTab] ?? [];
   const { byCategory } = useMarketPrices();
   const liveAll = byCategory(activeTab as any).map(liveToMarketAsset);
-  const pool = liveAll.length > 0 ? liveAll : mockMarketAssets;
+  const pool = liveAll;
   const watched = pool.filter(
     (a) => ids.includes(a.id) && a.category === activeTab
   );
@@ -339,7 +339,7 @@ function TopMoversRow({
 }) {
   const { topMovers: getTopMovers, byCategory: getByCat } = useMarketPrices();
   const liveTop  = getTopMovers(activeTab as any, 10).map(liveToMarketAsset);
-  const pool     = liveTop.length > 0 ? liveTop : mockMarketAssets.filter((a) => a.category === activeTab).sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+  const pool     = liveTop;
 
   const gainers = pool.filter((a) => a.changePercent > 0).slice(0, 3);
   const losers  = pool.filter((a) => a.changePercent < 0).slice(0, 2);
@@ -570,17 +570,11 @@ export function MarketsScreen() {
   const { isWatched, toggle: toggleWatch } = useWatchlist();
 
   const liveAssets = useMemo(() => {
-    const live = byCategory(tab as any);
-    return live.length > 0
-      ? live.map(liveToMarketAsset)
-      : mockMarketAssets.filter((a) => a.category === tab);
+    return byCategory(tab as any).map(liveToMarketAsset);
   }, [byCategory, tab]);
 
   const liveMoverAssets = useMemo(() => {
-    const live = topMovers(tab as any, 6);
-    return live.length > 0
-      ? live.map(liveToMarketAsset)
-      : trendingAssets.filter((a) => a.category === tab);
+    return topMovers(tab as any, 6).map(liveToMarketAsset);
   }, [topMovers, tab]);
 
   // Scroll-driven dark header animation
@@ -682,8 +676,7 @@ export function MarketsScreen() {
               <Text style={s.segTitle}>Piyasa Kategorileri</Text>
               <View style={s.segGrid}>
                 {SEGMENTS.map((sg) => {
-                  const liveForSeg = byCategory(sg.key as any).map(liveToMarketAsset);
-                  const assets = liveForSeg.length > 0 ? liveForSeg : mockMarketAssets.filter((a) => a.category === sg.key);
+                  const assets = byCategory(sg.key as any).map(liveToMarketAsset);
                   const top = assets.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))[0] ?? null;
                   return (
                     <SegmentCard

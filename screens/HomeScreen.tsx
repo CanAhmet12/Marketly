@@ -13,8 +13,6 @@ import { SignalCard } from '../components/SignalCard';
 import { DailyTasksCard } from '../components/DailyTasksCard';
 import { PostCard } from '../components/PostCard';
 import { CreatePostModal } from '../components/CreatePostModal';
-import { mockVideos } from '../data/mockVideos';
-import { mockSignals } from '../data/mockSignals';
 import { useAuth } from '../contexts/AuthContext';
 import { useTabBar } from '../contexts/TabBarContext';
 import { useMarketPrices } from '../hooks/useMarketPrices';
@@ -351,8 +349,7 @@ export function HomeScreen() {
   const { videos: liveVideos, loading: videosLoading, refetch: refetchVideos } = useVideos({ type: feedTab === 'CANLI' ? 'live' : 'all' });
   const { signals: liveSignals, loading: signalsLoading } = useSignals({ activeOnly: true });
 
-  // Video listesi: Supabase'de içerik varsa kullan, yoksa mock
-  const displayVideos = liveVideos.length > 0 ? liveVideos : mockVideos;
+  const displayVideos = liveVideos;
 
   // ── "Senin İçin" popülerlik algoritması (HackerNews skoru) ──────────────────
   const forYouPosts = useMemo(() => {
@@ -366,25 +363,22 @@ export function HomeScreen() {
     return [...posts].sort((a, b) => score(b) - score(a));
   }, [posts, feedTab]);
 
-  // Sinyal listesi: Supabase'de varsa kullan, yoksa mock
-  const displaySignals = liveSignals.length > 0
-    ? liveSignals.map(s => ({
-        id: s.id,
-        symbol: s.symbol,
-        direction: s.direction as 'BUY' | 'SELL' | 'HOLD',
-        confidence: s.confidence,
-        entry: s.entry_price ?? 0,
-        target: s.target_price ?? 0,
-        stopLoss: s.stop_loss ?? 0,
-        timeframe: s.timeframe,
-        rationale: s.rationale ?? '',
-        copies: s.copies_count,
-        likes: s.likes_count,
-        creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
-        isNew: true,
-        createdAt: s.created_at,
-      }))
-    : mockSignals;
+  const displaySignals = liveSignals.map(s => ({
+    id: s.id,
+    symbol: s.symbol,
+    direction: s.direction as 'BUY' | 'SELL' | 'HOLD',
+    confidence: s.confidence,
+    entry: s.entry_price ?? 0,
+    target: s.target_price ?? 0,
+    stopLoss: s.stop_loss ?? 0,
+    timeframe: s.timeframe,
+    rationale: s.rationale ?? '',
+    copies: s.copies_count,
+    likes: s.likes_count,
+    creator: { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
+    isNew: true,
+    createdAt: s.created_at,
+  }));
 
   // Show tab bar when screen comes into focus
   useFocusEffect(useCallback(() => {
@@ -583,13 +577,13 @@ export function HomeScreen() {
               {overlays.map((item, i) => (
                 <React.Fragment key={item.id}>
                   <HorizontalVideoCard item={item} onPress={go(item)} />
-                  {(i + 1) % 3 === 0 && mockSignals[Math.floor(i / 3)] && (
+                  {(i + 1) % 3 === 0 && displaySignals[Math.floor(i / 3)] && (
                     <View style={s.inlineSignal}>
                       <View style={s.inlineSignalLabel}>
                         <View style={s.inlineSignalDot} />
                         <Text style={s.inlineSignalTxt}>Trend Sinyal</Text>
                       </View>
-                      <SignalCard signal={mockSignals[Math.floor(i / 3)]} />
+                      <SignalCard signal={displaySignals[Math.floor(i / 3)] as any} />
                     </View>
                   )}
                 </React.Fragment>

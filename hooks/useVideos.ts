@@ -1,23 +1,19 @@
 /**
  * useVideos — Supabase `posts` tablosundan gerçek video/short/live verilerini çeker.
- * ADD_TABLES.sql çalıştırılmışsa tam kolonları kullanır; yoksa temel kolonlara düşer.
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { VideoCategory, VideoItem } from '../data/mockVideos';
-import { mockVideos } from '../data/mockVideos';
 
 export type VideoType = 'video' | 'short' | 'live' | 'all';
 
 const PAGE_SIZE = 12;
 
-// Tam kolon listesi (ADD_TABLES.sql sonrası)
 const FULL_SELECT =
   'id, user_id, creator_id, type, title, description, content, asset_tag, asset_tags, ' +
   'thumbnail_url, image_url, video_url, duration, likes_count, comments_count, views_count, ' +
   'shares_count, is_premium, created_at';
 
-// Temel kolon listesi (ADD_TABLES.sql çalıştırılmamışsa)
 const BASIC_SELECT = 'id, user_id, content, asset_tag, image_url, created_at';
 
 async function fetchProfilesMap(userIds: string[]): Promise<Record<string, any>> {
@@ -98,11 +94,10 @@ export function useVideos(opts: {
   assetTag?:  string;
   creatorId?: string;
 } = {}) {
-  const [videos,   setVideos]   = useState<VideoItem[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [hasMore,  setHasMore]  = useState(true);
-  const [page,     setPage]     = useState(0);
-  const [usedMock, setUsedMock] = useState(false);
+  const [videos,  setVideos]  = useState<VideoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page,    setPage]    = useState(0);
 
   const fetchVideos = useCallback(async (reset = false) => {
     setLoading(true);
@@ -124,10 +119,8 @@ export function useVideos(opts: {
     };
 
     try {
-      // ── 1. Tam kolonlarla dene (ADD_TABLES.sql çalıştırıldıysa) ──────────
       let { data, error } = await buildQuery(FULL_SELECT, true);
 
-      // Eğer kolon hatası varsa temel kolonlara düş
       if (error && isSchemaMissing(error.message)) {
         const fallback = await buildQuery(BASIC_SELECT, false);
         data  = fallback.data;
@@ -136,32 +129,23 @@ export function useVideos(opts: {
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        // ── 2. Profilleri ayrı çek ─────────────────────────────────────────
-        const uids = data.map((r: any) => r.creator_id ?? r.user_id).filter(Boolean);
-        const profMap = await fetchProfilesMap(uids);
-        const mapped = data.map((row: any) =>
-          mapToVideoItem(row, profMap[row.creator_id ?? row.user_id])
-        );
+      const rows = data ?? [];
+      const uids = rows.map((r: any) => r.creator_id ?? r.user_id).filter(Boolean);
+      const profMap = await fetchProfilesMap(uids);
+      const mapped = rows.map((row: any) =>
+        mapToVideoItem(row, profMap[row.creator_id ?? row.user_id])
+      );
 
-        if (reset) { setVideos(mapped); setPage(1); }
-        else        { setVideos(prev => [...prev, ...mapped]); setPage(p => p + 1); }
-        setHasMore(mapped.length === PAGE_SIZE);
-        setUsedMock(false);
-        return;
-      }
+      if (reset) { setVideos(mapped); setPage(1); }
+      else        { setVideos(prev => [...prev, ...mapped]); setPage(p => p + 1); }
+      setHasMore(mapped.length === PAGE_SIZE);
     } catch (e) {
-      console.warn('[useVideos] Supabase hatası, mock\'a düşülüyor:', e);
+      console.warn('[useVideos] Supabase hatası:', e);
+      if (reset) setVideos([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
     }
-
-    // ── Fallback: mock veriler ─────────────────────────────────────────────
-    const filtered =
-      opts.type === 'live' ? mockVideos.filter(v => v.isLive) :
-      opts.type === 'short' ? mockVideos.slice(0, 6) :
-      mockVideos;
-    if (reset || videos.length === 0) setVideos(filtered);
-    setHasMore(false);
-    setUsedMock(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, opts.type, opts.creatorId, opts.assetTag]);
 
@@ -170,10 +154,8 @@ export function useVideos(opts: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.type, opts.creatorId, opts.assetTag]);
 
-  useEffect(() => { setLoading(false); }, [videos]);
-
   return {
-    videos, loading, hasMore, usedMock,
+    videos, loading, hasMore,
     loadMore: () => { if (!loading && hasMore) fetchVideos(false); },
     refetch:  () => fetchVideos(true),
   };

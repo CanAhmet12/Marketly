@@ -22,83 +22,6 @@ interface Notif {
   badge?: { text: string; color: string };
 }
 
-const MOCK: Notif[] = [
-  // Today
-  {
-    id: '1', type: 'price_alert',
-    title: 'BTC Fiyat Alarmı 🚨',
-    body: 'Bitcoin $65,000 seviyesini geçti! Hedef fiyatınıza ulaştı.',
-    time: '2 dk önce', read: false,
-    icon: '₿', iconBg: '#F7931A',
-    badge: { text: '+4.2%', color: colors.rise },
-  },
-  {
-    id: '2', type: 'like',
-    title: 'CryptoAhmet beğendi',
-    body: '"Bitcoin neden $100K\'a gidecek?" videonuzu beğendi.',
-    time: '15 dk önce', read: false,
-    avatar: 'https://i.pravatar.cc/80?u=ahmet1',
-  },
-  {
-    id: '3', type: 'comment',
-    title: 'FinansGuru yorum yaptı',
-    body: '"Harika analiz! DCA stratejisi gerçekten işe yarıyor 💪"',
-    time: '1 sa önce', read: false,
-    avatar: 'https://i.pravatar.cc/80?u=guru2',
-  },
-  {
-    id: '4', type: 'market',
-    title: 'Piyasa Özeti',
-    body: 'Kripto piyasası genel olarak yeşilde. Bitcoin dominansı %52\'ye yükseldi.',
-    time: '2 sa önce', read: false,
-    icon: '📊', iconBg: '#007AFF',
-  },
-  {
-    id: '5', type: 'follow',
-    title: 'Yeni takipçi',
-    body: 'SolanaMaxi sizi takip etmeye başladı.',
-    time: '3 sa önce', read: true,
-    avatar: 'https://i.pravatar.cc/80?u=sol3',
-  },
-  // Yesterday
-  {
-    id: '6', type: 'price_alert',
-    title: 'ETH Fiyat Alarmı',
-    body: 'Ethereum $3,200 desteğini koruyor. İzleme listenizde.',
-    time: 'Dün 18:30', read: true,
-    icon: 'Ξ', iconBg: '#627EEA',
-    badge: { text: '-1.1%', color: colors.fall },
-  },
-  {
-    id: '7', type: 'like',
-    title: '12 kişi beğendi',
-    body: '"Altcoin sezonuna hazır mısınız?" videonuzu 12 kişi beğendi.',
-    time: 'Dün 14:15', read: true,
-    icon: '♥', iconBg: colors.fall,
-  },
-  {
-    id: '8', type: 'system',
-    title: 'Marketly Pro',
-    body: 'AI destekli sinyal özelliği şimdi kullanılabilir. Hemen dene!',
-    time: 'Dün 09:00', read: true,
-    icon: '⚡', iconBg: '#FFB800',
-  },
-  // This week
-  {
-    id: '9', type: 'market',
-    title: 'Fed Kararı',
-    body: 'Fed faiz oranlarını %0.25 düşürdü. Kripto piyasası tepkisi bekleniyor.',
-    time: '2 gün önce', read: true,
-    icon: '🏦', iconBg: '#5A5F6E',
-  },
-  {
-    id: '10', type: 'follow',
-    title: '5 yeni takipçi',
-    body: 'Bu hafta 5 kişi sizi takip etmeye başladı.',
-    time: '3 gün önce', read: true,
-    icon: '👥', iconBg: colors.primary,
-  },
-];
 
 const SECTIONS = [
   { label: 'Bugün', filter: (n: Notif) => ['2 dk önce', '15 dk önce', '1 sa önce', '2 sa önce', '3 sa önce'].some(t => n.time === t) },
@@ -182,8 +105,7 @@ export function NotificationsScreen({ onBack }: Props) {
     deleteNotif,
   } = useNotifications();
 
-  // Supabase'den veri yoksa mock'a düş
-  const notifications = liveNotifs.length > 0 ? liveNotifs.map(n => ({
+  const notifications = liveNotifs.map(n => ({
     id:       n.id,
     type:     n.type,
     title:    n.title,
@@ -194,7 +116,7 @@ export function NotificationsScreen({ onBack }: Props) {
     iconBg:   (n.meta as any)?.iconBg,
     avatar:   (n.meta as any)?.avatar,
     badge:    (n.meta as any)?.badge,
-  })) : MOCK;
+  }));
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
