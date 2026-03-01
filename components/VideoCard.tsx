@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, Image, ImageBackground,
   Dimensions,
@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { VideoItem } from '../data/mockVideos';
 import { colors, radius, shadow } from '../constants/theme';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const { width: W } = Dimensions.get('window');
 
@@ -65,10 +67,23 @@ const cr = StyleSheet.create({
 //  FEATURED CARD  –  Tam genişlik, sinematik, sosyal feed kartı
 // ─────────────────────────────────────────────────────────────────────────────
 export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?: () => void }) {
-  const toast = useToast();
+  const toast      = useToast();
+  const { user }   = useAuth();
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const up = (item.changePercent ?? 0) >= 0;
+
+  // Başlangıçta beğeni/kaydetme durumunu yükle
+  useEffect(() => {
+    if (!user?.id) return;
+    Promise.all([
+      supabase.from('video_likes').select('id').eq('user_id', user.id).eq('video_id', item.id).maybeSingle(),
+      supabase.from('saved_videos').select('id').eq('user_id', user.id).eq('video_id', item.id).maybeSingle(),
+    ]).then(([l, s]) => {
+      if (l.data) setLiked(true);
+      if (s.data) setSaved(true);
+    });
+  }, [user?.id, item.id]);
 
   return (
     <Pressable style={fc.card} onPress={onPress}>
@@ -104,7 +119,22 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
           )}
           <Pressable
             style={fc.saveBtn}
-            onPress={(e) => { e.stopPropagation(); setSaved(!saved); toast.success(saved ? 'Kaydedilenlerden çıkarıldı' : 'Kaydedildi 🔖'); }}
+            onPress={async (e) => {
+              e.stopPropagation();
+              if (!user?.id) { toast.info('Kaydetmek için giriş yap'); return; }
+              const newSaved = !saved;
+              setSaved(newSaved);
+              if (newSaved) {
+                await supabase.from('saved_videos').upsert(
+                  { user_id: user.id, video_id: item.id },
+                  { onConflict: 'user_id,video_id' }
+                );
+                toast.success('Kaydedildi 🔖');
+              } else {
+                await supabase.from('saved_videos').delete().eq('user_id', user.id).eq('video_id', item.id);
+                toast.info('Kaydedilenlerden çıkarıldı');
+              }
+            }}
           >
             <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={16} color={saved ? colors.warning : '#FFF'} />
           </Pressable>
@@ -161,7 +191,21 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
         <View style={fc.engage}>
           <Pressable
             style={fc.engBtn}
-            onPress={(e) => { e.stopPropagation(); setLiked(!liked); if (!liked) toast.success('Video beğenildi ❤️'); }}
+            onPress={async (e) => {
+              e.stopPropagation();
+              if (!user?.id) { toast.info('Beğenmek için giriş yap'); return; }
+              const newLiked = !liked;
+              setLiked(newLiked);
+              if (newLiked) {
+                await supabase.from('video_likes').upsert(
+                  { user_id: user.id, video_id: item.id },
+                  { onConflict: 'user_id,video_id' }
+                );
+                toast.success('Video beğenildi ❤️');
+              } else {
+                await supabase.from('video_likes').delete().eq('user_id', user.id).eq('video_id', item.id);
+              }
+            }}
           >
             <Ionicons name={liked ? 'heart' : 'heart-outline'} size={17} color={liked ? colors.fall : '#9AA0AF'} />
             <Text style={[fc.engTxt, liked && { color: colors.fall }]}>

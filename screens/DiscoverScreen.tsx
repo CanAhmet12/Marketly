@@ -20,6 +20,7 @@ import { useLeaderboard } from '../hooks/useLeaderboard';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { createNotification } from '../lib/notifications';
 import { radius, shadow, colors } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -711,6 +712,14 @@ export function DiscoverScreen() {
                           { follower_id: user.id, following_id: c.id },
                           { onConflict: 'follower_id,following_id' }
                         );
+                        createNotification({
+                          recipientId: c.id,
+                          senderId:    user.id,
+                          type:        'follow',
+                          title:       'Seni takip etmeye başladı 👤',
+                          body:        'Profilini ziyaret et',
+                          relatedId:   user.id,
+                        });
                       } else {
                         await supabase.from('follows').delete()
                           .eq('follower_id', user.id).eq('following_id', c.id);
