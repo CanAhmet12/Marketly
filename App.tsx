@@ -3,15 +3,22 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider }  from './contexts/ToastContext';
 import { TabBarProvider } from './contexts/TabBarContext';
 import { ThemeProvider }  from './contexts/ThemeContext';
-import { RootNavigator }  from './navigation/RootNavigator';
+import { RootNavigator, DEEP_LINK_CONFIG }  from './navigation/RootNavigator';
 import { registerForPushNotifications, savePushToken } from './services/notificationService';
 import { PriceAlertWatcher } from './components/PriceAlertWatcher';
 import { colors } from './constants/theme';
+
+// ─── Deep link (marketly://) config ───────────────────────────────────────────
+const linking = {
+  prefixes: [Linking.createURL('/'), 'marketly://'],
+  config: DEEP_LINK_CONFIG,
+};
 
 const NAV_THEME = {
   ...DefaultTheme,
@@ -50,7 +57,7 @@ function AppInner() {
   }, [user?.id]);
 
   return (
-    <NavigationContainer theme={NAV_THEME}>
+    <NavigationContainer theme={NAV_THEME} linking={linking}>
       <TabBarProvider>
         <ToastProvider>
           <RootNavigator />

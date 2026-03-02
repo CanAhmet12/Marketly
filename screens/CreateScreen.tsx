@@ -18,19 +18,19 @@ import { useNavigation } from '@react-navigation/native';
 // ─── Supabase Storage: video yükle ───────────────────────────────────────────
 async function uploadVideoToStorage(localUri: string, userId: string): Promise<string | null> {
   try {
-    // Bucket yoksa oluştur
     await supabase.storage.createBucket('videos', { public: true }).catch(() => {});
 
     const ext      = localUri.split('.').pop()?.toLowerCase() ?? 'mp4';
     const mimeType = ext === 'mov' ? 'video/quicktime' : 'video/mp4';
     const fileName = `${userId}/${Date.now()}.${ext}`;
 
-    const formData = new FormData();
-    formData.append('file', { uri: localUri, type: mimeType, name: fileName } as any);
+    // React Native'de Blob kullanarak doğru binary payload oluştur
+    const response = await fetch(localUri);
+    const blob     = await response.blob();
 
     const { error } = await supabase.storage
       .from('videos')
-      .upload(fileName, formData as any, { contentType: mimeType, upsert: true });
+      .upload(fileName, blob, { contentType: mimeType, upsert: true });
 
     if (error) { console.warn('[Storage] upload error:', error.message); return null; }
 
@@ -270,9 +270,16 @@ export function CreateScreen() {
       const r = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['videos'] as any,
         allowsEditing: true,
-        quality: 0.8,
+        videoMaxDuration: 300, // Maks. 5 dakika (300 saniye)
       });
-      if (!r.canceled && r.assets?.[0]) setVideoUri(r.assets[0].uri);
+      if (!r.canceled && r.assets?.[0]) {
+        const asset = r.assets[0];
+        if (asset.duration && asset.duration > 300000) {
+          Alert.alert('Video Çok Uzun', 'Maksimum 5 dakika video yükleyebilirsiniz.');
+          return;
+        }
+        setVideoUri(asset.uri);
+      }
     } catch (e) {
       toast.error('Video seçilemedi, tekrar dene.');
     }
@@ -288,9 +295,10 @@ export function CreateScreen() {
 
   const selectedType = CONTENT_TYPES.find((t) => t.id === contentType)!;
 
-  // Step 2 validity
-  const sigEntryNum  = parseFloat(sigEntry);
-  const sigTargetNum = parseFloat(sigTarget);
+  // Step 2 validity — $ ve , işaretlerini temizle (örn. "$64,000" → "64000")
+  const cleanPrice   = (v: string) => v.replace(/[$,₺€£\s]/g, '');
+  const sigEntryNum  = parseFloat(cleanPrice(sigEntry));
+  const sigTargetNum = parseFloat(cleanPrice(sigTarget));
   const canNext2 = contentType === 'live'
     ? true
     : contentType === 'signal'
@@ -304,7 +312,9 @@ export function CreateScreen() {
   // Step 3 validity
   const canPublish = contentType === 'signal'
     ? sigRationale.trim().length > 10 && category.length > 0
-    : title.trim().length > 3 && category.length > 0;
+    : (contentType === 'live')
+    ? title.trim().length > 3
+    : title.trim().length > 3 && category.length > 0 && videoUri !== null; // video/short mutlaka video gerektirir
 
   const handlePublish = async () => {
     if (!canPublish || publishing || !user?.id) return;

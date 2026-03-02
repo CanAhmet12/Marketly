@@ -3,10 +3,17 @@ import * as SecureStore from 'expo-secure-store';
 import 'react-native-url-polyfill/auto';
 
 // ─── Ortam değişkenleri ───────────────────────────────────────────────────────
-// Supabase projen oluşturulduktan sonra bu değerleri gir
+// .env dosyasından okunur — değerleri asla kaynak koduna yazmayın
 // supabase.com > Project Settings > API
-const SUPABASE_URL  = process.env.EXPO_PUBLIC_SUPABASE_URL  || 'https://ufljsnqxvqzichwlpfgy.supabase.co';
-const SUPABASE_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmbGpzbnF4dnF6aWNod2xwZmd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMjM4OTgsImV4cCI6MjA4Nzc5OTg5OH0.OKGqidAABpQiTt3t03YKaCTjQrA42JUMggUfhZfEmjE';
+const SUPABASE_URL  = process.env.EXPO_PUBLIC_SUPABASE_URL  ?? '';
+const SUPABASE_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON ?? '';
+
+if (!SUPABASE_URL || !SUPABASE_ANON) {
+  console.error(
+    '[Supabase] EXPO_PUBLIC_SUPABASE_URL veya EXPO_PUBLIC_SUPABASE_ANON tanımlı değil!\n' +
+    '.env dosyasını kontrol edin.'
+  );
+}
 
 // ─── Güvenli token saklama (iOS Keychain / Android Keystore) ─────────────────
 const ExpoSecureStoreAdapter = {

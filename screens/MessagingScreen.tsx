@@ -113,26 +113,20 @@ function ConversationList({
         <View style={{ width: 36 }} />
       </View>
 
-      {/* Tablo yoksa uyarı */}
+      {/* Tablo yoksa — kullanıcı dostu boş durum */}
       {tablesExist === false ? (
         <View style={cl.emptyState}>
           <LinearGradient
-            colors={['#007AFF20', '#007AFF05']}
+            colors={[colors.primary + '20', colors.primary + '05']}
             style={cl.emptyIconBg}
           >
-            <Ionicons name="construct-outline" size={40} color="#007AFF" />
+            <Ionicons name="chatbubbles-outline" size={40} color={colors.primary} />
           </LinearGradient>
           <Text style={cl.emptyTitle}>Mesajlaşma Yakında</Text>
           <Text style={cl.emptySubtitle}>
-            Mesajlaşma özelliği için Supabase'de{'\n'}
-            <Text style={{ fontWeight: '700' }}>dm_conversations</Text> ve{'\n'}
-            <Text style={{ fontWeight: '700' }}>dm_messages</Text> tablolarını oluştur.
+            Bu özellik çok yakında kullanıma açılacak.{'\n'}
+            Haber almak için bildirimleri açık tut!
           </Text>
-          <View style={cl.sqlBox}>
-            <Text style={cl.sqlTxt}>
-              {'-- useMessages.ts dosyasının\n-- başındaki SQL\'i çalıştır'}
-            </Text>
-          </View>
         </View>
       ) : loading ? (
         <View style={cl.loadingWrap}>

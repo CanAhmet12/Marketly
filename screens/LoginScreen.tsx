@@ -47,9 +47,15 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
     Animated.spring(btnScale, { toValue, useNativeDriver: true, speed: 50 }).start();
   };
 
+  const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
   const handleForgotPassword = async () => {
     if (!email.trim()) {
       Alert.alert('E-posta Gerekli', 'Şifre sıfırlama için önce e-posta adresinizi girin.');
+      return;
+    }
+    if (!isValidEmail(email.trim())) {
+      Alert.alert('Geçersiz E-posta', 'Lütfen geçerli bir e-posta adresi girin.');
       return;
     }
     setResetLoading(true);
@@ -68,6 +74,7 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
     setLocalError(null);
     onClearError?.();
     if (!email.trim()) { setLocalError('E-posta adresi boş olamaz.'); return; }
+    if (!isValidEmail(email.trim())) { setLocalError('Geçerli bir e-posta adresi girin.'); return; }
     if (!password) { setLocalError('Şifre boş olamaz.'); return; }
     setLoading(true);
     try {
@@ -135,6 +142,8 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
                 returnKeyType="next"
                 onSubmitEditing={() => passwordRef.current?.focus()}
                 onFocus={() => setFocusedField('email')}
@@ -152,6 +161,8 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPass}
+                autoComplete="current-password"
+                textContentType="password"
                 returnKeyType="done"
                 onSubmitEditing={handleSubmit}
                 onFocus={() => setFocusedField('pass')}
@@ -200,16 +211,18 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSuccess, onBack, e
             <View style={s.divLine} />
           </View>
 
-          {/* Social login */}
+          {/* Social login — Yakında */}
           <View style={s.socialRow}>
-            <Pressable style={s.socialBtn}>
+            <View style={[s.socialBtn, s.socialBtnDisabled]}>
               <Text style={s.socialIcon}>G</Text>
-              <Text style={s.socialTxt}>Google</Text>
-            </Pressable>
-            <Pressable style={s.socialBtn}>
-              <Ionicons name="logo-apple" size={18} color={colors.text} />
-              <Text style={s.socialTxt}>Apple</Text>
-            </Pressable>
+              <Text style={[s.socialTxt, s.socialTxtDisabled]}>Google</Text>
+              <View style={s.soonBadge}><Text style={s.soonTxt}>Yakında</Text></View>
+            </View>
+            <View style={[s.socialBtn, s.socialBtnDisabled]}>
+              <Ionicons name="logo-apple" size={18} color={colors.textMuted} />
+              <Text style={[s.socialTxt, s.socialTxtDisabled]}>Apple</Text>
+              <View style={s.soonBadge}><Text style={s.soonTxt}>Yakında</Text></View>
+            </View>
           </View>
         </View>
 
@@ -296,10 +309,18 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 7, height: 46, borderRadius: radius.md,
     borderWidth: 1.5, borderColor: colors.border,
-    backgroundColor: colors.bgPure,
+    backgroundColor: colors.bgPure, position: 'relative',
   },
+  socialBtnDisabled: { opacity: 0.55 },
   socialIcon: { fontSize: 15, fontWeight: '900', color: '#EA4335' },
   socialTxt: { fontSize: 14, fontWeight: '600', color: colors.text },
+  socialTxtDisabled: { color: colors.textMuted },
+  soonBadge: {
+    position: 'absolute', top: -8, right: -6,
+    backgroundColor: colors.primary, paddingHorizontal: 5, paddingVertical: 2,
+    borderRadius: 6,
+  },
+  soonTxt: { fontSize: 9, fontWeight: '800', color: '#FFF' },
 
   // Switch
   switchRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },

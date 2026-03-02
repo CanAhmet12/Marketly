@@ -13,7 +13,8 @@ import { useToast } from '../contexts/ToastContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { radius, shadow, colors } from '../constants/theme';
 
-const NOTIF_PREFS_KEY = '@marketly_notif_prefs';
+const NOTIF_PREFS_KEY    = '@marketly_notif_prefs';
+const SECURITY_PREFS_KEY = '@marketly_security_prefs';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -63,7 +64,24 @@ export function SettingsScreen() {
         if (typeof prefs.analyticsOpt === 'boolean') setAnalyticsOpt(prefs.analyticsOpt);
       } catch {}
     });
+    // Güvenlik tercihlerini yükle
+    AsyncStorage.getItem(SECURITY_PREFS_KEY).then(raw => {
+      if (!raw) return;
+      try {
+        const prefs = JSON.parse(raw);
+        if (typeof prefs.biometric === 'boolean') setBiometric(prefs.biometric);
+        if (typeof prefs.twoFactor === 'boolean') setTwoFactor(prefs.twoFactor);
+      } catch {}
+    });
   }, []);
+
+  const saveSecurityPref = async (key: string, value: boolean) => {
+    try {
+      const raw   = await AsyncStorage.getItem(SECURITY_PREFS_KEY);
+      const prefs = raw ? JSON.parse(raw) : {};
+      await AsyncStorage.setItem(SECURITY_PREFS_KEY, JSON.stringify({ ...prefs, [key]: value }));
+    } catch {}
+  };
 
   const saveNotifPref = async (key: string, value: boolean) => {
     try {
@@ -157,15 +175,23 @@ export function SettingsScreen() {
       rows: [
         {
           id: 'biometric', icon: 'finger-print', iconBg: '#007AFF',
-          label: 'Biyometrik Giriş', sublabel: 'Yüz/Parmak izi ile giriş',
+          label: 'Biyometrik Giriş', sublabel: biometric ? 'Aktif — Yüz/Parmak izi' : 'Kapalı',
           type: 'toggle', value: biometric,
-          onToggle: (v) => { setBiometric(v); toast.success(v ? 'Biyometrik giriş aktif' : 'Biyometrik giriş kapatıldı'); },
+          onToggle: (v) => {
+            setBiometric(v);
+            saveSecurityPref('biometric', v);
+            toast.success(v ? 'Biyometrik giriş aktif ✓' : 'Biyometrik giriş kapatıldı');
+          },
         },
         {
           id: '2fa', icon: 'shield-checkmark-outline', iconBg: '#00C853',
-          label: '2 Faktörlü Doğrulama', sublabel: twoFactor ? 'Aktif' : 'Kapalı',
+          label: '2 Faktörlü Doğrulama', sublabel: twoFactor ? 'Aktif — Hesap korumalı' : 'Kapalı',
           type: 'toggle', value: twoFactor,
-          onToggle: (v) => { setTwoFactor(v); toast.success(v ? '2FA aktif — Hesabınız korunuyor' : '2FA kapatıldı'); },
+          onToggle: (v) => {
+            setTwoFactor(v);
+            saveSecurityPref('twoFactor', v);
+            toast.success(v ? '2FA aktif — Hesabınız korunuyor ✓' : '2FA kapatıldı');
+          },
         },
         {
           id: 'password', icon: 'lock-closed-outline', iconBg: '#FF9500',

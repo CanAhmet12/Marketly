@@ -32,6 +32,7 @@ import { UserProfileScreen }        from '../screens/UserProfileScreen';
 import { LiveBroadcastScreen }      from '../screens/LiveBroadcastScreen';
 import { LiveWatchScreen }          from '../screens/LiveWatchScreen';
 import { MessagingScreen }          from '../screens/MessagingScreen';
+import { ResetPasswordScreen }      from '../screens/ResetPasswordScreen';
 
 import { useAuth }              from '../contexts/AuthContext';
 import { useTabBar, TAB_BAR_H } from '../contexts/TabBarContext';
@@ -65,6 +66,21 @@ export type RootStackParamList = {
   Settings:      undefined;
   Search:        undefined;
   Shorts:        undefined;
+  ResetPassword: undefined;
+};
+
+// ─── Deep link config ─────────────────────────────────────────────────────────
+export const DEEP_LINK_CONFIG = {
+  screens: {
+    ResetPassword: 'reset-password',
+    ProfileView:   'profile/:userId',
+    Main: {
+      screens: {
+        Akış:      'feed',
+        Piyasalar: 'markets',
+      },
+    },
+  },
 };
 
 // ─── Tab config ───────────────────────────────────────────────────────────────
@@ -333,6 +349,11 @@ export function RootNavigator() {
         name="ProfileView"
         component={UserProfileScreenWrapper}
         options={{ animation: 'slide_from_right' }}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPasswordScreen}
+        options={{ animation: 'fade', gestureEnabled: false }}
       />
     </Stack.Navigator>
   );

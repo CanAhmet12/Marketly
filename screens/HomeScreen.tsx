@@ -32,15 +32,16 @@ const FEED_TABS: FeedTab[] = ['Senin İçin', 'Sinyaller', 'Takip', 'CANLI'];
 // ─── Market Ticker ────────────────────────────────────────────────────────────
 const TICKER_W = 132;
 
+// Fallback sadece sembol isimlerini gösterir, fiyat göstermez
 const FALLBACK_ITEMS = [
-  { sym: 'BTC',   price: '$64,280', change: '+2.4%',  up: true  },
-  { sym: 'ETH',   price: '$3,185',  change: '+1.8%',  up: true  },
-  { sym: 'SOL',   price: '$142.5',  change: '-0.6%',  up: false },
-  { sym: 'BNB',   price: '$412',    change: '+0.9%',  up: true  },
-  { sym: 'XRP',   price: '$0.624',  change: '-1.2%',  up: false },
-  { sym: 'DOGE',  price: '$0.158',  change: '-2.0%',  up: false },
-  { sym: 'DOLAR', price: '₺32.44',  change: '-0.3%',  up: false },
-  { sym: 'XAU',   price: '$2,356',  change: '+0.4%',  up: true  },
+  { sym: 'BTC',   price: '—', change: '—',  up: true  },
+  { sym: 'ETH',   price: '—', change: '—',  up: true  },
+  { sym: 'SOL',   price: '—', change: '—',  up: false },
+  { sym: 'BNB',   price: '—', change: '—',  up: true  },
+  { sym: 'XRP',   price: '—', change: '—',  up: false },
+  { sym: 'DOGE',  price: '—', change: '—',  up: false },
+  { sym: 'DOLAR', price: '—', change: '—',  up: false },
+  { sym: 'XAU',   price: '—', change: '—',  up: true  },
 ];
 
 function fmtTickerPrice(price: number, id: string): string {
@@ -71,6 +72,7 @@ function MarketTicker() {
   const items = [...liveItems, ...liveItems, ...liveItems];
 
   useEffect(() => {
+    if (total <= 0) return;
     const anim = Animated.loop(
       Animated.timing(tx, { toValue: -total, duration: total * 30, useNativeDriver: true })
     );
@@ -84,7 +86,7 @@ function MarketTicker() {
     );
     pulse.start();
     return () => { anim.stop(); pulse.stop(); };
-  }, []);
+  }, [total]); // total değişince animasyonu yeniden başlat
 
   return (
     <View style={tk.root}>

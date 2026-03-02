@@ -36,8 +36,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-function validatePassword(password: string) {
-  return password.length >= 6;
+function validatePassword(password: string): { valid: boolean; message: string } {
+  if (password.length < 8)         return { valid: false, message: 'Şifre en az 8 karakter olmalıdır.' };
+  if (!/[A-Z]/.test(password))     return { valid: false, message: 'Şifre en az bir büyük harf içermelidir.' };
+  if (!/[0-9]/.test(password))     return { valid: false, message: 'Şifre en az bir rakam içermelidir.' };
+  return { valid: true, message: '' };
 }
 
 // ─── Profil → User dönüştürücü ────────────────────────────────────────────────
@@ -144,8 +147,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!email.trim())              { setError('E-posta adresi boş olamaz.');       return false; }
     if (!validateEmail(email.trim())) { setError('Geçerli bir e-posta adresi girin.'); return false; }
-    if (!password)                  { setError('Şifre boş olamaz.');               return false; }
-    if (!validatePassword(password)) { setError('Şifre en az 6 karakter olmalıdır.'); return false; }
+    if (!password)                         { setError('Şifre boş olamaz.'); return false; }
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) { setError(pwCheck.message); return false; }
 
     setLoading(true);
     try {
@@ -158,9 +162,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (authError.message.includes('Invalid login credentials')) {
           setError('E-posta veya şifre hatalı.');
         } else if (authError.message.includes('Email not confirmed')) {
-          setError('E-posta adresinizi doğrulayın.');
+          setError('E-posta adresinizi doğrulayın. Gelen kutunuzu kontrol edin.');
+        } else if (authError.message.includes('Too many requests')) {
+          setError('Çok fazla deneme. Lütfen birkaç dakika bekleyin.');
         } else {
-          setError(authError.message);
+          setError('Giriş başarısız. Lütfen tekrar deneyin.');
         }
         return false;
       }
@@ -179,8 +185,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     if (!name.trim() || name.trim().length < 2) { setError('İsim en az 2 karakter olmalıdır.'); return false; }
-    if (!validateEmail(email.trim()))            { setError('Geçerli bir e-posta adresi girin.'); return false; }
-    if (!validatePassword(password))             { setError('Şifre en az 6 karakter olmalıdır.'); return false; }
+    if (!validateEmail(email.trim()))  { setError('Geçerli bir e-posta adresi girin.'); return false; }
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) { setError(pwCheck.message); return false; }
 
     setLoading(true);
     try {
@@ -202,11 +209,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             authError.message.includes('already registered')) {
           setError('Bu e-posta adresi zaten kayıtlı.');
         } else if (authError.message.includes('database error')) {
-          // Trigger hatası — kullanıcı oluştu ama profil oluşmadı olabilir
-          // Yine de devam et, profil sonra oluşturulur
-          return true;
+          // Supabase trigger hatası — hata mesajını gizle, kullanıcı dostu mesaj göster
+          setError('Kayıt tamamlanamadı. Lütfen tekrar deneyin.');
         } else {
-          setError(authError.message);
+          // Supabase iç mesajlarını kullanıcıya gösterme
+          setError('Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
         }
         return false;
       }
