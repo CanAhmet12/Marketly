@@ -94,7 +94,19 @@ export function UserProfileScreen({ userId, onBack }: Props) {
         </Pressable>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 90 + insets.bottom }}>
+      {/* Yükleniyor durumu */}
+      {profileLoading && userPosts.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Profil yükleniyor...</Text>
+        </View>
+      ) : null}
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 90 + insets.bottom }}
+        style={profileLoading && userPosts.length === 0 ? { opacity: 0 } : undefined}
+      >
 
         {/* Cover */}
         <View style={s.coverWrap}>

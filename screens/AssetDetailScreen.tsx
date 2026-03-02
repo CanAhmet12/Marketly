@@ -263,6 +263,7 @@ const rv = StyleSheet.create({
 
 // ─── Top Analysts Row ─────────────────────────────────────────────────────────
 function TopAnalystsRow({ symbol, onMarketplacePress }: { symbol: string; onMarketplacePress: () => void }) {
+  const navigation = useNavigation<any>();
   const [analysts, setAnalysts] = useState<{ id: string; letter: string; color: string; name: string; accuracy: number; verified: boolean }[]>([]);
 
   useEffect(() => {
@@ -314,7 +315,11 @@ function TopAnalystsRow({ symbol, onMarketplacePress }: { symbol: string; onMark
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
         {analysts.map(a => (
-          <Pressable key={a.id} style={ta.analystCard}>
+          <Pressable
+            key={a.id}
+            style={ta.analystCard}
+            onPress={() => navigation.navigate('ProfileView', { userId: a.id })}
+          >
             <View style={[ta.avatar, { backgroundColor: a.color + '22' }]}>
               <Text style={[ta.avatarLetter, { color: a.color }]}>{a.letter}</Text>
               {a.verified && (
@@ -742,22 +747,45 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
     [range, asset.priceNum, asset.changePercent, seed]
   );
 
-  // 24 saatlik gerçek high/low (Supabase'den spark verisi ile hesaplanır)
-  const [high24, setHigh24] = useState((asset.priceNum * 1.032).toFixed(asset.priceNum > 100 ? 0 : 4));
-  const [low24,  setLow24]  = useState((asset.priceNum * 0.968).toFixed(asset.priceNum > 100 ? 0 : 4));
-  const ath = (asset.priceNum * 1.22).toFixed(asset.priceNum > 100 ? 0 : 4);
+  // 24 saatlik gerçek high/low + ATH (Supabase'den spark verisi ile hesaplanır)
+  const dp = asset.priceNum > 100 ? 0 : 4;
+  const [high24, setHigh24] = useState((asset.priceNum * 1.032).toFixed(dp));
+  const [low24,  setLow24]  = useState((asset.priceNum * 0.968).toFixed(dp));
+  const [ath,    setAth]    = useState((asset.priceNum * 1.22).toFixed(dp));
 
   useEffect(() => {
-    supabase.from('asset_prices').select('spark').eq('asset_id', initialAsset.id.toUpperCase()).single()
+    supabase.from('asset_prices').select('spark, ath').eq('asset_id', initialAsset.id.toUpperCase()).single()
       .then(({ data }) => {
         const spark: number[] = data?.spark ?? [];
         if (spark.length > 1) {
-          const dp = asset.priceNum > 100 ? 0 : 4;
           setHigh24(Math.max(...spark, asset.priceNum).toFixed(dp));
           setLow24(Math.max(0.0001, Math.min(...spark, asset.priceNum)).toFixed(dp));
         }
+        if (data?.ath && data.ath > 0) {
+          setAth(data.ath.toFixed(dp));
+        } else if (spark.length > 1) {
+          // ATH yoksa spark maksimumunu kullan
+          const sparkMax = Math.max(...spark, asset.priceNum);
+          setAth(sparkMax.toFixed(dp));
+        }
       });
   }, [initialAsset.id, asset.priceNum]);
+
+  const [categoryRank, setCategoryRank] = useState<number | null>(null);
+  useEffect(() => {
+    // Aynı kategorideki varlıkları market cap'e göre sırala, bu varlığın sıralamasını bul
+    supabase.from('asset_prices')
+      .select('asset_id, market_cap')
+      .eq('category', initialAsset.category)
+      .gt('market_cap', 0)
+      .order('market_cap', { ascending: false })
+      .limit(100)
+      .then(({ data }) => {
+        if (!data) return;
+        const idx = data.findIndex((r: any) => r.asset_id?.toUpperCase() === initialAsset.id.toUpperCase());
+        if (idx >= 0) setCategoryRank(idx + 1);
+      });
+  }, [initialAsset.id, initialAsset.category]);
 
   const { videos: relatedVideos } = useVideos({ assetTag: asset.symbol });
   const about = ABOUT[asset.id] ?? `${asset.name} (${asset.symbol}), ${seg.label} kategorisinde işlem gören bir varlıktır.`;
@@ -769,16 +797,15 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
 
   const onAlert = useCallback(() => {
     if (hasAlerts) {
-      // Varsa ilk alarmı sil
-      removeAlert(alerts[0].id).then(ok => {
-        if (ok) toast.success(`${asset.symbol} alarmı silindi`);
+      // Birden fazla alarm olabilir — hepsini sil
+      Promise.all(alerts.map(a => removeAlert(a.id))).then(() => {
+        toast.success(`${asset.symbol} alarmları silindi`);
       });
     } else {
-      // Yoksa modal aç
-      setAlertTarget(asset.priceNum.toFixed(asset.priceNum > 100 ? 0 : 4));
+      setAlertTarget(asset.priceNum.toFixed(dp));
       setAlertModal(true);
     }
-  }, [hasAlerts, alerts, removeAlert, asset, toast]);
+  }, [hasAlerts, alerts, removeAlert, asset, toast, dp]);
 
   const onSaveAlert = useCallback(async () => {
     const t = parseFloat(alertTarget);
@@ -902,7 +929,7 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
               { label: '24s Hacim',    value: asset.volume,                      icon: 'bar-chart',          color: '#007AFF'    },
               { label: 'Piyasa Değ.',  value: asset.marketCap ?? '—',            icon: 'globe',              color: '#7C3AED'    },
               { label: 'Tüm Zamanlar Yük.', value: `${pricePrefix}${ath}`,       icon: 'trophy',             color: '#FFB800'    },
-              { label: 'Kategori Sır.', value: `#${Math.max(1, Math.abs(asset.id.charCodeAt(0) % 20) + 1)}`, icon: 'ribbon', color: seg.color },
+              { label: 'Kategori Sır.', value: categoryRank ? `#${categoryRank}` : '—', icon: 'ribbon', color: seg.color },
             ].map((st, i) => (
               <View key={i} style={[s.statCell, i % 3 !== 2 && s.statCellBorderR, i < 3 && s.statCellBorderB]}>
                 <View style={[s.statIcon, { backgroundColor: st.color + '15' }]}>
@@ -1070,7 +1097,7 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
             </View>
 
             <View style={am.inputWrap}>
-              <Text style={am.inputLabel}>Hedef Fiyat ($)</Text>
+              <Text style={am.inputLabel}>Hedef Fiyat ({pricePrefix})</Text>
               <TextInput
                 style={am.input}
                 value={alertTarget}

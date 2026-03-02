@@ -333,10 +333,27 @@ export function SettingsScreen() {
                 onPress={async () => {
                   setDeleting(true);
                   try {
-                    await supabase.from('portfolio_holdings').delete().eq('user_id', user!.id);
-                    await supabase.from('posts').delete().eq('user_id', user!.id);
-                    await supabase.from('signals').delete().eq('creator_id', user!.id);
-                    await supabase.from('profiles').delete().eq('id', user!.id);
+                    const uid = user!.id;
+                    // Kullanıcıya ait tüm verileri sil
+                    await Promise.allSettled([
+                      supabase.from('portfolio_holdings').delete().eq('user_id', uid),
+                      supabase.from('posts').delete().eq('user_id', uid),
+                      supabase.from('signals').delete().eq('creator_id', uid),
+                      supabase.from('post_likes').delete().eq('user_id', uid),
+                      supabase.from('video_likes').delete().eq('user_id', uid),
+                      supabase.from('saved_videos').delete().eq('user_id', uid),
+                      supabase.from('comments').delete().eq('user_id', uid),
+                      supabase.from('comment_likes').delete().eq('user_id', uid),
+                      supabase.from('follows').delete().eq('follower_id', uid),
+                      supabase.from('follows').delete().eq('following_id', uid),
+                      supabase.from('notifications').delete().eq('user_id', uid),
+                      supabase.from('watchlists').delete().eq('user_id', uid),
+                      supabase.from('price_alerts').delete().eq('user_id', uid),
+                      supabase.from('user_badges').delete().eq('user_id', uid),
+                    ]);
+                    // Profili en son sil
+                    await supabase.from('profiles').delete().eq('id', uid);
+                    // Auth oturumunu kapat (admin delete API client'tan erişilemez)
                     await supabase.auth.signOut();
                     toast.success('Hesabınız silindi');
                     setDeleteModal(false);
