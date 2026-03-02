@@ -2,7 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   TextInput, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Animated, Dimensions,
+  ActivityIndicator, Animated, Dimensions, Modal,
+  FlatList, Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,7 +13,9 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useMarketPrices } from '../hooks/useMarketPrices';
+import { useAIChat, AISession } from '../hooks/useAIChat';
 import { colors, shadow } from '../constants/theme';
+import { supabase } from '../lib/supabase';
 
 const { width: W } = Dimensions.get('window');
 
@@ -26,7 +29,7 @@ const SUGGESTIONS = [
   { icon: '💱', text: 'Dolar/TL nereye gider?' },
 ];
 
-// ─── Mesaj tipi ────────────────────────────────────────────────────────────
+// ─── Mesaj tipi ───────────────────────────────────────────────────────────────
 interface Message {
   id:      string;
   role:    'user' | 'assistant';
@@ -34,9 +37,7 @@ interface Message {
   time:    string;
 }
 
-// ─── Supabase Edge Function üzerinden AI cevabı ─────────────────────────────
-import { supabase } from '../lib/supabase';
-
+// ─── AI çağrısı ───────────────────────────────────────────────────────────────
 async function callAI(messages: { role: string; content: string }[], context: string): Promise<string> {
   try {
     const { data, error } = await supabase.functions.invoke('ai-chat', {
@@ -45,7 +46,6 @@ async function callAI(messages: { role: string; content: string }[], context: st
     if (error) throw error;
     return data?.reply ?? 'Yanıt alınamadı.';
   } catch {
-    // Demo fallback — Edge Function kurulmadan çalışır
     return generateDemoReply(messages[messages.length - 1]?.content ?? '');
   }
 }
@@ -69,8 +69,8 @@ function generateDemoReply(question: string): string {
 
 // ─── Mesaj kabarcığı ──────────────────────────────────────────────────────────
 function MessageBubble({ msg }: { msg: Message }) {
-  const isUser = msg.role === 'user';
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const isUser  = msg.role === 'user';
+  const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(10)).current;
 
   useEffect(() => {
@@ -80,17 +80,16 @@ function MessageBubble({ msg }: { msg: Message }) {
     ]).start();
   }, []);
 
-  // Geliştirilmiş markdown renderer — emoji ile biten başlıkları da yakalar
   const renderContent = (text: string) => {
     const lines = text.split('\n');
     return lines.map((line, i) => {
-      // **Başlık** veya **Başlık** 📊 gibi emoji ile bitenler
       if (/^\*\*(.+)\*\*/.test(line)) {
-        return <Text key={i} style={[mb.msgTxt, { fontWeight: '800', fontSize: 15 }]}>
-          {line.replace(/\*\*/g, '')}
-        </Text>;
+        return (
+          <Text key={i} style={[mb.msgTxt, { fontWeight: '800', fontSize: 15 }]}>
+            {line.replace(/\*\*/g, '')}
+          </Text>
+        );
       }
-      // Inline bold: metinin ortasındaki **bold** kısımları işle
       if (line.includes('**')) {
         const parts = line.split(/(\*\*[^*]+\*\*)/g);
         return (
@@ -107,9 +106,11 @@ function MessageBubble({ msg }: { msg: Message }) {
         return <Text key={i} style={[mb.msgTxt, { paddingLeft: 4 }]}>{'  ' + line}</Text>;
       }
       if (line.startsWith('_') && line.endsWith('_')) {
-        return <Text key={i} style={[mb.msgTxt, { fontStyle: 'italic', color: colors.textMuted }]}>
-          {line.replace(/_/g, '')}
-        </Text>;
+        return (
+          <Text key={i} style={[mb.msgTxt, { fontStyle: 'italic', color: colors.textMuted }]}>
+            {line.replace(/_/g, '')}
+          </Text>
+        );
       }
       if (line === '') return <Text key={i} style={{ height: 6 }} />;
       return <Text key={i} style={mb.msgTxt}>{line}</Text>;
@@ -161,6 +162,164 @@ const mb = StyleSheet.create({
   time:   { fontSize: 10, color: colors.textMuted, alignSelf: 'flex-end', marginTop: 4 },
 });
 
+// ─── Geçmiş drawer ────────────────────────────────────────────────────────────
+function HistoryDrawer({
+  visible,
+  sessions,
+  loading,
+  currentSessionId,
+  onSelect,
+  onNew,
+  onDelete,
+  onClose,
+}: {
+  visible:          boolean;
+  sessions:         AISession[];
+  loading:          boolean;
+  currentSessionId: string | null;
+  onSelect:         (id: string) => void;
+  onNew:            () => void;
+  onDelete:         (id: string) => void;
+  onClose:          () => void;
+}) {
+  const insets = useSafeAreaInsets();
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (diffDays === 0) return 'Bugün';
+    if (diffDays === 1) return 'Dün';
+    return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={hd.overlay} onPress={onClose} />
+      <View style={[hd.drawer, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
+        {/* Drawer header */}
+        <View style={hd.drawerHeader}>
+          <Text style={hd.drawerTitle}>Sohbet Geçmişi</Text>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Ionicons name="close" size={22} color={colors.text} />
+          </Pressable>
+        </View>
+
+        {/* Yeni sohbet butonu */}
+        <Pressable style={hd.newBtn} onPress={onNew}>
+          <LinearGradient
+            colors={[colors.primary, '#00A846']}
+            style={hd.newBtnGrad}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          >
+            <Ionicons name="add-circle-outline" size={18} color="#fff" />
+            <Text style={hd.newBtnTxt}>Yeni Sohbet</Text>
+          </LinearGradient>
+        </Pressable>
+
+        {/* Oturum listesi */}
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />
+        ) : sessions.length === 0 ? (
+          <View style={hd.empty}>
+            <Ionicons name="chatbubbles-outline" size={40} color={colors.textMuted} />
+            <Text style={hd.emptyTxt}>Henüz sohbet yok</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={sessions}
+            keyExtractor={item => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8 }}
+            renderItem={({ item }) => {
+              const isActive = item.id === currentSessionId;
+              return (
+                <Pressable
+                  style={[hd.sessionRow, isActive && hd.sessionRowActive]}
+                  onPress={() => { onSelect(item.id); onClose(); }}
+                  onLongPress={() => {
+                    Alert.alert(
+                      'Sohbeti Sil',
+                      'Bu sohbet kalıcı olarak silinecek.',
+                      [
+                        { text: 'İptal', style: 'cancel' },
+                        { text: 'Sil', style: 'destructive', onPress: () => onDelete(item.id) },
+                      ]
+                    );
+                  }}
+                >
+                  <View style={hd.sessionIcon}>
+                    <Ionicons
+                      name={isActive ? 'chatbubble' : 'chatbubble-outline'}
+                      size={16}
+                      color={isActive ? colors.primary : colors.textMuted}
+                    />
+                  </View>
+                  <View style={hd.sessionInfo}>
+                    <Text style={[hd.sessionTitle, isActive && hd.sessionTitleActive]} numberOfLines={1}>
+                      {item.title || 'Sohbet'}
+                    </Text>
+                    <Text style={hd.sessionDate}>{formatDate(item.updated_at)}</Text>
+                  </View>
+                  {isActive && <View style={hd.activeDot} />}
+                </Pressable>
+              );
+            }}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
+
+const hd = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  drawer: {
+    position:        'absolute',
+    left:            0, top: 0, bottom: 0,
+    width:           W * 0.8,
+    backgroundColor: colors.bgPure,
+    ...shadow.lg,
+  },
+  drawerHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, marginBottom: 16,
+  },
+  drawerTitle: { fontSize: 18, fontWeight: '800', color: colors.text },
+
+  newBtn:    { marginHorizontal: 16, marginBottom: 12, borderRadius: 12, overflow: 'hidden' },
+  newBtnGrad: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, height: 46,
+  },
+  newBtnTxt: { fontSize: 15, fontWeight: '700', color: '#fff' },
+
+  empty:    { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  emptyTxt: { color: colors.textMuted, fontSize: 14 },
+
+  sessionRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 12, paddingHorizontal: 8,
+    borderRadius: 10, marginBottom: 2,
+  },
+  sessionRowActive: { backgroundColor: colors.primary + '12' },
+  sessionIcon:  { width: 32, alignItems: 'center' },
+  sessionInfo:  { flex: 1 },
+  sessionTitle: { fontSize: 14, fontWeight: '600', color: colors.text },
+  sessionTitleActive: { color: colors.primary },
+  sessionDate:  { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  activeDot:    { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
+});
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export function AIAssistantScreen() {
   const insets       = useSafeAreaInsets();
@@ -168,15 +327,27 @@ export function AIAssistantScreen() {
   const { user }     = useAuth();
   const { isFree }   = useSubscription();
   const { assets }   = useMarketPrices();
+  const {
+    sessions, loadingSessions,
+    loadSessions, loadMessages,
+    getOrCreateSession, createNewSession,
+    saveMessage, deleteSession,
+    tablesExist,
+  } = useAIChat();
 
-  const [messages,  setMessages]  = useState<Message[]>([]);
-  const [input,     setInput]     = useState('');
-  const [thinking,  setThinking]  = useState(false);
-  const [dailyCount, setDailyCount] = useState(0);
+  const [messages,       setMessages]       = useState<Message[]>([]);
+  const [input,          setInput]          = useState('');
+  const [thinking,       setThinking]       = useState(false);
+  const [dailyCount,     setDailyCount]     = useState(0);
+  const [sessionId,      setSessionId]      = useState<string | null>(null);
+  const [historyOpen,    setHistoryOpen]    = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const FREE_LIMIT = 5;
   const scrollRef  = useRef<ScrollView>(null);
+  // Tracks whether we already saved at least one user message in current session
+  const msgCountRef = useRef(0);
 
-  // AsyncStorage'dan günlük soru sayısını yükle
+  // ── Günlük soru sayısı ────────────────────────────────────────────────────
   useEffect(() => {
     const key = `@ai_daily_${new Date().toISOString().slice(0, 10)}`;
     AsyncStorage.getItem(key).then(v => {
@@ -186,7 +357,37 @@ export function AIAssistantScreen() {
 
   const nowStr = () => new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-  // Karşılama mesajı — assets yüklenince güncelle
+  const dbMsgToLocal = (m: { id: string; role: 'user' | 'assistant'; content: string; created_at: string }): Message => ({
+    id:      m.id,
+    role:    m.role,
+    content: m.content,
+    time:    new Date(m.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+  });
+
+  // ── Oturum yükle (mount) ─────────────────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setSessionLoading(true);
+      try {
+        const sid = await getOrCreateSession();
+        if (!mounted) return;
+        setSessionId(sid);
+
+        if (sid) {
+          const dbMsgs = await loadMessages(sid);
+          if (mounted && dbMsgs.length > 0) {
+            msgCountRef.current = dbMsgs.filter(m => m.role === 'user').length;
+            setMessages(dbMsgs.map(dbMsgToLocal));
+          }
+        }
+      } catch {}
+      finally { if (mounted) setSessionLoading(false); }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // ── Karşılama mesajı (assets yüklenince güncelle) ─────────────────────────
   useEffect(() => {
     const topAssets = assets.slice(0, 3).map(a =>
       `${a.symbol}: ${a.priceFormatted} (${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%)`
@@ -199,13 +400,58 @@ export function AIAssistantScreen() {
         content: `Merhaba! Ben **MarketAI**'yım 🤖\n\nPiyasalar, yatırım stratejileri ve kripto hakkında her şeyi sorabilirsin.\n\n📊 Anlık: ${topAssets || 'Veri yükleniyor...'}`,
         time:    nowStr(),
       };
+      // Eğer DB'den mesaj yüklendiyse karşılama mesajı ekleme
+      if (prev.length > 0 && prev[0]?.id !== 'welcome') return prev;
       if (prev.length === 0) return [welcomeMsg];
-      // Sadece welcome mesajını güncelle, diğer mesajlara dokunma
       if (prev[0]?.id === 'welcome') return [welcomeMsg, ...prev.slice(1)];
       return prev;
     });
-  }, [assets]);
+  }, [assets, sessionLoading]);
 
+  // ── Geçmişi aç ───────────────────────────────────────────────────────────
+  const openHistory = useCallback(async () => {
+    setHistoryOpen(true);
+    await loadSessions();
+  }, [loadSessions]);
+
+  // ── Geçmişten oturum seç ─────────────────────────────────────────────────
+  const selectSession = useCallback(async (sid: string) => {
+    if (sid === sessionId) return;
+    setSessionLoading(true);
+    setMessages([]);
+    setSessionId(sid);
+    msgCountRef.current = 0;
+    try {
+      const dbMsgs = await loadMessages(sid);
+      if (dbMsgs.length > 0) {
+        msgCountRef.current = dbMsgs.filter(m => m.role === 'user').length;
+        setMessages(dbMsgs.map(dbMsgToLocal));
+      }
+    } catch {}
+    finally { setSessionLoading(false); }
+  }, [sessionId, loadMessages]);
+
+  // ── Yeni sohbet ───────────────────────────────────────────────────────────
+  const startNewChat = useCallback(async () => {
+    setHistoryOpen(false);
+    const newSid = await createNewSession();
+    if (newSid) {
+      setSessionId(newSid);
+      setMessages([]);
+      msgCountRef.current = 0;
+    }
+  }, [createNewSession]);
+
+  // ── Oturum sil ────────────────────────────────────────────────────────────
+  const handleDeleteSession = useCallback(async (sid: string) => {
+    await deleteSession(sid);
+    if (sid === sessionId) {
+      // Silinen aktif oturumsa yeni oturum başlat
+      await startNewChat();
+    }
+  }, [deleteSession, sessionId, startNewChat]);
+
+  // ── Mesaj gönder ─────────────────────────────────────────────────────────
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || thinking) return;
@@ -224,25 +470,28 @@ export function AIAssistantScreen() {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setThinking(true);
-    setDailyCount(c => {
-      const newCount = c + 1;
-      const key = `@ai_daily_${new Date().toISOString().slice(0, 10)}`;
-      AsyncStorage.setItem(key, String(newCount));
-      return newCount;
-    });
+
+    const newCount = dailyCount + 1;
+    setDailyCount(newCount);
+    const key = `@ai_daily_${new Date().toISOString().slice(0, 10)}`;
+    AsyncStorage.setItem(key, String(newCount));
 
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
-    const history = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }));
+    // DB kayıt (user msg)
+    const isFirst = msgCountRef.current === 0;
+    msgCountRef.current += 1;
+    if (sessionId) await saveMessage(sessionId, 'user', trimmed, isFirst);
 
-    // Zengin piyasa bağlamı
-    const topCrypto  = assets.filter(a => a.category === 'crypto').slice(0, 5);
-    const topStocks  = assets.filter(a => a.category === 'stocks').slice(0, 3);
-    const topForex   = assets.filter(a => a.category === 'forex').slice(0, 2);
-    const allContext = [...topCrypto, ...topStocks, ...topForex];
-    const context    = [
+    const history = [...messages.filter(m => m.id !== 'welcome'), userMsg]
+      .map(m => ({ role: m.role, content: m.content }));
+
+    const topCrypto = assets.filter(a => a.category === 'crypto').slice(0, 5);
+    const topStocks = assets.filter(a => a.category === 'stocks').slice(0, 3);
+    const topForex  = assets.filter(a => a.category === 'forex').slice(0, 2);
+    const context   = [
       'PIYASA_VERILERI:',
-      ...allContext.map(a =>
+      ...[...topCrypto, ...topStocks, ...topForex].map(a =>
         `${a.symbol}: ${a.priceFormatted} (${a.change_percent >= 0 ? '+' : ''}${a.change_percent.toFixed(2)}%)`
       ),
       `TARIH: ${new Date().toLocaleDateString('tr-TR')}`,
@@ -264,133 +513,174 @@ export function AIAssistantScreen() {
     };
     setMessages(prev => [...prev, aiMsg]);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-  }, [thinking, isFree, dailyCount, messages, assets, navigation]);
+
+    // DB kayıt (AI msg)
+    if (sessionId) await saveMessage(sessionId, 'assistant', reply);
+  }, [thinking, isFree, dailyCount, messages, assets, navigation, sessionId, saveMessage]);
 
   const isAtLimit = isFree && dailyCount >= FREE_LIMIT;
+  const showSuggestions = messages.filter(m => m.id !== 'welcome').length === 0 && !thinking && !sessionLoading;
 
   return (
-    <KeyboardAvoidingView
-      style={[s.root, { paddingTop: insets.top }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={insets.top + 56}
-    >
-      {/* Header */}
-      <LinearGradient colors={['#0A0A1A', '#0D1F3C']} style={s.header}>
-        <Pressable onPress={() => navigation.goBack()} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={22} color="#fff" />
-        </Pressable>
-        <View style={s.headerCenter}>
-          <View style={s.aiDot} />
-          <Text style={s.headerTitle}>MarketAI</Text>
-          <View style={s.onlinePill}>
-            <Text style={s.onlineTxt}>CANLI</Text>
-          </View>
-        </View>
-        {isFree && (
-          <Pressable onPress={() => navigation.navigate('Paywall')} style={s.proBtn}>
-            <Ionicons name="flash" size={13} color="#FFD700" />
-            <Text style={s.proTxt}>PRO</Text>
-          </Pressable>
-        )}
-        {!isFree && <View style={{ width: 52 }} />}
-      </LinearGradient>
-
-      {/* Soru sayacı (free) */}
-      {isFree && (
-        <View style={s.limitBar}>
-          <Text style={s.limitTxt}>
-            Günlük {dailyCount}/{FREE_LIMIT} soru · 
-          </Text>
-          <Pressable onPress={() => navigation.navigate('Paywall')}>
-            <Text style={s.limitLink}> Sınırsız için Pro'ya geç →</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* Mesajlar */}
-      <ScrollView
-        ref={scrollRef}
-        style={s.msgList}
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 12 }}
-        showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+    <>
+      <KeyboardAvoidingView
+        style={[s.root, { paddingTop: insets.top }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={insets.top + 56}
       >
-        {messages.map(msg => (
-          <MessageBubble key={msg.id} msg={msg} />
-        ))}
-
-        {thinking && (
-          <View style={s.thinkingWrap}>
-            <View style={s.thinkingBubble}>
-              <View style={s.dotRow}>
-                {[0, 1, 2].map(i => (
-                  <BounceDot key={i} delay={i * 150} />
-                ))}
-              </View>
+        {/* Header */}
+        <LinearGradient colors={['#0A0A1A', '#0D1F3C']} style={s.header}>
+          <Pressable onPress={() => navigation.goBack()} style={s.backBtn} hitSlop={10}>
+            <Ionicons name="arrow-back" size={22} color="#fff" />
+          </Pressable>
+          <Pressable style={s.headerCenter} onPress={openHistory}>
+            <View style={s.aiDot} />
+            <Text style={s.headerTitle}>MarketAI</Text>
+            <View style={s.onlinePill}>
+              <Text style={s.onlineTxt}>CANLI</Text>
             </View>
+          </Pressable>
+          <View style={s.headerRight}>
+            {/* Geçmiş butonu */}
+            <Pressable onPress={openHistory} style={s.iconBtn} hitSlop={8}>
+              <Ionicons name="time-outline" size={20} color="#fff" />
+            </Pressable>
+            {/* Yeni sohbet */}
+            <Pressable onPress={startNewChat} style={s.iconBtn} hitSlop={8}>
+              <Ionicons name="create-outline" size={20} color="#fff" />
+            </Pressable>
+            {isFree && (
+              <Pressable onPress={() => navigation.navigate('Paywall')} style={s.proBtn}>
+                <Ionicons name="flash" size={13} color="#FFD700" />
+                <Text style={s.proTxt}>PRO</Text>
+              </Pressable>
+            )}
+          </View>
+        </LinearGradient>
+
+        {/* Günlük soru sayacı */}
+        {isFree && (
+          <View style={s.limitBar}>
+            <Text style={s.limitTxt}>Günlük {dailyCount}/{FREE_LIMIT} soru · </Text>
+            <Pressable onPress={() => navigation.navigate('Paywall')}>
+              <Text style={s.limitLink}>Sınırsız için Pro'ya geç →</Text>
+            </Pressable>
           </View>
         )}
-      </ScrollView>
 
-      {/* Öneri soruları (ilk giriş) */}
-      {messages.length <= 1 && !thinking && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={s.suggestionsRow}
-        >
-          {SUGGESTIONS.map((s, i) => (
-            <Pressable
-              key={i}
-              style={sug.chip}
-              onPress={() => sendMessage(s.text)}
-            >
-              <Text style={sug.icon}>{s.icon}</Text>
-              <Text style={sug.txt}>{s.text}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
-
-      {/* Input bar */}
-      <View style={[s.inputBar, { paddingBottom: insets.bottom + 8 }]}>
-        {isAtLimit ? (
-          <Pressable style={s.limitBtn} onPress={() => navigation.navigate('Paywall')}>
-            <LinearGradient colors={['#007AFF', '#5856D6']} style={s.limitBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Ionicons name="flash" size={16} color="#fff" />
-              <Text style={s.limitBtnTxt}>Sınırsız Soru İçin Pro'ya Geç</Text>
-            </LinearGradient>
-          </Pressable>
-        ) : (
-          <>
-            <TextInput
-              style={s.input}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Piyasalar hakkında sor..."
-              placeholderTextColor={colors.textMuted}
-              multiline
-              maxLength={400}
-              onSubmitEditing={() => sendMessage(input)}
-              returnKeyType="send"
-            />
-            <Pressable
-              style={[s.sendBtn, (!input.trim() || thinking) && s.sendBtnDisabled]}
-              onPress={() => sendMessage(input)}
-              disabled={!input.trim() || thinking}
-            >
-              {thinking
-                ? <ActivityIndicator color="#fff" size="small" />
-                : <Ionicons name="send" size={18} color="#fff" />
-              }
-            </Pressable>
-          </>
+        {/* Supabase tablolar eksikse uyarı */}
+        {tablesExist === false && (
+          <View style={s.noDbBanner}>
+            <Ionicons name="cloud-offline-outline" size={14} color="#FF9500" />
+            <Text style={s.noDbTxt}>Sohbet geçmişi kaydedilemedi (tablo eksik)</Text>
+          </View>
         )}
-      </View>
-    </KeyboardAvoidingView>
+
+        {/* Mesajlar */}
+        {sessionLoading ? (
+          <View style={s.loadingWrap}>
+            <ActivityIndicator color={colors.primary} />
+            <Text style={s.loadingTxt}>Sohbet yükleniyor...</Text>
+          </View>
+        ) : (
+          <ScrollView
+            ref={scrollRef}
+            style={s.msgList}
+            contentContainerStyle={{ paddingTop: 16, paddingBottom: 12 }}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+          >
+            {messages.map(msg => (
+              <MessageBubble key={msg.id} msg={msg} />
+            ))}
+
+            {thinking && (
+              <View style={s.thinkingWrap}>
+                <View style={s.thinkingBubble}>
+                  <View style={s.dotRow}>
+                    {[0, 1, 2].map(i => (
+                      <BounceDot key={i} delay={i * 150} />
+                    ))}
+                  </View>
+                </View>
+              </View>
+            )}
+          </ScrollView>
+        )}
+
+        {/* Öneri soruları */}
+        {showSuggestions && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={s.suggestionsRow}
+          >
+            {SUGGESTIONS.map((sg, i) => (
+              <Pressable key={i} style={sug.chip} onPress={() => sendMessage(sg.text)}>
+                <Text style={sug.icon}>{sg.icon}</Text>
+                <Text style={sug.txt}>{sg.text}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
+
+        {/* Input bar */}
+        <View style={[s.inputBar, { paddingBottom: insets.bottom + 8 }]}>
+          {isAtLimit ? (
+            <Pressable style={s.limitBtn} onPress={() => navigation.navigate('Paywall')}>
+              <LinearGradient
+                colors={['#007AFF', '#5856D6']}
+                style={s.limitBtnGrad}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              >
+                <Ionicons name="flash" size={16} color="#fff" />
+                <Text style={s.limitBtnTxt}>Sınırsız Soru İçin Pro'ya Geç</Text>
+              </LinearGradient>
+            </Pressable>
+          ) : (
+            <>
+              <TextInput
+                style={s.input}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Piyasalar hakkında sor..."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                maxLength={400}
+                onSubmitEditing={() => sendMessage(input)}
+                returnKeyType="send"
+              />
+              <Pressable
+                style={[s.sendBtn, (!input.trim() || thinking) && s.sendBtnDisabled]}
+                onPress={() => sendMessage(input)}
+                disabled={!input.trim() || thinking}
+              >
+                {thinking
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Ionicons name="send" size={18} color="#fff" />
+                }
+              </Pressable>
+            </>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+
+      {/* Geçmiş drawer */}
+      <HistoryDrawer
+        visible={historyOpen}
+        sessions={sessions}
+        loading={loadingSessions}
+        currentSessionId={sessionId}
+        onSelect={selectSession}
+        onNew={startNewChat}
+        onDelete={handleDeleteSession}
+        onClose={() => setHistoryOpen(false)}
+      />
+    </>
   );
 }
 
+// ─── Bounce dot animasyonu ────────────────────────────────────────────────────
 function BounceDot({ delay }: { delay: number }) {
   const y = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -405,9 +695,7 @@ function BounceDot({ delay }: { delay: number }) {
     anim.start();
     return () => anim.stop();
   }, []);
-  return (
-    <Animated.View style={[s2.dot, { transform: [{ translateY: y }] }]} />
-  );
+  return <Animated.View style={[s2.dot, { transform: [{ translateY: y }] }]} />;
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -418,15 +706,17 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12, gap: 10,
   },
-  backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  backBtn:      { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  aiDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#34C759' },
-  headerTitle: { fontSize: 17, fontWeight: '800', color: '#fff' },
+  aiDot:        { width: 8, height: 8, borderRadius: 4, backgroundColor: '#34C759' },
+  headerTitle:  { fontSize: 17, fontWeight: '800', color: '#fff' },
   onlinePill: {
     backgroundColor: '#34C75930', borderRadius: 6,
     paddingHorizontal: 7, paddingVertical: 2,
   },
   onlineTxt: { fontSize: 9, fontWeight: '900', color: '#34C759', letterSpacing: 0.5 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  iconBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   proBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: '#FFD70020', borderRadius: 8,
@@ -442,6 +732,15 @@ const s = StyleSheet.create({
   },
   limitTxt:  { fontSize: 12, color: colors.textMuted },
   limitLink: { fontSize: 12, color: '#FF9500', fontWeight: '700' },
+
+  noDbBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#FF950010', paddingHorizontal: 16, paddingVertical: 6,
+  },
+  noDbTxt: { fontSize: 11, color: '#FF9500' },
+
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  loadingTxt:  { color: colors.textMuted, fontSize: 13 },
 
   msgList: { flex: 1 },
 
@@ -479,7 +778,10 @@ const s = StyleSheet.create({
   sendBtnDisabled: { backgroundColor: colors.textMuted },
 
   limitBtn: { flex: 1, borderRadius: 14, overflow: 'hidden' },
-  limitBtnGrad: { height: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  limitBtnGrad: {
+    height: 48, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
   limitBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
 });
 

@@ -1,7 +1,7 @@
 /**
  * useVideos — Supabase `posts` tablosundan gerçek video/short/live verilerini çeker.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { VideoCategory, VideoItem } from '../data/mockVideos';
 
@@ -97,11 +97,15 @@ export function useVideos(opts: {
   const [videos,  setVideos]  = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
-  const [page,    setPage]    = useState(0);
+
+  const pageRef    = useRef(0);
+  const loadingRef = useRef(false);
 
   const fetchVideos = useCallback(async (reset = false) => {
+    if (loadingRef.current && !reset) return;
+    loadingRef.current = true;
     setLoading(true);
-    const currentPage = reset ? 0 : page;
+    const currentPage = reset ? 0 : pageRef.current;
 
     const buildQuery = (selectCols: string, hasTypeCol: boolean) => {
       let q = supabase
@@ -136,18 +140,24 @@ export function useVideos(opts: {
         mapToVideoItem(row, profMap[row.creator_id ?? row.user_id])
       );
 
-      if (reset) { setVideos(mapped); setPage(1); }
-      else        { setVideos(prev => [...prev, ...mapped]); setPage(p => p + 1); }
+      if (reset) {
+        setVideos(mapped);
+        pageRef.current = 1;
+      } else {
+        setVideos(prev => [...prev, ...mapped]);
+        pageRef.current = currentPage + 1;
+      }
       setHasMore(mapped.length === PAGE_SIZE);
     } catch (e) {
       console.warn('[useVideos] Supabase hatası:', e);
       if (reset) setVideos([]);
       setHasMore(false);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, opts.type, opts.creatorId, opts.assetTag]);
+  }, [opts.type, opts.creatorId, opts.assetTag]);
 
   useEffect(() => {
     fetchVideos(true);
@@ -156,7 +166,7 @@ export function useVideos(opts: {
 
   return {
     videos, loading, hasMore,
-    loadMore: () => { if (!loading && hasMore) fetchVideos(false); },
+    loadMore: () => { if (!loadingRef.current && hasMore) fetchVideos(false); },
     refetch:  () => fetchVideos(true),
   };
 }

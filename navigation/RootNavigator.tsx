@@ -31,6 +31,7 @@ import { SignalMarketplaceScreen }  from '../screens/SignalMarketplaceScreen';
 import { UserProfileScreen }        from '../screens/UserProfileScreen';
 import { LiveBroadcastScreen }      from '../screens/LiveBroadcastScreen';
 import { LiveWatchScreen }          from '../screens/LiveWatchScreen';
+import { MessagingScreen }          from '../screens/MessagingScreen';
 
 import { useAuth }              from '../contexts/AuthContext';
 import { useTabBar, TAB_BAR_H } from '../contexts/TabBarContext';
@@ -59,6 +60,7 @@ export type RootStackParamList = {
   Leaderboard:   undefined;
   PriceAlerts:   undefined;
   AIAssistant:   undefined;
+  Messaging:     { openUserId?: string; otherUser?: { id: string; username: string; full_name: string | null; avatar_url: string | null; verified: boolean } } | undefined;
   SignalMarketplace:  undefined;
   Settings:      undefined;
   Search:        undefined;
@@ -318,6 +320,11 @@ export function RootNavigator() {
         options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
       />
       <Stack.Screen
+        name="Messaging"
+        component={MessagingScreen}
+        options={{ animation: 'slide_from_right' }}
+      />
+      <Stack.Screen
         name="SignalMarketplace"
         component={SignalMarketplaceScreen}
         options={{ animation: 'slide_from_right' }}
@@ -332,15 +339,26 @@ export function RootNavigator() {
 }
 
 // ─── Wrappers ─────────────────────────────────────────────────────────────────
+function FallbackScreen({ navigation }: any) {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }}>
+      <Text style={{ color: '#FFF', fontSize: 16, marginBottom: 16 }}>Sayfa yüklenemedi</Text>
+      <Pressable onPress={() => navigation.goBack()} style={{ padding: 12, backgroundColor: '#1C1C1E', borderRadius: 10 }}>
+        <Text style={{ color: '#FFF', fontWeight: '700' }}>← Geri Dön</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function VideoDetailScreenWrapper({ navigation, route }: any) {
   const { item } = route.params || {};
-  if (!item) return null;
+  if (!item) return <FallbackScreen navigation={navigation} />;
   return <VideoDetailScreen item={item} onBack={() => navigation.goBack()} />;
 }
 
 function AssetDetailScreenWrapper({ navigation, route }: any) {
   const { asset } = route.params || {};
-  if (!asset) return null;
+  if (!asset) return <FallbackScreen navigation={navigation} />;
   return <AssetDetailScreen asset={asset} onBack={() => navigation.goBack()} />;
 }
 
@@ -382,6 +400,6 @@ function SearchScreenWrapper({ navigation }: any) {
 
 function UserProfileScreenWrapper({ navigation, route }: any) {
   const { userId } = route.params || {};
-  if (!userId) return null;
+  if (!userId) return <FallbackScreen navigation={navigation} />;
   return <UserProfileScreen userId={userId} onBack={() => navigation.goBack()} />;
 }

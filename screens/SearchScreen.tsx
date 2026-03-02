@@ -92,6 +92,7 @@ function CreatorResult({ creator }: { creator: SimpleCreator }) {
   const [following, setFollowing] = useState(false);
   const { user } = useAuth();
   const toast = useToast();
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     if (!user?.id || !creator.id) return;
@@ -122,7 +123,10 @@ function CreatorResult({ creator }: { creator: SimpleCreator }) {
   };
 
   return (
-    <View style={r.creatorRow}>
+    <Pressable
+      style={r.creatorRow}
+      onPress={() => navigation.navigate('ProfileView', { userId: creator.id })}
+    >
       <Image source={{ uri: creator.avatar }} style={r.creatorAvatar} />
       <View style={r.creatorInfo}>
         <View style={r.creatorNameRow}>
@@ -137,14 +141,15 @@ function CreatorResult({ creator }: { creator: SimpleCreator }) {
       </View>
       <Pressable
         style={[r.followBtn, following && r.followBtnActive]}
-        onPress={handleFollow}
+        onPress={(e) => { e.stopPropagation?.(); handleFollow(); }}
+        hitSlop={8}
       >
         {following && <Ionicons name="checkmark" size={11} color={colors.primaryDark} />}
         <Text style={[r.followBtnTxt, following && r.followBtnTxtActive]}>
           {following ? 'Takipte' : 'Takip Et'}
         </Text>
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
@@ -159,6 +164,7 @@ export function SearchScreen({ onBack }: Props) {
   const [activeTab, setActiveTab] = useState<ResultTab>('videos');
   const [dbCreators, setDbCreators] = useState<SimpleCreator[]>([]);
   const [dbVideos,   setDbVideos]   = useState<VideoItem[]>([]);
+  const [searching,  setSearching]  = useState(false);
   const { assets: liveAssets, allAssets } = useMarketPrices();
   const { analysts } = useLeaderboard();
 
@@ -187,9 +193,11 @@ export function SearchScreen({ onBack }: Props) {
 
   // Supabase video + creator araması (debounce)
   useEffect(() => {
-    if (!query.trim()) { setDbCreators([]); setDbVideos([]); return; }
+    if (!query.trim()) { setDbCreators([]); setDbVideos([]); setSearching(false); return; }
+    setSearching(true);
     const t = setTimeout(async () => {
       const q2 = query.trim().toLowerCase();
+      try {
 
       // Video araması
       const { data: vData } = await supabase
@@ -240,8 +248,13 @@ export function SearchScreen({ onBack }: Props) {
       } else {
         setDbCreators([]);
       }
+      } catch (e) {
+        console.warn('[SearchScreen] arama hatası:', e);
+      } finally {
+        setSearching(false);
+      }
     }, 350);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(t); };
   }, [query]);
 
   const q = query.toLowerCase().trim();
@@ -373,12 +386,20 @@ export function SearchScreen({ onBack }: Props) {
             </View>
           )}
 
+          {/* Arama yükleniyor */}
+          {searching && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 }}>
+              <Ionicons name="search-outline" size={16} color={colors.primary} />
+              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>Aranıyor…</Text>
+            </View>
+          )}
+
           <ScrollView
             contentContainerStyle={[s.resultsContent, { paddingBottom: insets.bottom + 20 }]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {!hasResults && (
+            {!hasResults && !searching && (
               <View style={s.noResults}>
                 <Text style={s.noResultsIcon}>🔍</Text>
                 <Text style={s.noResultsTitle}>Sonuç bulunamadı</Text>

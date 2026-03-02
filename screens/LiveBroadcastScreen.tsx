@@ -16,7 +16,7 @@ import { useAgoraLive } from '../hooks/useAgoraLive';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius } from '../constants/theme';
 
 const GIFTS = [
   { icon: '💎', name: 'Elmas', cost: 500 },

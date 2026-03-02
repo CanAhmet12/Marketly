@@ -45,6 +45,23 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
   const [localComments,  setLocalComments]  = useState(p.comments);
   const [saved,          setSaved]          = useState(false);
 
+  // Saved state'i DB'den başlat
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('saved_posts')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .eq('post_id', p.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setSaved(true); });
+  }, [user?.id, p.id]);
+
+  // Parent'tan gelen comments güncellenince localComments'i senkronize et
+  useEffect(() => {
+    setLocalComments(p.comments);
+  }, [p.comments]);
+
   const handleLike = useCallback(() => {
     Animated.sequence([
       Animated.spring(scale, { toValue: 1.35, useNativeDriver: true, speed: 40 }),

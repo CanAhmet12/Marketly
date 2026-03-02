@@ -32,15 +32,50 @@ function fmtV(n: number) {
 
 // ── Gift Modal ────────────────────────────────────────────────────────────────
 function GiftModal({
-  visible, onClose, streamTitle,
+  visible, onClose, streamTitle, postId,
 }: {
-  visible: boolean; onClose: () => void; streamTitle: string;
+  visible: boolean; onClose: () => void; streamTitle: string; postId?: string;
 }) {
   const toast = useToast();
+  const { user, profile } = useAuth();
+  const [balance,     setBalance]     = useState(0);
+  const [sending,     setSending]     = useState(false);
 
-  const handleGift = (gift: typeof GIFTS[0]) => {
-    toast.success(`${gift.icon} "${gift.name}" gönderildi!`);
-    onClose();
+  useEffect(() => {
+    if (!visible || !user?.id) return;
+    supabase.from('marketcoin_wallet').select('balance').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setBalance(data?.balance ?? 0));
+  }, [visible, user?.id]);
+
+  const handleGift = async (gift: typeof GIFTS[0]) => {
+    if (!user) { toast.info('Giriş yapman gerekiyor'); return; }
+    if (balance < gift.cost) { toast.error(`Yetersiz bakiye! ${gift.cost} MC gerekiyor`); return; }
+    setSending(true);
+    try {
+      const newBal = balance - gift.cost;
+      setBalance(newBal);
+      await supabase.from('marketcoin_wallet')
+        .upsert({ user_id: user.id, balance: newBal, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      await supabase.from('marketcoin_transactions').insert({
+        user_id: user.id, amount: -gift.cost, type: 'spend',
+        reason: `Hediye: ${gift.name} (Yayın: ${streamTitle})`,
+      });
+      if (postId) {
+        await supabase.from('live_messages').insert({
+          post_id: postId, user_id: user.id,
+          username: profile?.username ?? profile?.full_name ?? 'İzleyici',
+          content: `${gift.icon} ${gift.name} gönderdi!`,
+          is_gift: true, gift_icon: gift.icon, gift_name: gift.name,
+        });
+      }
+      toast.success(`${gift.icon} "${gift.name}" gönderildi! (-${gift.cost} MC)`);
+      onClose();
+    } catch {
+      toast.error('Hediye gönderilemedi');
+      setBalance(balance);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -51,15 +86,31 @@ function GiftModal({
         <View style={gm.header}>
           <Ionicons name="gift" size={20} color="#FFB800" />
           <Text style={gm.title}>Reaksiyon Gönder</Text>
+          <View style={gm.balance}>
+            <Text style={gm.balTxt}>🪙 {balance.toLocaleString()} MC</Text>
+          </View>
         </View>
         <Text style={gm.subtitle} numberOfLines={1}>{streamTitle}</Text>
         <View style={gm.grid}>
-          {GIFTS.map((g) => (
-            <Pressable key={g.id} style={gm.giftCard} onPress={() => handleGift(g)}>
-              <Text style={gm.giftIcon}>{g.icon}</Text>
-              <Text style={gm.giftName}>{g.name}</Text>
-            </Pressable>
-          ))}
+          {GIFTS.map((g) => {
+            const canAfford = balance >= g.cost;
+            return (
+              <Pressable
+                key={g.id}
+                style={[gm.giftCard, !canAfford && gm.giftCardDisabled]}
+                onPress={() => handleGift(g)}
+                disabled={sending || !canAfford}
+              >
+                <Text style={gm.giftIcon}>{g.icon}</Text>
+                <Text style={gm.giftName}>{g.name}</Text>
+                <View style={[gm.cost, { backgroundColor: canAfford ? '#FFF9E6' : '#F5F5F5' }]}>
+                  <Text style={[gm.costTxt, { color: canAfford ? '#FFB800' : '#CCC' }]}>
+                    🪙 {g.cost}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
     </Modal>
@@ -73,18 +124,23 @@ const gm = StyleSheet.create({
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32,
     ...shadow.lg,
   },
-  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D0D0D0', marginBottom: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  title: { fontSize: 17, fontWeight: '800', color: '#0D0D0D', flex: 1 },
+  handle:   { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D0D0D0', marginBottom: 16 },
+  header:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  title:    { fontSize: 17, fontWeight: '800', color: '#0D0D0D', flex: 1 },
+  balance:  { backgroundColor: '#FFF9E6', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: '#FFE0A0' },
+  balTxt:   { fontSize: 12, fontWeight: '800', color: '#FFB800' },
   subtitle: { fontSize: 12, color: colors.textMuted, marginBottom: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
   giftCard: {
     width: '30%', alignItems: 'center', gap: 4,
     backgroundColor: '#F8F9FB', borderRadius: radius.md, padding: 12,
     borderWidth: 1, borderColor: '#F0F0F0',
   },
+  giftCardDisabled: { opacity: 0.4 },
   giftIcon: { fontSize: 28 },
   giftName: { fontSize: 11, fontWeight: '700', color: '#0D0D0D' },
+  cost:     { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2, marginTop: 2 },
+  costTxt:  { fontSize: 9, fontWeight: '800' },
 });
 
 // ── Live Card ─────────────────────────────────────────────────────────────────
@@ -640,6 +696,7 @@ export function LiveScreen() {
           visible={!!giftItem}
           onClose={() => setGiftItem(null)}
           streamTitle={giftItem.title}
+          postId={giftItem.id}
         />
       )}
     </View>

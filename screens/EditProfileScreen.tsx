@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
@@ -18,20 +19,23 @@ export function EditProfileScreen() {
   const { user, profile, refreshProfile } = useAuth();
   const toast = useToast();
 
-  const [fullName,      setFullName]      = useState(profile?.full_name  ?? user?.name  ?? '');
-  const [username,      setUsername]      = useState(profile?.username   ?? user?.username ?? '');
-  const [bio,           setBio]           = useState((profile as any)?.bio ?? '');
-  const [avatarUrl,     setAvatarUrl]     = useState(profile?.avatar_url ?? '');
-  const [saving,        setSaving]        = useState(false);
-  const [uploadingAvt,  setUploadingAvt]  = useState(false);
-  const [errors,        setErrors]        = useState<Record<string, string>>({});
-  const [showUrlInput,  setShowUrlInput]  = useState(false);
+  const [fullName,       setFullName]       = useState(profile?.full_name  ?? user?.name  ?? '');
+  const [username,       setUsername]       = useState(profile?.username   ?? user?.username ?? '');
+  const [bio,            setBio]            = useState((profile as any)?.bio ?? '');
+  const [avatarUrl,      setAvatarUrl]      = useState(profile?.avatar_url ?? '');
+  const [coverUrl,       setCoverUrl]       = useState((profile as any)?.cover_url ?? '');
+  const [saving,         setSaving]         = useState(false);
+  const [uploadingAvt,   setUploadingAvt]   = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [errors,         setErrors]         = useState<Record<string, string>>({});
+  const [showUrlInput,   setShowUrlInput]   = useState(false);
 
   const hasChanges = (
     (profile?.full_name  ?? '') !== fullName  ||
     (profile?.username   ?? '') !== username  ||
-    ((profile as any)?.bio ?? '') !== bio     ||
-    (profile?.avatar_url ?? '') !== avatarUrl
+    ((profile as any)?.bio       ?? '') !== bio       ||
+    (profile?.avatar_url ?? '') !== avatarUrl ||
+    ((profile as any)?.cover_url ?? '') !== coverUrl
   );
 
   const handleBack = () => {
@@ -46,7 +50,7 @@ export function EditProfileScreen() {
     );
   };
 
-  // ── Avatar fotoğrafı seç ve Supabase Storage'a yükle ─────────────────────
+  // ── Avatar fotoğrafı yükle ────────────────────────────────────────────────
   const pickAvatar = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
@@ -63,14 +67,12 @@ export function EditProfileScreen() {
 
     setUploadingAvt(true);
     try {
-      const asset     = result.assets[0];
-      const ext       = asset.uri.split('.').pop() ?? 'jpg';
-      const fileName  = `${user.id}_${Date.now()}.${ext}`;
-      const filePath  = `avatars/${fileName}`;
+      const asset    = result.assets[0];
+      const ext      = asset.uri.split('.').pop() ?? 'jpg';
+      const filePath = `avatars/${user.id}_${Date.now()}.${ext}`;
 
-      // uri → Blob
-      const response  = await fetch(asset.uri);
-      const blob      = await response.blob();
+      const response = await fetch(asset.uri);
+      const blob     = await response.blob();
 
       const { error: upErr } = await supabase.storage
         .from('avatars')
@@ -80,12 +82,72 @@ export function EditProfileScreen() {
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarUrl(urlData.publicUrl);
-      toast.success('Fotoğraf yüklendi ✓');
+      toast.success('Profil fotoğrafı yüklendi ✓');
     } catch {
       toast.error('Fotoğraf yüklenemedi');
     } finally {
       setUploadingAvt(false);
     }
+  };
+
+  // ── Kapak fotoğrafı yükle ─────────────────────────────────────────────────
+  const pickCover = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('İzin Gerekli', 'Galeri erişimi için izin ver.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0] || !user?.id) return;
+
+    setUploadingCover(true);
+    try {
+      const asset    = result.assets[0];
+      const ext      = asset.uri.split('.').pop() ?? 'jpg';
+      const filePath = `covers/${user.id}_${Date.now()}.${ext}`;
+
+      const response = await fetch(asset.uri);
+      const blob     = await response.blob();
+
+      // covers bucket'ı yoksa avatars'a yedekliyoruz
+      let bucket = 'covers';
+      const { error: upErr } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, blob, { contentType: `image/${ext}`, upsert: true });
+
+      if (upErr) {
+        // Bucket bulunamadı — avatars bucket'ına yükle
+        if (upErr.message?.includes('Bucket not found') || upErr.message?.includes('not found')) {
+          bucket = 'avatars';
+          const { error: upErr2 } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, blob, { contentType: `image/${ext}`, upsert: true });
+          if (upErr2) throw upErr2;
+        } else {
+          throw upErr;
+        }
+      }
+
+      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      setCoverUrl(urlData.publicUrl);
+      toast.success('Kapak fotoğrafı yüklendi ✓');
+    } catch {
+      toast.error('Kapak fotoğrafı yüklenemedi');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
+  const removeCover = () => {
+    Alert.alert('Kapak Fotoğrafını Kaldır', 'Kapak fotoğrafı silinsin mi?', [
+      { text: 'İptal', style: 'cancel' },
+      { text: 'Kaldır', style: 'destructive', onPress: () => setCoverUrl('') },
+    ]);
   };
 
   // Sync when profile loads
@@ -95,6 +157,7 @@ export function EditProfileScreen() {
       setUsername(profile.username  ?? '');
       setBio((profile as any).bio   ?? '');
       setAvatarUrl(profile.avatar_url ?? '');
+      setCoverUrl((profile as any).cover_url ?? '');
       if (profile.avatar_url) setShowUrlInput(true);
     }
   }, [profile]);
@@ -124,6 +187,7 @@ export function EditProfileScreen() {
           username:   username.trim().toLowerCase(),
           bio:        bio.trim(),
           avatar_url: avatarUrl.trim() || null,
+          cover_url:  coverUrl.trim()  || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -147,7 +211,7 @@ export function EditProfileScreen() {
     }
   };
 
-  const avatarSeed = username || user?.id || 'user';
+  const avatarSeed    = username || user?.id || 'user';
   const displayAvatar = avatarUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${avatarSeed}&size=120`;
 
   return (
@@ -170,7 +234,44 @@ export function EditProfileScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* Avatar */}
+
+        {/* ── Kapak fotoğrafı ─────────────────────────────────────────────── */}
+        <View style={s.coverSection}>
+          <Pressable style={s.coverWrap} onPress={pickCover} disabled={uploadingCover}>
+            {coverUrl ? (
+              <Image source={{ uri: coverUrl }} style={s.coverImg} resizeMode="cover" />
+            ) : (
+              <LinearGradient
+                colors={['#0D1F3C', '#1A3A6C', '#0D1F3C']}
+                style={s.coverPlaceholder}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              >
+                <Ionicons name="image-outline" size={28} color="rgba(255,255,255,0.4)" />
+                <Text style={s.coverPlaceholderTxt}>Kapak Fotoğrafı Ekle</Text>
+                <Text style={s.coverPlaceholderSub}>16:9 oranında önerilir</Text>
+              </LinearGradient>
+            )}
+
+            {/* Düzenle overlay */}
+            <View style={s.coverEditOverlay}>
+              {uploadingCover
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Ionicons name="camera" size={16} color="#fff" />
+              }
+              <Text style={s.coverEditTxt}>{coverUrl ? 'Değiştir' : 'Fotoğraf Ekle'}</Text>
+            </View>
+          </Pressable>
+
+          {/* Kapağı kaldır */}
+          {coverUrl ? (
+            <Pressable style={s.removeCoverBtn} onPress={removeCover}>
+              <Ionicons name="trash-outline" size={13} color="#FF3B3B" />
+              <Text style={s.removeCoverTxt}>Kapağı Kaldır</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        {/* ── Avatar ──────────────────────────────────────────────────────── */}
         <View style={s.avatarSection}>
           <Pressable style={s.avatarWrap} onPress={pickAvatar} disabled={uploadingAvt}>
             <Image source={{ uri: displayAvatar }} style={s.avatar} />
@@ -181,7 +282,7 @@ export function EditProfileScreen() {
               }
             </View>
           </Pressable>
-          <Text style={s.avatarHint}>Değiştirmek için dokun</Text>
+          <Text style={s.avatarHint}>Profil fotoğrafını değiştir</Text>
         </View>
 
         {/* Avatar URL — yalnızca manuel URL girişi istenirse göster */}
@@ -292,12 +393,12 @@ function Field({ label, placeholder, value, onChangeText, error, prefix, autoCap
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   header: {
-    flexDirection:    'row',
-    alignItems:       'center',
-    justifyContent:   'space-between',
+    flexDirection:     'row',
+    alignItems:        'center',
+    justifyContent:    'space-between',
     paddingHorizontal: 16,
     paddingBottom:     12,
-    backgroundColor:  colors.bgPure,
+    backgroundColor:   colors.bgPure,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -306,58 +407,86 @@ const s = StyleSheet.create({
   saveBtn:     { minWidth: 60, alignItems: 'flex-end', justifyContent: 'center', height: 36 },
   saveTxt:     { color: '#007AFF', fontSize: 16, fontWeight: '700' },
 
-  scroll: { paddingHorizontal: 20, paddingTop: 20 },
+  scroll: { paddingHorizontal: 20, paddingTop: 0 },
 
-  avatarSection: { alignItems: 'center', marginBottom: 28 },
+  // ── Cover ────────────────────────────────────────────────────────────────
+  coverSection:   { marginHorizontal: -20, marginBottom: 0 },
+  coverWrap:      { width: '100%', height: 160, overflow: 'hidden', position: 'relative' },
+  coverImg:       { width: '100%', height: '100%' },
+  coverPlaceholder: {
+    width: '100%', height: '100%',
+    alignItems: 'center', justifyContent: 'center', gap: 6,
+  },
+  coverPlaceholderTxt: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '600' },
+  coverPlaceholderSub: { color: 'rgba(255,255,255,0.35)', fontSize: 11 },
+  coverEditOverlay: {
+    position: 'absolute', bottom: 10, right: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  coverEditTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  removeCoverBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingVertical: 8, paddingHorizontal: 20,
+    backgroundColor: '#FF3B3B10',
+  },
+  removeCoverTxt: { fontSize: 12, color: '#FF3B3B', fontWeight: '600' },
+
+  // ── Avatar ───────────────────────────────────────────────────────────────
+  avatarSection: { alignItems: 'center', marginBottom: 24, marginTop: 20 },
   avatarWrap:    { position: 'relative' },
   avatar:        { width: 88, height: 88, borderRadius: 44, backgroundColor: colors.bgInput },
   avatarEdit: {
     position:        'absolute',
-    bottom:           0,
-    right:            0,
-    width:            28,
-    height:           28,
+    bottom:           0, right: 0,
+    width:            28, height:          28,
     borderRadius:     14,
     backgroundColor: '#007AFF',
-    alignItems:      'center',
-    justifyContent:  'center',
-    borderWidth:      2,
-    borderColor:     colors.bg,
+    alignItems:      'center', justifyContent: 'center',
+    borderWidth:      2, borderColor: colors.bg,
   },
   avatarHint: { color: colors.textMuted, fontSize: 12, marginTop: 8 },
 
   fieldWrap:  { marginBottom: 18 },
-  label:      { fontSize: 12, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 7 },
+  label:      {
+    fontSize: 12, fontWeight: '700', color: colors.textMuted,
+    textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 7,
+  },
   inputRow: {
-    flexDirection:    'row',
-    alignItems:       'center',
-    backgroundColor:  colors.bgInput,
-    borderRadius:     radius.md,
-    borderWidth:      1,
-    borderColor:      colors.border,
+    flexDirection:     'row',
+    alignItems:        'center',
+    backgroundColor:   colors.bgInput,
+    borderRadius:      radius.md,
+    borderWidth:       1,
+    borderColor:       colors.border,
     paddingHorizontal: 14,
   },
   prefix:    { color: colors.textMuted, fontSize: 16, fontWeight: '600', marginRight: 4 },
   input: {
-    backgroundColor: colors.bgInput,
-    borderRadius:    radius.md,
-    borderWidth:     1,
-    borderColor:     colors.border,
+    backgroundColor:   colors.bgInput,
+    borderRadius:      radius.md,
+    borderWidth:       1,
+    borderColor:       colors.border,
     paddingHorizontal: 14,
-    paddingVertical:  12,
-    fontSize:        15,
-    color:           colors.text,
+    paddingVertical:   12,
+    fontSize:          15,
+    color:             colors.text,
   },
-  inputFlex:  { flex: 1, borderWidth: 0, paddingHorizontal: 0, paddingVertical: 11, backgroundColor: 'transparent' },
+  inputFlex:  {
+    flex: 1, borderWidth: 0,
+    paddingHorizontal: 0, paddingVertical: 11,
+    backgroundColor: 'transparent',
+  },
   inputError: { borderColor: '#FF3B3B' },
   bioInput:   { height: 100, paddingTop: 12 },
   charCount:  { fontSize: 11, color: colors.textMuted, textAlign: 'right', marginTop: 4 },
   errorTxt:   { color: '#FF3B3B', fontSize: 12, marginTop: 4 },
 
   readOnly: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    justifyContent:  'space-between',
+    flexDirection:  'row',
+    alignItems:     'center',
+    justifyContent: 'space-between',
     backgroundColor: colors.bgInput,
     opacity:         0.6,
   },

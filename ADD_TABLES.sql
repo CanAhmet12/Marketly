@@ -712,3 +712,355 @@ CREATE POLICY "Giris yapan mesaj gonderebilir"
   WITH CHECK (auth.uid() IS NOT NULL);
 
 CREATE INDEX IF NOT EXISTS idx_live_messages_post ON live_messages(post_id, created_at DESC);
+
+-- ═══════════════════════════════════════════════════════════════
+-- YENİ EKLEMELER  (2 Mart 2026)
+-- 1) profiles.cover_url           — kapak fotoğrafı
+-- 2) ai_sessions + ai_messages    — MarketAI sohbet geçmişi
+-- 3) dm_conversations + dm_messages — Kullanıcılar arası DM
+-- 4) covers Storage bucket        — kapak fotoğrafı yüklemeleri
+-- 5) signal_likes + signal_copies — useSignals idempotent tablo
+-- ═══════════════════════════════════════════════════════════════
+
+-- ── 1. profiles: kapak fotoğrafı kolonu ──────────────────────
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cover_url TEXT;
+
+-- ── 2a. ai_sessions — AI sohbet oturumları ───────────────────
+CREATE TABLE IF NOT EXISTS ai_sessions (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title      TEXT        NOT NULL DEFAULT 'Yeni Sohbet',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE ai_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "own_sessions" ON ai_sessions;
+CREATE POLICY "own_sessions"
+  ON ai_sessions FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_user ON ai_sessions(user_id, updated_at DESC);
+
+-- ── 2b. ai_messages — AI sohbet mesajları ────────────────────
+CREATE TABLE IF NOT EXISTS ai_messages (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id UUID        NOT NULL REFERENCES ai_sessions(id) ON DELETE CASCADE,
+  user_id    UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role       TEXT        NOT NULL CHECK (role IN ('user', 'assistant')),
+  content    TEXT        NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE ai_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "own_messages" ON ai_messages;
+CREATE POLICY "own_messages"
+  ON ai_messages FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_ai_messages_session ON ai_messages(session_id, created_at ASC);
+
+-- ── 3a. dm_conversations — DM konuşma oturumları ─────────────
+CREATE TABLE IF NOT EXISTS dm_conversations (
+  id               UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  user1_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user2_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  last_message     TEXT,
+  last_message_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  unread_count_1   INT         NOT NULL DEFAULT 0,  -- user1 için okunmamış sayısı
+  unread_count_2   INT         NOT NULL DEFAULT 0,  -- user2 için okunmamış sayısı
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user1_id, user2_id),
+  CONSTRAINT different_users CHECK (user1_id <> user2_id)
+);
+
+ALTER TABLE dm_conversations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "party_access_conv" ON dm_conversations;
+CREATE POLICY "party_access_conv"
+  ON dm_conversations FOR ALL
+  USING  (auth.uid() = user1_id OR auth.uid() = user2_id)
+  WITH CHECK (auth.uid() = user1_id OR auth.uid() = user2_id);
+
+CREATE INDEX IF NOT EXISTS idx_dm_conv_user1 ON dm_conversations(user1_id, last_message_at DESC);
+CREATE INDEX IF NOT EXISTS idx_dm_conv_user2 ON dm_conversations(user2_id, last_message_at DESC);
+
+-- ── 3b. dm_messages — DM mesajları ───────────────────────────
+CREATE TABLE IF NOT EXISTS dm_messages (
+  id              UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id UUID        NOT NULL REFERENCES dm_conversations(id) ON DELETE CASCADE,
+  sender_id       UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  content         TEXT        NOT NULL,
+  image_url       TEXT,
+  is_read         BOOLEAN     NOT NULL DEFAULT FALSE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE dm_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "party_access_msg" ON dm_messages;
+CREATE POLICY "party_access_msg"
+  ON dm_messages FOR ALL
+  USING (
+    conversation_id IN (
+      SELECT id FROM dm_conversations
+      WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    auth.uid() = sender_id
+    AND conversation_id IN (
+      SELECT id FROM dm_conversations
+      WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+    )
+  );
+
+CREATE INDEX IF NOT EXISTS idx_dm_messages_conv ON dm_messages(conversation_id, created_at ASC);
+
+-- ── 4. covers Storage bucket ──────────────────────────────────
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'covers', 'covers', true, 10485760,
+  ARRAY['image/jpeg','image/png','image/webp']
+) ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Cover yukleme"      ON storage.objects;
+DROP POLICY IF EXISTS "Cover guncelleme"   ON storage.objects;
+DROP POLICY IF EXISTS "Cover herkes gorebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Cover silme"        ON storage.objects;
+
+CREATE POLICY "Cover yukleme"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'covers' AND auth.uid() IS NOT NULL);
+
+CREATE POLICY "Cover guncelleme"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'covers' AND auth.uid() IS NOT NULL);
+
+CREATE POLICY "Cover herkes gorebilir"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'covers');
+
+CREATE POLICY "Cover silme"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'covers' AND auth.uid() IS NOT NULL);
+
+-- ── 5. signal_likes + signal_copies ──────────────────────────
+CREATE TABLE IF NOT EXISTS signal_likes (
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  signal_id  UUID NOT NULL REFERENCES signals(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, signal_id)
+);
+
+ALTER TABLE signal_likes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "User sinyal begenilerini yonetebilir" ON signal_likes;
+CREATE POLICY "User sinyal begenilerini yonetebilir"
+  ON signal_likes FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE TABLE IF NOT EXISTS signal_copies (
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  signal_id  UUID NOT NULL REFERENCES signals(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, signal_id)
+);
+
+ALTER TABLE signal_copies ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "User sinyal kopyalarini yonetebilir" ON signal_copies;
+CREATE POLICY "User sinyal kopyalarini yonetebilir"
+  ON signal_copies FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ── notifications tablosu: eksik kolonlar ─────────────────────
+-- lib/notifications.ts sender_id, related_id, image_url, is_read kullanıyor
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS sender_id  UUID REFERENCES auth.users(id);
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS related_id UUID;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS image_url  TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_read    BOOLEAN DEFAULT false;
+-- "read" kolonunu "is_read" ile senkronize et (varsa)
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'notifications' AND column_name = 'read'
+  ) THEN
+    UPDATE notifications SET is_read = read WHERE is_read IS NULL;
+  END IF;
+  UPDATE notifications SET is_read = false WHERE is_read IS NULL;
+END $$;
+
+-- ═══════════════════════════════════════════════════════════════
+-- YENİ EKLEMELER  (2 Mart 2026 — Production Fix)
+-- saved_posts, profiles eksik kolonlar, comments tablosu
+-- ═══════════════════════════════════════════════════════════════
+
+-- ── saved_posts — gönderi kaydetme (PostCard bookmark) ────────
+CREATE TABLE IF NOT EXISTS saved_posts (
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  post_id    UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, post_id)
+);
+ALTER TABLE saved_posts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "User kendi kaydetlerini yonetebilir" ON saved_posts;
+CREATE POLICY "User kendi kaydetlerini yonetebilir"
+  ON saved_posts FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_posts_user ON saved_posts(user_id, created_at DESC);
+
+-- ── comments — post yorumları (useComments hook) ──────────────
+-- video_comments farklı tablodur; bu post yorumları için
+CREATE TABLE IF NOT EXISTS comments (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id    UUID        NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id    UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  content    TEXT        NOT NULL CHECK (char_length(content) <= 500),
+  likes      INT         NOT NULL DEFAULT 0,
+  is_liked   BOOLEAN     NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Herkes yorumlari gorebilir" ON comments;
+CREATE POLICY "Herkes yorumlari gorebilir" ON comments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Giris yapan yorum ekleyebilir" ON comments;
+CREATE POLICY "Giris yapan yorum ekleyebilir"
+  ON comments FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Yorum sahibi silebilir" ON comments;
+CREATE POLICY "Yorum sahibi silebilir"
+  ON comments FOR DELETE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Yorum begeni guncellenebilir" ON comments;
+CREATE POLICY "Yorum begeni guncellenebilir"
+  ON comments FOR UPDATE USING (true);
+CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, created_at ASC);
+
+-- ── comment_likes — yorum beğenileri ─────────────────────────
+CREATE TABLE IF NOT EXISTS comment_likes (
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  comment_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, comment_id)
+);
+ALTER TABLE comment_likes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "User yorum begenilerini yonetebilir" ON comment_likes;
+CREATE POLICY "User yorum begenilerini yonetebilir"
+  ON comment_likes FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ── profiles: eksik kolonlar ──────────────────────────────────
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cover_url     TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS referral_code TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS tier          TEXT NOT NULL DEFAULT 'free'
+  CHECK (tier IN ('free', 'pro', 'elite'));
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS verified      BOOLEAN DEFAULT false;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS updated_at    TIMESTAMPTZ DEFAULT NOW();
+
+-- ── posts: likes/comments sayaç tutarlılık triggeri ───────────
+-- posts.likes ve posts.comments sayaçları manuel güncelleniyor;
+-- post_likes ve comments tablolarından otomatik trigger da eklenebilir ama
+-- şimdilik uygulama tarafı güncelleme yeterli.
+
+-- ── decrement_viewers RPC (LiveWatchScreen için) ──────────────
+CREATE OR REPLACE FUNCTION decrement_viewers(session_post_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE live_sessions
+  SET viewer_count = GREATEST(0, viewer_count - 1)
+  WHERE post_id = session_post_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- VİDEO / SHORT BEĞENİ, KAYDET VE YORUM TABLOLARI
+-- (ShortsScreen + VideoDetailScreen için)
+-- ────────────────────────────────────────────────────────────────────────────
+
+-- ── video_likes — video/short beğenileri ─────────────────────
+CREATE TABLE IF NOT EXISTS video_likes (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  video_id   UUID NOT NULL REFERENCES posts(id)      ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, video_id)
+);
+ALTER TABLE video_likes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Herkes video begenileri gorebilir" ON video_likes;
+CREATE POLICY "Herkes video begenileri gorebilir"
+  ON video_likes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "User kendi video begenisini yonetebilir" ON video_likes;
+CREATE POLICY "User kendi video begenisini yonetebilir"
+  ON video_likes FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_video_likes_video_id ON video_likes(video_id);
+CREATE INDEX IF NOT EXISTS idx_video_likes_user_id  ON video_likes(user_id);
+
+-- ── saved_videos — kaydedilen videolar/shortlar ──────────────
+CREATE TABLE IF NOT EXISTS saved_videos (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  video_id   UUID NOT NULL REFERENCES posts(id)      ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, video_id)
+);
+ALTER TABLE saved_videos ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "User kendi kaydedilen videolarini yonetebilir" ON saved_videos;
+CREATE POLICY "User kendi kaydedilen videolarini yonetebilir"
+  ON saved_videos FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_videos_user_id  ON saved_videos(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_videos_video_id ON saved_videos(video_id);
+
+-- ── video_comments — video/short yorumları ───────────────────
+-- NOT: useVideoComments hook'u bu tablo yerine mevcut comments tablosunu
+-- video_id filtresiyle kullanıyorsa bu tablo gerekli olmayabilir.
+-- Aşağıdaki tablo bağımsız video yorum tablosudur.
+CREATE TABLE IF NOT EXISTS video_comments (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  video_id    UUID        NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id     UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  content     TEXT        NOT NULL,
+  likes       INT         NOT NULL DEFAULT 0,
+  is_pinned   BOOLEAN     NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE video_comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Herkes video yorumlarini gorebilir" ON video_comments;
+CREATE POLICY "Herkes video yorumlarini gorebilir"
+  ON video_comments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Giris yapan kullanici video yorumu ekleyebilir" ON video_comments;
+CREATE POLICY "Giris yapan kullanici video yorumu ekleyebilir"
+  ON video_comments FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "User kendi video yorumunu silebilir" ON video_comments;
+CREATE POLICY "User kendi video yorumunu silebilir"
+  ON video_comments FOR DELETE
+  USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "User video yorum begenisini guncelleyebilir" ON video_comments;
+CREATE POLICY "User video yorum begenisini guncelleyebilir"
+  ON video_comments FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+CREATE INDEX IF NOT EXISTS idx_video_comments_video_id ON video_comments(video_id);
+CREATE INDEX IF NOT EXISTS idx_video_comments_user_id  ON video_comments(user_id);
+
+-- ── increment_video_comment_likes RPC ─────────────────────────────
+-- Atomik like artırımı — race condition'ı önler
+CREATE OR REPLACE FUNCTION increment_video_comment_likes(cid UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE video_comments
+  SET likes = likes + 1
+  WHERE id = cid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

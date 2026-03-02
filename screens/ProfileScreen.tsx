@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, ScrollView, Pressable, Image,
-  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Share, Clipboard,
+  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -652,6 +652,9 @@ export function ProfileScreen() {
             ))}
           </View>
           <View style={s.coverActions}>
+            <Pressable style={s.coverBtn} onPress={() => navigation.navigate('Messaging')}>
+              <Ionicons name="chatbubble-outline" size={19} color="#FFF" />
+            </Pressable>
             <Pressable style={s.coverBtn} onPress={() => navigation.navigate('Settings')}>
               <Ionicons name="settings-outline" size={19} color="#FFF" />
             </Pressable>
@@ -707,10 +710,13 @@ export function ProfileScreen() {
           </Pressable>
           <Pressable
             style={s.shareBtn}
-            onPress={() => {
+            onPress={async () => {
               const link = `marketly://profile/${profile?.username ?? user.id}`;
-              Clipboard.setString(link);
-              toast.success('Profil linki kopyalandı 🔗');
+              try {
+                await Share.share({ message: link, title: 'Marketly Profilim' });
+              } catch {
+                toast.info('Paylaşım iptal edildi');
+              }
             }}
           >
             <Ionicons name="link-outline" size={14} color={colors.text} />

@@ -20,7 +20,6 @@ export interface Post {
   is_liked:      boolean;
 }
 
-// Yardımcı: birden fazla user_id için profiles'ı tek sorguda çeker
 async function fetchProfilesMap(userIds: string[]): Promise<Record<string, any>> {
   if (userIds.length === 0) return {};
   const unique = [...new Set(userIds)];
@@ -33,17 +32,22 @@ async function fetchProfilesMap(userIds: string[]): Promise<Record<string, any>>
   return map;
 }
 
+const PAGE = 10;
+
 export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all', creatorId?: string) {
   const { user } = useAuth();
   const [posts,   setPosts]   = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page,    setPage]    = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE = 10;
+
+  // ── pageRef: callback içinde page'i yakalamak yerine ref üzerinden oku
+  // Bu sayede fetchPosts her page değişiminde yeniden oluşturulmaz.
+  const pageRef = useRef(0);
 
   const fetchPosts = useCallback(async (reset = false) => {
+    if (loading && !reset) return;
     setLoading(true);
-    const currentPage = reset ? 0 : page;
+    const currentPage = reset ? 0 : pageRef.current;
     try {
       let followingIds: string[] = [];
 
@@ -55,37 +59,36 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         followingIds = (followData ?? []).map((f: any) => f.following_id);
         if (followingIds.length === 0) {
           setPosts([]);
+          setHasMore(false);
           setLoading(false);
           return;
         }
       }
 
-      // ── 1. Posts'ları çek (profil JOIN'siz) ───────────────────────────
       let q = supabase
         .from('posts')
         .select('id, user_id, content, asset_tag, image_url, likes, comments, created_at')
         .order('created_at', { ascending: false })
         .range(currentPage * PAGE, currentPage * PAGE + PAGE - 1);
 
-      if (assetTag)   q = q.eq('asset_tag', assetTag.toUpperCase());
-      if (creatorId)  q = q.eq('user_id', creatorId);
+      if (assetTag)  q = q.eq('asset_tag', assetTag.toUpperCase());
+      if (creatorId) q = q.eq('user_id', creatorId);
       if (feedMode === 'following' && followingIds.length > 0) {
         q = q.in('user_id', followingIds);
       }
 
       const { data, error } = await q;
       if (error) throw error;
+
       if (!data || data.length === 0) {
-        if (reset) { setPosts([]); setPage(0); }
+        if (reset) { setPosts([]); pageRef.current = 0; }
         setHasMore(false);
         return;
       }
 
-      // ── 2. Profiles'ı ayrı çek ────────────────────────────────────────
-      const userIds = data.map((r: any) => r.user_id);
+      const userIds    = data.map((r: any) => r.user_id);
       const profilesMap = await fetchProfilesMap(userIds);
 
-      // ── 3. Beğeni durumlarını toplu kontrol ───────────────────────────
       let likedSet = new Set<string>();
       if (user?.id) {
         const postIds = data.map((r: any) => r.id);
@@ -97,7 +100,6 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         likedSet = new Set((likes ?? []).map((l: any) => l.post_id));
       }
 
-      // ── 4. Birleştir ──────────────────────────────────────────────────
       const enriched: Post[] = data.map((row: any) => {
         const prof = profilesMap[row.user_id];
         return {
@@ -117,8 +119,13 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         };
       });
 
-      if (reset) { setPosts(enriched); setPage(1); }
-      else        { setPosts(prev => [...prev, ...enriched]); setPage(p => p + 1); }
+      if (reset) {
+        setPosts(enriched);
+        pageRef.current = 1;
+      } else {
+        setPosts(prev => [...prev, ...enriched]);
+        pageRef.current = currentPage + 1;
+      }
       setHasMore(enriched.length === PAGE);
 
     } catch (e) {
@@ -126,9 +133,39 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
     } finally {
       setLoading(false);
     }
-  }, [user?.id, assetTag, page, feedMode]);
+  // page kasıtlı olarak deps dışında — pageRef kullanıyoruz (stale closure önleme)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, assetTag, feedMode, creatorId]);
 
-  useEffect(() => { fetchPosts(true); }, [user?.id, assetTag, feedMode]);
+  // feedMode / user / assetTag değişince sıfırdan yükle
+  useEffect(() => {
+    pageRef.current = 0;
+    setHasMore(true);
+    fetchPosts(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, assetTag, feedMode, creatorId]);
+
+  // Realtime: yeni post gelince sadece ilk sayfa görüntüleniyorsa yenile
+  const realtimeSub = useRef<any>(null);
+  useEffect(() => {
+    realtimeSub.current = supabase
+      .channel('posts_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'posts' },
+        () => {
+          // Sadece ilk sayfa görüntüleniyorsa otomatik yenile
+          if (pageRef.current <= 1) fetchPosts(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (realtimeSub.current) supabase.removeChannel(realtimeSub.current);
+    };
+  // fetchPosts stabil (page deps'ten çıktı) — subscription bir kez kurulur
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchPosts]);
 
   const createPost = useCallback(async (
     content: string,
@@ -172,7 +209,6 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
         await supabase.from('post_likes').insert({ user_id: user.id, post_id: postId });
         await supabase.from('posts')
           .update({ likes: post.likes + 1 }).eq('id', postId);
-        // Post sahibine bildirim gönder
         if (post.user_id !== user.id) {
           createNotification({
             recipientId: post.user_id,
@@ -200,26 +236,6 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
       return true;
     } catch { return false; }
   }, []);
-
-  // Supabase Realtime: yeni post gelince otomatik güncelle
-  const realtimeSub = useRef<any>(null);
-  useEffect(() => {
-    realtimeSub.current = supabase
-      .channel('posts_realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'posts' },
-        () => {
-          // Sadece ilk sayfa aktifse yenile
-          setPage((p) => { if (p === 0) fetchPosts(true); return p; });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      if (realtimeSub.current) supabase.removeChannel(realtimeSub.current);
-    };
-  }, [fetchPosts]);
 
   return {
     posts, loading, hasMore,

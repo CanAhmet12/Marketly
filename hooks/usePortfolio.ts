@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useMarketPrices } from './useMarketPrices';
@@ -31,6 +31,7 @@ export function usePortfolio() {
   const fetchHoldings = useCallback(async () => {
     if (!user?.id) { setHoldings([]); return; }
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('portfolio_holdings')

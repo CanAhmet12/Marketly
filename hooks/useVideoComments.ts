@@ -18,9 +18,10 @@ export interface VideoComment {
 
 export function useVideoComments(videoId: string) {
   const { user } = useAuth();
-  const [comments, setComments]   = useState<VideoComment[]>([]);
-  const [loading,  setLoading]    = useState(false);
-  const [sending,  setSending]    = useState(false);
+  const [comments,      setComments]      = useState<VideoComment[]>([]);
+  const [loading,       setLoading]       = useState(false);
+  const [sending,       setSending]       = useState(false);
+  const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
 
   const fetchComments = useCallback(async () => {
     if (!videoId) return;
@@ -92,56 +93,85 @@ export function useVideoComments(videoId: string) {
     if (!user?.id || !content.trim()) return false;
     setSending(true);
     try {
-      const { error } = await supabase
+      const { data: newComment, error } = await supabase
         .from('video_comments')
-        .insert({ video_id: videoId, user_id: user.id, content: content.trim() });
+        .insert({ video_id: videoId, user_id: user.id, content: content.trim() })
+        .select('id, video_id, user_id, content, likes, is_pinned, created_at')
+        .single();
       if (error) throw error;
-      await fetchComments();
+      // Optimistic: realtime'ı beklemeden anında ekle
+      if (newComment) {
+        const { data: prof } = await supabase
+          .from('profiles').select('full_name, username, avatar_url').eq('id', user.id).maybeSingle();
+        setComments(prev => [{
+          id: newComment.id, video_id: newComment.video_id,
+          user_id: newComment.user_id, content: newComment.content,
+          likes: 0, is_pinned: false, created_at: newComment.created_at,
+          author_name:   prof?.full_name ?? prof?.username ?? 'Kullanıcı',
+          author_avatar: prof?.avatar_url ?? null,
+          author_handle: prof?.username ? `@${prof.username}` : '@kullanici',
+        }, ...prev]);
+      }
       return true;
     } catch {
       return false;
     } finally {
       setSending(false);
     }
-  }, [user?.id, videoId, fetchComments]);
+  }, [user?.id, videoId]);
 
   const deleteComment = useCallback(async (commentId: string): Promise<boolean> => {
+    if (!user?.id) return false;
+    setComments(prev => prev.filter(c => c.id !== commentId)); // optimistic
     try {
       const { error } = await supabase
         .from('video_comments')
         .delete()
         .eq('id', commentId)
-        .eq('user_id', user?.id ?? '');
-      if (error) throw error;
-      setComments(prev => prev.filter(c => c.id !== commentId));
+        .eq('user_id', user.id);
+      if (error) {
+        await fetchComments(); // rollback
+        return false;
+      }
       return true;
     } catch {
+      await fetchComments();
       return false;
     }
-  }, [user?.id]);
+  }, [user?.id, fetchComments]);
 
   const likeComment = useCallback(async (commentId: string): Promise<boolean> => {
-    const comment = comments.find(c => c.id === commentId);
-    if (!comment) return false;
-    // Optimistic update
+    // Beğenilmişse tekrar beğenme
+    if (likedComments.has(commentId)) return false;
+    if (!user?.id) return false;
+
+    // Optimistic
+    setLikedComments(prev => new Set([...prev, commentId]));
     setComments(prev =>
       prev.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c)
     );
     try {
-      const { error } = await supabase
-        .from('video_comments')
-        .update({ likes: comment.likes + 1 })
-        .eq('id', commentId);
-      if (error) throw error;
+      // Atomic increment via RPC (yoksa raw update)
+      const { error } = await supabase.rpc('increment_video_comment_likes', { cid: commentId });
+      if (error) {
+        // RPC yoksa normal update ile dene (mevcut + 1)
+        const comment = comments.find(c => c.id === commentId);
+        const { error: e2 } = await supabase
+          .from('video_comments')
+          .update({ likes: (comment?.likes ?? 0) + 1 })
+          .eq('id', commentId);
+        if (e2) throw e2;
+      }
       return true;
     } catch {
       // Rollback
+      setLikedComments(prev => { const s = new Set(prev); s.delete(commentId); return s; });
       setComments(prev =>
-        prev.map(c => c.id === commentId ? { ...c, likes: comment.likes } : c)
+        prev.map(c => c.id === commentId ? { ...c, likes: Math.max(0, c.likes - 1) } : c)
       );
       return false;
     }
-  }, [comments]);
+  }, [likedComments, user?.id, comments]);
 
-  return { comments, loading, sending, sendComment, deleteComment, likeComment, refetch: fetchComments };
+  return { comments, loading, sending, likedComments, sendComment, deleteComment, likeComment, refetch: fetchComments };
 }

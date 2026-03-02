@@ -3,6 +3,7 @@
  * Hata olursa sessizce devam eder (bildirim ikincil bir özellik).
  */
 import { supabase } from './supabase';
+import { sendLocalNotification } from '../services/notificationService';
 
 export async function createNotification(params: {
   recipientId: string;   // bildirimi alacak kullanıcı
@@ -26,7 +27,15 @@ export async function createNotification(params: {
       image_url:  params.imageUrl  ?? null,
       is_read:    false,
     });
-  } catch {
-    // Bildirim ikincil — hataları yutuyor
+
+    // Cihaz bildirimi gönder (uygulama arka plandayken görünür)
+    await sendLocalNotification({
+      title:   params.title,
+      body:    params.body,
+      data:    { type: params.type, relatedId: params.relatedId },
+      channel: params.type === 'price_alert' ? 'price_alerts' : 'default',
+    });
+  } catch (e) {
+    console.warn('[notifications] createNotification hatası:', e);
   }
 }

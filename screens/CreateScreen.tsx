@@ -699,7 +699,7 @@ export function CreateScreen() {
                   onPress={async () => {
                     const { status } = await ImagePicker.requestCameraPermissionsAsync();
                     if (status !== 'granted') return;
-                    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Videos });
+                    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'] as any });
                     if (!r.canceled) setVideoUri(r.assets[0].uri);
                   }}
                 >

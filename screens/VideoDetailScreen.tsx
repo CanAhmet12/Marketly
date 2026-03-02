@@ -145,9 +145,13 @@ function CreatorStatsBar({ creator, following, onFollow }: {
   following: boolean;
   onFollow: () => void;
 }) {
+  const navigation = useNavigation<any>();
   return (
     <View style={csb.wrap}>
-      <View style={csb.left}>
+      <Pressable
+        style={csb.left}
+        onPress={() => navigation.navigate('UserProfile', { userId: creator.id })}
+      >
         <Image source={{ uri: creator.avatar }} style={csb.avatar} />
         <View style={csb.info}>
           <View style={csb.nameRow}>
@@ -159,14 +163,10 @@ function CreatorStatsBar({ creator, following, onFollow }: {
             )}
           </View>
           <View style={csb.statsRow}>
-            <View style={csb.successPill}>
-              <Text style={csb.successTxt}>%82 başarı</Text>
-            </View>
-            <Text style={csb.dot}>·</Text>
-            <Text style={csb.followersTxt}>{creator.followers ?? '–'} takipçi</Text>
+            <Text style={csb.followersTxt}>{creator.followers ?? '0'} takipçi</Text>
           </View>
         </View>
-      </View>
+      </Pressable>
       <Pressable style={[csb.followBtn, following && csb.followBtnActive]} onPress={onFollow}>
         <Text style={[csb.followTxt, following && csb.followTxtActive]}>
           {following ? '✓ Takipte' : '+ Takip'}
@@ -209,10 +209,10 @@ const csb = StyleSheet.create({
 });
 
 // ─── Action Bar ───────────────────────────────────────────────────────────────
-function ActionBar({ liked, saved, likeCount, commentCount, shareCount, onLike, onSave, onShare }: {
+function ActionBar({ liked, saved, likeCount, commentCount, shareCount, onLike, onSave, onShare, onComment }: {
   liked: boolean; saved: boolean;
   likeCount: number; commentCount: number; shareCount: number;
-  onLike: () => void; onSave: () => void; onShare: () => void;
+  onLike: () => void; onSave: () => void; onShare: () => void; onComment: () => void;
 }) {
   const likeAnim = useRef(new Animated.Value(1)).current;
   const handleLike = () => {
@@ -234,7 +234,7 @@ function ActionBar({ liked, saved, likeCount, commentCount, shareCount, onLike, 
           <Text style={[ab.itemTxt, liked && { color: colors.fall }]}>{fmt(likeCount + (liked ? 1 : 0))}</Text>
         </Pressable>
 
-        <Pressable style={ab.item}>
+        <Pressable style={ab.item} onPress={onComment}>
           <Ionicons name="chatbubble-outline" size={22} color={colors.textSub} />
           <Text style={ab.itemTxt}>{fmt(commentCount)}</Text>
         </Pressable>
@@ -245,7 +245,7 @@ function ActionBar({ liked, saved, likeCount, commentCount, shareCount, onLike, 
         </Pressable>
       </View>
 
-      {/* Right side: bookmark + flag */}
+      {/* Right side: bookmark */}
       <View style={ab.rightGroup}>
         <Pressable
           style={[ab.saveBtn, saved && ab.saveBtnActive]}
@@ -353,6 +353,9 @@ export function VideoDetailScreen({ item, onBack }: Props) {
   const [comment,   setComment]   = useState('');
   const [likedCmts, setLikedCmts] = useState<Record<string, boolean>>({});
 
+  const scrollRef      = useRef<ScrollView>(null);
+  const commentInputRef = useRef<TextInput>(null);
+
   // İlgili videolar — aynı asset tag'e göre gerçek veriden çek
   const { videos: relatedRaw } = useVideos({
     assetTag: item.assetTags?.[0] ?? undefined,
@@ -456,12 +459,13 @@ export function VideoDetailScreen({ item, onBack }: Props) {
           <View style={v.topRight}>
             <Pressable
               style={v.circleBtn}
-              onPress={() => toast.success('Link kopyalandı 🔗')}
+              onPress={async () => {
+                try {
+                  await Share.share({ message: `${item.title} — Marketly'de izle`, title: item.title });
+                } catch { /* kullanıcı iptal etti */ }
+              }}
             >
               <Ionicons name="share-outline" size={20} color="#FFF" />
-            </Pressable>
-            <Pressable style={v.circleBtn}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#FFF" />
             </Pressable>
           </View>
         </View>
@@ -497,6 +501,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
 
       {/* ── Scrollable content ── */}
       <ScrollView
+        ref={scrollRef}
         style={v.scroll}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -559,8 +564,12 @@ export function VideoDetailScreen({ item, onBack }: Props) {
           liked={liked}
           saved={saved}
           likeCount={stats.likes}
-          commentCount={stats.comments}
+          commentCount={liveComments.length > 0 ? liveComments.length : stats.comments}
           shareCount={stats.shares}
+          onComment={() => {
+            scrollRef.current?.scrollToEnd({ animated: true });
+            setTimeout(() => commentInputRef.current?.focus(), 350);
+          }}
           onLike={async () => {
             if (!user?.id) { toast.info('Beğenmek için giriş yap'); return; }
             const newLiked = !liked;
@@ -654,6 +663,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
             </View>
             <View style={v.inputBox}>
               <TextInput
+                ref={commentInputRef}
                 style={v.input}
                 placeholder={user ? 'Düşüncelerini paylaş...' : 'Yorum yapmak için giriş yap'}
                 placeholderTextColor={colors.textMuted}

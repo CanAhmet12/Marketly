@@ -19,12 +19,12 @@ import { supabase } from '../lib/supabase';
 import { colors, radius } from '../constants/theme';
 
 const GIFTS = [
-  { id: 'g1', icon: '💎', name: 'Elmas',  color: '#00BFFF' },
-  { id: 'g2', icon: '🚀', name: 'Roket',  color: '#FF6B35' },
-  { id: 'g3', icon: '🏆', name: 'Kupa',   color: '#FFB800' },
-  { id: 'g4', icon: '❤️', name: 'Kalp',   color: '#FF3B6F' },
-  { id: 'g5', icon: '🌟', name: 'Yıldız', color: '#FFD700' },
-  { id: 'g6', icon: '👏', name: 'Alkış',  color: '#00C853' },
+  { id: 'g1', icon: '💎', name: 'Elmas',  color: '#00BFFF', cost: 500 },
+  { id: 'g2', icon: '🚀', name: 'Roket',  color: '#FF6B35', cost: 200 },
+  { id: 'g3', icon: '🏆', name: 'Kupa',   color: '#FFB800', cost: 100 },
+  { id: 'g4', icon: '❤️', name: 'Kalp',   color: '#FF3B6F', cost:  50 },
+  { id: 'g5', icon: '🌟', name: 'Yıldız', color: '#FFD700', cost:  20 },
+  { id: 'g6', icon: '👏', name: 'Alkış',  color: '#00C853', cost:  10 },
 ];
 
 interface ChatMsg { id: string; user: string; text: string; avatar?: string; isGift?: boolean }
@@ -43,12 +43,21 @@ export function LiveWatchScreen() {
 
   const { state, leaveChannel } = useAgoraLive(channelName, 'audience');
 
-  const [chatMsg,     setChatMsg]     = useState('');
-  const [messages,    setMessages]    = useState<ChatMsg[]>([]);
-  const [showGifts,   setShowGifts]   = useState(false);
-  const [giftAnims,   setGiftAnims]   = useState<{ id: string; icon: string; name: string; sender: string }[]>([]);
-  const [viewers,     setViewers]     = useState(route.params?.viewers ?? 0);
+  const [chatMsg,      setChatMsg]     = useState('');
+  const [messages,     setMessages]    = useState<ChatMsg[]>([]);
+  const [showGifts,    setShowGifts]   = useState(false);
+  const [giftAnims,    setGiftAnims]   = useState<{ id: string; icon: string; name: string; sender: string }[]>([]);
+  const [viewers,      setViewers]     = useState(route.params?.viewers ?? 0);
+  const [mcBalance,    setMcBalance]   = useState<number>(0);
+  const [sendingGift,  setSendingGift] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  // MarketCoin cüzdan bakiyesini yükle
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.from('marketcoin_wallet').select('balance').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { setMcBalance(data?.balance ?? 0); });
+  }, [user?.id]);
 
   // Realtime chat subscription
   useEffect(() => {
@@ -156,19 +165,59 @@ export function LiveWatchScreen() {
   };
 
   const sendGift = async (gift: typeof GIFTS[0]) => {
+    if (!user) { toast.info('Giriş yapman gerekiyor'); return; }
+    if (mcBalance < gift.cost) {
+      toast.error(`Yetersiz bakiye! ${gift.cost} MC gerekiyor, bakiyen: ${mcBalance} MC`);
+      return;
+    }
+    setSendingGift(true);
     try {
-      await supabase.from('live_messages').insert({
-        post_id:   postId,
-        user_id:   user?.id,
-        username:  profile?.username ?? 'İzleyici',
-        content:   `${gift.icon} ${gift.name} gönderdi!`,
-        is_gift:   true,
-        gift_icon: gift.icon,
-        gift_name: gift.name,
+      const newBalance = mcBalance - gift.cost;
+
+      // 1. Bakiyeyi düş (optimistic)
+      setMcBalance(newBalance);
+
+      // 2. DB'de cüzdan güncelle
+      const { error: walletErr } = await supabase
+        .from('marketcoin_wallet')
+        .upsert({ user_id: user.id, balance: newBalance, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
+      if (walletErr) {
+        // Rollback optimistic
+        setMcBalance(mcBalance);
+        toast.error('Hediye gönderilemedi');
+        return;
+      }
+
+      // 3. İşlem kaydı
+      await supabase.from('marketcoin_transactions').insert({
+        user_id: user.id,
+        amount:  -gift.cost,
+        type:    'spend',
+        reason:  `Hediye: ${gift.name} (Yayın: ${streamTitle})`,
       });
-    } catch { /* ignore */ }
-    toast.success(`${gift.icon} "${gift.name}" gönderildi!`);
-    setShowGifts(false);
+
+      // 4. Live chat'e yaz
+      if (postId) {
+        await supabase.from('live_messages').insert({
+          post_id:   postId,
+          user_id:   user.id,
+          username:  profile?.username ?? profile?.full_name ?? 'İzleyici',
+          content:   `${gift.icon} ${gift.name} gönderdi!`,
+          is_gift:   true,
+          gift_icon: gift.icon,
+          gift_name: gift.name,
+        });
+      }
+
+      toast.success(`${gift.icon} "${gift.name}" gönderildi! (-${gift.cost} MC)`);
+      setShowGifts(false);
+    } catch {
+      toast.error('Bir hata oluştu');
+      setMcBalance(mcBalance); // rollback
+    } finally {
+      setSendingGift(false);
+    }
   };
 
   return (
@@ -284,21 +333,47 @@ export function LiveWatchScreen() {
         <Pressable style={gm.backdrop} onPress={() => setShowGifts(false)} />
         <View style={gm.sheet}>
           <View style={gm.handle} />
+
+          {/* Header: başlık + bakiye */}
           <View style={gm.header}>
             <Text style={gm.title}>🎁 Hediye Gönder</Text>
+            <View style={gm.balance}>
+              <Text style={gm.balIcon}>🪙</Text>
+              <Text style={gm.balVal}>{mcBalance.toLocaleString()} MC</Text>
+            </View>
           </View>
+
+          <Text style={gm.hint}>
+            MarketCoin ile yayıncıya destek ol. Her hediyenin maliyeti karşıda gösterilir.
+          </Text>
+
           <View style={gm.grid}>
-            {GIFTS.map(g => (
-              <Pressable
-                key={g.id}
-                style={gm.card}
-                onPress={() => sendGift(g)}
-              >
-                <Text style={gm.giftIcon}>{g.icon}</Text>
-                <Text style={gm.giftName}>{g.name}</Text>
-              </Pressable>
-            ))}
+            {GIFTS.map(g => {
+              const canAfford = mcBalance >= g.cost;
+              return (
+                <Pressable
+                  key={g.id}
+                  style={[gm.card, !canAfford && gm.cardDisabled]}
+                  onPress={() => sendGift(g)}
+                  disabled={sendingGift || !canAfford}
+                >
+                  <Text style={gm.giftIcon}>{g.icon}</Text>
+                  <Text style={gm.giftName}>{g.name}</Text>
+                  <View style={[gm.cost, { backgroundColor: canAfford ? '#FFF9E6' : '#F8F8F8' }]}>
+                    <Text style={[gm.costTxt, { color: canAfford ? '#FFB800' : '#CCC' }]}>
+                      🪙 {g.cost}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
+
+          {mcBalance === 0 && (
+            <Text style={gm.noBalance}>
+              MarketCoin bakiyen yok. Uygulama içi aktiviteler ile kazanabilirsin.
+            </Text>
+          )}
         </View>
       </Modal>
     </View>
@@ -351,20 +426,21 @@ const s = StyleSheet.create({
 });
 
 const gm = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet:    { backgroundColor: '#FFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36 },
-  handle:   { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D0D0D0', marginBottom: 16 },
-  header:   { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  title:    { flex: 1, fontSize: 17, fontWeight: '800', color: '#0D0D0D' },
-  balance:  { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF9E6', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4 },
-  balIcon:  { fontSize: 13 },
-  balVal:   { fontSize: 13, fontWeight: '800', color: '#FFB800' },
-  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
-  card:     { width: '30%', alignItems: 'center', gap: 5, backgroundColor: '#F8F9FB', borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: '#F0F0F0' },
-  cardDisabled: { opacity: 0.4 },
-  giftIcon: { fontSize: 28 },
-  giftName: { fontSize: 11, fontWeight: '700', color: '#0D0D0D' },
-  cost:     { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 3 },
-  costTxt:  { fontSize: 10, fontWeight: '800' },
-  hint:     { fontSize: 11, color: '#9AA0AF', textAlign: 'center' },
+  backdrop:    { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet:       { backgroundColor: '#FFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36 },
+  handle:      { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D0D0D0', marginBottom: 16 },
+  header:      { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  title:       { flex: 1, fontSize: 17, fontWeight: '800', color: '#0D0D0D' },
+  balance:     { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF9E6', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#FFE0A0' },
+  balIcon:     { fontSize: 13 },
+  balVal:      { fontSize: 13, fontWeight: '800', color: '#FFB800' },
+  hint:        { fontSize: 11, color: '#9AA0AF', marginBottom: 14, lineHeight: 15 },
+  grid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 6 },
+  card:        { width: '30%', alignItems: 'center', gap: 5, backgroundColor: '#F8F9FB', borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: '#F0F0F0' },
+  cardDisabled:{ opacity: 0.4 },
+  giftIcon:    { fontSize: 28 },
+  giftName:    { fontSize: 11, fontWeight: '700', color: '#0D0D0D' },
+  cost:        { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 3, marginTop: 2 },
+  costTxt:     { fontSize: 10, fontWeight: '800' },
+  noBalance:   { fontSize: 11, color: '#FF3B3B', textAlign: 'center', marginTop: 8, paddingHorizontal: 8, lineHeight: 16 },
 });

@@ -110,7 +110,15 @@ export function UserProfileScreen({ userId, onBack }: Props) {
 
         {/* Cover */}
         <View style={s.coverWrap}>
-          <LinearGradient colors={['#0D1F3C', '#1A1050', '#0A0A1A']} style={s.cover} />
+          {(profile as any)?.cover_url ? (
+            <Image
+              source={{ uri: (profile as any).cover_url }}
+              style={s.cover}
+              resizeMode="cover"
+            />
+          ) : (
+            <LinearGradient colors={['#0D1F3C', '#1A1050', '#0A0A1A']} style={s.cover} />
+          )}
         </View>
 
         {/* Avatar + identity */}
@@ -167,7 +175,16 @@ export function UserProfileScreen({ userId, onBack }: Props) {
             </Pressable>
             <Pressable
               style={s.msgBtn}
-              onPress={() => toast.info('Mesajlaşma yakında 💬')}
+              onPress={() => navigation.navigate('Messaging', {
+                openUserId: userId,
+                otherUser: {
+                  id:         userId,
+                  username:   handle.replace('@', ''),
+                  full_name:  displayName,
+                  avatar_url: avatarUri,
+                  verified:   isVerified,
+                },
+              })}
             >
               <Ionicons name="chatbubble-outline" size={16} color={colors.text} />
               <Text style={s.msgBtnTxt}>Mesaj</Text>

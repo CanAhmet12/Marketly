@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { radius, shadow, colors } from '../constants/theme';
 import { useNotifications } from '../hooks/useNotifications';
+import { useToast } from '../contexts/ToastContext';
 
 type NotifType = 'price_alert' | 'like' | 'comment' | 'follow' | 'market' | 'system';
 
@@ -106,6 +107,7 @@ function timeAgo(isoStr: string): string {
 export function NotificationsScreen({ onBack }: Props) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const toast = useToast();
   const [refreshing, setRefreshing] = useState(false);
   const handleBack = onBack ?? (() => navigation.goBack());
   const {
@@ -123,17 +125,24 @@ export function NotificationsScreen({ onBack }: Props) {
     const meta = n as any;
     switch (n.type) {
       case 'price_alert':
-        if (meta.meta?.asset_id) navigation.navigate('PriceAlerts');
+        navigation.navigate('PriceAlerts');
         break;
       case 'like':
       case 'comment':
-        if (meta.meta?.post_id) navigation.navigate('Akış');
+        // Direkt post'a git, yoksa akış sekmesine dön
+        if (meta.meta?.post_id && meta.meta?.post_item) {
+          navigation.navigate('VideoDetail', { item: meta.meta.post_item });
+        } else {
+          navigation.navigate('Main', { screen: 'Akış' });
+        }
         break;
       case 'follow':
-        if (meta.meta?.actor_id) navigation.navigate('ProfileView', { userId: meta.meta.actor_id });
+        if (meta.meta?.actor_id) {
+          navigation.navigate('ProfileView', { userId: meta.meta.actor_id });
+        }
         break;
       case 'market':
-        if (meta.meta?.asset_id) navigation.navigate('Piyasalar');
+        navigation.navigate('Main', { screen: 'Piyasalar' });
         break;
       default:
         break;
@@ -175,8 +184,12 @@ export function NotificationsScreen({ onBack }: Props) {
             </View>
           )}
         </View>
-        <Pressable onPress={markAllRead} style={s.markAllBtn}>
-          <Ionicons name="checkmark-done-outline" size={20} color={colors.primary} />
+        <Pressable
+          onPress={async () => { await markAllRead(); toast.success('Tümü okundu ✓'); }}
+          style={s.markAllBtn}
+          disabled={unreadCount === 0}
+        >
+          <Ionicons name="checkmark-done-outline" size={20} color={unreadCount > 0 ? colors.primary : colors.textMuted} />
         </Pressable>
       </View>
 

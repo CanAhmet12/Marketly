@@ -76,7 +76,8 @@ export function SettingsScreen() {
   const handleLogout = () => {
     logout();
     toast.info('Çıkış yapıldı.');
-    navigation.goBack();
+    // Giriş ekranına yönlendir ve stack'i temizle
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
   const GROUPS: SettingGroup[] = [
@@ -340,9 +341,11 @@ export function SettingsScreen() {
                       supabase.from('posts').delete().eq('user_id', uid),
                       supabase.from('signals').delete().eq('creator_id', uid),
                       supabase.from('post_likes').delete().eq('user_id', uid),
+                      supabase.from('saved_posts').delete().eq('user_id', uid),
                       supabase.from('video_likes').delete().eq('user_id', uid),
                       supabase.from('saved_videos').delete().eq('user_id', uid),
                       supabase.from('comments').delete().eq('user_id', uid),
+                      supabase.from('video_comments').delete().eq('user_id', uid),
                       supabase.from('comment_likes').delete().eq('user_id', uid),
                       supabase.from('follows').delete().eq('follower_id', uid),
                       supabase.from('follows').delete().eq('following_id', uid),
@@ -350,6 +353,14 @@ export function SettingsScreen() {
                       supabase.from('watchlists').delete().eq('user_id', uid),
                       supabase.from('price_alerts').delete().eq('user_id', uid),
                       supabase.from('user_badges').delete().eq('user_id', uid),
+                      supabase.from('signal_likes').delete().eq('user_id', uid),
+                      supabase.from('signal_copies').delete().eq('user_id', uid),
+                      supabase.from('ai_sessions').delete().eq('user_id', uid),
+                      supabase.from('dm_conversations').delete().eq('user1_id', uid),
+                      supabase.from('dm_conversations').delete().eq('user2_id', uid),
+                      supabase.from('push_tokens').delete().eq('user_id', uid),
+                      supabase.from('marketcoin_wallet').delete().eq('user_id', uid),
+                      supabase.from('marketcoin_transactions').delete().eq('user_id', uid),
                     ]);
                     // Profili en son sil
                     await supabase.from('profiles').delete().eq('id', uid);

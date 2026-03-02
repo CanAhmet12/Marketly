@@ -2,6 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, Pressable,
   Image, StatusBar, Dimensions, Animated, Alert,
+  Share, TextInput, KeyboardAvoidingView, Platform,
+  Modal, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
 import { useAuth } from '../contexts/AuthContext';
+import { useVideoComments } from '../hooks/useVideoComments';
 import { supabase } from '../lib/supabase';
 import { colors, radius } from '../constants/theme';
 
@@ -257,7 +260,18 @@ function ShortCard({
   const [following, setFollow]      = useState(false);
   const [copied, setCopied]         = useState(false);
   const [showSignal, setShowSignal] = useState(true);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText]   = useState('');
   const progressAnim = useRef(new Animated.Value(0)).current;
+
+  const {
+    comments,
+    loading: cmtLoading,
+    sending: cmtSending,
+    sendComment,
+    likeComment,
+    deleteComment,
+  } = useVideoComments(item.id);
 
   // Başlangıç durumlarını DB'den yükle
   useEffect(() => {
@@ -295,7 +309,7 @@ function ShortCard({
     setLiked(newLiked);
     if (newLiked) {
       await supabase.from('video_likes').upsert({ user_id: user.id, video_id: item.id }, { onConflict: 'user_id,video_id' });
-      await supabase.from('videos').update({ likes_count: (item.stats.likes || 0) + 1 }).eq('id', item.id);
+      await supabase.from('posts').update({ likes_count: (item.stats.likes || 0) + 1 }).eq('id', item.id);
       toast.success('Short beğenildi ❤️');
     } else {
       await supabase.from('video_likes').delete().eq('user_id', user.id).eq('video_id', item.id);
@@ -500,11 +514,18 @@ function ShortCard({
           active={liked}
           onPress={handleLike}
         />
-        <ActionBtn icon="chatbubble-outline" label={fmt(item.stats.comments)} onPress={() => toast.info('Yorumlar yakında')} />
+        <ActionBtn icon="chatbubble-outline" label={fmt(comments.length > 0 ? comments.length : item.stats.comments)} onPress={() => setShowComments(true)} />
         <ActionBtn
           icon="share-social-outline"
           label={fmt(item.stats.shares)}
-          onPress={() => toast.success('Link kopyalandı 🔗')}
+          onPress={async () => {
+            try {
+              await Share.share({
+                message: `${item.title} — Marketly'de izle`,
+                title: item.title,
+              });
+            } catch { /* kullanıcı iptal etti */ }
+          }}
         />
         <ActionBtn
           icon={saved ? 'bookmark' : 'bookmark-outline'}
@@ -530,6 +551,122 @@ function ShortCard({
           width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) as any,
         }]} />
       </View>
+
+      {/* ── Comment Sheet ── */}
+      <Modal
+        visible={showComments}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowComments(false)}
+      >
+        <Pressable style={cms.backdrop} onPress={() => setShowComments(false)} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={cms.sheet}
+        >
+          {/* Header */}
+          <View style={cms.header}>
+            <Text style={cms.headerTitle}>Yorumlar</Text>
+            <Pressable style={cms.closeBtn} onPress={() => setShowComments(false)}>
+              <Ionicons name="close" size={20} color="#FFF" />
+            </Pressable>
+          </View>
+
+          {/* Comment list */}
+          <ScrollView
+            style={cms.list}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 16 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {cmtLoading && comments.length === 0 ? (
+              <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} />
+            ) : comments.length === 0 ? (
+              <View style={cms.empty}>
+                <Ionicons name="chatbubble-outline" size={38} color="rgba(255,255,255,0.3)" />
+                <Text style={cms.emptyTxt}>Henüz yorum yok. İlk yorumu sen yap!</Text>
+              </View>
+            ) : (
+              comments.map((c) => (
+                <View key={c.id} style={cms.cmtRow}>
+                  <Image
+                    source={{ uri: c.author_avatar ?? `https://i.pravatar.cc/40?u=${c.user_id}` }}
+                    style={cms.cmtAvatar}
+                  />
+                  <View style={cms.cmtBody}>
+                    <View style={cms.cmtHeader}>
+                      <Text style={cms.cmtUser}>{c.author_name}</Text>
+                      {c.is_pinned && (
+                        <View style={cms.pinBadge}>
+                          <Ionicons name="pin" size={9} color={colors.primary} />
+                          <Text style={cms.pinTxt}>Sabitlendi</Text>
+                        </View>
+                      )}
+                      <Text style={cms.cmtTime}>
+                        {(() => {
+                          const diff = Date.now() - new Date(c.created_at).getTime();
+                          const m = Math.floor(diff / 60000);
+                          if (m < 1) return 'az önce';
+                          if (m < 60) return `${m} dk`;
+                          const h = Math.floor(m / 60);
+                          if (h < 24) return `${h} sa`;
+                          return `${Math.floor(h / 24)} gün`;
+                        })()}
+                      </Text>
+                      {c.user_id === user?.id && (
+                        <Pressable onPress={() => deleteComment(c.id)} hitSlop={8}>
+                          <Ionicons name="trash-outline" size={13} color="rgba(255,100,100,0.8)" />
+                        </Pressable>
+                      )}
+                    </View>
+                    <Text style={cms.cmtText}>{c.content}</Text>
+                    <Pressable
+                      style={cms.cmtLike}
+                      onPress={() => likeComment(c.id)}
+                    >
+                      <Ionicons name="heart-outline" size={13} color="rgba(255,255,255,0.6)" />
+                      <Text style={cms.cmtLikeTxt}>{c.likes}</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ))
+            )}
+          </ScrollView>
+
+          {/* Input */}
+          <View style={cms.inputRow}>
+            <TextInput
+              style={cms.input}
+              placeholder={user ? 'Yorum yaz...' : 'Yorum için giriş yap'}
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              value={commentText}
+              onChangeText={setCommentText}
+              returnKeyType="send"
+              onSubmitEditing={async () => {
+                if (!user) { toast.info('Yorum için giriş yap'); return; }
+                if (!commentText.trim()) return;
+                const ok = await sendComment(commentText.trim());
+                if (ok) { setCommentText(''); toast.success('Yorum eklendi ✓'); }
+              }}
+            />
+            <Pressable
+              style={[cms.sendBtn, (!commentText.trim() || cmtSending) && { opacity: 0.5 }]}
+              disabled={!commentText.trim() || cmtSending}
+              onPress={async () => {
+                if (!user) { toast.info('Yorum için giriş yap'); return; }
+                if (!commentText.trim()) return;
+                const ok = await sendComment(commentText.trim());
+                if (ok) { setCommentText(''); toast.success('Yorum eklendi ✓'); }
+              }}
+            >
+              {cmtSending
+                ? <ActivityIndicator size="small" color="#FFF" />
+                : <Ionicons name="send" size={16} color="#FFF" />
+              }
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -655,6 +792,60 @@ const sc = StyleSheet.create({
   },
 });
 
+// ─── Comment Sheet Styles ─────────────────────────────────────────────────────
+const cms = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
+  sheet: {
+    backgroundColor: '#1A1A1A',
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    maxHeight: '70%',
+    borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(255,255,255,0.12)',
+  },
+  headerTitle: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  closeBtn: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  list: { maxHeight: 360 },
+  empty: { alignItems: 'center', paddingVertical: 32, gap: 10 },
+  emptyTxt: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center' },
+  cmtRow: { flexDirection: 'row', gap: 10 },
+  cmtAvatar: { width: 34, height: 34, borderRadius: 17 },
+  cmtBody: { flex: 1 },
+  cmtHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' },
+  cmtUser: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  pinBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+    backgroundColor: 'rgba(0,200,83,0.2)', borderRadius: 4,
+    paddingHorizontal: 5, paddingVertical: 1,
+  },
+  pinTxt: { fontSize: 9, fontWeight: '700', color: colors.primary },
+  cmtTime: { color: 'rgba(255,255,255,0.45)', fontSize: 11 },
+  cmtText: { color: 'rgba(255,255,255,0.87)', fontSize: 13, lineHeight: 18 },
+  cmtLike: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 5 },
+  cmtLikeTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 11 },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 14, paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.12)',
+  },
+  input: {
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: radius.full, paddingHorizontal: 16, paddingVertical: 10,
+    color: '#FFF', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+  },
+  sendBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
+  },
+});
+
 // ─── Feed Tab Bar ─────────────────────────────────────────────────────────────
 const FEED_CATEGORIES = ['Tümü', 'Kripto', 'Hisseler', 'Emtia', 'Döviz'];
 
@@ -689,7 +880,17 @@ export function ShortsScreen() {
     stats:    v.stats,
     duration: v.duration ?? '0:30',
     audio:    `${v.creator.name} · Orijinal ses`,
-    category: v.category === 'kripto' ? 'Kripto' : v.category === 'hisseler' ? 'Hisseler' : 'Tümü',
+    category:
+      v.category === 'kripto'   ? 'Kripto'   :
+      v.category === 'hisseler' ? 'Hisseler' :
+      v.category === 'emtialar' ? 'Emtia'    :
+      v.category === 'for_you'  ? 'Tümü'     :
+      (() => {
+        const tags = (v.assetTags ?? []).map((t: string) => t.toUpperCase());
+        if (['USD','EUR','GBP','JPY','TRY','USDTRY','EURTRY'].some(c => tags.some(t => t.includes(c)))) return 'Döviz';
+        if (['XAU','GOLD','OIL','SILVER','WTI'].some(c => tags.includes(c))) return 'Emtia';
+        return 'Tümü';
+      })(),
   }));
 
   const filtered = activeCat === 'Tümü'

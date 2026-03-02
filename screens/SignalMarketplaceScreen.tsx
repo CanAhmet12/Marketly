@@ -148,12 +148,12 @@ function PackageDetailModal({
   const toast = useToast();
   const navigation = useNavigation<any>();
 
+  const [subscribing, setSubscribing] = useState(false);
+
   if (!pkg) return null;
 
   const canSubscribe = pkg.tier_required === 'free' || !isFree;
   const accColor = pkg.accuracy >= 75 ? '#34C759' : pkg.accuracy >= 65 ? '#FF9500' : '#FF3B3B';
-
-  const [subscribing, setSubscribing] = useState(false);
 
   const handleSubscribe = async () => {
     if (!user) { onClose(); navigation.navigate('Login'); return; }

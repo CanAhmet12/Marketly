@@ -23,7 +23,7 @@ export function useFollow(targetUserId?: string) {
               .eq('follower_id', user.id)
               .eq('following_id', targetUserId)
               .maybeSingle()
-          : Promise.resolve({ data: null }),
+          : Promise.resolve({ data: null, error: null }),
         supabase
           .from('follows')
           .select('follower_id', { count: 'exact', head: true })
@@ -34,8 +34,12 @@ export function useFollow(targetUserId?: string) {
           .eq('follower_id', targetUserId),
       ]);
       setIsFollowing(!!followCheck.data);
+      if (follCount.error)  console.warn('[useFollow] follower count:', follCount.error.message);
+      if (follwCount.error) console.warn('[useFollow] following count:', follwCount.error.message);
       setFollowersCount(follCount.count ?? 0);
       setFollowingCount(follwCount.count ?? 0);
+    } catch (e) {
+      console.warn('[useFollow] refresh hatası:', e);
     } finally {
       setLoading(false);
     }
@@ -73,11 +77,12 @@ export function useFollow(targetUserId?: string) {
         });
       }
       return !wasFollowing;
-    } catch {
+    } catch (e) {
+      console.warn('[useFollow] toggle hatası:', e);
       // Rollback
       setIsFollowing(wasFollowing);
       setFollowersCount(prev => wasFollowing ? prev + 1 : prev - 1);
-      return wasFollowing;
+      return false; // false = işlem başarısız — caller toast gösterebilir
     }
   }, [user?.id, targetUserId, isFollowing]);
 

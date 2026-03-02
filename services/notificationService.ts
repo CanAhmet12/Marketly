@@ -90,13 +90,19 @@ export async function sendLocalNotification(opts: {
   });
 }
 
+// ─── Fiyat Alarmı Deduplication ──────────────────────────────────────────────
+// Aynı oturumda aynı alarm birden fazla kez tetiklenmesin (market tick'lerinde spam)
+const _firedAlertIds = new Set<string>();
+
 // ─── Fiyat Alarmı Kontrol Et ─────────────────────────────────────────────────
-// Çağrı: useMarketPrices her güncellendiğinde bu fonksiyon tetiklenir
 export async function checkPriceAlerts(
   alerts: { id: string; asset_id: string; condition: 'above' | 'below'; target: number }[],
   livePrices: Record<string, number>
 ) {
   for (const alert of alerts) {
+    // Bu oturumda zaten tetiklendiyse atla
+    if (_firedAlertIds.has(alert.id)) continue;
+
     const currentPrice = livePrices[alert.asset_id.toLowerCase()];
     if (currentPrice === undefined) continue;
 
@@ -105,6 +111,9 @@ export async function checkPriceAlerts(
       (alert.condition === 'below' && currentPrice <= alert.target);
 
     if (triggered) {
+      // Önce Set'e ekle — async işlem sırasında tekrar tetiklenmesin
+      _firedAlertIds.add(alert.id);
+
       const symbol  = alert.asset_id.toUpperCase();
       const condTxt = alert.condition === 'above' ? 'üzerine çıktı' : 'altına düştü';
       const price   = currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -116,7 +125,7 @@ export async function checkPriceAlerts(
         channel: 'price_alerts',
       });
 
-      // Tetiklenen alarmı Supabase'den sil (tekrar tetiklenmesin)
+      // Tetiklenen alarmı Supabase'den sil (kalıcı olarak bir kez tetiklensin)
       await supabase.from('price_alerts').delete().eq('id', alert.id);
     }
   }
