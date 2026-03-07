@@ -1,135 +1,141 @@
+// ─── Marketly Design System ───────────────────────────────────────────────────
+// Premium light-mode fintech / sosyal medya teması
+// Renk, tipografi, spacing, shadow, radius sistemleri
+
 export type ColorPalette = typeof lightColors;
 
 export const lightColors = {
-  // Backgrounds
-  bg:       '#F2F3F7',
-  bgPure:   '#FFFFFF',
-  bgCard:   '#FFFFFF',
-  bgInput:  '#F4F5F8',
+  // ── Backgrounds ──────────────────────────────────────────────────────────────
+  bg:       '#F7F8FC',   // Ana sayfa arkaplanı — çok hafif mavi-gri
+  bgPure:   '#FFFFFF',   // Kartlar
+  bgCard:   '#FFFFFF',   // Kartlar
+  bgInput:  '#F2F4F8',   // Input alanları
 
-  // Brand
-  primary:      '#00C853',
-  primaryLight: '#E8FAF0',
-  primaryDark:  '#00962E',
+  // ── Brand ────────────────────────────────────────────────────────────────────
+  primary:      '#00C853',   // Ana yeşil
+  primaryLight: '#E6FAF0',   // Yeşil açık ton
+  primaryDark:  '#009C3E',   // Yeşil koyu ton
 
-  // Accents
-  danger:  '#FF3B3B',
+  // ── Aksan Renkler ────────────────────────────────────────────────────────────
+  danger:  '#F03E3E',
   warning: '#FF9500',
-  info:    '#007AFF',
+  info:    '#3B82F6',
+  purple:  '#8B5CF6',
 
-  // Text
-  text:      '#0D0D0D',
-  textSub:   '#5A5F6E',
-  textMuted: '#9AA0AF',
+  // ── Metin ────────────────────────────────────────────────────────────────────
+  text:      '#0F1117',   // Neredeyse siyah — daha net
+  textSub:   '#4B5563',   // İkincil metin
+  textMuted: '#9CA3AF',   // Gri yardımcı metin
 
-  // Finance
+  // ── Finans ───────────────────────────────────────────────────────────────────
   rise:      '#00C853',
-  fall:      '#FF3B3B',
-  riseLight: '#E8FAF0',
+  fall:      '#F03E3E',
+  riseLight: '#E6FAF0',
   fallLight: '#FFF0F0',
 
-  // UI
-  border:  '#E8EAF0',
-  divider: '#F0F1F5',
-  live:    '#FF3B3B',
-  overlay: 'rgba(0,0,0,0.45)',
+  // ── UI ───────────────────────────────────────────────────────────────────────
+  border:  '#E5E9F0',
+  divider: '#EEF1F6',
+  live:    '#F03E3E',
+  overlay: 'rgba(0,0,0,0.40)',
 
-  // Bottom nav
+  // ── Bottom Nav ───────────────────────────────────────────────────────────────
   navBg: '#FFFFFF',
 };
 
-export const darkColors: ColorPalette = {
-  // Backgrounds
-  bg:       '#0D0D0D',
-  bgPure:   '#1A1A1A',
-  bgCard:   '#1A1A1A',
-  bgInput:  '#242424',
-
-  // Brand (unchanged)
-  primary:      '#00C853',
-  primaryLight: '#0D2E1A',
-  primaryDark:  '#00962E',
-
-  // Accents (unchanged)
-  danger:  '#FF453A',
-  warning: '#FF9F0A',
-  info:    '#0A84FF',
-
-  // Text
-  text:      '#F0F0F0',
-  textSub:   '#A0A0A0',
-  textMuted: '#666666',
-
-  // Finance
-  rise:      '#30D158',
-  fall:      '#FF453A',
-  riseLight: '#0D2E1A',
-  fallLight: '#2E0D0D',
-
-  // UI
-  border:  '#2A2A2A',
-  divider: '#1E1E1E',
-  live:    '#FF453A',
-  overlay: 'rgba(0,0,0,0.70)',
-
-  // Bottom nav
-  navBg: '#1A1A1A',
-};
-
-// Default export (light) – keeps all existing imports working
 export const colors = lightColors;
 
-export const typo = {
-  h1: { fontSize: 26, fontWeight: '800' as const, color: '#0D0D0D' },
-  h2: { fontSize: 20, fontWeight: '700' as const, color: '#0D0D0D' },
-  h3: { fontSize: 16, fontWeight: '700' as const, color: '#0D0D0D' },
-  body: { fontSize: 14, fontWeight: '400' as const, color: '#0D0D0D' },
-  bodyBold: { fontSize: 14, fontWeight: '600' as const, color: '#0D0D0D' },
-  small: { fontSize: 12, fontWeight: '400' as const, color: '#5A5F6E' },
-  tiny: { fontSize: 10, fontWeight: '500' as const, color: '#9AA0AF' },
-  price: { fontSize: 16, fontWeight: '800' as const, color: '#0D0D0D' },
+// ─── Tipografi — Inter font sistemi ──────────────────────────────────────────
+// fontFamily değerleri _layout.tsx'de useFonts ile yüklenmeli
+export const font = {
+  thin:       'Inter_100Thin',
+  light:      'Inter_300Light',
+  regular:    'Inter_400Regular',
+  medium:     'Inter_500Medium',
+  semiBold:   'Inter_600SemiBold',
+  bold:       'Inter_700Bold',
+  extraBold:  'Inter_800ExtraBold',
+  black:      'Inter_900Black',
 };
 
+export const typo = {
+  h1:       { fontSize: 28, fontFamily: font.black,     color: lightColors.text,     letterSpacing: -0.5 },
+  h2:       { fontSize: 22, fontFamily: font.extraBold, color: lightColors.text,     letterSpacing: -0.3 },
+  h3:       { fontSize: 17, fontFamily: font.bold,      color: lightColors.text },
+  h4:       { fontSize: 15, fontFamily: font.semiBold,  color: lightColors.text },
+  body:     { fontSize: 14, fontFamily: font.regular,   color: lightColors.text },
+  bodyBold: { fontSize: 14, fontFamily: font.semiBold,  color: lightColors.text },
+  small:    { fontSize: 12, fontFamily: font.regular,   color: lightColors.textSub },
+  tiny:     { fontSize: 10, fontFamily: font.medium,    color: lightColors.textMuted },
+  price:    { fontSize: 18, fontFamily: font.black,     color: lightColors.text,     letterSpacing: -0.5 },
+  priceUp:  { fontSize: 18, fontFamily: font.black,     color: lightColors.rise,     letterSpacing: -0.5 },
+  priceDown:{ fontSize: 18, fontFamily: font.black,     color: lightColors.fall,     letterSpacing: -0.5 },
+};
+
+// ─── Border Radius ────────────────────────────────────────────────────────────
 export const radius = {
-  xs: 6,
-  sm: 10,
-  md: 14,
-  lg: 20,
-  xl: 28,
+  xs:   6,
+  sm:   10,
+  md:   14,
+  lg:   20,
+  xl:   28,
   full: 9999,
 };
 
+// ─── Gölge sistemi — daha belirgin, daha modern ───────────────────────────────
 export const shadow = {
   xs: {
-    shadowColor: '#000',
+    shadowColor: '#1A2138',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
     elevation: 1,
   },
   sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#1A2138',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: '#1A2138',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 6,
   },
   lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowColor: '#1A2138',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    elevation: 10,
   },
 };
 
-// Legacy compat
-export const spacing = { xs: 4, sm: 6, md: 10, lg: 14, xl: 20 };
+// ─── Spacing — tam ekran kullanımı için dar margin ────────────────────────────
+// Genel kural: yatay padding max 12px (eski 16px'den küçük)
+export const spacing = {
+  xs:  4,
+  sm:  8,
+  md:  12,   // Ana yatay padding (eski 16'dan küçük = daha geniş görünüm)
+  lg:  16,
+  xl:  20,
+  xxl: 28,
+};
+
+// ─── Gradient presets ─────────────────────────────────────────────────────────
+export const gradients = {
+  primary:  ['#00C853', '#00A846'] as const,
+  danger:   ['#F03E3E', '#CC2828'] as const,
+  gold:     ['#F59E0B', '#D97706'] as const,
+  blue:     ['#3B82F6', '#2563EB'] as const,
+  purple:   ['#8B5CF6', '#7C3AED'] as const,
+  dark:     ['#1E2235', '#0F1117'] as const,
+  rise:     ['#00C853', '#00A846'] as const,
+  fall:     ['#F03E3E', '#CC2828'] as const,
+};
+
+// Legacy compat — eski kod bozulmasın
 export const borderRadius = { sm: 8, md: 12, lg: 16, xl: 24, full: 9999 };

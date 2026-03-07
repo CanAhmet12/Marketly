@@ -2,8 +2,9 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View, ScrollView, StyleSheet, Text, Animated,
-  Pressable, Image, Dimensions, RefreshControl, ActivityIndicator,
+  Pressable, Image, Dimensions, RefreshControl, ActivityIndicator, Modal, StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +22,8 @@ import { useSignals } from '../hooks/useSignals';
 import { useFollow } from '../hooks/useFollow';
 import { useNotifications } from '../hooks/useNotifications';
 import { supabase } from '../lib/supabase';
-import { colors, radius, shadow } from '../constants/theme';
+import { avatarUrl } from '../lib/avatarUrl';
+import { colors, radius, shadow, font } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -51,6 +53,40 @@ function fmtTickerPrice(price: number, id: string): string {
   if (price >= 100)   return `$${price.toFixed(1)}`;
   if (price >= 1)     return `$${price.toFixed(2)}`;
   return `$${price.toFixed(4)}`;
+}
+
+/** Bir fiyat ticker kaydı — fiyat değişince kısa yeşil/kırmızı flash yapar */
+function TickerItemView({ sym, price, change, up }: { sym: string; price: string; change: string; up: boolean }) {
+  const prevPrice = useRef(price);
+  const flashAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (prevPrice.current !== price && prevPrice.current !== '') {
+      // Fiyat değişti — flash tetikle
+      Animated.sequence([
+        Animated.timing(flashAnim, { toValue: 1, duration: 120, useNativeDriver: false }),
+        Animated.timing(flashAnim, { toValue: 0, duration: 500, useNativeDriver: false }),
+      ]).start();
+    }
+    prevPrice.current = price;
+  }, [price]);
+
+  const flashBg = flashAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', up ? 'rgba(0,200,83,0.25)' : 'rgba(255,59,59,0.25)'],
+  });
+
+  return (
+    <Animated.View style={[tk.item, { backgroundColor: flashBg }]}>
+      <Text style={tk.sym}>{sym}</Text>
+      <Text style={tk.price}>{price}</Text>
+      <View style={[tk.pill, { backgroundColor: up ? 'rgba(0,200,83,0.15)' : 'rgba(255,59,59,0.15)' }]}>
+        <Text style={[tk.change, { color: up ? '#00E676' : '#FF6B6B' }]}>
+          {up ? '▲' : '▼'} {change}
+        </Text>
+      </View>
+    </Animated.View>
+  );
 }
 
 function MarketTicker() {
@@ -103,15 +139,13 @@ function MarketTicker() {
       <View style={tk.overflow}>
         <Animated.View style={[tk.track, { transform: [{ translateX: tx }] }]}>
           {items.map((item, i) => (
-            <View key={`${item.sym}-${i}`} style={tk.item}>
-              <Text style={tk.sym}>{item.sym}</Text>
-              <Text style={tk.price}>{item.price}</Text>
-              <View style={[tk.pill, { backgroundColor: item.up ? 'rgba(0,200,83,0.15)' : 'rgba(255,59,59,0.15)' }]}>
-                <Text style={[tk.change, { color: item.up ? '#00E676' : '#FF6B6B' }]}>
-                  {item.up ? '▲' : '▼'} {item.change}
-                </Text>
-              </View>
-            </View>
+            <TickerItemView
+              key={`${item.sym}-${i}`}
+              sym={item.sym}
+              price={item.price}
+              change={item.change}
+              up={item.up}
+            />
           ))}
         </Animated.View>
       </View>
@@ -138,7 +172,7 @@ const tk = StyleSheet.create({
     paddingHorizontal: 12, zIndex: 2,
   },
   liveDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#FF3B3B' },
-  liveTxt: { fontSize: 8.5, fontWeight: '900', color: '#FF3B3B', letterSpacing: 1.5 },
+  liveTxt: { fontSize: 8.5, fontFamily: font.black, color: '#FF3B3B', letterSpacing: 1.5 },
   sep: { width: StyleSheet.hairlineWidth, height: 16, backgroundColor: 'rgba(255,255,255,0.12)' },
   overflow: { flex: 1, overflow: 'hidden' },
   track: { flexDirection: 'row', alignItems: 'center' },
@@ -146,10 +180,10 @@ const tk = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     gap: 5, paddingHorizontal: 8, width: TICKER_W,
   },
-  sym: { fontSize: 10.5, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.3 },
-  price: { fontSize: 9.5, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  sym: { fontSize: 10.5, fontFamily: font.extraBold, color: '#FFFFFF', letterSpacing: 0.3 },
+  price: { fontSize: 9.5, fontFamily: font.medium, color: 'rgba(255,255,255,0.5)' },
   pill: { borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1.5 },
-  change: { fontSize: 9, fontWeight: '800' },
+  change: { fontSize: 9, fontFamily: font.bold },
 });
 
 // ─── Stories / Highlights row ─────────────────────────────────────────────────
@@ -171,10 +205,163 @@ const ASSET_COLOR_MAP: Record<string, string> = {
   NVDA: '#76B900', TSLA: '#CC0000', MSFT: '#00A4EF',
 };
 
+/** Instagram-benzeri fullscreen hikaye görüntüleyici */
+function StoryViewerModal({ storyUrl, username, onClose }: {
+  storyUrl: string; username: string; onClose: () => void;
+}) {
+  const DURATION = 5000;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    progressAnim.setValue(0);
+    const anim = Animated.timing(progressAnim, {
+      toValue: 1, duration: DURATION, useNativeDriver: false,
+    });
+    anim.start(({ finished }) => { if (finished) onClose(); });
+    return () => anim.stop();
+  }, [storyUrl]);
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <View style={sv.root}>
+        {/* Arka plan */}
+        <Image source={{ uri: storyUrl }} style={sv.image} resizeMode="cover" />
+        <View style={sv.overlay} />
+
+        {/* İlerleme çubuğu */}
+        <View style={[sv.progressBar, { top: insets.top + 8 }]}>
+          <Animated.View style={[sv.progressFill, {
+            width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+          }]} />
+        </View>
+
+        {/* Kullanıcı adı + kapat */}
+        <View style={[sv.header, { top: insets.top + 24 }]}>
+          <View style={sv.userInfo}>
+            <View style={sv.avatarDot}>
+              <Text style={sv.avatarLetter}>{username?.[0]?.toUpperCase() ?? '?'}</Text>
+            </View>
+            <Text style={sv.username}>{username}</Text>
+          </View>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Ionicons name="close" size={26} color="#FFF" />
+          </Pressable>
+        </View>
+
+        {/* Dokunarak geçiş */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      </View>
+    </Modal>
+  );
+}
+
+const sv = StyleSheet.create({
+  root:         { flex: 1, backgroundColor: '#000' },
+  image:        { ...StyleSheet.absoluteFillObject },
+  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
+  progressBar:  { position: 'absolute', left: 12, right: 12, height: 3, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 2, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#FFF', borderRadius: 2 },
+  header:       { position: 'absolute', left: 12, right: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  userInfo:     { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  avatarDot:    { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.3)', borderWidth: 2, borderColor: '#FFF', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+  username:     { color: '#FFF', fontSize: 14, fontWeight: '700', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
+});
+
 function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; userId?: string }) {
   const navigation = useNavigation<any>();
   const { allAssets } = useMarketPrices();
-  const [followingUsers, setFollowingUsers] = useState<{ id: string; username: string; avatar_url: string | null }[]>([]);
+  const [followingUsers, setFollowingUsers] = useState<{ id: string; username: string; full_name?: string | null; avatar_url: string | null }[]>([]);
+  const [myStoryUrl, setMyStoryUrl] = useState<string | null>(null);
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const [viewingStory, setViewingStory] = useState<{ url: string; username: string } | null>(null);
+
+  // Takipçilerin hikayelerini çek
+  const [followingStories, setFollowingStories] = useState<{ userId: string; username: string; imageUrl: string }[]>([]);
+  useEffect(() => {
+    if (!userId) return;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .limit(10)
+      .then(async ({ data }) => {
+        if (!data?.length) return;
+        const ids = data.map((r: any) => r.following_id);
+        const { data: stories } = await supabase
+          .from('stories')
+          .select('user_id, image_url, profiles!stories_user_id_fkey(username, full_name)')
+          .in('user_id', ids)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false });
+        if (!stories) return;
+        // Her kullanıcı için sadece en son hikayeyi al
+        const seen = new Set<string>();
+        const result: { userId: string; username: string; imageUrl: string }[] = [];
+        for (const s of stories) {
+          if (!seen.has(s.user_id)) {
+            seen.add(s.user_id);
+            const prof: any = s.profiles;
+            result.push({
+              userId:   s.user_id,
+              username: prof?.username ?? prof?.full_name ?? 'Kullanıcı',
+              imageUrl: s.image_url,
+            });
+          }
+        }
+        setFollowingStories(result);
+      });
+  }, [userId]);
+
+  // Kendi aktif hikayesini yükle (24s içinde)
+  useEffect(() => {
+    if (!userId) return;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('stories')
+      .select('image_url')
+      .eq('user_id', userId)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => { if (data?.image_url) setMyStoryUrl(data.image_url); });
+  }, [userId]);
+
+  const handleAddStory = async () => {
+    if (!userId) return;
+    try {
+      const { launchImageLibraryAsync, MediaTypeOptions, requestMediaLibraryPermissionsAsync } = await import('expo-image-picker');
+      const { status } = await requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') return;
+      const result = await launchImageLibraryAsync({ mediaTypes: MediaTypeOptions.Images, quality: 0.8 });
+      if (result.canceled || !result.assets?.[0]) return;
+      setUploadingStory(true);
+      const asset = result.assets[0];
+      const ext   = asset.uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const fileName = `${userId}/${Date.now()}.${ext}`;
+      const resp = await fetch(asset.uri);
+      const blob = await resp.blob();
+      await supabase.storage.createBucket('stories', { public: true }).catch(() => {});
+      const { error: upErr } = await supabase.storage
+        .from('stories')
+        .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
+      if (upErr) { setUploadingStory(false); return; }
+      const { data: urlData } = supabase.storage.from('stories').getPublicUrl(fileName);
+      const publicUrl = urlData.publicUrl;
+      await supabase.from('stories').insert({
+        user_id:    userId,
+        image_url:  publicUrl,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+      setMyStoryUrl(publicUrl);
+    } catch { /* ignore */ } finally {
+      setUploadingStory(false);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -199,7 +386,7 @@ function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; user
     id:     f.id,
     type:   'creator' as const,
     label:  f.username || 'Kullanıcı',
-    avatar: f.avatar_url || `https://i.pravatar.cc/80?u=${f.id}`,
+    avatar: f.avatar_url || avatarUrl(f.id, f.full_name ?? f.username),
     live:   false,
     up:     true,
   }));
@@ -234,12 +421,57 @@ function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; user
   ];
 
   return (
+  <>
     <View style={st.wrap}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={st.scroll}
       >
+        {/* ── Kendi hikayem ── */}
+        {userId && (
+          <Pressable
+            style={st.item}
+            onPress={myStoryUrl
+              ? () => setViewingStory({ url: myStoryUrl, username: 'Hikayem' })
+              : handleAddStory
+            }
+            disabled={uploadingStory}
+          >
+            <View style={[st.ring, { borderColor: myStoryUrl ? colors.primary : colors.border, borderStyle: myStoryUrl ? 'solid' : 'dashed' }]}>
+              {myStoryUrl ? (
+                <Image source={{ uri: myStoryUrl }} style={st.avatar} />
+              ) : (
+                <View style={[st.iconCircle, { backgroundColor: colors.primaryLight }]}>
+                  {uploadingStory
+                    ? <ActivityIndicator size="small" color={colors.primary} />
+                    : <Ionicons name="add" size={22} color={colors.primary} />
+                  }
+                </View>
+              )}
+              {!myStoryUrl && !uploadingStory && (
+                <View style={[st.liveBadge, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="add" size={8} color="#FFF" />
+                </View>
+              )}
+            </View>
+            <Text style={st.label} numberOfLines={1}>Hikayem</Text>
+          </Pressable>
+        )}
+
+        {/* ── Takip edilen kullanıcıların hikayeleri ── */}
+        {followingStories.map(fs => (
+          <Pressable
+            key={`story_${fs.userId}`}
+            style={st.item}
+            onPress={() => setViewingStory({ url: fs.imageUrl, username: fs.username })}
+          >
+            <View style={[st.ring, { borderColor: '#00C853' }]}>
+              <Image source={{ uri: fs.imageUrl }} style={st.avatar} />
+            </View>
+            <Text style={st.label} numberOfLines={1}>{fs.username}</Text>
+          </Pressable>
+        ))}
         {allStories.map((s) => {
           const ringColor = s.type === 'creator'
             ? '#00C853'
@@ -291,6 +523,16 @@ function StoriesRow({ onShortsPress, userId }: { onShortsPress: () => void; user
         })}
       </ScrollView>
     </View>
+
+    {/* Hikaye görüntüleyici modal */}
+    {viewingStory && (
+      <StoryViewerModal
+        storyUrl={viewingStory.url}
+        username={viewingStory.username}
+        onClose={() => setViewingStory(null)}
+      />
+    )}
+  </>
   );
 }
 
@@ -319,15 +561,15 @@ const st = StyleSheet.create({
     paddingHorizontal: 4, paddingVertical: 1.5,
     borderWidth: 1.5, borderColor: '#FFF',
   },
-  liveTxt: { fontSize: 7, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
+  liveTxt: { fontSize: 7, fontFamily: font.black, color: '#FFF', letterSpacing: 0.5 },
   label: {
-    fontSize: 10, fontWeight: '700', color: '#1A1A2E',
+    fontSize: 10, fontFamily: font.bold, color: colors.text,
     textAlign: 'center', maxWidth: 62,
   },
   changePill: {
     borderRadius: radius.full, paddingHorizontal: 6, paddingVertical: 2,
   },
-  changeTxt: { fontSize: 9, fontWeight: '800' },
+  changeTxt: { fontSize: 9, fontFamily: font.bold },
 });
 
 // ─── Feed Tab Bar ─────────────────────────────────────────────────────────────
@@ -379,15 +621,61 @@ const ftb = StyleSheet.create({
   tabInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,59,59,0.4)' },
   liveDotActive: { backgroundColor: '#FF3B3B' },
-  txt: { fontSize: 13, fontWeight: '600', color: '#9AA0AF', letterSpacing: 0.1 },
-  txtActive: { color: '#0F0F1A', fontWeight: '800' },
-  txtLive: { color: '#FF3B3B', fontWeight: '700' },
+  txt: { fontSize: 13, fontFamily: font.semiBold, color: colors.textMuted, letterSpacing: 0.1 },
+  txtActive: { color: colors.text, fontFamily: font.extraBold },
+  txtLive: { color: colors.live, fontFamily: font.bold },
   underline: {
     position: 'absolute', bottom: 0, left: '20%', right: '20%',
     height: 2.5, borderRadius: 2,
     backgroundColor: colors.primary,
   },
   underlineLive: { backgroundColor: '#FF3B3B' },
+});
+
+// ─── Post Card Skeleton ───────────────────────────────────────────────────────
+function PostCardSkeleton() {
+  const shimmer = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [shimmer]);
+  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.9] });
+  return (
+    <Animated.View style={[sk.card, { opacity }]}>
+      <View style={sk.header}>
+        <View style={sk.avatar} />
+        <View style={sk.headerText}>
+          <View style={sk.line1} />
+          <View style={sk.line2} />
+        </View>
+      </View>
+      <View style={sk.body1} />
+      <View style={sk.body2} />
+      <View style={sk.footer} />
+    </Animated.View>
+  );
+}
+const sk = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFF', marginHorizontal: 14, marginBottom: 10,
+    borderRadius: radius.lg, padding: 14,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04, shadowRadius: 3, elevation: 2,
+  },
+  header: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8E8EC' },
+  headerText: { flex: 1, gap: 6, justifyContent: 'center' },
+  line1: { height: 12, borderRadius: 6, backgroundColor: '#E8E8EC', width: '55%' },
+  line2: { height: 10, borderRadius: 5, backgroundColor: '#E8E8EC', width: '35%' },
+  body1: { height: 13, borderRadius: 6, backgroundColor: '#E8E8EC', marginBottom: 8 },
+  body2: { height: 13, borderRadius: 6, backgroundColor: '#E8E8EC', width: '75%', marginBottom: 16 },
+  footer: { height: 10, borderRadius: 5, backgroundColor: '#E8E8EC', width: '45%' },
 });
 
 // ─── Heights ──────────────────────────────────────────────────────────────────
@@ -406,7 +694,7 @@ export function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const feedMode = feedTab === 'Takip' ? 'following' : 'all';
-  const { posts, loading: postsLoading, toggleLike, deletePost, createPost, refresh: refreshPosts } = usePosts(undefined, feedMode);
+  const { posts, loading: postsLoading, hasMore: postsHasMore, loadMore: loadMorePosts, toggleLike, deletePost, createPost, refresh: refreshPosts } = usePosts(undefined, feedMode);
 
   // Gerçek video ve sinyal verileri
   const { videos: liveVideos, loading: videosLoading, refetch: refetchVideos } = useVideos({ type: feedTab === 'CANLI' ? 'live' : 'all' });
@@ -427,23 +715,26 @@ export function HomeScreen() {
     return [...posts].sort((a, b) => score(b) - score(a));
   }, [posts, feedTab]);
 
-  const displaySignals = liveSignals.map(s => ({
-    id:           s.id,
-    asset_id:     s.asset_id,
-    symbol:       s.symbol,
-    direction:    s.direction as 'BUY' | 'SELL' | 'HOLD',
-    confidence:   s.confidence,
-    entry_price:  s.entry_price  ?? null,
-    target_price: s.target_price ?? null,
-    stop_loss:    s.stop_loss    ?? null,
-    timeframe:    s.timeframe,
-    rationale:    s.rationale    ?? null,
-    copies_count: s.copies_count,
-    likes_count:  s.likes_count,
-    creator:      { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
-    isNew:        true,
-    created_at:   s.created_at,
-  }));
+  const displaySignals = liveSignals.map(s => {
+    const ageHours = (Date.now() - new Date(s.created_at).getTime()) / 3_600_000;
+    return {
+      id:           s.id,
+      asset_id:     s.asset_id,
+      symbol:       s.symbol,
+      direction:    s.direction as 'BUY' | 'SELL' | 'HOLD',
+      confidence:   s.confidence,
+      entry_price:  s.entry_price  ?? null,
+      target_price: s.target_price ?? null,
+      stop_loss:    s.stop_loss    ?? null,
+      timeframe:    s.timeframe,
+      rationale:    s.rationale    ?? null,
+      copies_count: s.copies_count,
+      likes_count:  s.likes_count,
+      creator:      { name: s.creator.name, avatar: s.creator.avatar, accuracy: s.creator.accuracy, verified: s.creator.verified },
+      isNew:        ageHours < 24,
+      created_at:   s.created_at,
+    };
+  });
 
   // Show tab bar when screen comes into focus
   useFocusEffect(useCallback(() => {
@@ -471,6 +762,19 @@ export function HomeScreen() {
     await Promise.all([refreshPosts(), refetchVideos(), refetchSignals()]).catch(() => {});
     setRefreshing(false);
   }, [scrollY, resetTabBar, refreshPosts, refetchVideos]);
+
+  // FAB pulse animasyonu — "Yaz" butonu için yavaş looping glow
+  const fabPulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(fabPulse, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+        Animated.timing(fabPulse, { toValue: 1,    duration: 900, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [fabPulse]);
 
   const handleScroll = useCallback((e: any) => {
     const y = e.nativeEvent.contentOffset.y;
@@ -507,15 +811,23 @@ export function HomeScreen() {
         <Header
           hasNotification={notifCount > 0}
           notificationCount={notifCount}
-          avatarUri={user?.avatar ?? `https://i.pravatar.cc/80?u=${user?.id ?? 'default'}`}
+          avatarUri={user?.avatar ?? (user?.id ? avatarUrl(user.id, user.name) : undefined)}
           onProfilePress={() => navigation.navigate('Profil')}
           onNotificationPress={() => navigation.navigate('Notifications')}
           onSearchPress={() => navigation.navigate('Search')}
         />
-        <FeedTabBar active={feedTab} onChange={setFeedTab} />
+        <FeedTabBar active={feedTab} onChange={(tab) => {
+          setFeedTab(tab);
+          // H7: Sekme değişince scroll'u başa al
+          try { scrollY.setValue(0); } catch {}
+        }} />
       </Animated.View>
 
       <Animated.ScrollView
+        ref={(ref: any) => {
+          // H7: Sekme değişince scroll'u başa al
+          if (ref) (ref as any)._scrollViewRef = ref;
+        }}
         style={s.scroll}
         contentContainerStyle={[s.content, { paddingTop: totalTopH, paddingBottom: 96 + safeInsets.bottom }]}
         showsVerticalScrollIndicator={false}
@@ -525,6 +837,13 @@ export function HomeScreen() {
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true, listener: handleScroll }
         )}
+        onMomentumScrollEnd={(e) => {
+          const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+          const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+          if (distanceFromBottom < 300 && postsHasMore && !postsLoading) {
+            loadMorePosts();
+          }
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -536,20 +855,34 @@ export function HomeScreen() {
       >
         {/* ── Ticker & Stories at top of feed ── */}
         <MarketTicker />
+        {/* H6: Yumuşak renk geçişi — ticker (#0C0C17) → sayfa arka planı */}
+        <View style={{
+          height: 6,
+          background: 'linear-gradient(#0C0C17, transparent)',
+        }}>
+          <LinearGradient
+            colors={['#0C0C17', colors.bg]}
+            style={{ height: 6 }}
+          />
+        </View>
         <StoriesRow onShortsPress={() => navigation.navigate('Shorts')} userId={user?.id} />
 
         {/* ── Gönderi yaz butonu (Senin İçin + Takip) ── */}
         {(feedTab === 'Senin İçin' || feedTab === 'Takip') && user && (
           <Pressable style={s.composeBar} onPress={() => setShowCreatePost(true)}>
-            <View style={s.composeAvatar}>
-              <Text style={s.composeAvatarTxt}>
-                {(user?.name ?? user?.email ?? '?')[0].toUpperCase()}
-              </Text>
-            </View>
+            {user?.avatar ? (
+              <Image source={{ uri: user.avatar }} style={s.composeAvatarImg} />
+            ) : (
+              <View style={s.composeAvatar}>
+                <Text style={s.composeAvatarTxt}>
+                  {(user?.name ?? user?.email ?? '?')[0].toUpperCase()}
+                </Text>
+              </View>
+            )}
             <Text style={s.composePlaceholder}>Piyasalar hakkında ne düşünüyorsun?</Text>
-            <View style={s.composeBtn}>
+            <Animated.View style={[s.composeBtn, { transform: [{ scale: fabPulse }] }]}>
               <Text style={s.composeBtnTxt}>Yaz</Text>
-            </View>
+            </Animated.View>
           </Pressable>
         )}
 
@@ -557,32 +890,55 @@ export function HomeScreen() {
         {feedTab === 'Takip' && (
           <View>
             {postsLoading && posts.length === 0 ? (
-              <View style={s.emptyFeed}>
-                <ActivityIndicator color={colors.primary} />
-              </View>
+              <>
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </>
             ) : posts.length === 0 ? (
               <View style={s.emptyFeed}>
-                <Text style={s.emptyFeedIcon}>📭</Text>
-                <Text style={s.emptyFeedTitle}>Henüz kimseyi takip etmiyorsun</Text>
-                <Text style={s.emptyFeedSub}>Analistleri takip et, onların gönderileri burada görünür</Text>
-                <Pressable
-                  style={s.discoverBtn}
-                  onPress={() => navigation.navigate('Leaderboard' as never)}
-                >
-                  <Ionicons name="people-outline" size={14} color="#FFF" />
-                  <Text style={s.discoverBtnTxt}>Analistleri Keşfet</Text>
-                </Pressable>
+                <Text style={s.emptyFeedIcon}>{followingUsers.length > 0 ? '📬' : '📭'}</Text>
+                <Text style={s.emptyFeedTitle}>
+                  {followingUsers.length > 0
+                    ? 'Takip ettiklerinizden henüz gönderi yok'
+                    : 'Henüz kimseyi takip etmiyorsun'}
+                </Text>
+                <Text style={s.emptyFeedSub}>
+                  {followingUsers.length > 0
+                    ? 'Takip ettiğin kişiler paylaşım yaptığında burada görünür'
+                    : 'Analistleri takip et, onların gönderileri burada görünür'}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                  <Pressable style={s.discoverBtn} onPress={() => navigation.navigate('Leaderboard' as never)}>
+                    <Ionicons name="people-outline" size={14} color="#FFF" />
+                    <Text style={s.discoverBtnTxt}>Analistleri Keşfet</Text>
+                  </Pressable>
+                  <Pressable style={[s.discoverBtn, { backgroundColor: colors.info }]} onPress={() => navigation.navigate('Main', { screen: 'Keşfet' } as never)}>
+                    <Ionicons name="compass-outline" size={14} color="#FFF" />
+                    <Text style={s.discoverBtnTxt}>Keşfet</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : (
-              posts.map(post => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={toggleLike}
-                  onDelete={post.user_id === user?.id ? deletePost : undefined}
-                  onCommentAdded={refreshPosts}
-                />
-              ))
+              <>
+                {posts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={toggleLike}
+                    onDelete={post.user_id === user?.id ? deletePost : undefined}
+                    onCommentAdded={refreshPosts}
+                  />
+                ))}
+                {postsHasMore && (
+                  postsLoading
+                    ? <View style={s.loadMoreBtn}><ActivityIndicator size="small" color={colors.primary} /></View>
+                    : <Pressable style={s.loadMoreBtn} onPress={loadMorePosts}>
+                        <Ionicons name="chevron-down" size={15} color={colors.primary} />
+                        <Text style={s.loadMoreTxt}>Daha Fazla Göster</Text>
+                      </Pressable>
+                )}
+              </>
             )}
           </View>
         )}
@@ -595,32 +951,41 @@ export function HomeScreen() {
               <Text style={s.tabSectionTitle}>Topluluk Gönderileri</Text>
             </View>
             {postsLoading && forYouPosts.length === 0 ? (
-              <View style={s.emptyFeed}>
-                <ActivityIndicator color={colors.primary} />
-              </View>
+              <>
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </>
             ) : forYouPosts.length === 0 ? (
               <View style={s.emptyFeed}>
                 <Text style={s.emptyFeedIcon}>✍️</Text>
                 <Text style={s.emptyFeedTitle}>Henüz gönderi yok</Text>
                 <Text style={s.emptyFeedSub}>Topluluk gönderileri burada görünecek</Text>
-                <Pressable
-                  style={s.discoverBtn}
-                  onPress={() => setShowCreatePost(true)}
-                >
+                <Pressable style={s.discoverBtn} onPress={() => setShowCreatePost(true)}>
                   <Ionicons name="add" size={14} color="#FFF" />
                   <Text style={s.discoverBtnTxt}>İlk Gönderiyi Sen Yaz</Text>
                 </Pressable>
               </View>
             ) : (
-              forYouPosts.slice(0, 8).map(post => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={toggleLike}
-                  onDelete={post.user_id === user?.id ? deletePost : undefined}
-                  onCommentAdded={refreshPosts}
-                />
-              ))
+              <>
+                {forYouPosts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={toggleLike}
+                    onDelete={post.user_id === user?.id ? deletePost : undefined}
+                    onCommentAdded={refreshPosts}
+                  />
+                ))}
+                {postsHasMore && (
+                  postsLoading
+                    ? <View style={s.loadMoreBtn}><ActivityIndicator size="small" color={colors.primary} /></View>
+                    : <Pressable style={s.loadMoreBtn} onPress={loadMorePosts}>
+                        <Ionicons name="chevron-down" size={15} color={colors.primary} />
+                        <Text style={s.loadMoreTxt}>Daha Fazla Göster</Text>
+                      </Pressable>
+                )}
+              </>
             )}
           </View>
         )}
@@ -656,7 +1021,10 @@ export function HomeScreen() {
                 <Text style={s.emptyFeedSub}>Canlı yayınlar başladığında burada görünecek</Text>
                 <Pressable
                   style={s.discoverBtn}
-                  onPress={() => navigation.navigate('Live' as never)}
+                  onPress={() => {
+                    try { navigation.navigate('Live' as never); }
+                    catch { navigation.navigate('Main' as never, { screen: 'CANLI' } as never); }
+                  }}
                 >
                   <Ionicons name="radio-outline" size={14} color="#FFF" />
                   <Text style={s.discoverBtnTxt}>Canlı Yayınlar</Text>
@@ -728,76 +1096,90 @@ export function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F6F7FB' },
+  root: { flex: 1, backgroundColor: colors.bg },
   topBar: {
     position: 'absolute', top: 0, left: 0, right: 0,
     backgroundColor: '#FFFFFF',
     zIndex: 100,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06, shadowRadius: 4, elevation: 4,
+    shadowColor: '#1A2138', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 4,
   },
   scroll: { flex: 1 },
   content: {},
 
-  tabSection: { paddingTop: 6 },
+  tabSection: { paddingTop: 4 },
   tabSectionHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 12, paddingVertical: 10,
   },
-  tabSectionTitle: { fontSize: 15, fontWeight: '800', color: '#0F0F1A', flex: 1 },
+  tabSectionTitle: { fontSize: 15, fontFamily: font.extraBold, color: colors.text, flex: 1 },
   tabSectionBadge: {
     backgroundColor: colors.primaryLight, borderRadius: radius.full,
     paddingHorizontal: 9, paddingVertical: 3,
   },
-  tabSectionBadgeTxt: { fontSize: 11, fontWeight: '800', color: colors.primary },
+  tabSectionBadgeTxt: { fontSize: 11, fontFamily: font.bold, color: colors.primary },
 
-  featuredWrap: { paddingHorizontal: 14, paddingTop: 14, paddingBottom: 4 },
+  featuredWrap: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 4 },
 
-  feedList: { paddingHorizontal: 14, paddingTop: 8, gap: 10 },
+  feedList: { paddingHorizontal: 10, paddingTop: 8, gap: 8 },
   inlineSignal: { marginTop: 4 },
   inlineSignalLabel: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     marginBottom: 6, paddingHorizontal: 2,
   },
   inlineSignalDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary },
-  inlineSignalTxt: { fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
+  inlineSignalTxt: { fontSize: 11, fontFamily: font.bold, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
 
   sectionDivider: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, marginTop: 16, marginBottom: 10,
+    paddingHorizontal: 12, marginTop: 14, marginBottom: 8,
   },
   dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(0,0,0,0.10)' },
-  dividerTxt: { fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
+  dividerTxt: { fontSize: 11, fontFamily: font.bold, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
 
-  tradersScroll: { paddingHorizontal: 14, gap: 10, paddingBottom: 4 },
-  traderCard: { width: 160 },
+  tradersScroll: { paddingHorizontal: 10, gap: 8, paddingBottom: 4 },
+  traderCard: { width: 156 },
 
   composeBar: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: colors.bgPure, paddingHorizontal: 16, paddingVertical: 12,
+    backgroundColor: colors.bgPure, paddingHorizontal: 12, paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider,
   },
   composeAvatar: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: colors.bgInput, alignItems: 'center', justifyContent: 'center',
   },
-  composeAvatarTxt: { fontSize: 14, fontWeight: '800', color: colors.textMuted },
-  composePlaceholder: { flex: 1, fontSize: 14, color: colors.textMuted },
+  composeAvatarImg: { width: 36, height: 36, borderRadius: 18 },
+  composeAvatarTxt: { fontSize: 14, fontFamily: font.bold, color: colors.textMuted },
+  composePlaceholder: { flex: 1, fontSize: 14, fontFamily: font.regular, color: colors.textMuted },
   composeBtn: {
     backgroundColor: colors.primary, borderRadius: 16,
     paddingHorizontal: 14, paddingVertical: 6,
   },
-  composeBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
+  composeBtnTxt: { color: '#fff', fontFamily: font.bold, fontSize: 13 },
 
   emptyFeed: { alignItems: 'center', paddingVertical: 60, gap: 10 },
   emptyFeedIcon:  { fontSize: 44 },
-  emptyFeedTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
-  emptyFeedSub:   { fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 19, paddingHorizontal: 30 },
+  emptyFeedIconWrap: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: colors.bgInput, alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyFeedTitle: { fontSize: 17, fontFamily: font.bold, color: colors.text },
+  emptyFeedSub:   { fontSize: 13, fontFamily: font.regular, color: colors.textMuted, textAlign: 'center', lineHeight: 19, paddingHorizontal: 30 },
 
   discoverBtn:    {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: colors.primary, paddingVertical: 12, paddingHorizontal: 24,
     borderRadius: 24, marginTop: 8,
   },
-  discoverBtnTxt: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+  discoverBtnTxt: { fontSize: 14, fontFamily: font.bold, color: '#FFF' },
+
+  loadMoreBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    marginHorizontal: 10, marginVertical: 10, paddingVertical: 14,
+    backgroundColor: colors.bgPure, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.divider,
+  },
+  loadMoreTxt: { fontSize: 14, fontFamily: font.semiBold, color: colors.primary },
 });

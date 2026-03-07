@@ -11,7 +11,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSubscription } from '../hooks/useSubscription';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 const NOTIF_PREFS_KEY    = '@marketly_notif_prefs';
 const SECURITY_PREFS_KEY = '@marketly_security_prefs';

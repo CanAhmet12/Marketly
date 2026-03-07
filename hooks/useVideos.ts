@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { avatarUrl } from '../lib/avatarUrl';
 import type { VideoCategory, VideoItem } from '../data/mockVideos';
 
 export type VideoType = 'video' | 'short' | 'live' | 'all';
@@ -56,7 +57,7 @@ function mapToVideoItem(row: any, prof: any): VideoItem {
     creator: {
       id:        prof?.id ?? creatorId,
       name:      prof?.full_name ?? prof?.username ?? 'Kullanıcı',
-      avatar:    prof?.avatar_url ?? `https://i.pravatar.cc/80?u=${creatorId}`,
+      avatar:    prof?.avatar_url ?? avatarUrl(creatorId, prof?.full_name ?? prof?.username),
       followers: followersStr,
       verified:  prof?.verified ?? false,
     },

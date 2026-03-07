@@ -21,7 +21,7 @@ import { useMarketPrices } from '../hooks/useMarketPrices';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { createNotification } from '../lib/notifications';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -146,11 +146,49 @@ export function DiscoverScreen() {
   const [sigFilter, setSigFilter]     = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
   const bannerRef                     = useRef<ScrollView>(null);
 
+  // Arama çubuğu focus animasyonu
+  const searchFocusAnim = useRef(new Animated.Value(0)).current;
+  const handleSearchFocus = useCallback(() => {
+    Animated.spring(searchFocusAnim, { toValue: 1, useNativeDriver: false, speed: 25, bounciness: 4 }).start();
+  }, [searchFocusAnim]);
+  const handleSearchBlur = useCallback(() => {
+    Animated.spring(searchFocusAnim, { toValue: 0, useNativeDriver: false, speed: 20, bounciness: 0 }).start();
+  }, [searchFocusAnim]);
+
   // ── Gerçek veriler ───────────────────────────────────────────────────────────
   const { videos: liveVideos }   = useVideos({ type: 'all' });
   const { signals: liveSignals } = useSignals({ activeOnly: true });
   const { analysts }             = useLeaderboard();
   const { allAssets }            = useMarketPrices();
+
+  // ── Trending içerik — engagement score'a göre sıralanmış son 48 saatlik içerik ──
+  const [trendingPosts, setTrendingPosts] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('posts')
+      .select(`
+        id, type, title, content, image_url, thumbnail_url, video_url,
+        likes, comments, views, created_at, user_id,
+        profiles!posts_user_id_fkey(username, full_name, avatar_url, verified)
+      `)
+      .gte('created_at', since48h)
+      .not('type', 'eq', 'live')
+      .order('likes', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (!data) return;
+        // Engagement score: likes*3 + comments*5 + views*0.1 (newness bonus)
+        const scored = data
+          .map((p: any) => ({
+            ...p,
+            score: (p.likes ?? 0) * 3 + (p.comments ?? 0) * 5 + (p.views ?? 0) * 0.1,
+          }))
+          .sort((a: any, b: any) => b.score - a.score)
+          .slice(0, 8);
+        setTrendingPosts(scored);
+      });
+  }, []);
 
   // Mevcut follow durumlarını Supabase'den yükle
   React.useEffect(() => {
@@ -260,7 +298,25 @@ export function DiscoverScreen() {
               <Ionicons name="options-outline" size={18} color="#1A1A2E" />
             </Pressable>
           </View>
-          <View style={s.searchWrap}>
+          <Animated.View style={[
+            s.searchWrap,
+            {
+              borderColor: searchFocusAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [colors.border, colors.primary],
+              }),
+              shadowOpacity: searchFocusAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.05, 0.18],
+              }),
+              transform: [{
+                scaleX: searchFocusAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.012],
+                }),
+              }],
+            },
+          ]}>
             <View style={s.searchIcon}>
               <Ionicons name="search-outline" size={16} color="#9AA0AF" />
             </View>
@@ -270,13 +326,15 @@ export function DiscoverScreen() {
               placeholderTextColor="#B0B8C4"
               value={search}
               onChangeText={setSearch}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
             />
             {search.length > 0 && (
               <Pressable onPress={() => setSearch('')} style={s.searchClear}>
                 <Ionicons name="close-circle" size={16} color="#9AA0AF" />
               </Pressable>
             )}
-          </View>
+          </Animated.View>
         </View>
 
         {/* Tab Bar */}
@@ -359,6 +417,55 @@ export function DiscoverScreen() {
         {/* ─── TAB: KEŞFET ─── */}
         {search.length === 0 && tab === 'kesfet' && (
           <>
+            {/* Trending Posts — son 48s en çok engagement */}
+            {trendingPosts.length > 0 && (
+              <View style={s.section}>
+                <SecHeader icon="rocket-outline" title="🔥 Trend İçerikler" onMore={() => {}} />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
+                  {trendingPosts.map((p: any) => {
+                    const thumb = p.thumbnail_url ?? p.image_url;
+                    const prof  = p.profiles;
+                    return (
+                      <Pressable
+                        key={p.id}
+                        style={tr.card}
+                        onPress={() => {
+                          if (p.type === 'video' || p.type === 'short') {
+                            navigation.navigate('VideoDetail', { item: p });
+                          }
+                        }}
+                      >
+                        {thumb ? (
+                          <Image source={{ uri: thumb }} style={tr.thumb} resizeMode="cover" />
+                        ) : (
+                          <View style={[tr.thumb, tr.thumbText]}>
+                            <Text style={tr.thumbTxtContent} numberOfLines={4}>{p.content}</Text>
+                          </View>
+                        )}
+                        <LinearGradient
+                          colors={['transparent', 'rgba(0,0,0,0.75)']}
+                          style={tr.gradient}
+                        />
+                        <View style={tr.info}>
+                          <Text style={tr.infoTitle} numberOfLines={2}>{p.title ?? p.content}</Text>
+                          <View style={tr.infoRow}>
+                            {prof?.avatar_url && (
+                              <Image source={{ uri: prof.avatar_url }} style={tr.infoAvatar} />
+                            )}
+                            <Text style={tr.infoHandle}>@{prof?.username ?? '...'}</Text>
+                            <View style={tr.likes}>
+                              <Ionicons name="heart" size={10} color="#fff" />
+                              <Text style={tr.likesTxt}>{p.likes >= 1000 ? `${(p.likes/1000).toFixed(1)}K` : (p.likes ?? 0)}</Text>
+                            </View>
+                          </View>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+
             {/* Hero Banner */}
             <View style={s.bannerWrap}>
               <ScrollView
@@ -743,6 +850,29 @@ export function DiscoverScreen() {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+
+// Trending card stiller
+const tr = StyleSheet.create({
+  card: {
+    width: 160, height: 200, borderRadius: 14, overflow: 'hidden',
+    backgroundColor: colors.bgPure,
+    ...shadow.sm,
+  },
+  thumb:           { width: '100%', height: '100%' },
+  thumbText:       { backgroundColor: '#1A1A2E', justifyContent: 'flex-start', padding: 10 },
+  thumbTxtContent: { color: '#CCC', fontSize: 12, lineHeight: 17 },
+  gradient: {
+    position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
+  },
+  info:       { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 10, gap: 4 },
+  infoTitle:  { color: '#FFF', fontSize: 12, fontFamily: font.bold, lineHeight: 16 },
+  infoRow:    { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  infoAvatar: { width: 16, height: 16, borderRadius: 8 },
+  infoHandle: { color: 'rgba(255,255,255,0.7)', fontSize: 10, flex: 1 },
+  likes:      { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  likesTxt:   { color: '#FFF', fontSize: 10, fontFamily: font.bold },
+});
+
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F6F7FB' },
 
@@ -772,6 +902,8 @@ const s = StyleSheet.create({
     backgroundColor: '#F6F7FB', borderRadius: radius.md,
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
     paddingHorizontal: 12, height: 42, gap: 8,
+    shadowColor: colors.primary, shadowOffset: { width: 0, height: 2 }, shadowRadius: 8,
+    elevation: 0,
   },
   searchIcon: { opacity: 0.7 },
   searchInput: { flex: 1, fontSize: 14, color: '#0F0F1A', fontWeight: '500' },

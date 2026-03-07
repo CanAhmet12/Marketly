@@ -1,15 +1,35 @@
-import React, { useRef, useCallback, memo, useState } from 'react';
+import React, { useRef, useCallback, memo, useState, useEffect } from 'react';
 import {
-  View, Text, Pressable, StyleSheet, Image, Animated, Alert, Share,
+  View, Text, Pressable, StyleSheet, Image, Animated, Alert, Share, ActionSheetIOS, Platform, Clipboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { colors, shadow } from '../constants/theme';
+import { colors, shadow, font } from '../constants/theme';
 import type { Post } from '../hooks/usePosts';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
 import { CommentSheet } from './CommentSheet';
+
+function PostImage({ uri }: { uri: string }) {
+  const [error, setError] = useState(false);
+  if (error) {
+    return (
+      <View style={[s.postImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bgInput }]}>
+        <Ionicons name="image-outline" size={28} color={colors.textMuted} />
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>Görsel yüklenemedi</Text>
+      </View>
+    );
+  }
+  return (
+    <Image
+      source={{ uri }}
+      style={s.postImage}
+      resizeMode="cover"
+      onError={() => setError(true)}
+    />
+  );
+}
 
 const TIER_COLOR: Record<string, string> = {
   elite: '#FFD700',
@@ -18,14 +38,20 @@ const TIER_COLOR: Record<string, string> = {
 };
 
 function timeAgo(isoStr: string): string {
-  const diff = Date.now() - new Date(isoStr).getTime();
+  if (!isoStr) return '';
+  const ts = new Date(isoStr).getTime();
+  if (isNaN(ts)) return '';
+  const diff = Date.now() - ts;
+  if (diff < 0) return 'az önce';
   const m = Math.floor(diff / 60000);
   if (m < 1)  return 'az önce';
   if (m < 60) return `${m}dk`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}sa`;
   const d = Math.floor(h / 24);
-  return `${d}g`;
+  if (d < 7)  return `${d}g`;
+  if (d < 30) return `${Math.floor(d / 7)}hf`;
+  return `${Math.floor(d / 30)}ay`;
 }
 
 interface Props {
@@ -40,6 +66,8 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
   const navigation = useNavigation<any>();
   const toast      = useToast();
   const scale      = useRef(new Animated.Value(1)).current;
+
+  const isOwner = user?.id === p.user_id;
 
   const [commentVisible, setCommentVisible] = useState(false);
   const [localComments,  setLocalComments]  = useState(p.comments);
@@ -96,11 +124,77 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
     }
   }, [user?.id, p.id, saved, toast]);
 
+  const handleLongPress = useCallback(() => {
+    const copyText = p.content.slice(0, 200);
+    if (Platform.OS === 'ios') {
+      const options = [
+        saved ? 'Kaydı Kaldır' : 'Kaydet 🔖',
+        'Paylaş',
+        'Kopyala',
+        ...(isOwner && onDelete ? ['Sil'] : []),
+        ...(!isOwner ? ['Şikayet Et'] : []),
+        'İptal',
+      ];
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex: options.length - 1, destructiveButtonIndex: isOwner && onDelete ? options.length - 2 : undefined },
+        (idx) => {
+          if (idx === 0) handleBookmark();
+          else if (idx === 1) handleShare();
+          else if (idx === 2) { Clipboard.setString(copyText); toast.success('Kopyalandı'); }
+          else if (idx === 3 && isOwner && onDelete) {
+            Alert.alert('Postu Sil', 'Emin misin?', [
+              { text: 'İptal', style: 'cancel' },
+              { text: 'Sil', style: 'destructive', onPress: () => onDelete(p.id) },
+            ]);
+          } else if (idx === 3 && !isOwner) {
+            reportPost();
+          }
+        }
+      );
+    } else {
+      // Android — Alert tabanlı
+      const buttons: any[] = [
+        { text: saved ? 'Kaydı Kaldır' : 'Kaydet 🔖', onPress: handleBookmark },
+        { text: 'Paylaş', onPress: handleShare },
+        { text: 'Kopyala', onPress: () => { Clipboard.setString(copyText); toast.success('Kopyalandı'); } },
+        ...(!isOwner ? [{ text: 'Şikayet Et', onPress: reportPost }] : []),
+        ...(isOwner && onDelete ? [{ text: 'Sil', style: 'destructive', onPress: () => {
+          Alert.alert('Postu Sil', 'Emin misin?', [
+            { text: 'İptal', style: 'cancel' },
+            { text: 'Sil', style: 'destructive', onPress: () => onDelete!(p.id) },
+          ]);
+        }}] : []),
+        { text: 'İptal', style: 'cancel' },
+      ];
+      Alert.alert('Gönderi', undefined, buttons);
+    }
+  }, [saved, isOwner, onDelete, handleBookmark, handleShare, p.content, p.id, toast]);
+
+  const reportPost = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      await supabase.from('user_reports').insert({
+        reporter_id: user.id,
+        reported_id: p.user_id,
+        post_id:     p.id,
+        reason:      'inappropriate_content',
+      });
+      toast.success('Rapor gönderildi. İnceleyeceğiz.');
+    } catch {
+      toast.error('Rapor gönderilemedi');
+    }
+  }, [user?.id, p.id, p.user_id, toast]);
+
+  if (!p?.id) return null;
+
   const tierColor = TIER_COLOR[p.author_tier] ?? TIER_COLOR.free;
-  const isOwner   = user?.id === p.user_id;
 
   return (
-    <View style={s.card}>
+    <Pressable
+      style={s.card}
+      onLongPress={handleLongPress}
+      delayLongPress={450}
+    >
       {/* Author row */}
       <View style={s.authorRow}>
         <Pressable
@@ -111,7 +205,7 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
           {p.author_avatar
             ? <Image source={{ uri: p.author_avatar }} style={s.avatar} />
             : <View style={[s.avatar, s.avatarFallback]}>
-                <Text style={s.avatarLetter}>{p.author_name[0]?.toUpperCase()}</Text>
+                <Text style={s.avatarLetter}>{(p.author_name?.[0] ?? '?').toUpperCase()}</Text>
               </View>
           }
           {p.author_tier !== 'free' && (
@@ -166,17 +260,19 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
 
       {/* Image */}
       {p.image_url && (
-        <Image
-          source={{ uri: p.image_url }}
-          style={s.postImage}
-          resizeMode="cover"
-        />
+        <PostImage uri={p.image_url} />
       )}
 
       {/* Actions */}
       <View style={s.actions}>
         {/* Beğen */}
-        <Pressable style={s.actionBtn} onPress={handleLike}>
+        <Pressable
+          style={s.actionBtn}
+          onPress={handleLike}
+          accessibilityRole="button"
+          accessibilityLabel={p.is_liked ? 'Beğeniyi kaldır' : 'Beğen'}
+          accessibilityState={{ selected: p.is_liked }}
+        >
           <Animated.View style={{ transform: [{ scale }] }}>
             <Ionicons
               name={p.is_liked ? 'heart' : 'heart-outline'}
@@ -190,18 +286,34 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
         </Pressable>
 
         {/* Yorum */}
-        <Pressable style={s.actionBtn} onPress={() => setCommentVisible(true)}>
+        <Pressable
+          style={s.actionBtn}
+          onPress={() => setCommentVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`Yorumlar${localComments > 0 ? `, ${localComments} yorum` : ''}`}
+        >
           <Ionicons name="chatbubble-outline" size={19} color={colors.textMuted} />
           <Text style={s.actionTxt}>{localComments > 0 ? localComments : ''}</Text>
         </Pressable>
 
         {/* Paylaş */}
-        <Pressable style={s.actionBtn} onPress={handleShare}>
+        <Pressable
+          style={s.actionBtn}
+          onPress={handleShare}
+          accessibilityRole="button"
+          accessibilityLabel="Paylaş"
+        >
           <Ionicons name="share-social-outline" size={20} color={colors.textMuted} />
         </Pressable>
 
         {/* Kaydet */}
-        <Pressable style={[s.actionBtn, { marginLeft: 'auto' }]} onPress={handleBookmark}>
+        <Pressable
+          style={[s.actionBtn, { marginLeft: 'auto' }]}
+          onPress={handleBookmark}
+          accessibilityRole="button"
+          accessibilityLabel={saved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
+          accessibilityState={{ selected: saved }}
+        >
           <Ionicons
             name={saved ? 'bookmark' : 'bookmark-outline'}
             size={19}
@@ -220,7 +332,7 @@ export const PostCard = memo(function PostCard({ post: p, onLike, onDelete, onCo
           onCommentAdded?.();
         }}
       />
-    </View>
+    </Pressable>
   );
 });
 
@@ -229,19 +341,19 @@ const s = StyleSheet.create({
     backgroundColor: colors.bgPure,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.divider,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 14,
     gap: 10,
   },
 
   authorRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   avatarWrap: { position: 'relative' },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
+  avatar: { width: 42, height: 42, borderRadius: 21 },
   avatarFallback: {
     backgroundColor: colors.bgInput,
     alignItems: 'center', justifyContent: 'center',
   },
-  avatarLetter: { fontSize: 15, fontWeight: '800', color: colors.textMuted },
+  avatarLetter: { fontSize: 16, fontFamily: font.black, color: colors.primary },
   tierDot: {
     position: 'absolute', bottom: 0, right: 0,
     width: 12, height: 12, borderRadius: 6,
@@ -250,30 +362,30 @@ const s = StyleSheet.create({
 
   authorInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  authorName: { fontSize: 14, fontWeight: '700', color: colors.text },
+  authorName: { fontSize: 14, fontFamily: font.bold, color: colors.text },
   tierBadge: { borderRadius: 5, paddingHorizontal: 5, paddingVertical: 1.5 },
-  tierTxt:   { fontSize: 9, fontWeight: '800' },
-  handleTime:{ fontSize: 11, color: colors.textMuted, marginTop: 1 },
+  tierTxt:   { fontSize: 9, fontFamily: font.bold },
+  handleTime:{ fontSize: 11, fontFamily: font.regular, color: colors.textMuted, marginTop: 2 },
 
   rightMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   assetTag: {
     backgroundColor: colors.primaryLight,
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
   },
-  assetTagTxt: { fontSize: 12, fontWeight: '800', color: colors.primary },
+  assetTagTxt: { fontSize: 12, fontFamily: font.bold, color: colors.primary },
   menuBtn: { padding: 4 },
 
-  content: { fontSize: 14, color: colors.text, lineHeight: 21 },
+  content: { fontSize: 15, fontFamily: font.regular, color: colors.text, lineHeight: 23 },
 
   postImage: {
-    width: '100%', height: 200,
-    borderRadius: 12, backgroundColor: colors.bgInput,
+    width: '100%', height: 220,
+    borderRadius: 14, backgroundColor: colors.bgInput,
   },
 
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8,
+    paddingVertical: 8, paddingHorizontal: 10, borderRadius: 10,
   },
-  actionTxt: { fontSize: 13, color: colors.textMuted, fontWeight: '600', minWidth: 16 },
+  actionTxt: { fontSize: 13, fontFamily: font.semiBold, color: colors.textMuted, minWidth: 16 },
 });

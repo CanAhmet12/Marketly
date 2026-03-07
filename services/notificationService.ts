@@ -62,10 +62,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
 // ─── Token'ı Supabase'e Kaydet ────────────────────────────────────────────────
 export async function savePushToken(userId: string, token: string) {
   try {
+    // push_tokens tablosuna upsert (Edge Function buradan okuyor)
     await supabase
-      .from('profiles')
-      .update({ push_token: token })
-      .eq('id', userId);
+      .from('push_tokens')
+      .upsert({ user_id: userId, token, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
   } catch {}
 }
 

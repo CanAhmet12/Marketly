@@ -15,11 +15,15 @@ import { useVideos } from '../hooks/useVideos';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideoComments } from '../hooks/useVideoComments';
 import { supabase } from '../lib/supabase';
-import { colors, radius } from '../constants/theme';
+import { colors, radius, font } from '../constants/theme';
 
 // ─── TikTok-style video oynatıcı ─────────────────────────────────────────────
-function ShortVideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
-  const player = useVideoPlayer(uri, p => { p.loop = true; });
+function ShortVideoPlayer({ uri, isActive, preload }: { uri: string; isActive: boolean; preload?: boolean }) {
+  const player = useVideoPlayer(uri, p => {
+    p.loop = true;
+    // Preload: video başta durdurulmuş ama yüklenmiş olsun
+    if (!isActive) p.pause();
+  });
 
   useEffect(() => {
     try { if (isActive) player.play(); else player.pause(); } catch {}
@@ -249,9 +253,9 @@ const ab = StyleSheet.create({
 
 // ─── Short Card ───────────────────────────────────────────────────────────────
 function ShortCard({
-  item, screenHeight, isActive,
+  item, screenHeight, isActive, preload,
 }: {
-  item: ShortItem; screenHeight: number; isActive: boolean;
+  item: ShortItem; screenHeight: number; isActive: boolean; preload?: boolean;
 }) {
   const toast        = useToast();
   const { user }     = useAuth();
@@ -263,6 +267,32 @@ function ShortCard({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText]   = useState('');
   const progressAnim = useRef(new Animated.Value(0)).current;
+
+  // Double-tap like
+  const lastTap = useRef(0);
+  const heartAnim = useRef(new Animated.Value(0)).current;
+
+  const triggerDoubleTapLike = () => {
+    if (!liked) {
+      setLiked(true);
+      supabase.from('video_likes').upsert({ user_id: user?.id, video_id: item.id }, { onConflict: 'user_id,video_id' }).then(() => {});
+    }
+    // Kalp animasyonu
+    heartAnim.setValue(0);
+    Animated.sequence([
+      Animated.spring(heartAnim, { toValue: 1, useNativeDriver: true, speed: 20 }),
+      Animated.delay(600),
+      Animated.timing(heartAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const handleScreenPress = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      triggerDoubleTapLike();
+    }
+    lastTap.current = now;
+  };
 
   const {
     comments,
@@ -388,10 +418,24 @@ function ShortCard({
     <View style={[sc.root, { height: screenHeight }]}>
       {/* Background — video varsa oynat, yoksa thumbnail göster */}
       {item.videoUrl ? (
-        <ShortVideoPlayer uri={item.videoUrl} isActive={isActive} />
+        <ShortVideoPlayer uri={item.videoUrl} isActive={isActive} preload={preload} />
       ) : (
         <Image source={{ uri: item.thumbnail }} style={sc.bg} resizeMode="cover" />
       )}
+
+      {/* Double-tap yakalayıcı — görünmez tam ekran Pressable */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={handleScreenPress} />
+
+      {/* Double-tap kalp animasyonu */}
+      <Animated.View
+        pointerEvents="none"
+        style={[sc.doubleTapHeart, {
+          opacity: heartAnim,
+          transform: [{ scale: heartAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.5, 1.4, 1.2] }) }],
+        }]}
+      >
+        <Ionicons name="heart" size={90} color="#FF3B3B" />
+      </Animated.View>
 
       {/* Gradient layers */}
       <View style={sc.gradTop} />
@@ -575,7 +619,7 @@ function ShortCard({
           {/* Comment list */}
           <ScrollView
             style={cms.list}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 16 }}
+            contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 8, gap: 16 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
@@ -674,6 +718,11 @@ function ShortCard({
 const sc = StyleSheet.create({
   root: { width: W, backgroundColor: '#000', position: 'relative', overflow: 'hidden' },
   bg: { position: 'absolute', width: '100%', height: '100%' },
+  doubleTapHeart: {
+    position: 'absolute', top: '35%', left: '50%', marginLeft: -45,
+    alignItems: 'center', justifyContent: 'center',
+    pointerEvents: 'none',
+  },
 
   // Gradient layers
   gradTop: {
@@ -906,11 +955,16 @@ export function ShortsScreen() {
   const onViewRef = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) setActiveIndex(viewableItems[0].index ?? 0);
   });
-  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 });
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
   const renderItem = useCallback(
     ({ item, index }: { item: ShortItem; index: number }) => (
-      <ShortCard item={item} screenHeight={ITEM_H} isActive={index === activeIndex} />
+      <ShortCard
+        item={item}
+        screenHeight={ITEM_H}
+        isActive={index === activeIndex}
+        preload={index === activeIndex + 1}
+      />
     ),
     [ITEM_H, activeIndex]
   );
@@ -981,6 +1035,10 @@ export function ShortsScreen() {
           viewabilityConfig={viewConfigRef.current}
           getItemLayout={(_, index) => ({ length: ITEM_H, offset: ITEM_H * index, index })}
           style={{ flex: 1 }}
+          initialNumToRender={2}
+          maxToRenderPerBatch={3}
+          windowSize={5}
+          removeClippedSubviews={false}
         />
       )}
     </View>

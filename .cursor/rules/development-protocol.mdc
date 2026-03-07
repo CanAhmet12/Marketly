@@ -1,0 +1,55 @@
+---
+description: Marketly geliştirme protokolü — her oturumda otomatik uygula
+alwaysApply: true
+---
+
+# Marketly Geliştirme Protokolü
+
+## Oturum Başlangıç Sırası (bu sırayla oku)
+
+1. `PROJECT_CONTEXT.md` — projenin tek sayfalık özeti
+2. `FEATURE_AUDIT.md` — tamamlanan/eksik özellikler ve sonraki görevler
+3. İhtiyaç duyulursa `docs/` klasörü:
+   - `docs/modules.md` → hangi dosya ne yapar
+   - `docs/database_schema.md` → tablo yapıları
+   - `docs/api_structure.md` → API çağrıları
+   - `docs/architecture.md` → mimari kararlar
+   - `docs/features.md` → özellik listesi
+
+## AI Token Tasarrufu Kuralları
+
+- **Tüm projeyi tarama** — sadece ilgili dosyaları oku
+- **`docs/` klasörünü önce kullan** — repository taramadan önce kontrol et
+- **Değiştireceğin dosyaları `Read` ile gör**, tümünü açma
+- **`Grep` ile arama yap**, tüm dosyayı okuma
+- **Küçük ve hedefli `StrReplace`** — tüm dosyayı yeniden yazma
+- Yanıtları kısa ve teknik tut; uzun açıklama yazma
+
+## Dosya Değişikliği Kuralları
+
+- **`StrReplace` kullan** — PowerShell `Set-Content` YASAK (Türkçe encoding bozar)
+- Değişiklik öncesi `Read` ile hedef satırları gör
+- Her değişiklik sonrası `ReadLints` ile hata kontrol et
+- Birden fazla bağımsız değişiklik varsa paralel araç çağrısı yap
+
+## Kod Kalitesi Standartları
+
+- Font: `fontFamily: font.bold` kullan — `fontWeight: '700'` yasaklı
+- Padding: `paddingHorizontal` max `12` (geniş görünüm)
+- Kartlar: `marginHorizontal: 0` (SignalCard, VideoCard, PostCard)
+- Import: `import { colors, font, radius, shadow } from '../constants/theme'`
+- Tema: sadece light mode — dark mode yok
+
+## Referans Uygulamalar
+
+- Feed → Instagram / Twitter
+- Video → YouTube / TikTok
+- Finans → Robinhood / Binance
+- Canlı → Twitch / Bigo Live
+
+## Oturum Sonu
+
+`FEATURE_AUDIT.md` güncelle:
+- Tamamlananları ✅ işaretle
+- Oturum tablosuna satır ekle
+- Sonraki oturum planını yaz

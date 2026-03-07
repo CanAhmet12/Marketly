@@ -8,13 +8,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTabBar } from '../contexts/TabBarContext';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { MarketAsset } from '../data/mockMarkets';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { liveToMarketAsset } from '../services/marketService';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { Sparkline } from '../components/Sparkline';
 import { useToast } from '../contexts/ToastContext';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius, shadow, font } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -590,6 +591,20 @@ export function MarketsScreen() {
   const [search, setSearch] = useState('');
   const searchInputRef      = useRef<any>(null);
 
+  // Seçili kategoriyi AsyncStorage'a kaydet / yükle
+  useEffect(() => {
+    AsyncStorage.getItem('markets_active_tab').then(saved => {
+      if (saved && ['crypto','stocks','commodities','forex'].includes(saved)) {
+        setTab(saved as Tab);
+      }
+    });
+  }, []);
+
+  const handleSetTab = useCallback((t: Tab) => {
+    setTab(t);
+    AsyncStorage.setItem('markets_active_tab', t).catch(() => {});
+  }, []);
+
   // ── Gerçek veri hook'u ──
   const { byCategory, topMovers, allAssets, isLoading: pricesLoading } = useMarketPrices();
   const { isWatched, toggle: toggleWatch } = useWatchlist();
@@ -723,7 +738,7 @@ export function MarketsScreen() {
                       selected={tab === sg.key}
                       assetCount={assets.length}
                       topAsset={top}
-                      onPress={() => setTab(sg.key)}
+                      onPress={() => handleSetTab(sg.key)}
                     />
                   );
                 })}

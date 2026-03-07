@@ -18,7 +18,23 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Canlı yayın için kamera gereklidir.",
         "NSMicrophoneUsageDescription": "Canlı yayın için mikrofon gereklidir.",
-        "NSPhotoLibraryUsageDescription": "Video ve fotoğraf yüklemek için galeri erişimi gereklidir."
+        "NSPhotoLibraryUsageDescription": "Video ve fotoğraf yüklemek için galeri erişimi gereklidir.",
+        "NSUserTrackingUsageDescription": "İlgili içerikleri göstermek için kullanılır.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyTracking": false
       }
     },
     "android": {
@@ -32,8 +48,6 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
@@ -44,6 +58,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "newArchEnabled": true,
     "plugins": [
       "expo-video",
       [
@@ -63,7 +78,11 @@
       "expo-secure-store",
       "expo-font"
     ],
-    "extra": {}
-
+    "extra": {
+      "eas": {
+        "projectId": "BURAYA_EAS_INIT_SONRASI_GELEN_ID_YAZILACAK"
+      }
+    },
+    "owner": "BURAYA_EXPO_KULLANICI_ADIN_YAZILACAK"
   }
 }

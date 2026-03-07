@@ -11,12 +11,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { RtcSurfaceView } from 'react-native-agora';
+import { RtcSurfaceView } from '../hooks/useAgoraLive';
 import { useAgoraLive } from '../hooks/useAgoraLive';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { colors, radius } from '../constants/theme';
+import { colors, radius, font } from '../constants/theme';
 
 const GIFTS = [
   { icon: '💎', name: 'Elmas', cost: 500 },

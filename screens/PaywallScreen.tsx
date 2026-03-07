@@ -1,43 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
-  Animated, Dimensions, Platform, Linking,
+  Animated, Dimensions, Platform, Linking, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { colors, font, radius, shadow } from '../constants/theme';
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// ─── Plan tanımları ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Plan tanÄ±mlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Plan {
   id:         string;
   label:      string;
   price:      string;
   period:     string;
   badge?:     string;
-  monthlyEq?: string;  // aylık eşdeğer (yıllıkta göster)
+  monthlyEq?: string;  // aylÄ±k eÅŸdeÄŸer (yÄ±llÄ±kta gÃ¶ster)
 }
 
 const PLANS: Plan[] = [
   {
     id:    'monthly',
-    label: 'Aylık',
-    price: '₺149',
+    label: 'AylÄ±k',
+    price: 'â‚º149',
     period: '/ay',
   },
   {
     id:    'yearly',
-    label: 'Yıllık',
-    price: '₺999',
-    period: '/yıl',
+    label: 'YÄ±llÄ±k',
+    price: 'â‚º999',
+    period: '/yÄ±l',
     badge: '2 AY BEDAVA',
-    monthlyEq: '₺83.25/ay',
+    monthlyEq: 'â‚º83.25/ay',
   },
 ];
 
-// ─── Özellik listesi ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Ã–zellik listesi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ProFeature {
   icon:  React.ComponentProps<typeof Ionicons>['name'];
   color: string;
@@ -48,37 +49,37 @@ interface ProFeature {
 const FEATURES: ProFeature[] = [
   {
     icon: 'flash',       color: '#FFB800',
-    title: 'Sınırsız Sinyal',
-    desc:  'Tüm analistlerin sinyallerini takip et',
+    title: 'SÄ±nÄ±rsÄ±z Sinyal',
+    desc:  'TÃ¼m analistlerin sinyallerini takip et',
   },
   {
     icon: 'notifications', color: '#FF6B6B',
-    title: 'Sınırsız Fiyat Alarmı',
-    desc:  'Anlık bildirimlerle hiçbir fırsatı kaçırma',
+    title: 'SÄ±nÄ±rsÄ±z Fiyat AlarmÄ±',
+    desc:  'AnlÄ±k bildirimlerle hiÃ§bir fÄ±rsatÄ± kaÃ§Ä±rma',
   },
   {
     icon: 'bar-chart',   color: '#34C759',
-    title: 'Gelişmiş Grafik',
-    desc:  'Candlestick + teknik çizim araçları',
+    title: 'GeliÅŸmiÅŸ Grafik',
+    desc:  'Candlestick + teknik Ã§izim araÃ§larÄ±',
   },
   {
     icon: 'sparkles',    color: '#AF52DE',
     title: 'MarketAI Asistan',
-    desc:  'Sınırsız AI destekli piyasa analizi',
+    desc:  'SÄ±nÄ±rsÄ±z AI destekli piyasa analizi',
   },
   {
     icon: 'document-text', color: '#007AFF',
-    title: 'Portföy Raporu',
-    desc:  'Haftalık PDF performans analizi',
+    title: 'PortfÃ¶y Raporu',
+    desc:  'HaftalÄ±k PDF performans analizi',
   },
   {
     icon: 'ban',         color: '#FF9500',
-    title: 'Reklamsız Deneyim',
-    desc:  'Hiçbir reklam, tamamen odaklanmış kullanım',
+    title: 'ReklamsÄ±z Deneyim',
+    desc:  'HiÃ§bir reklam, tamamen odaklanmÄ±ÅŸ kullanÄ±m',
   },
 ];
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function PaywallScreen() {
   const insets     = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -108,13 +109,25 @@ export function PaywallScreen() {
   }, []);
 
   const handleSubscribe = () => {
-    // RevenueCat entegrasyonu eklenecek — şimdilik bilgi göster
-    navigation.goBack();
+    Alert.alert(
+      'Ödeme Sistemi',
+      `${plan === 'yearly' ? 'Yıllık' : 'Aylık'} plan için ödeme altyapısı yakın zamanda aktifleşecek.\n\nŞu an tüm özellikler ücretsiz kullanılabilir.`,
+      [
+        { text: 'Tamam', onPress: () => navigation.goBack() },
+        {
+          text: 'Daha Fazla Bilgi',
+          onPress: () => Linking.openURL('https://marketly.app').catch(() => {}),
+        },
+      ]
+    );
   };
 
   const handleRestore = () => {
-    // RevenueCat restore
-    navigation.goBack();
+    Alert.alert(
+      'Satin Alma Geri Yukle',
+      'Odeme sistemi henuz aktif degil. Satin alma gecmisi su an dogrulanamÄ±yor.',
+      [{ text: 'Tamam' }]
+    );
   };
 
   const activePlan = PLANS.find(p => p.id === plan)!;
@@ -140,9 +153,9 @@ export function PaywallScreen() {
         contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero ── */}
+        {/* â”€â”€ Hero â”€â”€ */}
         <Animated.View style={[styles.hero, { opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }]}>
-          {/* Glow halkası */}
+          {/* Glow halkasÄ± */}
           <Animated.View style={[styles.glowRing, { opacity: glowAnim }]} />
 
           <LinearGradient
@@ -155,11 +168,11 @@ export function PaywallScreen() {
 
           <Text style={styles.heroTitle}>Marketly Pro</Text>
           <Text style={styles.heroSub}>
-            Piyasaların bir adım önünde ol.{'\n'}Her özellik, sınırsız erişim.
+            PiyasalarÄ±n bir adÄ±m Ã¶nÃ¼nde ol.{'\n'}Her Ã¶zellik, sÄ±nÄ±rsÄ±z eriÅŸim.
           </Text>
         </Animated.View>
 
-        {/* ── Özellikler ── */}
+        {/* â”€â”€ Ã–zellikler â”€â”€ */}
         <Animated.View style={{ opacity: fadeAnim }}>
           {FEATURES.map((f, i) => (
             <View key={i} style={styles.featureRow}>
@@ -175,7 +188,7 @@ export function PaywallScreen() {
           ))}
         </Animated.View>
 
-        {/* ── Plan seçici ── */}
+        {/* â”€â”€ Plan seÃ§ici â”€â”€ */}
         <Animated.View style={[styles.planRow, { opacity: fadeAnim }]}>
           {PLANS.map(p => {
             const active = plan === p.id;
@@ -208,7 +221,7 @@ export function PaywallScreen() {
           })}
         </Animated.View>
 
-        {/* ── CTA ── */}
+        {/* â”€â”€ CTA â”€â”€ */}
         <Animated.View style={{ opacity: fadeAnim }}>
           <Pressable onPress={handleSubscribe} style={styles.ctaWrap}>
             <LinearGradient
@@ -217,28 +230,28 @@ export function PaywallScreen() {
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             >
               <Ionicons name="flash" size={18} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.ctaText}>7 Gün Ücretsiz Dene</Text>
+              <Text style={styles.ctaText}>7 GÃ¼n Ãœcretsiz Dene</Text>
             </LinearGradient>
           </Pressable>
 
           <Text style={styles.ctaSub}>
-            {activePlan.price}{activePlan.period} · İstediğin zaman iptal et
+            {activePlan.price}{activePlan.period} Â· Ä°stediÄŸin zaman iptal et
           </Text>
         </Animated.View>
 
-        {/* ── Restore ── */}
+        {/* â”€â”€ Restore â”€â”€ */}
         <Pressable onPress={handleRestore} style={styles.restoreBtn}>
-          <Text style={styles.restoreText}>Satın almayı geri yükle</Text>
+          <Text style={styles.restoreText}>SatÄ±n almayÄ± geri yÃ¼kle</Text>
         </Pressable>
 
-        {/* ── Yasal linkler ── */}
+        {/* â”€â”€ Yasal linkler â”€â”€ */}
         <View style={styles.legalRow}>
           <Pressable onPress={() => Linking.openURL('https://marketly.app/privacy')}>
-            <Text style={styles.legalLink}>Gizlilik Politikası</Text>
+            <Text style={styles.legalLink}>Gizlilik PolitikasÄ±</Text>
           </Pressable>
-          <Text style={styles.legalDot}>·</Text>
+          <Text style={styles.legalDot}>Â·</Text>
           <Pressable onPress={() => Linking.openURL('https://marketly.app/terms')}>
-            <Text style={styles.legalLink}>Kullanım Şartları</Text>
+            <Text style={styles.legalLink}>KullanÄ±m ÅartlarÄ±</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -246,7 +259,7 @@ export function PaywallScreen() {
   );
 }
 
-// ─── Stiller ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Stiller â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -268,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent:  'center',
   },
 
-  // ── Hero ──
+  // â”€â”€ Hero â”€â”€
   hero: {
     alignItems:    'center',
     marginBottom:  32,
@@ -310,7 +323,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // ── Features ──
+  // â”€â”€ Features â”€â”€
   featureRow: {
     flexDirection:  'row',
     alignItems:     'center',
@@ -331,7 +344,7 @@ const styles = StyleSheet.create({
   featureTitle: {
     color:      '#fff',
     fontSize:   14,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
     marginBottom: 2,
   },
   featureDesc: {
@@ -340,7 +353,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // ── Plans ──
+  // â”€â”€ Plans â”€â”€
   planRow: {
     flexDirection:  'row',
     gap:            12,
@@ -374,13 +387,13 @@ const styles = StyleSheet.create({
   planBadgeText: {
     color:      '#000',
     fontSize:   9,
-    fontWeight: '800',
+    fontFamily: font.extraBold,
     letterSpacing: 0.5,
   },
   planLabel: {
     color:      '#9AA0AF',
     fontSize:   13,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
     marginBottom: 6,
     marginTop:  8,
   },
@@ -390,19 +403,19 @@ const styles = StyleSheet.create({
   planPrice: {
     color:      '#9AA0AF',
     fontSize:   22,
-    fontWeight: '800',
+    fontFamily: font.extraBold,
   },
   planPriceActive: {
     color: '#fff',
   },
   planPeriod: {
     fontSize:   13,
-    fontWeight: '400',
+    fontFamily: font.regular,
   },
   planMonthly: {
     color:     '#34C759',
     fontSize:  11,
-    fontWeight: '500',
+    fontFamily: font.medium,
     marginTop:  4,
   },
   planCheck: {
@@ -411,7 +424,7 @@ const styles = StyleSheet.create({
     right:     8,
   },
 
-  // ── CTA ──
+  // â”€â”€ CTA â”€â”€
   ctaWrap: {
     width: W - 40,
   },
@@ -430,7 +443,7 @@ const styles = StyleSheet.create({
   ctaText: {
     color:      '#fff',
     fontSize:   17,
-    fontWeight: '700',
+    fontFamily: font.bold,
     letterSpacing: -0.3,
   },
   ctaSub: {
@@ -441,7 +454,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // ── Bottom ──
+  // â”€â”€ Bottom â”€â”€
   restoreBtn: {
     paddingVertical: 12,
   },
@@ -464,3 +477,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 });
+
+
+
+

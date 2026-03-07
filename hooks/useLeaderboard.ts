@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { avatarUrl } from '../lib/avatarUrl';
 
 export interface AnalystEntry {
   rank:      number;
@@ -70,8 +71,9 @@ export function useLeaderboard() {
   const [gainers,    setGainers]    = useState<GainerEntry[]>([]);
   const [loading,    setLoading]    = useState(true);
 
-  const fetchLeaderboard = useCallback(async () => {
+  const fetchLeaderboard = useCallback(async (period: 'all' | 'weekly' = 'all') => {
     setLoading(true);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     try {
       // ── Top analistler ──
       const { data: analystData } = await supabase
@@ -87,7 +89,7 @@ export function useLeaderboard() {
           id:        p.id,
           name:      p.full_name || p.username,
           handle:    `@${p.username}`,
-          avatar:    p.avatar_url || `https://i.pravatar.cc/80?u=${p.id}`,
+          avatar:    p.avatar_url || avatarUrl(p.id, p.full_name ?? p.username),
           accuracy:  Math.round(p.signal_accuracy * 10) / 10,
           signals:   0,
           followers: fmtFollowers(p.follower_count || 0),
@@ -113,11 +115,17 @@ export function useLeaderboard() {
       }
 
       // ── Top sinyaller ──
-      const { data: sigData } = await supabase
+      let sigQuery = supabase
         .from('signals')
         .select('id, creator_id, asset_id, direction, copies_count, created_at')
         .order('copies_count', { ascending: false })
         .limit(5);
+
+      if (period === 'weekly') {
+        sigQuery = sigQuery.gte('created_at', weekAgo);
+      }
+
+      const { data: sigData } = await sigQuery;
 
       if (sigData && sigData.length > 0) {
         const profIds  = [...new Set(sigData.map((s: any) => s.creator_id))];
@@ -150,9 +158,16 @@ export function useLeaderboard() {
       }
 
       // ── Portföy kazananları (gerçek PnL) ──
-      const { data: holdingsData } = await supabase
+      // NOT: Bu sorgu için ADD_TABLES.sql'deki "Giriş yapanlar tüm holdings'i okuyabilir" policy gerekli
+      const { data: holdingsData, error: holdingsErr } = await supabase
         .from('portfolio_holdings')
-        .select('user_id, quantity, avg_cost, asset_id');
+        .select('user_id, quantity, avg_cost, asset_id')
+        .limit(1000);
+
+      if (holdingsErr) {
+        // RLS engelliyorsa sessizce geç
+        console.warn('[useLeaderboard] holdings sorgu hatası:', holdingsErr.message);
+      }
 
       if (holdingsData && holdingsData.length > 0) {
         // Tüm unique asset_id'lerin güncel fiyatlarını çek
@@ -209,7 +224,7 @@ export function useLeaderboard() {
                   id:     uid,
                   name:   profMap[uid]?.full_name || profMap[uid]?.username || 'Kullanıcı',
                   handle: `@${profMap[uid]?.username || 'user'}`,
-                  avatar: profMap[uid]?.avatar_url || `https://i.pravatar.cc/80?u=${uid}`,
+                  avatar: profMap[uid]?.avatar_url || avatarUrl(uid, profMap[uid]?.full_name ?? profMap[uid]?.username),
                   gain:   gainPct >= 0 ? `+${gainPct.toFixed(1)}%` : `${gainPct.toFixed(1)}%`,
                   value:  `$${stats.current.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
                   badge:  i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : '',

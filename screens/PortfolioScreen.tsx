@@ -14,7 +14,7 @@ import { liveToMarketAsset } from '../services/marketService';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { PortfolioShareCard } from '../components/PortfolioShareCard';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -92,18 +92,36 @@ function EditHoldingModal({ visible, holding, onClose, onSave }: EditModalProps)
 
 // ─── Add Holding Modal ────────────────────────────────────────────────────────
 interface AddModalProps {
-  visible:  boolean;
-  onClose:  () => void;
-  onAdd:    (asset: string, qty: number, cost: number) => Promise<void>;
+  visible:   boolean;
+  onClose:   () => void;
+  onAdd:     (asset: string, qty: number, cost: number) => Promise<void>;
+  allAssets: { symbol: string; name: string; price: number }[];
 }
-function AddHoldingModal({ visible, onClose, onAdd }: AddModalProps) {
-  const [asset,   setAsset]   = useState('');
-  const [qty,     setQty]     = useState('');
-  const [cost,    setCost]    = useState('');
-  const [saving,  setSaving]  = useState(false);
-  const [fieldError, setFieldError] = useState<string | null>(null);
+function AddHoldingModal({ visible, onClose, onAdd, allAssets }: AddModalProps) {
+  const [asset,       setAsset]       = useState('');
+  const [qty,         setQty]         = useState('');
+  const [cost,        setCost]        = useState('');
+  const [saving,      setSaving]      = useState(false);
+  const [fieldError,  setFieldError]  = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const reset = () => { setAsset(''); setQty(''); setCost(''); setFieldError(null); };
+  const filteredAssets = asset.trim().length >= 1
+    ? allAssets
+        .filter(a =>
+          a.symbol.toLowerCase().includes(asset.toLowerCase()) ||
+          a.name.toLowerCase().includes(asset.toLowerCase())
+        )
+        .slice(0, 6)
+    : [];
+
+  const selectAsset = (sym: string, price: number) => {
+    setAsset(sym);
+    if (!cost) setCost(String(price));
+    setShowDropdown(false);
+    setFieldError(null);
+  };
+
+  const reset = () => { setAsset(''); setQty(''); setCost(''); setFieldError(null); setShowDropdown(false); };
 
   const handleAdd = async () => {
     setFieldError(null);
@@ -139,9 +157,45 @@ function AddHoldingModal({ visible, onClose, onAdd }: AddModalProps) {
             </View>
           )}
 
-          <MInput label="Sembol (örn: BTC, AAPL)" value={asset}
-            onChangeText={t => { setAsset(t.toUpperCase()); setFieldError(null); }} placeholder="BTC"
-            autoCapitalize="characters" />
+          {/* Sembol alanı — autocomplete */}
+          <View style={m.fieldWrap}>
+            <Text style={m.fieldLabel}>Sembol</Text>
+            <TextInput
+              style={m.input}
+              placeholder="BTC, AAPL, THYAO..."
+              placeholderTextColor="#9AA0AF"
+              value={asset}
+              onChangeText={t => {
+                setAsset(t.toUpperCase());
+                setFieldError(null);
+                setShowDropdown(t.trim().length >= 1);
+              }}
+              autoCapitalize="characters"
+              autoCorrect={false}
+            />
+            {showDropdown && filteredAssets.length > 0 && (
+              <View style={m.dropdown}>
+                {filteredAssets.map(a => (
+                  <Pressable
+                    key={a.symbol}
+                    style={m.dropdownItem}
+                    onPress={() => selectAsset(a.symbol, a.price)}
+                  >
+                    <View style={m.dropdownLeft}>
+                      <Text style={m.dropdownSymbol}>{a.symbol}</Text>
+                      <Text style={m.dropdownName} numberOfLines={1}>{a.name}</Text>
+                    </View>
+                    <Text style={m.dropdownPrice}>
+                      ${a.price >= 1000
+                        ? a.price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                        : a.price.toFixed(a.price < 1 ? 4 : 2)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+
           <MInput label="Miktar" value={qty}
             onChangeText={t => { setQty(t); setFieldError(null); }} placeholder="0.00"
             keyboardType="decimal-pad" />
@@ -166,7 +220,7 @@ function AddHoldingModal({ visible, onClose, onAdd }: AddModalProps) {
 function MInput({ label, ...props }: { label: string } & React.ComponentProps<typeof TextInput>) {
   return (
     <View style={m.fieldWrap}>
-      <Text style={m.label}>{label}</Text>
+      <Text style={m.fieldLabel}>{label}</Text>
       <TextInput style={m.input} placeholderTextColor="#9AA0AF" {...props} />
     </View>
   );
@@ -374,6 +428,11 @@ export function PortfolioScreen() {
         visible={addModal}
         onClose={() => setAddModal(false)}
         onAdd={handleAdd}
+        allAssets={allAssets.map(a => ({
+          symbol: a.symbol,
+          name:   a.name ?? a.symbol,
+          price:  a.price ?? 0,
+        }))}
       />
       <EditHoldingModal
         visible={editTarget !== null}
@@ -416,6 +475,22 @@ function HoldingRow({ holding: h, onRemove, onEdit }: { holding: any; onRemove: 
       </Pressable>
       {expanded && (
         <View style={s.holdingExpanded}>
+          {/* Mini PnL bar */}
+          <View style={s.pnlBarWrap}>
+            <View style={s.pnlBarTrack}>
+              <View style={[
+                s.pnlBarFill,
+                {
+                  width: `${Math.min(Math.abs(h.pnl_pct), 100)}%` as any,
+                  backgroundColor: isUp ? '#34C759' : '#FF3B3B',
+                }
+              ]} />
+            </View>
+            <Text style={[s.pnlBarLabel, { color: isUp ? '#34C759' : '#FF3B3B' }]}>
+              {isUp ? '▲' : '▼'} {Math.abs(h.pnl_pct).toFixed(2)}% PnL
+            </Text>
+          </View>
+
           <View style={s.holdingDetail}>
             <Text style={s.holdingDetailLbl}>Mevcut Fiyat</Text>
             <Text style={s.holdingDetailVal}>{fmtUSD(h.current_price)}</Text>
@@ -447,9 +522,66 @@ function HoldingRow({ holding: h, onRemove, onEdit }: { holding: any; onRemove: 
 }
 
 // ─── AllocationView ────────────────────────────────────────────────────────────
+/** SVG gerektirmeyen basit donut chart — View + borderRadius + rotate trick */
+function DonutChart({ holdings }: { holdings: any[] }) {
+  const W = Dimensions.get('window').width;
+  const SIZE = Math.min(W * 0.55, 200);
+  const THICK = SIZE * 0.18;
+
+  // Toplam değere göre açı hesapla
+  const total = holdings.reduce((sum, h) => sum + h.allocation, 0) || 1;
+  let cumulativeAngle = -90; // Saat 12'den başla
+
+  const segments = holdings.map(h => {
+    const angle = (h.allocation / total) * 360;
+    const start = cumulativeAngle;
+    cumulativeAngle += angle;
+    return { ...h, startAngle: start, sweepAngle: angle };
+  });
+
+  return (
+    <View style={{ alignItems: 'center', marginVertical: 16 }}>
+      {/* Donut merkezi bilgi */}
+      <View style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
+        {/* Dış halka — her dilim için bir arc View çiziyoruz */}
+        {segments.map((seg, i) => {
+          if (seg.sweepAngle < 1) return null;
+          const color = assetColor(seg.symbol);
+          // Büyük dilimler için arc effect — basit yaklaşım: renkli border ile daire dilimi
+          return (
+            <View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: SIZE,
+                height: SIZE,
+                borderRadius: SIZE / 2,
+                borderWidth: THICK,
+                borderColor: color,
+                borderTopColor: seg.sweepAngle >= 180 ? color : 'transparent',
+                borderRightColor: seg.sweepAngle >= 90 ? color : 'transparent',
+                borderBottomColor: seg.sweepAngle >= 270 ? color : 'transparent',
+                borderLeftColor: seg.sweepAngle >= 360 ? color : 'transparent',
+                transform: [{ rotate: `${seg.startAngle}deg` }],
+                opacity: 0.9 - i * 0.05,
+              }}
+            />
+          );
+        })}
+        {/* Orta metin */}
+        <View style={{ width: SIZE - THICK * 2 - 8, height: SIZE - THICK * 2 - 8, borderRadius: (SIZE - THICK * 2) / 2, backgroundColor: colors.bgPure, alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+          <Text style={{ fontSize: 11, color: colors.textMuted }}>Toplam</Text>
+          <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{holdings.length} Varlık</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function AllocationView({ holdings }: { holdings: any[] }) {
   return (
     <View style={s.allocList}>
+      <DonutChart holdings={holdings} />
       {holdings.map(h => (
         <View key={h.id} style={s.allocRow}>
           <View style={[s.allocDot, { backgroundColor: assetColor(h.symbol) }]} />
@@ -534,6 +666,12 @@ const s = StyleSheet.create({
     backgroundColor: colors.bgInput,
     borderRadius: 12, padding: 14, gap: 8,
   },
+  pnlBarWrap: { gap: 4, marginBottom: 4 },
+  pnlBarTrack: {
+    height: 6, borderRadius: 3, backgroundColor: colors.border, overflow: 'hidden',
+  },
+  pnlBarFill: { height: '100%', borderRadius: 3 },
+  pnlBarLabel: { fontSize: 11, fontFamily: font.bold },
   holdingDetail: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   holdingDetailLbl: { fontSize: 12, color: colors.textMuted },
   holdingDetailVal: { fontSize: 13, fontWeight: '700', color: colors.text },
@@ -613,4 +751,20 @@ const m = StyleSheet.create({
     padding: 10, borderWidth: 1, borderColor: colors.fall + '40',
   },
   errorTxt: { flex: 1, fontSize: 13, color: colors.fall, fontWeight: '600' },
+  fieldLabel: { fontSize: 12, fontFamily: font.bold, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
+  dropdown: {
+    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 999,
+    backgroundColor: colors.bgPure, borderRadius: 12,
+    borderWidth: 1, borderColor: colors.border,
+    ...shadow.md, overflow: 'hidden',
+  },
+  dropdownItem: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 14, paddingVertical: 11,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  dropdownLeft: { flex: 1, gap: 1 },
+  dropdownSymbol: { fontSize: 14, fontFamily: font.bold, color: colors.text },
+  dropdownName:   { fontSize: 12, color: colors.textMuted },
+  dropdownPrice:  { fontSize: 13, fontFamily: font.semiBold, color: colors.primary },
 });

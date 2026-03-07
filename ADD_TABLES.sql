@@ -3,6 +3,27 @@
 -- Her çalıştırmada güvenli: DROP IF EXISTS + CREATE IF NOT EXISTS
 -- ============================================================
 
+-- ── Mevcut policy'leri temizle (idempotent yeniden çalıştırma güvenliği) ───
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT policyname, tablename
+    FROM pg_policies
+    WHERE schemaname = 'public'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I', r.policyname, r.tablename);
+  END LOOP;
+  -- storage.objects policy'leri de temizle
+  FOR r IN
+    SELECT policyname, tablename
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.%I', r.policyname, r.tablename);
+  END LOOP;
+END $$;
+
 -- ═══════════════════════════════════════════════════════════════
 -- ÖNCE MEVCUT TABLOLARA EKSİK SÜTUNLARI EKLE (ALTER TABLE)
 -- Bu blok tablolar zaten varsa bile güvenle çalışır.
@@ -80,6 +101,13 @@ CREATE POLICY "User kendi holdings'ini yönetebilir"
   ON portfolio_holdings FOR ALL
   USING  (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+-- Leaderboard için: giriş yapmış kullanıcılar başkalarının holdings'ini görebilir
+-- (sadece user_id, asset_id, quantity, avg_cost — kişisel değil finansal veri)
+DROP POLICY IF EXISTS "Giriş yapanlar tüm holdings'i okuyabilir" ON portfolio_holdings;
+CREATE POLICY "Giriş yapanlar tüm holdings'i okuyabilir"
+  ON portfolio_holdings FOR SELECT
+  USING (auth.uid() IS NOT NULL);
 
 -- ── price_alerts (tablo yoksa oluştur, varsa ALTER TABLE ile güncellendi) ────
 CREATE TABLE IF NOT EXISTS price_alerts (
@@ -969,7 +997,58 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS updated_at    TIMESTAMPTZ DEFAULT 
 -- post_likes ve comments tablolarından otomatik trigger da eklenebilir ama
 -- şimdilik uygulama tarafı güncelleme yeterli.
 
--- ── decrement_viewers RPC (LiveWatchScreen için) ──────────────
+-- ═══════════════════════════════════════════════════════════════
+-- Atomic Like & Comment Sayaç Trigger'ları
+-- Race condition'ı önlemek için uygulama tarafı değil DB tarafı günceller
+-- ═══════════════════════════════════════════════════════════════
+
+-- Like sayacı: post_likes INSERT/DELETE → posts.likes atomik güncelle
+CREATE OR REPLACE FUNCTION fn_update_post_likes_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE posts SET likes = likes + 1 WHERE id = NEW.post_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE posts SET likes = GREATEST(0, likes - 1) WHERE id = OLD.post_id;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_post_likes_count ON post_likes;
+CREATE TRIGGER trg_post_likes_count
+  AFTER INSERT OR DELETE ON post_likes
+  FOR EACH ROW EXECUTE FUNCTION fn_update_post_likes_count();
+
+-- Yorum sayacı: comments INSERT/DELETE → posts.comments atomik güncelle
+CREATE OR REPLACE FUNCTION fn_update_post_comments_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE posts SET comments = comments + 1 WHERE id = NEW.post_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE posts SET comments = GREATEST(0, comments - 1) WHERE id = OLD.post_id;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_post_comments_count ON comments;
+CREATE TRIGGER trg_post_comments_count
+  AFTER INSERT OR DELETE ON comments
+  FOR EACH ROW EXECUTE FUNCTION fn_update_post_comments_count();
+
+-- ── increment_viewers RPC (LiveWatchScreen giriş için) ────────
+CREATE OR REPLACE FUNCTION increment_viewers(session_post_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE live_sessions
+  SET viewer_count = viewer_count + 1
+  WHERE post_id = session_post_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ── decrement_viewers RPC (LiveWatchScreen çıkış için) ─────────
 CREATE OR REPLACE FUNCTION decrement_viewers(session_post_id UUID)
 RETURNS void AS $$
 BEGIN
@@ -1059,8 +1138,352 @@ CREATE INDEX IF NOT EXISTS idx_video_comments_user_id  ON video_comments(user_id
 CREATE OR REPLACE FUNCTION increment_video_comment_likes(cid UUID)
 RETURNS void AS $$
 BEGIN
-  UPDATE video_comments
-  SET likes = likes + 1
-  WHERE id = cid;
+  UPDATE video_comments SET likes = likes + 1 WHERE id = cid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ── toggle_signal_like RPC ─────────────────────────────────────────
+-- Sinyal beğeni toggle — race condition yok, idempotent
+CREATE OR REPLACE FUNCTION toggle_signal_like(p_user_id UUID, p_signal_id UUID)
+RETURNS JSON AS $$
+DECLARE
+  v_existing_id UUID;
+  v_liked       BOOLEAN;
+  v_new_count   INTEGER;
+BEGIN
+  SELECT id INTO v_existing_id
+  FROM signal_likes
+  WHERE user_id = p_user_id AND signal_id = p_signal_id;
+
+  IF v_existing_id IS NOT NULL THEN
+    -- Beğeniyi geri al
+    DELETE FROM signal_likes WHERE id = v_existing_id;
+    UPDATE signals SET likes_count = GREATEST(0, likes_count - 1) WHERE id = p_signal_id
+    RETURNING likes_count INTO v_new_count;
+    v_liked := FALSE;
+  ELSE
+    -- Yeni beğeni ekle
+    INSERT INTO signal_likes (user_id, signal_id) VALUES (p_user_id, p_signal_id)
+    ON CONFLICT (user_id, signal_id) DO NOTHING;
+    UPDATE signals SET likes_count = likes_count + 1 WHERE id = p_signal_id
+    RETURNING likes_count INTO v_new_count;
+    v_liked := TRUE;
+  END IF;
+
+  RETURN json_build_object('liked', v_liked, 'new_count', v_new_count);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ── copy_signal_once RPC ───────────────────────────────────────────
+-- Sinyal kopyalama — aynı kullanıcı iki kez kopyalayamaz
+CREATE OR REPLACE FUNCTION copy_signal_once(p_user_id UUID, p_signal_id UUID)
+RETURNS JSON AS $$
+DECLARE
+  v_copied    BOOLEAN;
+  v_new_count INTEGER;
+BEGIN
+  INSERT INTO signal_copies (user_id, signal_id) VALUES (p_user_id, p_signal_id)
+  ON CONFLICT (user_id, signal_id) DO NOTHING;
+
+  GET DIAGNOSTICS v_copied = ROW_COUNT;
+
+  IF v_copied THEN
+    UPDATE signals SET copies_count = copies_count + 1 WHERE id = p_signal_id
+    RETURNING copies_count INTO v_new_count;
+  ELSE
+    SELECT copies_count INTO v_new_count FROM signals WHERE id = p_signal_id;
+  END IF;
+
+  RETURN json_build_object('copied', v_copied::BOOLEAN, 'new_count', v_new_count);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ── update_user_streak RPC ────────────────────────────────────────────────────
+-- Streak hesaplaması tamamen sunucu tarafında NOW() kullanarak yapılır.
+-- Client clock manipülasyonu ile streak şişirme önlenir.
+CREATE OR REPLACE FUNCTION update_user_streak(p_user_id UUID)
+RETURNS void AS $$
+DECLARE
+  v_last_login  TIMESTAMP WITH TIME ZONE;
+  v_streak_days INTEGER;
+  v_days_since  INTEGER;
+BEGIN
+  SELECT last_login, COALESCE(streak_days, 0)
+  INTO v_last_login, v_streak_days
+  FROM profiles WHERE id = p_user_id;
+
+  IF v_last_login IS NULL THEN
+    -- İlk giriş
+    UPDATE profiles SET last_login = NOW(), streak_days = 1 WHERE id = p_user_id;
+    RETURN;
+  END IF;
+
+  v_days_since := EXTRACT(DAY FROM (NOW() - v_last_login))::INTEGER;
+
+  IF v_days_since = 0 THEN
+    -- Aynı gün — streak'i değiştirme
+    RETURN;
+  ELSIF v_days_since = 1 THEN
+    -- Üst üste gün — streak +1
+    UPDATE profiles SET last_login = NOW(), streak_days = v_streak_days + 1 WHERE id = p_user_id;
+  ELSE
+    -- Gün atlandı — streak sıfırla
+    UPDATE profiles SET last_login = NOW(), streak_days = 1 WHERE id = p_user_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================
+-- YENİ TABLOLAR (Bu oturumda eklenenler)
+-- ============================================================
+
+-- 1. Kullanıcı Raporlama
+CREATE TABLE IF NOT EXISTS user_reports (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  reported_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  reason      TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(reporter_id, reported_id, reason)
+);
+ALTER TABLE user_reports ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Yalnızca giriş yapan kullanıcı rapor gönderebilir" ON user_reports;
+CREATE POLICY "Yalnızca giriş yapan kullanıcı rapor gönderebilir"
+  ON user_reports FOR INSERT WITH CHECK (auth.uid() = reporter_id);
+DROP POLICY IF EXISTS "Kendi raporlarını görebilir" ON user_reports;
+CREATE POLICY "Kendi raporlarını görebilir"
+  ON user_reports FOR SELECT USING (auth.uid() = reporter_id);
+
+-- 2. Kullanıcı Engelleme
+CREATE TABLE IF NOT EXISTS user_blocks (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  blocker_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  blocked_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(blocker_id, blocked_id)
+);
+ALTER TABLE user_blocks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Yalnızca kendi engelleme kayıtları"
+  ON user_blocks FOR ALL USING (auth.uid() = blocker_id);
+
+-- 3. Portföy İşlem Geçmişi
+CREATE TABLE IF NOT EXISTS portfolio_transactions (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  action     TEXT NOT NULL CHECK (action IN ('buy','sell')),
+  symbol     TEXT NOT NULL,
+  qty        NUMERIC NOT NULL,
+  price      NUMERIC NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE portfolio_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Kullanıcı kendi işlemlerini yönetir"
+  ON portfolio_transactions FOR ALL USING (auth.uid() = user_id);
+
+-- 4. Analist Abonelikleri (eğer yoksa)
+CREATE TABLE IF NOT EXISTS analyst_subscriptions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  analyst_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  analyst_name  TEXT,
+  tier          TEXT DEFAULT 'free',
+  subscribed_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, analyst_id)
+);
+ALTER TABLE analyst_subscriptions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Kullanıcı kendi aboneliklerini yönetir"
+  ON analyst_subscriptions FOR ALL USING (auth.uid() = user_id);
+
+-- 5a. profiles tablosuna eksik kolonlar ekle (varsa atla)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscriber_count  INTEGER DEFAULT 0;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_price NUMERIC DEFAULT 0;
+
+-- 5b. Analist abone sayısı artırma fonksiyonu
+CREATE OR REPLACE FUNCTION increment_subscriber_count(profile_id UUID)
+RETURNS VOID AS $$
+  UPDATE profiles SET subscriber_count = COALESCE(subscriber_count, 0) + 1 WHERE id = profile_id;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- 6. Push Token tablosu (fiyat alarmı bildirimleri için)
+CREATE TABLE IF NOT EXISTS push_tokens (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  token      TEXT NOT NULL,
+  platform   TEXT DEFAULT 'expo',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, token)
+);
+ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Kullanıcı kendi token'larını yönetir"
+  ON push_tokens FOR ALL USING (auth.uid() = user_id);
+
+-- 7. price_alerts tablosuna eksik sütunlar ekle (varsa atla)
+ALTER TABLE price_alerts
+  ADD COLUMN IF NOT EXISTS triggered     BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS triggered_at  TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS target_price  NUMERIC,
+  ADD COLUMN IF NOT EXISTS is_active     BOOLEAN DEFAULT TRUE;
+
+-- 8. profiles tablosuna subscription_price kolonu ekle (analist kendi fiyatını belirleyebilsin)
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS subscription_price NUMERIC DEFAULT 0;
+
+-- 9. decrement_subscriber_count RPC (race-condition-safe azaltma)
+CREATE OR REPLACE FUNCTION decrement_subscriber_count(profile_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE profiles
+     SET subscriber_count = GREATEST(COALESCE(subscriber_count, 0) - 1, 0)
+   WHERE id = profile_id;
+END;
+$$;
+
+-- ═══════════════════════════════════════════════════════════════
+-- SUPABASE EDGE FUNCTION + CRON KURULUM TALİMATLARI
+-- ═══════════════════════════════════════════════════════════════
+-- 1. Supabase CLI ile Edge Function deploy et:
+--    npx supabase functions deploy check-price-alerts
+--
+-- 2. Supabase Dashboard → Cron Jobs → New Job:
+--    Name:     check-price-alerts-cron
+--    Schedule: */5 * * * *   (her 5 dakika)
+--    Method:   POST
+--    Endpoint: https://<project>.supabase.co/functions/v1/check-price-alerts
+--    Headers:  Authorization: Bearer <ANON_KEY>
+-- ═══════════════════════════════════════════════════════════════
+
+-- ═══════════════════════════════════════════════════════════════
+-- notifications tablosuna eksik kolonları ekle (migration uyumu)
+-- ═══════════════════════════════════════════════════════════════
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS related_id UUID;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS image_url TEXT;
+-- is_read ve read kolonlarını senkronize tut
+CREATE OR REPLACE FUNCTION fn_sync_notif_read()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+    IF NEW.is_read IS DISTINCT FROM NEW.read THEN
+      NEW.is_read := COALESCE(NEW.read, NEW.is_read, false);
+      NEW.read    := NEW.is_read;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_notif_read ON notifications;
+CREATE TRIGGER trg_sync_notif_read
+  BEFORE INSERT OR UPDATE ON notifications
+  FOR EACH ROW EXECUTE FUNCTION fn_sync_notif_read();
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS dm_conversations (
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user1_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user2_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  last_message     TEXT,
+  last_message_at  TIMESTAMPTZ DEFAULT NOW(),
+  unread_count_1   INT DEFAULT 0,
+  unread_count_2   INT DEFAULT 0,
+  created_at       TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user1_id, user2_id)
+);
+
+CREATE TABLE IF NOT EXISTS dm_messages (
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id  UUID REFERENCES dm_conversations(id) ON DELETE CASCADE,
+  sender_id        UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  content          TEXT NOT NULL,
+  image_url        TEXT,
+  is_read          BOOLEAN DEFAULT FALSE,
+  created_at       TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE dm_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dm_messages      ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "party_access_conv" ON dm_conversations;
+CREATE POLICY "party_access_conv" ON dm_conversations
+  FOR ALL USING (auth.uid() = user1_id OR auth.uid() = user2_id);
+
+DROP POLICY IF EXISTS "party_access_msg" ON dm_messages;
+CREATE POLICY "party_access_msg" ON dm_messages
+  FOR ALL USING (
+    conversation_id IN (
+      SELECT id FROM dm_conversations
+      WHERE user1_id = auth.uid() OR user2_id = auth.uid()
+    )
+  );
+
+-- DM konuşmalarını profil bilgileriyle getiren view
+CREATE OR REPLACE VIEW dm_conversations_with_profiles AS
+SELECT
+  c.*,
+  p1.username  AS user1_username,
+  p1.full_name AS user1_full_name,
+  p1.avatar_url AS user1_avatar,
+  p2.username  AS user2_username,
+  p2.full_name AS user2_full_name,
+  p2.avatar_url AS user2_avatar
+FROM dm_conversations c
+JOIN profiles p1 ON p1.id = c.user1_id
+JOIN profiles p2 ON p2.id = c.user2_id;
+
+-- ── Error Logs (ErrorBoundary crash raporları) ────────────────────────────────
+CREATE TABLE IF NOT EXISTS error_logs (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  screen           TEXT,
+  message          TEXT,
+  stack            TEXT,
+  component_stack  TEXT,
+  platform         TEXT,
+  app_version      TEXT,
+  user_id          UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at       TIMESTAMPTZ DEFAULT now()
+);
+
+-- Sadece servis rolü okuyabilir, herkes ekleyebilir (anonim dahil)
+ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "error_logs_insert" ON error_logs;
+CREATE POLICY "error_logs_insert" ON error_logs
+  FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "error_logs_select_service" ON error_logs;
+CREATE POLICY "error_logs_select_service" ON error_logs
+  FOR SELECT USING (auth.role() = 'service_role');
+
+-- ── live_messages tablosuna avatar_url kolonu ekle ────────────────────────────
+ALTER TABLE live_messages ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+-- ── Stories tablosu (24s hikayeler) ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS stories (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  image_url   TEXT NOT NULL,
+  caption     TEXT,
+  expires_at  TIMESTAMPTZ NOT NULL DEFAULT (now() + INTERVAL '24 hours'),
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "stories_insert_own" ON stories;
+CREATE POLICY "stories_insert_own" ON stories
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "stories_select_all" ON stories;
+CREATE POLICY "stories_select_all" ON stories
+  FOR SELECT USING (expires_at > now());
+
+DROP POLICY IF EXISTS "stories_delete_own" ON stories;
+CREATE POLICY "stories_delete_own" ON stories
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Süresi dolmuş hikayeleri temizle (pg_cron veya manuel çağrı ile çalıştırılabilir)
+CREATE OR REPLACE FUNCTION cleanup_expired_stories()
+RETURNS void AS $$
+BEGIN
+  DELETE FROM stories WHERE expires_at < now();
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

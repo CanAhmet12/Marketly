@@ -13,12 +13,34 @@ import { useAuth } from '../contexts/AuthContext';
 import { useVideoComments } from '../hooks/useVideoComments';
 import { useVideos } from '../hooks/useVideos';
 import { supabase } from '../lib/supabase';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 // ─── Video oynatıcı bileşeni ──────────────────────────────────────────────────
 function VideoPlayer({ uri, thumbnail }: { uri: string; thumbnail: string }) {
-  const [playing, setPlaying] = useState(false);
+  const [playing,  setPlaying]  = useState(false);
+  const [progress, setProgress] = useState(0);   // 0..1
+  const [elapsed,  setElapsed]  = useState(0);   // saniye
+  const [total,    setTotal]    = useState(0);   // saniye
+  const seeking = useRef(false);
+
   const player = useVideoPlayer(uri, p => { p.loop = false; });
+
+  // Periyodik ilerleme güncellemesi (500 ms)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (seeking.current) return;
+      try {
+        const cur = player.currentTime ?? 0;
+        const dur = player.duration   ?? 0;
+        if (dur > 0) {
+          setProgress(cur / dur);
+          setElapsed(Math.floor(cur));
+          setTotal(Math.floor(dur));
+        }
+      } catch {}
+    }, 500);
+    return () => clearInterval(id);
+  }, [player]);
 
   const toggle = () => {
     try {
@@ -27,28 +49,70 @@ function VideoPlayer({ uri, thumbnail }: { uri: string; thumbnail: string }) {
     } catch {}
   };
 
+  const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
   return (
-    <Pressable style={StyleSheet.absoluteFill} onPress={toggle}>
-      <VideoView
-        player={player}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-        nativeControls={false}
-      />
-      {!playing && (
-        <View style={vp.overlay}>
-          <View style={vp.playBtn}>
-            <Ionicons name="play" size={34} color="#FFF" />
+    <View style={StyleSheet.absoluteFill}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={toggle}>
+        <VideoView
+          player={player}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          nativeControls={false}
+        />
+        {!playing && (
+          <View style={vp.overlay}>
+            <View style={vp.playBtn}>
+              <Ionicons name="play" size={34} color="#FFF" />
+            </View>
           </View>
-        </View>
-      )}
-    </Pressable>
+        )}
+      </Pressable>
+
+      {/* ── Seek bar ── */}
+      <View style={vp.seekWrap}>
+        <Text style={vp.timeText}>{fmtTime(elapsed)}</Text>
+        <Pressable
+          style={vp.track}
+          onPress={(e) => {
+            const { locationX, target } = e.nativeEvent;
+            // nativeEvent.target width olmadan hesaplama; track width ölçülüyor
+            (e.target as any).measure((_: any, __: any, w: number) => {
+              if (!w) return;
+              const ratio = Math.max(0, Math.min(1, locationX / w));
+              const seekTo = ratio * (player.duration ?? 0);
+              try { (player as any).seek(seekTo); setProgress(ratio); } catch {}
+            });
+          }}
+        >
+          <View style={vp.trackBg} />
+          <View style={[vp.trackFill, { width: `${progress * 100}%` }]} />
+          <View style={[vp.thumb, { left: `${progress * 100}%` as any }]} />
+        </Pressable>
+        <Text style={vp.timeText}>{fmtTime(total)}</Text>
+      </View>
+    </View>
   );
 }
 
 const vp = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' },
   playBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.7)' },
+  seekWrap: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 12, paddingBottom: 10, paddingTop: 6,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  track: { flex: 1, height: 20, justifyContent: 'center' },
+  trackBg: { position: 'absolute', left: 0, right: 0, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.35)' },
+  trackFill: { position: 'absolute', left: 0, height: 3, borderRadius: 2, backgroundColor: colors.primary },
+  thumb: {
+    position: 'absolute', width: 12, height: 12, borderRadius: 6,
+    backgroundColor: '#FFF', marginLeft: -6, top: 4,
+    shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 2, elevation: 3,
+  },
+  timeText: { color: '#FFF', fontSize: 11, fontWeight: '700', minWidth: 36, textAlign: 'center' },
 });
 
 interface Props { item: VideoItem; onBack: () => void }
@@ -231,7 +295,7 @@ function ActionBar({ liked, saved, likeCount, commentCount, shareCount, onLike, 
           <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
             <Ionicons name={liked ? 'heart' : 'heart-outline'} size={24} color={liked ? colors.fall : colors.textSub} />
           </Animated.View>
-          <Text style={[ab.itemTxt, liked && { color: colors.fall }]}>{fmt(likeCount + (liked ? 1 : 0))}</Text>
+          <Text style={[ab.itemTxt, liked && { color: colors.fall }]}>{fmt(likeCount)}</Text>
         </Pressable>
 
         <Pressable style={ab.item} onPress={onComment}>
@@ -404,6 +468,9 @@ export function VideoDetailScreen({ item, onBack }: Props) {
   const up    = (item.changePercent ?? 0) >= 0;
   const stats = item.stats ?? { likes: 0, comments: 0, shares: 0, views: 0 };
 
+  const [localLikes,  setLocalLikes]  = useState(stats.likes);
+  const [localShares, setLocalShares] = useState(stats.shares);
+
   const handleFollow = async () => {
     if (!user) { toast.info('Takip etmek için giriş yap'); return; }
     const nf = !following;
@@ -491,10 +558,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
             </View>
           )}
           {!item.isLive && (
-            <View style={v.progressBar}>
-              <View style={v.progressFill} />
-              <View style={v.progressThumb} />
-            </View>
+            <View style={{ height: 0 }} />
           )}
         </View>
       </View>
@@ -563,9 +627,9 @@ export function VideoDetailScreen({ item, onBack }: Props) {
         <ActionBar
           liked={liked}
           saved={saved}
-          likeCount={stats.likes}
+          likeCount={localLikes}
           commentCount={liveComments.length > 0 ? liveComments.length : stats.comments}
-          shareCount={stats.shares}
+          shareCount={localShares}
           onComment={() => {
             scrollRef.current?.scrollToEnd({ animated: true });
             setTimeout(() => commentInputRef.current?.focus(), 350);
@@ -574,6 +638,7 @@ export function VideoDetailScreen({ item, onBack }: Props) {
             if (!user?.id) { toast.info('Beğenmek için giriş yap'); return; }
             const newLiked = !liked;
             setLiked(newLiked);
+            setLocalLikes(n => n + (newLiked ? 1 : -1));
             if (newLiked) {
               await supabase.from('video_likes').upsert(
                 { user_id: user.id, video_id: item.id },
@@ -601,10 +666,13 @@ export function VideoDetailScreen({ item, onBack }: Props) {
               toast.info('Kaydedilenlerden çıkarıldı');
             }
           }}
-          onShare={() => Share.share({
-            message: `${item.title} — Marketly'de izle`,
-            title: item.title,
-          })}
+          onShare={async () => {
+            setLocalShares(n => n + 1);
+            await Share.share({
+              message: `${item.title} — Marketly'de izle`,
+              title: item.title,
+            });
+          }}
         />
 
         {/* ── Disclaimer ── */}

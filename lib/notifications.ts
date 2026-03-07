@@ -6,15 +6,16 @@ import { supabase } from './supabase';
 import { sendLocalNotification } from '../services/notificationService';
 
 export async function createNotification(params: {
-  recipientId: string;   // bildirimi alacak kullanıcı
-  senderId:    string;   // gönderen kullanıcı
+  recipientId: string;
+  senderId:    string;
   type:        'like' | 'comment' | 'follow' | 'signal' | 'price_alert' | 'system';
   title:       string;
   body:        string;
-  relatedId?:  string;   // post/video/sinyal id
+  relatedId?:  string;
   imageUrl?:   string;
+  meta?:       Record<string, any>;  // post_type, post_id vb. ek veri
 }) {
-  if (params.recipientId === params.senderId) return; // kendi kendine bildirim gönderme
+  if (params.recipientId === params.senderId) return;
 
   try {
     await supabase.from('notifications').insert({
@@ -25,14 +26,14 @@ export async function createNotification(params: {
       body:       params.body,
       related_id: params.relatedId ?? null,
       image_url:  params.imageUrl  ?? null,
+      meta:       params.meta      ?? null,
       is_read:    false,
     });
 
-    // Cihaz bildirimi gönder (uygulama arka plandayken görünür)
     await sendLocalNotification({
       title:   params.title,
       body:    params.body,
-      data:    { type: params.type, relatedId: params.relatedId },
+      data:    { type: params.type, relatedId: params.relatedId, ...(params.meta ?? {}) },
       channel: params.type === 'price_alert' ? 'price_alerts' : 'default',
     });
   } catch (e) {

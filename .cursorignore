@@ -1,0 +1,54 @@
+﻿node_modules/
+dist/
+build/
+.cache/
+.git/
+.env
+.env.local
+.env.*
+logs/
+backend/node_modules/
+coverage/
+tmp/
+.expo/
+.expo-shared/
+
+# Lock ve map dosyalari
+package-lock.json
+yarn.lock
+*.lock
+*.map
+
+# Asset dosyalari (AI taramasina gerek yok)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+assets/
+
+# Eski buyuk plan dosyalari (docs/ kullan)
+MARKETLY_MASTER_PLAN.md
+SPRINT1_DEPLOYMENT.md
+GELISTIRME_PLANI.md
+Proje.md
+APP_AUDIT.md
+UI_UX_PLAN.md
+
+# Sadece test verisi olan SQL
+SEED.sql
+FIX_TRIGGER.sql
+backend/schema.sql
+backend/check_realtime.sql
+
+# Mock veri (gercek veri hooks ile gelir)
+data/
+
+# Backend (ayri Node.js projesi)
+backend/
+
+# Build ciktilari
+*.js.map
+*.d.ts.map
+*.log

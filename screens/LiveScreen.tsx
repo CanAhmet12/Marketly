@@ -10,7 +10,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useVideos } from '../hooks/useVideos';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius, shadow, font } from '../constants/theme';
 
 const LIVE_CATS = ['Tümü', 'Kripto', 'Hisseler', 'Emtia', 'Döviz', 'Analiz'];
 
@@ -498,7 +498,7 @@ function LiveStatsBanner({ totalViewers, liveCount }: { totalViewers: number; li
 const lb = StyleSheet.create({
   wrap: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    backgroundColor: '#FFF', marginHorizontal: 14, marginTop: 12,
+    backgroundColor: '#FFF', marginHorizontal: 0, marginTop: 12,
     borderRadius: radius.md, padding: 14, gap: 0,
     borderWidth: 1, borderColor: '#F0F0F0', ...shadow.xs,
   },
@@ -674,7 +674,7 @@ export function LiveScreen() {
               <Ionicons name="calendar" size={14} color="#FF9500" />
               <Text style={ls.sectionTitle}>Yaklaşan Yayınlar</Text>
             </View>
-            <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#FFF', borderRadius: 12, marginHorizontal: 14 }}>
+            <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#FFF', borderRadius: 12, marginHorizontal: 0 }}>
               <Ionicons name="calendar-outline" size={28} color={colors.textMuted} />
               <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 8 }}>Henüz planlanan yayın yok</Text>
             </View>
@@ -743,7 +743,7 @@ const ls = StyleSheet.create({
   catTxt: { fontSize: 12, fontWeight: '600', color: '#5A5F6E' },
   catTxtActive: { color: '#FFF', fontWeight: '700' },
 
-  feed: { padding: 14, gap: 0 },
+  feed: { paddingHorizontal: 10, paddingVertical: 10, gap: 0 },
   featuredWrap: { marginBottom: 0 },
   sectionHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -756,8 +756,8 @@ const ls = StyleSheet.create({
   },
   liveCountTxt: { fontSize: 11, fontWeight: '800', color: '#FF3B3B' },
 
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  gridItem: { width: '47.5%' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  gridItem: { width: '48.5%' },
 
   scheduleList: { gap: 8, marginBottom: 16 },
 

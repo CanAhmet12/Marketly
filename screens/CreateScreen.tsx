@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useToast } from '../contexts/ToastContext';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 import { usePosts } from '../hooks/usePosts';
 import { useSignals } from '../hooks/useSignals';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +16,11 @@ import { CreatePostModal } from '../components/CreatePostModal';
 import { useNavigation } from '@react-navigation/native';
 
 // ─── Supabase Storage: video yükle ───────────────────────────────────────────
-async function uploadVideoToStorage(localUri: string, userId: string): Promise<string | null> {
+async function uploadVideoToStorage(
+  localUri: string,
+  userId: string,
+  onProgress?: (pct: number) => void,
+): Promise<string | null> {
   try {
     await supabase.storage.createBucket('videos', { public: true }).catch(() => {});
 
@@ -25,16 +29,21 @@ async function uploadVideoToStorage(localUri: string, userId: string): Promise<s
     const fileName = `${userId}/${Date.now()}.${ext}`;
 
     // React Native'de Blob kullanarak doğru binary payload oluştur
+    onProgress?.(5); // fetch başladı
     const response = await fetch(localUri);
     const blob     = await response.blob();
+    onProgress?.(20); // blob hazır, yükleme başlıyor
 
     const { error } = await supabase.storage
       .from('videos')
       .upload(fileName, blob, { contentType: mimeType, upsert: true });
 
+    onProgress?.(95); // yükleme bitti
+
     if (error) { console.warn('[Storage] upload error:', error.message); return null; }
 
     const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+    onProgress?.(100);
     return urlData.publicUrl ?? null;
   } catch (e) {
     console.warn('[Storage] exception:', e);
@@ -238,6 +247,7 @@ export function CreateScreen() {
   const { createSignal } = useSignals();
   const [publishing,    setPublishing]    = useState(false);
   const [uploadStatus, setUploadStatus]  = useState<'idle' | 'uploading' | 'done'>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [step, setStep]             = useState<1 | 2 | 3 | 4>(1);
   const [contentType, setType]      = useState('video');
@@ -384,7 +394,10 @@ export function CreateScreen() {
 
         if (videoUri) {
           setUploadStatus('uploading');
-          videoPublicUrl = await uploadVideoToStorage(videoUri, user.id);
+          setUploadProgress(0);
+          videoPublicUrl = await uploadVideoToStorage(videoUri, user.id, (pct) => {
+            setUploadProgress(pct);
+          });
           setUploadStatus(videoPublicUrl ? 'done' : 'idle');
           if (!videoPublicUrl) {
             toast.error('Video yüklenemedi — internet bağlantısını kontrol et');
@@ -886,7 +899,7 @@ export function CreateScreen() {
                 <>
                   <ActivityIndicator size="small" color="#FFF" />
                   <Text style={s.publishBtnTxt}>
-                    {uploadStatus === 'uploading' ? 'Video yükleniyor...' : 'Yayınlanıyor...'}
+                    {uploadStatus === 'uploading' ? `Video yükleniyor… %${uploadProgress}` : 'Yayınlanıyor...'}
                   </Text>
                 </>
               ) : (
@@ -902,6 +915,16 @@ export function CreateScreen() {
                 </>
               )}
             </Pressable>
+
+            {/* ── Video yükleme progress bar ── */}
+            {publishing && uploadStatus === 'uploading' && (
+              <View style={s.uploadProgressWrap}>
+                <View style={s.uploadProgressTrack}>
+                  <View style={[s.uploadProgressFill, { width: `${uploadProgress}%` as any }]} />
+                </View>
+                <Text style={s.uploadProgressTxt}>%{uploadProgress} tamamlandı</Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
@@ -936,6 +959,18 @@ const s = StyleSheet.create({
   progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border },
   progressActive: { backgroundColor: colors.primary + '70' },
   progressDone: { backgroundColor: colors.primary },
+
+  // Video yükleme ilerleme çubuğu
+  uploadProgressWrap: { marginTop: 10, gap: 6 },
+  uploadProgressTrack: {
+    height: 6, borderRadius: 3, backgroundColor: colors.border, overflow: 'hidden',
+  },
+  uploadProgressFill: {
+    height: '100%', borderRadius: 3, backgroundColor: colors.primary,
+  },
+  uploadProgressTxt: {
+    fontSize: 11, color: colors.textMuted, textAlign: 'center',
+  },
 
   scroll: { padding: 16 },
   stepWrap: { gap: 18 },

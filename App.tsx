@@ -1,14 +1,27 @@
 import React, { useEffect, useRef } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+  Inter_900Black,
+} from '@expo-google-fonts/inter';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ToastProvider }  from './contexts/ToastContext';
-import { TabBarProvider } from './contexts/TabBarContext';
-import { ThemeProvider }  from './contexts/ThemeContext';
+import { ErrorBoundary }  from './components/ErrorBoundary';
+import { OfflineBanner }  from './components/OfflineBanner';
+import { ToastProvider }    from './contexts/ToastContext';
+import { TabBarProvider }   from './contexts/TabBarContext';
+import { ThemeProvider }    from './contexts/ThemeContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 import { RootNavigator, DEEP_LINK_CONFIG }  from './navigation/RootNavigator';
 import { registerForPushNotifications, savePushToken } from './services/notificationService';
 import { PriceAlertWatcher } from './components/PriceAlertWatcher';
@@ -62,6 +75,7 @@ function AppInner() {
         <ToastProvider>
           <RootNavigator />
           <PriceAlertWatcher />
+          <OfflineBanner />
           <StatusBar style="dark" />
         </ToastProvider>
       </TabBarProvider>
@@ -70,13 +84,34 @@ function AppInner() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+    Inter_900Black,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppInner />
-        </AuthProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary screenName="Uygulama">
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <CurrencyProvider>
+            <AuthProvider>
+              <AppInner />
+            </AuthProvider>
+          </CurrencyProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

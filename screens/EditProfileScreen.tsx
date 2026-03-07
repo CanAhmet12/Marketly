@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, Pressable, StyleSheet,
-  ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Alert,
+  ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Alert, Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 export function EditProfileScreen() {
   const insets     = useSafeAreaInsets();
@@ -29,6 +29,16 @@ export function EditProfileScreen() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [errors,         setErrors]         = useState<Record<string, string>>({});
   const [showUrlInput,   setShowUrlInput]   = useState(false);
+
+  // Avatar live preview — seçim anında lokal URI göster, upload bitince URL'ye geç
+  const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
+  const avatarFlashAnim = useRef(new Animated.Value(1)).current;
+  const flashAvatar = () => {
+    Animated.sequence([
+      Animated.timing(avatarFlashAnim, { toValue: 0.5, duration: 120, useNativeDriver: true }),
+      Animated.timing(avatarFlashAnim, { toValue: 1,   duration: 300, useNativeDriver: true }),
+    ]).start();
+  };
 
   const hasChanges = (
     (profile?.full_name  ?? '') !== fullName  ||
@@ -65,6 +75,10 @@ export function EditProfileScreen() {
     });
     if (result.canceled || !result.assets[0] || !user?.id) return;
 
+    // Live preview: seçilen görsel anında göster
+    setLocalAvatarUri(result.assets[0].uri);
+    flashAvatar();
+
     setUploadingAvt(true);
     try {
       const asset    = result.assets[0];
@@ -82,8 +96,10 @@ export function EditProfileScreen() {
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarUrl(urlData.publicUrl);
+      setLocalAvatarUri(null); // Upload tamamlandı, URL'ye geç
       toast.success('Profil fotoğrafı yüklendi ✓');
     } catch {
+      setLocalAvatarUri(null); // Hata durumunda preview'u geri al
       toast.error('Fotoğraf yüklenemedi');
     } finally {
       setUploadingAvt(false);
@@ -212,7 +228,7 @@ export function EditProfileScreen() {
   };
 
   const avatarSeed    = username || user?.id || 'user';
-  const displayAvatar = avatarUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${avatarSeed}&size=120`;
+  const displayAvatar = localAvatarUri || avatarUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${avatarSeed}&size=120`;
 
   return (
     <KeyboardAvoidingView
@@ -274,7 +290,10 @@ export function EditProfileScreen() {
         {/* ── Avatar ──────────────────────────────────────────────────────── */}
         <View style={s.avatarSection}>
           <Pressable style={s.avatarWrap} onPress={pickAvatar} disabled={uploadingAvt}>
-            <Image source={{ uri: displayAvatar }} style={s.avatar} />
+            <Animated.Image
+              source={{ uri: displayAvatar }}
+              style={[s.avatar, { opacity: avatarFlashAnim }]}
+            />
             <View style={s.avatarEdit}>
               {uploadingAvt
                 ? <ActivityIndicator size="small" color="#fff" />
@@ -282,7 +301,9 @@ export function EditProfileScreen() {
               }
             </View>
           </Pressable>
-          <Text style={s.avatarHint}>Profil fotoğrafını değiştir</Text>
+          <Text style={s.avatarHint}>
+            {uploadingAvt ? 'Yükleniyor…' : 'Profil fotoğrafını değiştir'}
+          </Text>
         </View>
 
         {/* Avatar URL — yalnızca manuel URL girişi istenirse göster */}

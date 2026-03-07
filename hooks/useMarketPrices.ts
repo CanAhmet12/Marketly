@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
+// ─── AbortSignal.timeout polyfill (Hermes uyumlu) ────────────────────────────
+function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 8000): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 // ─── Backend API adresi ───────────────────────────────────────────────────────
-// DigitalOcean sunucunuzun IP'si — HTTPS kurulunca değiştirilecek
-const API_BASE = 'http://134.122.84.92:3001';
+// .env → EXPO_PUBLIC_API_BASE ile yönetilir
+// HTTPS kurulunca: EXPO_PUBLIC_API_BASE=https://134-122-84-92.sslip.io
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? 'http://134.122.84.92:3001';
 
 // ─── Tipler ───────────────────────────────────────────────────────────────────
 export type MarketCategory = 'crypto' | 'stocks' | 'commodities' | 'forex';
@@ -96,7 +104,7 @@ export function useMarketPrices(): UseMarketPricesResult {
   // REST API'den ilk yükleme
   const fetchFromAPI = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/prices`, { signal: AbortSignal.timeout(8000) });
+      const res = await fetchWithTimeout(`${API_BASE}/api/prices`, {}, 8000);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.success && json.data?.length > 0) {
@@ -161,16 +169,28 @@ export function useMarketPrices(): UseMarketPricesResult {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'asset_prices' },
         (payload) => {
-          setAssets((prev) => {
-            const updated = prev.map((a) => {
-              if (a.id === payload.new.asset_id) {
-                return enrichAsset({ ...a, ...payload.new, assets: { symbol: a.symbol, name: a.name, category: a.category, logo_url: a.logo_url, logo_letter: a.logo_letter, logo_color: a.logo_color } });
-              }
-              return a;
-            });
-            return updated;
-          });
+          setAssets((prev) => prev.map((a) => {
+            if (a.id === payload.new.asset_id) {
+              return enrichAsset({ ...a, ...payload.new, assets: { symbol: a.symbol, name: a.name, category: a.category, logo_url: a.logo_url, logo_letter: a.logo_letter, logo_color: a.logo_color } });
+            }
+            return a;
+          }));
           setLastUpdate(new Date());
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'asset_prices' },
+        () => {
+          // Yeni varlık eklendi — listeyi yenile
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'asset_prices' },
+        (payload) => {
+          setAssets((prev) => prev.filter((a) => a.id !== (payload.old as any)?.asset_id));
         }
       )
       .subscribe();
@@ -178,6 +198,7 @@ export function useMarketPrices(): UseMarketPricesResult {
     return () => {
       if (realtimeSub.current) supabase.removeChannel(realtimeSub.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Yardımcı fonksiyonlar

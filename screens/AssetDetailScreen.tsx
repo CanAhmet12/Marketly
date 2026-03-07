@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useToast } from '../contexts/ToastContext';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { liveToMarketAsset } from '../services/marketService';
@@ -385,6 +385,40 @@ const RANGE_CANDLES: Record<Range, number> = {
   '1S': 30, '4S': 28, '1G': 24, '1H': 28, '1A': 30, '1Y': 52,
 };
 
+// CoinGecko OHLC gün parametresi
+const RANGE_CG_DAYS: Record<Range, number> = {
+  '1S': 1, '4S': 1, '1G': 7, '1H': 7, '1A': 30, '1Y': 365,
+};
+
+// Sembol → CoinGecko ID
+const CG_ID: Record<string, string> = {
+  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+  XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
+  DOT: 'polkadot', LINK: 'chainlink', UNI: 'uniswap', LTC: 'litecoin',
+  ATOM: 'cosmos', MATIC: 'matic-network', NEAR: 'near', SHIB: 'shiba-inu',
+  ARB: 'arbitrum', OP: 'optimism', TRX: 'tron', XLM: 'stellar',
+};
+
+async function fetchCoinGeckoOHLC(symbol: string, days: number): Promise<Candle[] | null> {
+  const cgId = CG_ID[symbol.toUpperCase()];
+  if (!cgId) return null;
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${cgId}/ohlc?vs_currency=usd&days=${days}`,
+      { headers: { 'Accept': 'application/json' } }
+    );
+    if (!res.ok) return null;
+    const data: [number, number, number, number, number][] = await res.json();
+    if (!data?.length) return null;
+    // [timestamp, open, high, low, close]
+    return data.map(([, open, high, low, close]) => ({
+      open, high, low, close, volume: 0,
+    }));
+  } catch {
+    return null;
+  }
+}
+
 // ─── Candlestick data generation ──────────────────────────────────────────────
 interface Candle {
   open: number; close: number; high: number; low: number; volume: number;
@@ -683,7 +717,9 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
 
   // ── Gerçek zamanlı fiyat güncelleme ──
   const [asset, setAsset] = useState<MarketAsset>(initialAsset);
-  const priceFlash = useRef(new Animated.Value(0)).current;
+  const priceFlash   = useRef(new Animated.Value(0)).current;
+  const watchAnim    = useRef(new Animated.Value(1)).current;
+  const watchRotate  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Supabase'den anlık fiyatı çek
@@ -740,12 +776,27 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
   const pricePrefix = asset.price.startsWith('₺') ? '₺' :
     asset.price.startsWith('$') ? '$' : '';
 
-  // Generate candles (deterministic)
+  // Generate candles — önce gerçek CoinGecko verisi dene, yoksa deterministik fallback
   const seed = asset.priceNum * 7 + asset.id.charCodeAt(0);
-  const candles = useMemo(
-    () => generateCandles(asset.priceNum, asset.changePercent, RANGE_CANDLES[range], seed + RANGE_CANDLES[range]),
-    [range, asset.priceNum, asset.changePercent, seed]
+  const [candles, setCandles] = useState<Candle[]>(
+    () => generateCandles(asset.priceNum, asset.changePercent, RANGE_CANDLES[range], seed + RANGE_CANDLES[range])
   );
+  const [chartLoading, setChartLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setChartLoading(true);
+    fetchCoinGeckoOHLC(initialAsset.id, RANGE_CG_DAYS[range]).then(data => {
+      if (cancelled) return;
+      if (data && data.length >= 3) {
+        setCandles(data);
+      } else {
+        setCandles(generateCandles(asset.priceNum, asset.changePercent, RANGE_CANDLES[range], seed + RANGE_CANDLES[range]));
+      }
+      setChartLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [range, initialAsset.id, asset.priceNum]);
 
   // 24 saatlik gerçek high/low + ATH (Supabase'den spark verisi ile hesaplanır)
   const dp = asset.priceNum > 100 ? 0 : 4;
@@ -791,9 +842,20 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
   const about = ABOUT[asset.id] ?? `${asset.name} (${asset.symbol}), ${seg.label} kategorisinde işlem gören bir varlıktır.`;
 
   const onWatchlist = useCallback(async () => {
+    // Animasyon: yıldız büyüyüp döner
+    Animated.sequence([
+      Animated.parallel([
+        Animated.spring(watchAnim,   { toValue: 1.45, useNativeDriver: true, speed: 30 }),
+        Animated.timing(watchRotate, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]),
+      Animated.parallel([
+        Animated.spring(watchAnim,   { toValue: 1, useNativeDriver: true, speed: 20 }),
+        Animated.timing(watchRotate, { toValue: 0, duration: 150, useNativeDriver: true }),
+      ]),
+    ]).start();
     const added = await toggleWatch(asset.id);
     toast.success(added ? `${asset.symbol} izlemeye alındı ⭐` : `${asset.symbol} listeden çıkarıldı`);
-  }, [toggleWatch, asset.id, asset.symbol, toast]);
+  }, [toggleWatch, asset.id, asset.symbol, toast, watchAnim, watchRotate]);
 
   const onAlert = useCallback(() => {
     if (hasAlerts) {
@@ -845,7 +907,14 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
 
           <View style={s.headerActions}>
             <Pressable style={s.headerBtn} onPress={onWatchlist}>
-              <Ionicons name={watchlisted ? 'star' : 'star-outline'} size={20} color={watchlisted ? '#FFB800' : '#FFF'} />
+              <Animated.View style={{
+                transform: [
+                  { scale: watchAnim },
+                  { rotate: watchRotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '36deg'] }) },
+                ],
+              }}>
+                <Ionicons name={watchlisted ? 'star' : 'star-outline'} size={20} color={watchlisted ? '#FFB800' : '#FFF'} />
+              </Animated.View>
             </Pressable>
             <Pressable style={s.headerBtn} onPress={onAlert}>
               <Ionicons name={hasAlerts ? 'notifications' : 'notifications-outline'} size={20} color={hasAlerts ? '#FF9500' : '#FFF'} />
@@ -898,6 +967,12 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
         {/* ── Candlestick Chart ── */}
         <View style={s.chartCard}>
           <CandlestickChart candles={candles} color={dirColor} pricePrefix={pricePrefix} />
+          {chartLoading && (
+            <View style={s.chartLoadOverlay}>
+              <ActivityIndicator size="small" color={dirColor} />
+              <Text style={s.chartLoadTxt}>Gerçek veri yükleniyor…</Text>
+            </View>
+          )}
 
           {/* Range selector */}
           <View style={s.rangeBar}>
@@ -1035,7 +1110,14 @@ export function AssetDetailScreen({ asset: initialAsset, onBack }: Props) {
           style={[s.actBtn, watchlisted && s.actBtnActive, { borderColor: '#FFB80050' }]}
           onPress={onWatchlist}
         >
-          <Ionicons name={watchlisted ? 'star' : 'star-outline'} size={16} color={watchlisted ? '#FFB800' : '#6B7280'} />
+          <Animated.View style={{
+            transform: [
+              { scale: watchAnim },
+              { rotate: watchRotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '36deg'] }) },
+            ],
+          }}>
+            <Ionicons name={watchlisted ? 'star' : 'star-outline'} size={16} color={watchlisted ? '#FFB800' : '#6B7280'} />
+          </Animated.View>
           <Text style={[s.actTxt, watchlisted && { color: '#FFB800' }]}>
             {watchlisted ? 'İzleniyor' : 'İzlemeye Al'}
           </Text>
@@ -1193,6 +1275,13 @@ const s = StyleSheet.create({
     paddingBottom: 4,
     ...shadow.lg,
   },
+  chartLoadOverlay: {
+    position: 'absolute', top: 8, right: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 12,
+    paddingHorizontal: 10, paddingVertical: 4,
+  },
+  chartLoadTxt: { fontSize: 11, color: 'rgba(255,255,255,0.75)' },
   rangeBar: {
     flexDirection: 'row', justifyContent: 'center',
     gap: 4, paddingVertical: 12, paddingHorizontal: 16,

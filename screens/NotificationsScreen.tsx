@@ -1,13 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator, RefreshControl, Alert,
+  View, Text, ScrollView, Pressable, StyleSheet, Image, ActivityIndicator,
+  RefreshControl, Alert, Animated, PanResponder, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 import { useNotifications } from '../hooks/useNotifications';
 import { useToast } from '../contexts/ToastContext';
+
+const SCREEN_W = Dimensions.get('window').width;
 
 type NotifType = 'price_alert' | 'like' | 'comment' | 'follow' | 'market' | 'system';
 
@@ -38,6 +41,60 @@ const SECTIONS: { label: string; filter: (n: NotifWithDate) => boolean }[] = [
   { label: 'Bu Hafta', filter: (n) => daysBetween(n.created_at) >= 2 && daysBetween(n.created_at) <= 6 },
   { label: 'Daha Eski', filter: (n) => daysBetween(n.created_at) >= 7 },
 ];
+
+// ─── Swipe-to-delete sarmalayıcı ──────────────────────────────────────────────
+function SwipeableRow({ onDelete, children }: { onDelete: () => void; children: React.ReactNode }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const deleteWidth = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dy) < 20,
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) translateX.setValue(Math.max(g.dx, -deleteWidth));
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -deleteWidth / 2) {
+          // Sola aç
+          Animated.spring(translateX, { toValue: -deleteWidth, useNativeDriver: true }).start();
+        } else {
+          // Geri kapat
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
+
+  const handleDelete = () => {
+    Animated.timing(translateX, { toValue: -SCREEN_W, duration: 250, useNativeDriver: true }).start(onDelete);
+  };
+
+  return (
+    <View style={{ overflow: 'hidden' }}>
+      {/* Delete action arkada */}
+      <View style={sw.deleteAction} pointerEvents="box-none">
+        <Pressable style={sw.deleteBtn} onPress={handleDelete}>
+          <Ionicons name="trash" size={20} color="#FFF" />
+          <Text style={sw.deleteTxt}>Sil</Text>
+        </Pressable>
+      </View>
+      {/* İçerik kaydırılabilir */}
+      <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
+        {children}
+      </Animated.View>
+    </View>
+  );
+}
+
+const sw = StyleSheet.create({
+  deleteAction: {
+    position: 'absolute', right: 0, top: 0, bottom: 0,
+    width: 80, backgroundColor: colors.fall,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  deleteBtn: { alignItems: 'center', gap: 3 },
+  deleteTxt: { color: '#FFF', fontSize: 11, fontFamily: font.bold },
+});
 
 function NotifIcon({ notif }: { notif: Notif }) {
   if (notif.avatar) {
@@ -109,6 +166,7 @@ export function NotificationsScreen({ onBack }: Props) {
   const navigation = useNavigation<any>();
   const toast = useToast();
   const [refreshing, setRefreshing] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<NotifType | 'all'>('all');
   const handleBack = onBack ?? (() => navigation.goBack());
   const {
     notifications: liveNotifs,
@@ -128,14 +186,21 @@ export function NotificationsScreen({ onBack }: Props) {
         navigation.navigate('PriceAlerts');
         break;
       case 'like':
-      case 'comment':
-        // Direkt post'a git, yoksa akış sekmesine dön
-        if (meta.meta?.post_id && meta.meta?.post_item) {
-          navigation.navigate('VideoDetail', { item: meta.meta.post_item });
+      case 'comment': {
+        const postItem = meta.meta?.post_item;
+        const postType = meta.meta?.post_type ?? postItem?.type;
+        if (postItem && (postType === 'video' || postType === 'short' || postType === 'live')) {
+          // Video/Short/Live post → VideoDetail
+          navigation.navigate('VideoDetail', { item: postItem });
+        } else if (meta.meta?.post_id) {
+          // Text post → Ana akışa dön (yorum sheet açmak için post_id gerekiyor,
+          // şimdilik feed'e yönlendir)
+          navigation.navigate('Main', { screen: 'Akış' });
         } else {
           navigation.navigate('Main', { screen: 'Akış' });
         }
         break;
+      }
       case 'follow':
         if (meta.meta?.actor_id) {
           navigation.navigate('ProfileView', { userId: meta.meta.actor_id });
@@ -167,7 +232,7 @@ export function NotificationsScreen({ onBack }: Props) {
     iconBg:     (n.meta as any)?.iconBg,
     avatar:     (n.meta as any)?.avatar,
     badge:      (n.meta as any)?.badge,
-  }));
+  })).filter(n => typeFilter === 'all' || n.type === typeFilter);
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -193,6 +258,45 @@ export function NotificationsScreen({ onBack }: Props) {
         </Pressable>
       </View>
 
+      {/* ── Kategori filtresi ── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={s.filterBar}
+        contentContainerStyle={s.filterBarContent}
+      >
+        {([
+          { key: 'all',         label: 'Tümü',      icon: 'notifications-outline' },
+          { key: 'like',        label: 'Beğeni',    icon: 'heart-outline' },
+          { key: 'comment',     label: 'Yorum',     icon: 'chatbubble-outline' },
+          { key: 'follow',      label: 'Takip',     icon: 'person-add-outline' },
+          { key: 'signal',      label: 'Sinyal',    icon: 'pulse-outline' },
+          { key: 'price_alert', label: 'Alarm',     icon: 'alarm-outline' },
+          { key: 'system',      label: 'Sistem',    icon: 'information-circle-outline' },
+        ] as { key: NotifType | 'all'; label: string; icon: any }[]).map(f => {
+          const active = typeFilter === f.key;
+          const count = f.key === 'all'
+            ? liveNotifs.length
+            : liveNotifs.filter(n => n.type === f.key).length;
+          if (count === 0 && f.key !== 'all') return null;
+          return (
+            <Pressable
+              key={f.key}
+              style={[s.filterChip, active && s.filterChipActive]}
+              onPress={() => setTypeFilter(f.key)}
+            >
+              <Ionicons name={f.icon} size={13} color={active ? '#FFF' : colors.textMuted} />
+              <Text style={[s.filterChipTxt, active && s.filterChipTxtActive]}>{f.label}</Text>
+              {count > 0 && (
+                <View style={[s.filterChipBadge, active && s.filterChipBadgeActive]}>
+                  <Text style={[s.filterChipBadgeTxt, active && { color: colors.primary }]}>{count}</Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       {loading ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : (
@@ -212,34 +316,27 @@ export function NotificationsScreen({ onBack }: Props) {
                   <View style={s.sectionLine} />
                 </View>
                 {items.map((n) => (
-                  <Pressable
-                    key={n.id}
-                    style={[s.card, !n.read && s.cardUnread]}
-                    onPress={() => handleNotifPress(n)}
-                    onLongPress={() => Alert.alert(
-                      'Bildirimi Sil',
-                      'Bu bildirimi silmek istiyor musun?',
-                      [
-                        { text: 'İptal', style: 'cancel' },
-                        { text: 'Sil', style: 'destructive', onPress: () => deleteNotif(n.id) },
-                      ]
-                    )}
-                  >
-                    {!n.read && <View style={s.unreadDot} />}
-                    <NotifIcon notif={n} />
-                    <View style={s.cardBody}>
-                      <View style={s.cardTitleRow}>
-                        <Text style={s.cardTitle} numberOfLines={1}>{n.title}</Text>
-                        {n.badge && (
-                          <View style={[s.badgePill, { backgroundColor: n.badge.color + '20' }]}>
-                            <Text style={[s.badgeTxt, { color: n.badge.color }]}>{n.badge.text}</Text>
-                          </View>
-                        )}
+                  <SwipeableRow key={n.id} onDelete={() => deleteNotif(n.id)}>
+                    <Pressable
+                      style={[s.card, !n.read && s.cardUnread]}
+                      onPress={() => handleNotifPress(n)}
+                    >
+                      {!n.read && <View style={s.unreadDot} />}
+                      <NotifIcon notif={n} />
+                      <View style={s.cardBody}>
+                        <View style={s.cardTitleRow}>
+                          <Text style={s.cardTitle} numberOfLines={1}>{n.title}</Text>
+                          {n.badge && (
+                            <View style={[s.badgePill, { backgroundColor: n.badge.color + '20' }]}>
+                              <Text style={[s.badgeTxt, { color: n.badge.color }]}>{n.badge.text}</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={s.cardBody2} numberOfLines={2}>{n.body}</Text>
+                        <Text style={s.cardTime}>{n.time}</Text>
                       </View>
-                      <Text style={s.cardBody2} numberOfLines={2}>{n.body}</Text>
-                      <Text style={s.cardTime}>{n.time}</Text>
-                    </View>
-                  </Pressable>
+                    </Pressable>
+                  </SwipeableRow>
                 ))}
               </View>
             );
@@ -263,6 +360,29 @@ export function NotificationsScreen({ onBack }: Props) {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
+
+  // Kategori filtresi
+  filterBar: {
+    backgroundColor: colors.bgPure,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+    maxHeight: 52,
+  },
+  filterBarContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 8, flexDirection: 'row' },
+  filterChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: radius.full, borderWidth: 1,
+    borderColor: colors.border, backgroundColor: colors.bgCard,
+  },
+  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filterChipTxt: { fontSize: 12, color: colors.textMuted, fontFamily: font.semiBold },
+  filterChipTxtActive: { color: '#FFF' },
+  filterChipBadge: {
+    backgroundColor: colors.primary + '20', borderRadius: 8,
+    paddingHorizontal: 5, paddingVertical: 1, minWidth: 18, alignItems: 'center',
+  },
+  filterChipBadgeActive: { backgroundColor: 'rgba(255,255,255,0.25)' },
+  filterChipBadgeTxt: { fontSize: 10, color: colors.primary, fontFamily: font.bold },
 
   // Header
   header: {

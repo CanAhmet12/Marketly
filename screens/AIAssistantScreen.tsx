@@ -14,7 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { useAIChat, AISession } from '../hooks/useAIChat';
-import { colors, shadow } from '../constants/theme';
+import { colors, shadow, font } from '../constants/theme';
 import { supabase } from '../lib/supabase';
 
 const { width: W } = Dimensions.get('window');
@@ -38,14 +38,19 @@ interface Message {
 }
 
 // ─── AI çağrısı ───────────────────────────────────────────────────────────────
+let _isDemoMode = false;
+export function isDemoMode() { return _isDemoMode; }
+
 async function callAI(messages: { role: string; content: string }[], context: string): Promise<string> {
   try {
     const { data, error } = await supabase.functions.invoke('ai-chat', {
       body: { messages, context },
     });
     if (error) throw error;
+    _isDemoMode = false;
     return data?.reply ?? 'Yanıt alınamadı.';
   } catch {
+    _isDemoMode = true;
     return generateDemoReply(messages[messages.length - 1]?.content ?? '');
   }
 }
@@ -68,7 +73,7 @@ function generateDemoReply(question: string): string {
 }
 
 // ─── Mesaj kabarcığı ──────────────────────────────────────────────────────────
-function MessageBubble({ msg }: { msg: Message }) {
+function MessageBubble({ msg, isDemo }: { msg: Message; isDemo?: boolean }) {
   const isUser  = msg.role === 'user';
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(10)).current;
@@ -130,6 +135,12 @@ function MessageBubble({ msg }: { msg: Message }) {
       )}
       <View style={[mb.bubble, isUser ? mb.bubbleUser : mb.bubbleAI]}>
         {renderContent(msg.content)}
+        {!isUser && isDemo && (
+          <View style={mb.demoBanner}>
+            <Ionicons name="information-circle-outline" size={11} color={colors.warning} />
+            <Text style={mb.demoBannerTxt}>Demo mod · Gerçek AI bağlantısı yok · Yatırım tavsiyesi değildir</Text>
+          </View>
+        )}
         <Text style={mb.time}>{msg.time}</Text>
       </View>
     </Animated.View>
@@ -160,6 +171,12 @@ const mb = StyleSheet.create({
   },
   msgTxt: { fontSize: 14, color: colors.text, lineHeight: 20 },
   time:   { fontSize: 10, color: colors.textMuted, alignSelf: 'flex-end', marginTop: 4 },
+  demoBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    marginTop: 6, paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
+  },
+  demoBannerTxt: { fontSize: 10, color: colors.warning, flex: 1, lineHeight: 14 },
 });
 
 // ─── Geçmiş drawer ────────────────────────────────────────────────────────────
@@ -338,6 +355,7 @@ export function AIAssistantScreen() {
   const [messages,       setMessages]       = useState<Message[]>([]);
   const [input,          setInput]          = useState('');
   const [thinking,       setThinking]       = useState(false);
+  const [demoMode,       setDemoMode]       = useState(false);
   const [dailyCount,     setDailyCount]     = useState(0);
   const [sessionId,      setSessionId]      = useState<string | null>(null);
   const [historyOpen,    setHistoryOpen]    = useState(false);
@@ -500,6 +518,7 @@ export function AIAssistantScreen() {
     let reply: string;
     try {
       reply = await callAI(history, context);
+      setDemoMode(isDemoMode());
     } catch {
       reply = '⚠️ Bağlantı sorunu yaşandı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.';
     }
@@ -591,7 +610,11 @@ export function AIAssistantScreen() {
             onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
           >
             {messages.map(msg => (
-              <MessageBubble key={msg.id} msg={msg} />
+              <MessageBubble
+                key={msg.id}
+                msg={msg}
+                isDemo={demoMode && msg.role === 'assistant'}
+              />
             ))}
 
             {thinking && (

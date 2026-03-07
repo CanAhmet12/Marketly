@@ -37,6 +37,7 @@ import { ResetPasswordScreen }      from '../screens/ResetPasswordScreen';
 import { useAuth }              from '../contexts/AuthContext';
 import { useTabBar, TAB_BAR_H } from '../contexts/TabBarContext';
 import { colors }               from '../constants/theme';
+import { ErrorBoundary }        from '../components/ErrorBoundary';
 import type { VideoItem }       from '../data/mockVideos';
 import type { MarketAsset }     from '../data/mockMarkets';
 
@@ -86,6 +87,20 @@ export const DEEP_LINK_CONFIG = {
 // ─── Tab config ───────────────────────────────────────────────────────────────
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
+// Her tab bileşenini kendi ErrorBoundary'siyle sar
+function withBoundary<T extends object>(
+  Comp: React.ComponentType<T>,
+  name: string,
+): React.ComponentType<T> {
+  return function BoundaryWrapped(props: T) {
+    return (
+      <ErrorBoundary screenName={name}>
+        <Comp {...props} />
+      </ErrorBoundary>
+    );
+  };
+}
+
 const TAB_CONFIG: {
   name: string;
   component: React.ComponentType<any>;
@@ -94,11 +109,11 @@ const TAB_CONFIG: {
   label: string;
   isCenter?: boolean;
 }[] = [
-  { name: 'Akış',      component: HomeScreen,    icon: 'home-outline',          activeIcon: 'home',          label: 'Akış'      },
-  { name: 'Keşfet',    component: DiscoverScreen, icon: 'compass-outline',       activeIcon: 'compass',       label: 'Keşfet'    },
-  { name: 'Üret',      component: CreateScreen,   icon: 'add',                   activeIcon: 'add',           label: 'Üret',  isCenter: true },
-  { name: 'Piyasalar', component: MarketsScreen,  icon: 'bar-chart-outline',     activeIcon: 'bar-chart',     label: 'Piyasalar' },
-  { name: 'Profil',    component: ProfileScreen,  icon: 'person-circle-outline', activeIcon: 'person-circle', label: 'Profil'    },
+  { name: 'Akış',      component: withBoundary(HomeScreen,    'Ana Akış'),   icon: 'home-outline',          activeIcon: 'home',          label: 'Akış'      },
+  { name: 'Keşfet',    component: withBoundary(DiscoverScreen,'Keşfet'),     icon: 'compass-outline',       activeIcon: 'compass',       label: 'Keşfet'    },
+  { name: 'Üret',      component: withBoundary(CreateScreen,  'Oluştur'),    icon: 'add',                   activeIcon: 'add',           label: 'Üret',  isCenter: true },
+  { name: 'Piyasalar', component: withBoundary(MarketsScreen, 'Piyasalar'),  icon: 'bar-chart-outline',     activeIcon: 'bar-chart',     label: 'Piyasalar' },
+  { name: 'Profil',    component: withBoundary(ProfileScreen, 'Profil'),     icon: 'person-circle-outline', activeIcon: 'person-circle', label: 'Profil'    },
 ];
 
 // ─── Animated single tab item with press-scale ───────────────────────────────
@@ -124,6 +139,9 @@ function AnimatedTabItem({ cfg, isFocused, onPress }: {
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       android_ripple={{ color: 'transparent' }}
+      accessibilityRole="tab"
+      accessibilityLabel={cfg.label}
+      accessibilityState={{ selected: isFocused }}
     >
       <Animated.View style={[tb.tabIcon, { transform: [{ scale }] }]}>
         <Ionicons
@@ -173,6 +191,8 @@ function AnimatedCustomTabBar({ state, descriptors, navigation }: BottomTabBarPr
               <Pressable
                 onPress={onPress}
                 style={({ pressed }) => [tb.centerBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.92 }] }]}
+                accessibilityRole="button"
+                accessibilityLabel="İçerik oluştur"
               >
                 <Ionicons name="add" size={28} color="#FFF" />
               </Pressable>

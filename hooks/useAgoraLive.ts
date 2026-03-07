@@ -5,18 +5,42 @@
  * Kullanım için .env'e EXPO_PUBLIC_AGORA_APP_ID ekle.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  createAgoraRtcEngine,
-  ChannelProfileType,
-  ClientRoleType,
-  RtcSurfaceView,
-  IRtcEngine,
-  ErrorCodeType,
-  UserOfflineReasonType,
-} from 'react-native-agora';
+import { View, NativeModules } from 'react-native';
 import { supabase } from '../lib/supabase';
 
+// Agora native modül — Expo Go'da mevcut değil, development build gerektirir.
+// metro.config.js react-native-agora'yı stub'a yönlendirir.
+// NativeModules.AgoraRtcNg mevcut ise (development build) gerçek modül yüklenir.
+let createAgoraRtcEngine: any = null;
+let ChannelProfileType: any   = { ChannelProfileLiveBroadcasting: 1 };
+let ClientRoleType: any       = { ClientRoleBroadcaster: 1, ClientRoleAudience: 2 };
+let RtcSurfaceView: any       = View;
+let _agoraAvailable           = false;
+
+// NativeModules.AgoraRtcNg sadece development/production build'de mevcut olur.
+// Expo Go'da undefined gelir → stub kullanılır ve çökme olmaz.
+if (NativeModules && NativeModules.AgoraRtcNg) {
+  try {
+    // Development build: NativeModules mevcut → asıl modülü yükle
+    // Bu require metro stub'ına değil gerçek node_modules'a gider
+    // çünkü resolver sadece 'react-native-agora' string'ini stub'a yönlendirir,
+    // burada __non_webpack_require__ ya da global require kullanıyoruz
+    const agoraModule = (global as any).__requireActual
+      ? (global as any).__requireActual('react-native-agora')
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      : require('react-native-agora');
+    createAgoraRtcEngine = agoraModule.createAgoraRtcEngine;
+    ChannelProfileType   = agoraModule.ChannelProfileType;
+    ClientRoleType       = agoraModule.ClientRoleType;
+    RtcSurfaceView       = agoraModule.RtcSurfaceView;
+    _agoraAvailable      = true;
+  } catch {
+    // Yükleme başarısız
+  }
+}
+
 export { RtcSurfaceView };
+export const agoraAvailable = _agoraAvailable;
 
 const AGORA_APP_ID = process.env.EXPO_PUBLIC_AGORA_APP_ID ?? '';
 
@@ -33,7 +57,7 @@ export interface AgoraLiveState {
 }
 
 export function useAgoraLive(channelName: string, role: LiveRole) {
-  const engineRef = useRef<IRtcEngine | null>(null);
+  const engineRef = useRef<any>(null);
 
   const [state, setState] = useState<AgoraLiveState>({
     joined:     false,
@@ -57,6 +81,10 @@ export function useAgoraLive(channelName: string, role: LiveRole) {
   }, [channelName, role]);
 
   const joinChannel = useCallback(async () => {
+    if (!_agoraAvailable) {
+      setState(s => ({ ...s, error: 'Canlı yayın özelliği Expo Go\'da çalışmaz. Lütfen geliştirici yapısını (dev build) kullanın.' }));
+      return;
+    }
     if (!AGORA_APP_ID) {
       setState(s => ({ ...s, error: 'Agora App ID eksik. .env dosyasına EXPO_PUBLIC_AGORA_APP_ID ekle.' }));
       return;
@@ -93,7 +121,7 @@ export function useAgoraLive(channelName: string, role: LiveRole) {
         });
       });
 
-      engine.addListener('onError', (err: ErrorCodeType, msg: string) => {
+      engine.addListener('onError', (err: any, msg: string) => {
         setState(s => ({ ...s, error: `Agora hatası: ${msg}` }));
       });
 

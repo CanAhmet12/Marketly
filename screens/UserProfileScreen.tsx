@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, Image, Pressable, StyleSheet, ScrollView,
-  ActivityIndicator, FlatList, Share,
+  ActivityIndicator, FlatList, Share, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,11 +13,15 @@ import { usePosts } from '../hooks/usePosts';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useSignals } from '../hooks/useSignals';
 import { PostCard } from '../components/PostCard';
+import { SignalCard } from '../components/SignalCard';
 import { BadgesRow } from '../components/BadgesRow';
 import { useToast } from '../contexts/ToastContext';
 import { notifyFollower } from '../services/notificationService';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 import { supabase } from '../lib/supabase';
+
+const SCREEN_W = Dimensions.get('window').width;
+const GRID_ITEM = (SCREEN_W - 3) / 3; // 3 sütun, 1px boşluk
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -58,6 +62,10 @@ export function UserProfileScreen({ userId, onBack }: Props) {
   const tierColor   = tier === 'elite' ? '#FFD700' : tier === 'pro' ? '#007AFF' : '#9AA0AF';
 
   const isMe = me?.id === userId;
+
+  type UPTab = 'posts' | 'signals';
+  const [activeTab,   setActiveTab]   = useState<UPTab>('posts');
+  const [gridView,    setGridView]    = useState(true);   // grid vs liste
 
   const handleFollow = useCallback(async () => {
     if (!me) { navigation.navigate('Login'); return; }
@@ -218,20 +226,119 @@ export function UserProfileScreen({ userId, onBack }: Props) {
           </View>
         )}
 
-        {/* Posts */}
-        <View style={s.postsSection}>
-          <Text style={s.postsSectionTitle}>Gönderiler</Text>
-          {userPosts.length === 0 ? (
+        {/* ── Tab bar + view toggle ── */}
+        <View style={s.tabBar}>
+          <View style={s.tabRow}>
+            {([
+              { id: 'posts',   label: 'Gönderiler', icon: 'grid-outline' },
+              { id: 'signals', label: 'Sinyaller',  icon: 'pulse-outline' },
+            ] as { id: UPTab; label: string; icon: string }[]).map(t => (
+              <Pressable
+                key={t.id}
+                style={[s.tabBtn, activeTab === t.id && s.tabBtnActive]}
+                onPress={() => setActiveTab(t.id)}
+              >
+                <Ionicons
+                  name={t.icon as any}
+                  size={16}
+                  color={activeTab === t.id ? colors.primary : colors.textMuted}
+                />
+                <Text style={[s.tabBtnTxt, activeTab === t.id && s.tabBtnTxtActive]}>
+                  {t.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          {activeTab === 'posts' && (
+            <View style={s.viewToggle}>
+              <Pressable
+                onPress={() => setGridView(true)}
+                style={[s.viewBtn, gridView && s.viewBtnActive]}
+                hitSlop={6}
+              >
+                <Ionicons name="grid" size={16} color={gridView ? colors.primary : colors.textMuted} />
+              </Pressable>
+              <Pressable
+                onPress={() => setGridView(false)}
+                style={[s.viewBtn, !gridView && s.viewBtnActive]}
+                hitSlop={6}
+              >
+                <Ionicons name="list" size={16} color={!gridView ? colors.primary : colors.textMuted} />
+              </Pressable>
+            </View>
+          )}
+        </View>
+
+        {/* ── İçerik ── */}
+        {activeTab === 'posts' ? (
+          userPosts.length === 0 ? (
             <View style={s.emptyPosts}>
               <Ionicons name="chatbubble-ellipses-outline" size={36} color={colors.textMuted} />
               <Text style={s.emptyPostsTxt}>Henüz gönderi yok</Text>
             </View>
+          ) : gridView ? (
+            // 3'lü grid görünüm
+            <View style={s.grid}>
+              {userPosts.map((p, i) => {
+                const thumb = p.image_url ?? p.thumbnail_url;
+                return (
+                  <Pressable
+                    key={p.id}
+                    style={[s.gridItem, {
+                      marginRight: (i + 1) % 3 === 0 ? 0 : 1,
+                      marginBottom: 1,
+                    }]}
+                    onPress={() => {
+                      if (p.type === 'video' || p.type === 'short') {
+                        navigation.navigate('VideoDetail', { item: p });
+                      }
+                    }}
+                  >
+                    {thumb ? (
+                      <Image source={{ uri: thumb }} style={s.gridThumb} resizeMode="cover" />
+                    ) : (
+                      <View style={[s.gridThumb, s.gridThumbText]}>
+                        <Text style={s.gridThumbTxt} numberOfLines={3}>{p.content}</Text>
+                      </View>
+                    )}
+                    {(p.type === 'video' || p.type === 'short') && (
+                      <View style={s.gridPlayIcon}>
+                        <Ionicons name="play" size={14} color="#FFF" />
+                      </View>
+                    )}
+                    {p.likes > 0 && (
+                      <View style={s.gridLikes}>
+                        <Ionicons name="heart" size={10} color="#FFF" />
+                        <Text style={s.gridLikesTxt}>{p.likes >= 1000 ? `${(p.likes/1000).toFixed(1)}K` : p.likes}</Text>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
           ) : (
-            userPosts.map(p => (
-              <PostCard key={p.id} post={p} onLike={toggleLike} onCommentAdded={refreshPosts} />
-            ))
-          )}
-        </View>
+            // Liste görünümü
+            <View>
+              {userPosts.map(p => (
+                <PostCard key={p.id} post={p} onLike={toggleLike} onCommentAdded={refreshPosts} />
+              ))}
+            </View>
+          )
+        ) : (
+          // Sinyaller tab
+          userSignals.length === 0 ? (
+            <View style={s.emptyPosts}>
+              <Ionicons name="pulse-outline" size={36} color={colors.textMuted} />
+              <Text style={s.emptyPostsTxt}>Henüz sinyal yok</Text>
+            </View>
+          ) : (
+            <View>
+              {userSignals.map(sig => (
+                <SignalCard key={sig.id} signal={sig as any} />
+              ))}
+            </View>
+          )
+        )}
       </ScrollView>
     </View>
   );
@@ -310,4 +417,44 @@ const s = StyleSheet.create({
   verifiedDot: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center' },
   tierChip:    { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1 },
   tierChipTxt: { fontSize: 9, fontWeight: '800' },
+
+  // Tab bar
+  tabBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+    backgroundColor: colors.bgPure,
+    marginTop: 12,
+  },
+  tabRow:          { flexDirection: 'row', flex: 1 },
+  tabBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+    paddingVertical: 12,
+    borderBottomWidth: 2, borderBottomColor: 'transparent',
+  },
+  tabBtnActive:    { borderBottomColor: colors.primary },
+  tabBtnTxt:       { fontSize: 13, fontFamily: font.semiBold, color: colors.textMuted },
+  tabBtnTxtActive: { color: colors.primary, fontFamily: font.bold },
+  viewToggle: { flexDirection: 'row', paddingRight: 10, gap: 2 },
+  viewBtn:       { padding: 8, borderRadius: 8 },
+  viewBtnActive: { backgroundColor: colors.primaryLight },
+
+  // Grid görünüm
+  grid:          { flexDirection: 'row', flexWrap: 'wrap' },
+  gridItem:      { width: GRID_ITEM, height: GRID_ITEM, overflow: 'hidden', backgroundColor: colors.bg },
+  gridThumb:     { width: '100%', height: '100%' },
+  gridThumbText: { backgroundColor: colors.bgPure, padding: 8, justifyContent: 'center' },
+  gridThumbTxt:  { fontSize: 11, color: colors.text, lineHeight: 15 },
+  gridPlayIcon:  {
+    position: 'absolute', top: 6, right: 6,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10,
+    width: 22, height: 22, alignItems: 'center', justifyContent: 'center',
+  },
+  gridLikes: {
+    position: 'absolute', bottom: 5, left: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10,
+    paddingHorizontal: 5, paddingVertical: 2,
+  },
+  gridLikesTxt: { color: '#FFF', fontSize: 9, fontFamily: font.bold },
 });

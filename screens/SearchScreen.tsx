@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, StyleSheet,
-  ScrollView, FlatList, Image, Keyboard,
+  ScrollView, FlatList, Image, Keyboard, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,15 +12,16 @@ import { liveToMarketAsset } from '../services/marketService';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { SignalCard } from '../components/SignalCard';
 import type { VideoItem } from '../data/mockVideos';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 // ── Static fallback (piyasa verisi yokken) ───────────────────────────────────
 const STATIC_TRENDING = [
   '#Bitcoin', '#BIST100', '#Tesla', '$ETH', '#Altın', '#Nasdaq', '#DolarTL', '#SOL',
 ];
 
-type ResultTab = 'videos' | 'assets' | 'creators';
+type ResultTab = 'videos' | 'assets' | 'creators' | 'signals';
 
 interface Props { onBack?: () => void }
 
@@ -164,6 +165,7 @@ export function SearchScreen({ onBack }: Props) {
   const [activeTab, setActiveTab] = useState<ResultTab>('videos');
   const [dbCreators, setDbCreators] = useState<SimpleCreator[]>([]);
   const [dbVideos,   setDbVideos]   = useState<VideoItem[]>([]);
+  const [dbSignals,  setDbSignals]  = useState<any[]>([]);
   const [searching,  setSearching]  = useState(false);
   const { assets: liveAssets, allAssets } = useMarketPrices();
   const { analysts } = useLeaderboard();
@@ -193,7 +195,7 @@ export function SearchScreen({ onBack }: Props) {
 
   // Supabase video + creator araması (debounce)
   useEffect(() => {
-    if (!query.trim()) { setDbCreators([]); setDbVideos([]); setSearching(false); return; }
+    if (!query.trim()) { setDbCreators([]); setDbVideos([]); setDbSignals([]); setSearching(false); return; }
     setSearching(true);
     const t = setTimeout(async () => {
       const q2 = query.trim().toLowerCase();
@@ -248,6 +250,29 @@ export function SearchScreen({ onBack }: Props) {
       } else {
         setDbCreators([]);
       }
+
+      // Sinyal araması
+      const { data: sData } = await supabase
+        .from('signals')
+        .select(`
+          id, asset_id, direction, confidence, entry_price, target_price,
+          stop_loss, timeframe, rationale, copies_count, created_at,
+          profiles!signals_creator_id_fkey(id, username, full_name, avatar_url, verified, signal_accuracy)
+        `)
+        .or(`asset_id.ilike.%${q2}%,rationale.ilike.%${q2}%`)
+        .order('created_at', { ascending: false })
+        .limit(15);
+      setDbSignals(sData ?? []);
+
+      // En fazla sonuç olan sekmeye otomatik geç
+      const counts = {
+        videos:   (vData ?? []).length,
+        signals:  (sData ?? []).length,
+        creators: (pData ?? []).length,
+      };
+      const best = (Object.entries(counts) as [ResultTab, number][]).sort((a, b) => b[1] - a[1])[0];
+      if (best && best[1] > 0) setActiveTab(best[0]);
+
       } catch (e) {
         console.warn('[SearchScreen] arama hatası:', e);
       } finally {
@@ -259,7 +284,8 @@ export function SearchScreen({ onBack }: Props) {
 
   const q = query.toLowerCase().trim();
 
-  const videoResults = dbVideos;
+  const videoResults   = dbVideos;
+  const signalResults  = dbSignals;
 
   const allMarketAssets = liveAssets.map(liveToMarketAsset);
 
@@ -271,12 +297,13 @@ export function SearchScreen({ onBack }: Props) {
 
   const creatorResults = dbCreators;
 
-  const hasResults = videoResults.length > 0 || assetResults.length > 0 || creatorResults.length > 0;
+  const hasResults = videoResults.length > 0 || assetResults.length > 0 || creatorResults.length > 0 || signalResults.length > 0;
 
   const TABS: { key: ResultTab; label: string; count: number }[] = [
-    { key: 'videos',   label: 'Videolar',  count: videoResults.length },
-    { key: 'assets',   label: 'Varlıklar', count: assetResults.length },
-    { key: 'creators', label: 'Creator',   count: creatorResults.length },
+    { key: 'videos',   label: 'Gönderiler', count: videoResults.length },
+    { key: 'signals',  label: 'Sinyaller',  count: signalResults.length },
+    { key: 'assets',   label: 'Varlıklar',  count: assetResults.length },
+    { key: 'creators', label: 'Creator',    count: creatorResults.length },
   ];
 
   // Arama sonuçları gelince en çok sonucu olan tab'ı otomatik seç
@@ -401,10 +428,52 @@ export function SearchScreen({ onBack }: Props) {
           >
             {!hasResults && !searching && (
               <View style={s.noResults}>
-                <Text style={s.noResultsIcon}>🔍</Text>
-                <Text style={s.noResultsTitle}>Sonuç bulunamadı</Text>
-                <Text style={s.noResultsSub}>"{query}" için eşleşme bulunamadı</Text>
-                <View style={[s.trendGrid, { justifyContent: 'center', marginTop: 12 }]}>
+                {activeTab === 'users' && (
+                  <>
+                    <Ionicons name="people-outline" size={52} color={colors.textMuted} style={{ marginBottom: 12 }} />
+                    <Text style={s.noResultsTitle}>Kullanıcı bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" adında bir kullanıcı yok.{'\n'}Tam kullanıcı adı veya gerçek isim deneyin.</Text>
+                  </>
+                )}
+                {activeTab === 'posts' && (
+                  <>
+                    <Ionicons name="document-text-outline" size={52} color={colors.textMuted} style={{ marginBottom: 12 }} />
+                    <Text style={s.noResultsTitle}>Gönderi bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" içeren gönderi yok.{'\n'}Farklı anahtar kelime ya da hashtag deneyin.</Text>
+                  </>
+                )}
+                {activeTab === 'videos' && (
+                  <>
+                    <Ionicons name="videocam-outline" size={52} color={colors.textMuted} style={{ marginBottom: 12 }} />
+                    <Text style={s.noResultsTitle}>Video bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" için video yok.{'\n'}Konu başlığı veya içerik üreticisi adı deneyin.</Text>
+                  </>
+                )}
+                {activeTab === 'assets' && (
+                  <>
+                    <Ionicons name="trending-up-outline" size={52} color={colors.textMuted} style={{ marginBottom: 12 }} />
+                    <Text style={s.noResultsTitle}>Varlık bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" sembolü veya adında varlık yok.{'\n'}BTC, ETH, AAPL gibi semboller deneyin.</Text>
+                  </>
+                )}
+                {activeTab === 'signals' && (
+                  <>
+                    <Ionicons name="pulse-outline" size={52} color={colors.textMuted} style={{ marginBottom: 12 }} />
+                    <Text style={s.noResultsTitle}>Sinyal bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" için sinyal yok.{'\n'}Varlık sembolü (BTC, ETH) ile arayın.</Text>
+                  </>
+                )}
+                {!['users','posts','videos','assets','signals'].includes(activeTab) && (
+                  <>
+                    <Text style={s.noResultsIcon}>🔍</Text>
+                    <Text style={s.noResultsTitle}>Sonuç bulunamadı</Text>
+                    <Text style={s.noResultsSub}>"{query}" için eşleşme bulunamadı</Text>
+                  </>
+                )}
+                <Text style={[s.noResultsSub, { marginTop: 16, fontWeight: '600', color: colors.textMuted }]}>
+                  Trend aramalar:
+                </Text>
+                <View style={[s.trendGrid, { justifyContent: 'center', marginTop: 8 }]}>
                   {trendingSearches.slice(0, 4).map((t: string) => (
                     <Pressable key={t} style={s.trendChip} onPress={() => setQuery(t.replace('#', ''))}>
                       <Text style={s.trendChipTxt}>{t}</Text>
@@ -421,6 +490,28 @@ export function SearchScreen({ onBack }: Props) {
                 onPress={() => { Keyboard.dismiss(); navigation.navigate('VideoDetail', { item }); }}
               />
             ))}
+
+            {activeTab === 'signals' && (
+              signalResults.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 40, gap: 10 }}>
+                  <Ionicons name="pulse-outline" size={40} color={colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>Sinyal bulunamadı</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center', paddingHorizontal: 30 }}>
+                    Varlık adı (BTC, ETH, AAPL) veya analist adı ile arayın
+                  </Text>
+                </View>
+              ) : (
+                signalResults.map((sig: any) => (
+                  <SignalCard
+                    key={sig.id}
+                    signal={{
+                      ...sig,
+                      creator: sig.profiles,
+                    } as any}
+                  />
+                ))
+              )
+            )}
 
             {activeTab === 'assets' && assetResults.map((asset) => (
               <AssetResult

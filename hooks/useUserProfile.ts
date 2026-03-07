@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { avatarUrl } from '../lib/avatarUrl';
 
 export interface UserProfile {
   id:              string;
@@ -50,7 +51,7 @@ export function useUserProfile(userId: string | null | undefined) {
         ...data,
         displayName: data.full_name || data.username,
         handle:      `@${data.username}`,
-        avatarUri:   data.avatar_url || `https://i.pravatar.cc/200?u=${userId}`,
+        avatarUri:   data.avatar_url || avatarUrl(userId, data.full_name ?? data.username),
       });
     } catch {
       setNotFound(true);

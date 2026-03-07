@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLeaderboard } from '../hooks/useLeaderboard';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -81,14 +81,20 @@ export function LeaderboardScreen() {
   const navigation = useNavigation<any>();
   const [tab, setTab] = useState<LBTab>('Analistler');
   const [refreshing, setRefreshing] = useState(false);
+  const [period, setPeriod] = useState<'all' | 'weekly'>('weekly');
 
   const { analysts, topSignals, gainers, loading, refetch } = useLeaderboard();
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await refetch(period);
     setRefreshing(false);
   };
+
+  // Period değişince yeniden çek
+  React.useEffect(() => {
+    refetch(period);
+  }, [period]);
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -99,9 +105,15 @@ export function LeaderboardScreen() {
         </Pressable>
         <View style={s.headerCenter}>
           <Text style={s.headerTitle}>🏆 Liderboard</Text>
-          <Text style={s.headerSub}>Bu haftanın en iyileri</Text>
+          <Text style={s.headerSub}>{period === 'weekly' ? 'Bu haftanın en iyileri' : 'Tüm zamanların en iyileri'}</Text>
         </View>
-        <View style={{ width: 36 }} />
+        <Pressable
+          onPress={() => setPeriod(p => p === 'weekly' ? 'all' : 'weekly')}
+          style={s.periodBtn}
+          hitSlop={8}
+        >
+          <Text style={s.periodBtnTxt}>{period === 'weekly' ? '7G' : 'Tüm'}</Text>
+        </Pressable>
       </LinearGradient>
 
       {/* Tabs */}
@@ -184,8 +196,12 @@ export function LeaderboardScreen() {
 function AnalystRow({ analyst: a }: { analyst: { rank: number; id: string; name: string; handle: string; avatar: string; accuracy: number; signals: number; followers: string; tier: string; verified: boolean } }) {
   const navigation = useNavigation<any>();
   const tierColor = a.tier === 'elite' ? '#FFD700' : a.tier === 'pro' ? '#007AFF' : '#9AA0AF';
+  const accColor  = a.accuracy >= 75 ? '#34C759' : a.accuracy >= 60 ? '#FF9500' : '#FF3B3B';
   return (
-    <Pressable style={s.analystRow} onPress={() => navigation.navigate('ProfileView', { userId: a.id, username: a.handle })}>
+    <Pressable
+      style={s.analystRow}
+      onPress={() => navigation.navigate('ProfileView', { userId: a.id, username: a.handle })}
+    >
       <Text style={s.rowRank}>#{a.rank}</Text>
       <Image source={{ uri: a.avatar }} style={s.rowAvatar} />
       <View style={s.rowInfo}>
@@ -197,10 +213,23 @@ function AnalystRow({ analyst: a }: { analyst: { rank: number; id: string; name:
           </View>
         </View>
         <Text style={s.rowHandle}>{a.handle} · {a.signals} sinyal</Text>
+        {/* Mini accuracy bar */}
+        <View style={s.accBarWrap}>
+          <View style={s.accBarTrack}>
+            <View style={[s.accBarFill, { width: `${a.accuracy}%` as any, backgroundColor: accColor }]} />
+          </View>
+          <Text style={[s.accBarTxt, { color: accColor }]}>{a.accuracy}%</Text>
+        </View>
       </View>
       <View style={s.rowRight}>
-        <Text style={s.rowAccuracy}>{a.accuracy}%</Text>
         <Text style={s.rowFollowers}>{a.followers}</Text>
+        <Pressable
+          style={s.viewProfileBtn}
+          onPress={() => navigation.navigate('ProfileView', { userId: a.id, username: a.handle })}
+          hitSlop={6}
+        >
+          <Text style={s.viewProfileTxt}>Profil →</Text>
+        </Pressable>
       </View>
     </Pressable>
   );
@@ -255,6 +284,11 @@ const s = StyleSheet.create({
 
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14 },
   backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  periodBtn: {
+    width: 44, height: 28, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center',
+  },
+  periodBtnTxt: { color: '#FFF', fontSize: 12, fontFamily: font.bold },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff' },
   headerSub:   { fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
@@ -291,9 +325,21 @@ const s = StyleSheet.create({
   rowNameRow:{ flexDirection: 'row', alignItems: 'center', gap: 5 },
   rowName:   { fontSize: 14, fontWeight: '700', color: colors.text },
   rowHandle: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
-  rowRight:  { alignItems: 'flex-end', gap: 2 },
+  rowRight:  { alignItems: 'flex-end', gap: 4 },
   rowAccuracy:  { fontSize: 14, fontWeight: '800', color: colors.text },
   rowFollowers: { fontSize: 11, color: colors.textMuted },
+  // Mini accuracy bar
+  accBarWrap:  { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
+  accBarTrack: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border, overflow: 'hidden' },
+  accBarFill:  { height: '100%', borderRadius: 2 },
+  accBarTxt:   { fontSize: 10, fontWeight: '700', minWidth: 28 },
+  // Profil butonu
+  viewProfileBtn: {
+    backgroundColor: colors.primaryLight, borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: colors.primary + '30',
+  },
+  viewProfileTxt: { fontSize: 10, color: colors.primary, fontWeight: '700' },
   tierBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
   tierTxt:   { fontSize: 9, fontWeight: '800' },
 

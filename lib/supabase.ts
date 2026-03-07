@@ -35,22 +35,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
 // ─── Tip yardımcıları ─────────────────────────────────────────────────────────
 export type SupabaseUser = Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'];
 
-export type Profile = {
-  id:              string;
-  username:        string;
-  full_name:       string | null;
-  avatar_url:      string | null;
-  bio:             string | null;
-  tier:            'free' | 'pro' | 'elite';
-  verified:        boolean;
-  follower_count:  number;
-  following_count: number;
-  signal_accuracy: number;
-  referral_code:   string | null;
-  streak_days:     number;
-  created_at:      string;
-};
+// Merkezi tip tanımları — lib/database.types.ts
+export type { Profile, Signal, Post, Notification, PortfolioHolding, PriceAlert, Follow,
+              VideoComment, MarketcoinWallet, Badge, UserBadge, AssetPrice as DBAssetPrice,
+              ToggleSignalLikeResult, CopySignalOnceResult } from './database.types';
 
+// Uygulama içi AssetPrice (enrich edilmiş)
 export type AssetPrice = {
   asset_id:       string;
   price:          number;

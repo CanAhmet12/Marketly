@@ -111,5 +111,15 @@ export function usePriceAlerts(assetId?: string) {
     } catch { return false; }
   }, []);
 
-  return { alerts, loading, addAlert, removeAlert, refetch: fetchAlerts };
+  const updateAlert = useCallback(async (id: string, condition: 'above' | 'below', target: number): Promise<boolean> => {
+    try {
+      const updatePayload: Record<string, any> = { condition, target_price: target, target, triggered: false };
+      const { error } = await supabase.from('price_alerts').update(updatePayload).eq('id', id);
+      if (error) throw error;
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, condition, target_price: target, target, triggered: false } : a));
+      return true;
+    } catch { return false; }
+  }, []);
+
+  return { alerts, loading, addAlert, removeAlert, updateAlert, refetch: fetchAlerts };
 }

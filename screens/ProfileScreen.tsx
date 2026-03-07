@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, ScrollView, Pressable, Image,
-  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Share,
+  View, Text, ScrollView, Pressable, Image, Modal, FlatList,
+  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Share, TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,14 +24,112 @@ import { useSignals } from '../hooks/useSignals';
 import { useVideos } from '../hooks/useVideos';
 import { useMarketPrices } from '../hooks/useMarketPrices';
 import { LinearGradient } from 'expo-linear-gradient';
-import { radius, shadow, colors } from '../constants/theme';
+import { radius, shadow, colors, font } from '../constants/theme';
+import { supabase } from '../lib/supabase';
 
 const { width: W } = Dimensions.get('window');
 const COVER_H    = 170;
 const AVATAR_SIZE = 86;
+const GRID_ITEM_SIZE = (W - 3) / 3; // 3 sütun, 1px aralık
+
+// ─── Takipçi / Takip Listesi Modal ───────────────────────────────────────────
+function FollowListModal({
+  userId, type, onClose,
+}: { userId: string; type: 'followers' | 'following'; onClose: () => void }) {
+  const navigation = useNavigation<any>();
+  const [list, setList]       = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        let data: any[] | null = null;
+        if (type === 'followers') {
+          const res = await supabase
+            .from('follows')
+            .select('follower_id, profiles!follows_follower_id_fkey(id,username,full_name,avatar_url,tier,verified)')
+            .eq('following_id', userId);
+          data = (res.data ?? []).map((r: any) => r.profiles).filter(Boolean);
+        } else {
+          const res = await supabase
+            .from('follows')
+            .select('following_id, profiles!follows_following_id_fkey(id,username,full_name,avatar_url,tier,verified)')
+            .eq('follower_id', userId);
+          data = (res.data ?? []).map((r: any) => r.profiles).filter(Boolean);
+        }
+        setList(data ?? []);
+      } catch {}
+      setLoading(false);
+    })();
+  }, [userId, type]);
+
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: colors.bgPure, paddingTop: insets.top || 20 }}>
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
+          borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+        }}>
+          <Text style={{ flex: 1, fontSize: 17, fontWeight: '800', color: colors.text }}>
+            {type === 'followers' ? 'Takipçiler' : 'Takip Edilenler'}
+          </Text>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </Pressable>
+        </View>
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
+        ) : list.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+            <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+            <Text style={{ color: colors.textMuted, marginTop: 12, fontSize: 14 }}>
+              {type === 'followers' ? 'Henüz takipçi yok' : 'Henüz takip edilmiyor'}
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={list}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <Pressable
+                style={{
+                  flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16,
+                  paddingVertical: 12, gap: 12,
+                  borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider,
+                }}
+                onPress={() => {
+                  onClose();
+                  navigation.navigate('ProfileView', { userId: item.id, username: item.username });
+                }}
+              >
+                <Image
+                  source={{ uri: item.avatar_url || `https://api.dicebear.com/7.x/avataaars/png?seed=${item.username}` }}
+                  style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: colors.bgInput }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
+                    {item.full_name || item.username}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>@{item.username}</Text>
+                </View>
+                {item.verified && (
+                  <Ionicons name="checkmark-circle" size={16} color={colors.info} />
+                )}
+              </Pressable>
+            )}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
 
 
-const PROFILE_TABS = ['Videolar', 'Sinyaller', 'Portföy', 'İstatistikler'] as const;
+const PROFILE_TABS = ['Gönderiler', 'Sinyaller', 'Beğeniler', 'Kaydedilenler', 'Portföy', 'İstatistikler'] as const;
 type ProfileTab = typeof PROFILE_TABS[number];
 
 // ─── GuestProfile ─────────────────────────────────────────────────────────────
@@ -558,8 +656,21 @@ export function ProfileScreen() {
   const { user, profile, logout } = useAuth();
   const navigation        = useNavigation<any>();
   const insets            = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState<ProfileTab>('Videolar');
+  const [activeTab, setActiveTab] = useState<ProfileTab>('Gönderiler');
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioText, setBioText]       = useState((profile as any)?.bio ?? '');
+  const [gridView, setGridView]     = useState(true);
+  const bioInputRef = useRef<any>(null);
+
+  const saveBio = useCallback(async () => {
+    setEditingBio(false);
+    if (!user?.id) return;
+    const trimmed = bioText.trim().slice(0, 150);
+    setBioText(trimmed);
+    await supabase.from('profiles').update({ bio: trimmed }).eq('id', user.id);
+  }, [bioText, user?.id]);
   const [showPostModal,  setShowPostModal]  = useState(false);
+  const [followListType, setFollowListType] = useState<'followers' | 'following' | null>(null);
   const { showTabBar, resetTabBar } = useTabBar();
   const { tierLabel, tierColor }    = useSubscription();
   const { followersCount, followingCount }  = useFollow(user?.id);
@@ -570,6 +681,48 @@ export function ProfileScreen() {
   const { signals: mySignals } = useSignals({ creatorId: user?.id });
   const { allAssets } = useMarketPrices();
   const toast = useToast();
+
+  // Beğenilen ve kaydedilen gönderiler
+  const [likedPosts,  setLikedPosts]  = React.useState<any[]>([]);
+  const [savedPosts,  setSavedPosts]  = React.useState<any[]>([]);
+  const [likedLoading,  setLikedLoading]  = React.useState(false);
+  const [savedLoading,  setSavedLoading]  = React.useState(false);
+
+  const loadLikedPosts = React.useCallback(async () => {
+    if (!user?.id) return;
+    setLikedLoading(true);
+    try {
+      const { data } = await supabase
+        .from('post_likes')
+        .select('post_id, posts(*, profiles(id,username,full_name,avatar_url,tier,verified))')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      setLikedPosts((data ?? []).map((r: any) => r.posts).filter(Boolean));
+    } catch {}
+    setLikedLoading(false);
+  }, [user?.id]);
+
+  const loadSavedPosts = React.useCallback(async () => {
+    if (!user?.id) return;
+    setSavedLoading(true);
+    try {
+      const { data } = await supabase
+        .from('saved_posts')
+        .select('post_id, posts(*, profiles(id,username,full_name,avatar_url,tier,verified))')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      setSavedPosts((data ?? []).map((r: any) => r.posts).filter(Boolean));
+    } catch {}
+    setSavedLoading(false);
+  }, [user?.id]);
+
+  React.useEffect(() => {
+    if (activeTab === 'Beğeniler') loadLikedPosts();
+    if (activeTab === 'Kaydedilenler') loadSavedPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   // Yeni rozet kazanılınca bildirim göster
   useEffect(() => {
@@ -687,9 +840,29 @@ export function ProfileScreen() {
               </View>
             </View>
             <Text style={s.handle}>@{profile?.username ?? (user.email ?? '').split('@')[0]}</Text>
-            <Text style={s.bio} numberOfLines={2}>
-              {(profile as any)?.bio || '💼 Marketly kullanıcısı · Profili düzenle →'}
-            </Text>
+            {editingBio ? (
+              <TextInput
+                ref={bioInputRef}
+                style={s.bioInput}
+                value={bioText}
+                onChangeText={setBioText}
+                onBlur={saveBio}
+                onSubmitEditing={saveBio}
+                placeholder="Biyografi yaz… (maks. 150 karakter)"
+                placeholderTextColor={colors.textMuted}
+                multiline
+                maxLength={150}
+                autoFocus
+                returnKeyType="done"
+                blurOnSubmit
+              />
+            ) : (
+              <Pressable onPress={() => { setBioText((profile as any)?.bio ?? ''); setEditingBio(true); }}>
+                <Text style={s.bio} numberOfLines={3}>
+                  {(profile as any)?.bio || '✏️ Biyografi eklemek için dokun…'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
 
@@ -726,16 +899,19 @@ export function ProfileScreen() {
         {/* ══ SOCIAL STATS ══ */}
         <View style={s.socialStats}>
           {[
-            { val: followersCount > 999 ? `${(followersCount/1000).toFixed(1)}K` : String(followersCount), lbl: 'Takipçi' },
-            { val: followingCount > 999 ? `${(followingCount/1000).toFixed(1)}K` : String(followingCount), lbl: 'Takip' },
-            { val: String(posts.filter(p => p.user_id === user?.id).length), lbl: 'Gönderi' },
+            { val: followersCount > 999 ? `${(followersCount/1000).toFixed(1)}K` : String(followersCount), lbl: 'Takipçi', type: 'followers' },
+            { val: followingCount > 999 ? `${(followingCount/1000).toFixed(1)}K` : String(followingCount), lbl: 'Takip', type: 'following' },
+            { val: String(posts.filter(p => p.user_id === user?.id).length), lbl: 'Gönderi', type: null },
             ...(((profile as any)?.signal_accuracy ?? 0) > 0
-              ? [{ val: `${((profile as any).signal_accuracy as number).toFixed(1)}%`, lbl: 'Doğruluk' }]
+              ? [{ val: `${((profile as any).signal_accuracy as number).toFixed(1)}%`, lbl: 'Doğruluk', type: null }]
               : []),
           ].map((st, i) => (
             <React.Fragment key={st.lbl}>
               {i > 0 && <View style={s.statsDivider} />}
-              <Pressable style={s.statItem}>
+              <Pressable
+                style={s.statItem}
+                onPress={st.type ? () => setFollowListType(st.type as 'followers' | 'following') : undefined}
+              >
                 <Text style={s.statVal}>{st.val}</Text>
                 <Text style={s.statLbl}>{st.lbl}</Text>
               </Pressable>
@@ -767,17 +943,29 @@ export function ProfileScreen() {
 
         {/* ══ CONTENT TABS ══ */}
         <View style={s.tabsBar}>
-          {PROFILE_TABS.map((t) => (
-            <Pressable key={t} style={s.tabItem} onPress={() => setActiveTab(t)}>
-              <Text style={[s.tabTxt, activeTab === t && s.tabTxtActive]}>{t}</Text>
-              {activeTab === t && <View style={s.tabUnderline} />}
-            </Pressable>
-          ))}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
+            {PROFILE_TABS.map((t) => (
+              <Pressable key={t} style={s.tabItem} onPress={() => setActiveTab(t)}>
+                <Text style={[s.tabTxt, activeTab === t && s.tabTxtActive]}>{t}</Text>
+                {activeTab === t && <View style={s.tabUnderline} />}
+              </Pressable>
+            ))}
+          </ScrollView>
+          {activeTab === 'Gönderiler' && (
+            <View style={s.viewToggleRow}>
+              <Pressable onPress={() => setGridView(true)} hitSlop={6}>
+                <Ionicons name="grid-outline" size={18} color={gridView ? colors.primary : colors.textMuted} />
+              </Pressable>
+              <Pressable onPress={() => setGridView(false)} hitSlop={6}>
+                <Ionicons name="list-outline" size={18} color={!gridView ? colors.primary : colors.textMuted} />
+              </Pressable>
+            </View>
+          )}
         </View>
 
         {/* ══ TAB CONTENT ══ */}
         <View style={s.tabContent}>
-          {activeTab === 'Videolar' && (
+          {activeTab === 'Gönderiler' && (
             <>
               {/* Gönderi oluştur butonu */}
               <Pressable style={s.profileComposeBtn} onPress={() => setShowPostModal(true)}>
@@ -786,15 +974,50 @@ export function ProfileScreen() {
               </Pressable>
               {/* Kendi postları */}
               {posts.filter(p => p.user_id === user?.id).length > 0 ? (
-                posts.filter(p => p.user_id === user?.id).map(post => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onLike={toggleLike}
-                    onDelete={deletePost}
-                    onCommentAdded={refresh}
-                  />
-                ))
+                gridView ? (
+                  // ── 3'lü Grid ──
+                  <View style={s.postsGrid}>
+                    {posts.filter(p => p.user_id === user?.id).map(post => {
+                      const thumb = post.thumbnail_url ?? post.image_url;
+                      const isMedia = post.type === 'video' || post.type === 'short' || post.type === 'live';
+                      return (
+                        <Pressable
+                          key={post.id}
+                          style={[s.gridItem, { width: GRID_ITEM_SIZE, height: GRID_ITEM_SIZE }]}
+                          onLongPress={() => deletePost(post.id).then(refresh)}
+                        >
+                          {thumb ? (
+                            <Image source={{ uri: thumb }} style={s.gridThumb} resizeMode="cover" />
+                          ) : (
+                            <View style={[s.gridThumb, s.gridTextFallback]}>
+                              <Text style={s.gridTextFallbackTxt} numberOfLines={4}>{post.content}</Text>
+                            </View>
+                          )}
+                          {isMedia && (
+                            <View style={s.gridPlayIcon}>
+                              <Ionicons name={post.type === 'live' ? 'radio' : 'play'} size={14} color="#FFF" />
+                            </View>
+                          )}
+                          <View style={s.gridLikesRow}>
+                            <Ionicons name="heart" size={10} color="#FFF" />
+                            <Text style={s.gridLikesTxt}>{post.likes ?? 0}</Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  // ── Liste ──
+                  posts.filter(p => p.user_id === user?.id).map(post => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onLike={toggleLike}
+                      onDelete={deletePost}
+                      onCommentAdded={refresh}
+                    />
+                  ))
+                )
               ) : (
                 <ContentGrid userId={user?.id} />
               )}
@@ -814,6 +1037,52 @@ export function ProfileScreen() {
               )}
             </View>
           )}
+          {activeTab === 'Beğeniler' && (
+            <View style={{ paddingTop: 6 }}>
+              {likedLoading ? (
+                <ActivityIndicator color={colors.primary} style={{ marginVertical: 40 }} />
+              ) : likedPosts.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 50, gap: 10 }}>
+                  <Ionicons name="heart-outline" size={44} color={colors.textMuted} />
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textSub }}>Beğeni yok</Text>
+                  <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', paddingHorizontal: 30 }}>
+                    Beğendiğin gönderiler burada görünecek
+                  </Text>
+                </View>
+              ) : (
+                likedPosts.map((post: any) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={toggleLike}
+                  />
+                ))
+              )}
+            </View>
+          )}
+          {activeTab === 'Kaydedilenler' && (
+            <View style={{ paddingTop: 6 }}>
+              {savedLoading ? (
+                <ActivityIndicator color={colors.primary} style={{ marginVertical: 40 }} />
+              ) : savedPosts.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 50, gap: 10 }}>
+                  <Ionicons name="bookmark-outline" size={44} color={colors.textMuted} />
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textSub }}>Kayıt yok</Text>
+                  <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', paddingHorizontal: 30 }}>
+                    Kaydettiğin gönderiler burada görünecek
+                  </Text>
+                </View>
+              ) : (
+                savedPosts.map((post: any) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={toggleLike}
+                  />
+                ))
+              )}
+            </View>
+          )}
           {activeTab === 'Portföy' && <PortfolioTab />}
           {activeTab === 'İstatistikler' && <StatsTab signals={mySignals} followerCount={followersCount} />}
         </View>
@@ -827,6 +1096,15 @@ export function ProfileScreen() {
           return await createPost(content, tag);
         }}
       />
+
+      {/* ══ TAKIPÇI / TAKİP LİSTESİ MODAL ══ */}
+      {followListType && (
+        <FollowListModal
+          userId={user.id}
+          type={followListType}
+          onClose={() => setFollowListType(null)}
+        />
+      )}
     </View>
   );
 }
@@ -885,6 +1163,13 @@ const s = StyleSheet.create({
   proTxt: { fontSize: 9, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
   handle: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
   bio: { fontSize: 12.5, color: colors.textSub, marginTop: 5, lineHeight: 18 },
+  bioInput: {
+    fontSize: 12.5, color: colors.text, marginTop: 5, lineHeight: 18,
+    borderWidth: 1, borderColor: colors.primary + '60',
+    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6,
+    backgroundColor: colors.primaryLight,
+    minHeight: 44,
+  },
 
   // Action btns
   actionRow: {
@@ -928,10 +1213,11 @@ const s = StyleSheet.create({
   // Tabs
   tabsBar: {
     flexDirection: 'row', backgroundColor: colors.bgPure,
+    alignItems: 'center',
     borderTopWidth: 1, borderTopColor: colors.border,
     borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  tabItem: { flex: 1, alignItems: 'center', paddingVertical: 13, position: 'relative' },
+  tabItem: { alignItems: 'center', paddingVertical: 13, paddingHorizontal: 12, position: 'relative' },
   tabTxt: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
   tabTxtActive: { color: colors.text, fontWeight: '800' },
   tabUnderline: {
@@ -939,6 +1225,39 @@ const s = StyleSheet.create({
     height: 2.5, backgroundColor: colors.primary, borderRadius: 2,
   },
   tabContent: { paddingTop: 10 },
+
+  viewToggleRow: {
+    flexDirection: 'row', gap: 10, paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+
+  // Grid görünüm
+  postsGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 1.5,
+  },
+  gridItem: {
+    overflow: 'hidden', backgroundColor: colors.bgCard,
+  },
+  gridThumb: {
+    width: '100%', height: '100%',
+  },
+  gridTextFallback: {
+    backgroundColor: colors.bgCard, justifyContent: 'center',
+    paddingHorizontal: 8, paddingVertical: 6,
+  },
+  gridTextFallbackTxt: {
+    fontSize: 11, color: colors.textMuted, lineHeight: 16,
+  },
+  gridPlayIcon: {
+    position: 'absolute', top: 6, right: 6,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10,
+    padding: 3,
+  },
+  gridLikesRow: {
+    position: 'absolute', bottom: 5, left: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+  },
+  gridLikesTxt: { fontSize: 10, color: '#FFF', fontWeight: '700' },
 
   profileComposeBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

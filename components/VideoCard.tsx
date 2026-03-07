@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { VideoItem } from '../data/mockVideos';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius, shadow, font } from '../constants/theme';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -18,7 +18,7 @@ function fmt(n: number) {
   return String(n);
 }
 
-// ─── Small creator row (avatar + name + verified) ─────────────────────────────
+// â”€â”€â”€ Small creator row (avatar + name + verified) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CreatorRow({
   avatar, name, verified, followers, size = 'md',
 }: {
@@ -52,7 +52,7 @@ const cr = StyleSheet.create({
     borderWidth: 1.5, borderColor: colors.primary,
   },
   avatarSm: { width: 20, height: 20, borderRadius: 10, borderWidth: 1 },
-  name: { fontSize: 13, fontWeight: '700', color: colors.text, maxWidth: 130 },
+  name: { fontSize: 13, fontFamily: font.bold, color: colors.text, maxWidth: 130 },
   nameSm: { fontSize: 11, color: 'rgba(255,255,255,0.92)', maxWidth: 100 },
   badge: {
     width: 15, height: 15, borderRadius: 7.5,
@@ -60,12 +60,12 @@ const cr = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   badgeSm: { width: 12, height: 12, borderRadius: 6 },
-  followers: { fontSize: 11, color: colors.textMuted, fontWeight: '600', flex: 1 },
+  followers: { fontSize: 11, color: colors.textMuted, fontFamily: font.semiBold, flex: 1 },
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  FEATURED CARD  –  Tam genişlik, sinematik, sosyal feed kartı
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  FEATURED CARD  â€“  Tam geniÅŸlik, sinematik, sosyal feed kartÄ±
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?: () => void }) {
   const toast      = useToast();
   const { user }   = useAuth();
@@ -73,7 +73,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
   const [saved, setSaved] = useState(false);
   const up = (item.changePercent ?? 0) >= 0;
 
-  // Başlangıçta beğeni/kaydetme durumunu yükle
+  // BaÅŸlangÄ±Ã§ta beÄŸeni/kaydetme durumunu yÃ¼kle
   useEffect(() => {
     if (!user?.id) return;
     Promise.all([
@@ -87,7 +87,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
 
   return (
     <Pressable style={fc.card} onPress={onPress}>
-      {/* ── Thumbnail ── */}
+      {/* â”€â”€ Thumbnail â”€â”€ */}
       <View style={fc.imgWrap}>
         <Image
           source={{ uri: item.thumbnail }}
@@ -121,7 +121,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
             style={fc.saveBtn}
             onPress={async (e) => {
               e.stopPropagation();
-              if (!user?.id) { toast.info('Kaydetmek için giriş yap'); return; }
+              if (!user?.id) { toast.info('Kaydetmek iÃ§in giriÅŸ yap'); return; }
               const newSaved = !saved;
               setSaved(newSaved);
               if (newSaved) {
@@ -129,10 +129,10 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
                   { user_id: user.id, video_id: item.id },
                   { onConflict: 'user_id,video_id' }
                 );
-                toast.success('Kaydedildi 🔖');
+                toast.success('Kaydedildi ğŸ”–');
               } else {
                 await supabase.from('saved_videos').delete().eq('user_id', user.id).eq('video_id', item.id);
-                toast.info('Kaydedilenlerden çıkarıldı');
+                toast.info('Kaydedilenlerden Ã§Ä±karÄ±ldÄ±');
               }
             }}
           >
@@ -161,7 +161,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
         </View>
       </View>
 
-      {/* ── Info row below image ── */}
+      {/* â”€â”€ Info row below image â”€â”€ */}
       <View style={fc.infoRow}>
         {/* Price block */}
         {item.price ? (
@@ -193,7 +193,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
             style={fc.engBtn}
             onPress={async (e) => {
               e.stopPropagation();
-              if (!user?.id) { toast.info('Beğenmek için giriş yap'); return; }
+              if (!user?.id) { toast.info('BeÄŸenmek iÃ§in giriÅŸ yap'); return; }
               const newLiked = !liked;
               setLiked(newLiked);
               if (newLiked) {
@@ -201,7 +201,7 @@ export function FeaturedVideoCard({ item, onPress }: { item: VideoItem; onPress?
                   { user_id: user.id, video_id: item.id },
                   { onConflict: 'user_id,video_id' }
                 );
-                toast.success('Video beğenildi ❤️');
+                toast.success('Video beÄŸenildi â¤ï¸');
               } else {
                 await supabase.from('video_likes').delete().eq('user_id', user.id).eq('video_id', item.id);
               }
@@ -256,18 +256,18 @@ const fc = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4,
   },
   livePulse: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#FFF' },
-  liveTxt: { color: '#FFF', fontSize: 9.5, fontWeight: '900', letterSpacing: 1 },
+  liveTxt: { color: '#FFF', fontSize: 9.5, fontFamily: font.black, letterSpacing: 1 },
   assetBadge: {
     backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: radius.sm,
     paddingHorizontal: 7, paddingVertical: 4,
     borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.2)',
   },
-  assetTxt: { color: '#FFF', fontSize: 10, fontWeight: '800' },
+  assetTxt: { color: '#FFF', fontSize: 10, fontFamily: font.extraBold },
   durationBadge: {
     backgroundColor: 'rgba(0,0,0,0.60)', borderRadius: radius.xs,
     paddingHorizontal: 6, paddingVertical: 3,
   },
-  durationTxt: { color: '#FFF', fontSize: 9.5, fontWeight: '700' },
+  durationTxt: { color: '#FFF', fontSize: 9.5, fontFamily: font.bold },
   saveBtn: {
     width: 30, height: 30, borderRadius: 15,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -295,34 +295,34 @@ const fc = StyleSheet.create({
   },
   overlayContent: { gap: 5 },
   overlayTitle: {
-    color: '#FFF', fontSize: 13, fontWeight: '800', lineHeight: 18,
+    color: '#FFF', fontSize: 13, fontFamily: font.extraBold, lineHeight: 18,
     textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
   },
 
   // Info row
   infoRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 14, paddingVertical: 11,
+    paddingHorizontal: 10, paddingVertical: 11,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(0,0,0,0.06)',
     gap: 8,
   },
   priceBlock: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  priceVal: { fontSize: 16, fontWeight: '900', color: '#0F0F1A' },
+  priceVal: { fontSize: 16, fontFamily: font.black, color: '#0F0F1A' },
   changePill: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
     paddingHorizontal: 7, paddingVertical: 3, borderRadius: radius.full,
   },
-  changePct: { fontSize: 11, fontWeight: '800' },
+  changePct: { fontSize: 11, fontFamily: font.extraBold },
 
   engage: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  engTxt: { fontSize: 12, color: '#9AA0AF', fontWeight: '600' },
+  engTxt: { fontSize: 12, color: '#9AA0AF', fontFamily: font.semiBold },
   engSep: { width: StyleSheet.hairlineWidth, height: 14, backgroundColor: 'rgba(0,0,0,0.10)' },
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HORIZONTAL CARD  –  YouTube stili: sol thumbnail + sağ metin
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  HORIZONTAL CARD  â€“  YouTube stili: sol thumbnail + saÄŸ metin
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function HorizontalVideoCard({ item, onPress }: { item: VideoItem; onPress?: () => void }) {
   const up = (item.changePercent ?? 0) >= 0;
 
@@ -408,23 +408,23 @@ const hv = StyleSheet.create({
     paddingHorizontal: 5, paddingVertical: 2.5,
   },
   liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFF' },
-  liveTxt: { color: '#FFF', fontSize: 7.5, fontWeight: '900', letterSpacing: 0.5 },
+  liveTxt: { color: '#FFF', fontSize: 7.5, fontFamily: font.black, letterSpacing: 0.5 },
   durationBadge: {
     position: 'absolute', bottom: 5, right: 5,
     backgroundColor: 'rgba(0,0,0,0.70)', borderRadius: 4,
     paddingHorizontal: 5, paddingVertical: 2.5,
   },
-  durationTxt: { color: '#FFF', fontSize: 9, fontWeight: '700' },
+  durationTxt: { color: '#FFF', fontSize: 9, fontFamily: font.bold },
   playOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     alignItems: 'center', justifyContent: 'center',
   },
 
   textWrap: { flex: 1, justifyContent: 'space-between', paddingVertical: 2 },
-  title: { fontSize: 13, fontWeight: '700', color: '#0F0F1A', lineHeight: 18 },
+  title: { fontSize: 13, fontFamily: font.bold, color: '#0F0F1A', lineHeight: 18 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
   avatar: { width: 16, height: 16, borderRadius: 8 },
-  creatorTxt: { fontSize: 11, fontWeight: '600', color: '#6B7280', flex: 1 },
+  creatorTxt: { fontSize: 11, fontFamily: font.semiBold, color: '#6B7280', flex: 1 },
   verifiedBadge: {
     width: 12, height: 12, borderRadius: 6,
     backgroundColor: colors.info,
@@ -436,15 +436,15 @@ const hv = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 2,
     borderRadius: radius.full, paddingHorizontal: 6, paddingVertical: 2,
   },
-  changeText: { fontSize: 10, fontWeight: '800' },
+  changeText: { fontSize: 10, fontFamily: font.extraBold },
   stat: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  statTxt: { fontSize: 10, color: '#9AA0AF', fontWeight: '600' },
+  statTxt: { fontSize: 10, color: '#9AA0AF', fontFamily: font.semiBold },
   timeAgo: { fontSize: 10, color: '#B0B8C4', marginLeft: 'auto' },
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  TRADER CARD  (SavingsCard)  –  analist profil kartı
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  TRADER CARD  (SavingsCard)  â€“  analist profil kartÄ±
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function SavingsCard({ item, onPress }: { item: VideoItem; onPress?: () => void }) {
   const [following, setFollowing] = useState(false);
   const toast = useToast();
@@ -469,7 +469,7 @@ export function SavingsCard({ item, onPress }: { item: VideoItem; onPress?: () =
       {/* Name */}
       <Text style={tc.name} numberOfLines={1}>{item.creator.name}</Text>
       {item.creator.followers && (
-        <Text style={tc.followers}>{item.creator.followers} takipçi</Text>
+        <Text style={tc.followers}>{item.creator.followers} takipÃ§i</Text>
       )}
 
       {/* Performance pill */}
@@ -493,7 +493,7 @@ export function SavingsCard({ item, onPress }: { item: VideoItem; onPress?: () =
         onPress={(e) => {
           e.stopPropagation();
           setFollowing(!following);
-          toast.success(following ? 'Takipten çıkıldı' : `${item.creator.name} takip ediliyor ✓`);
+          toast.success(following ? 'Takipten Ã§Ä±kÄ±ldÄ±' : `${item.creator.name} takip ediliyor âœ“`);
         }}
       >
         {following && <Ionicons name="checkmark" size={11} color="#FFF" />}
@@ -529,15 +529,15 @@ const tc = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#FFF',
   },
 
-  name: { fontSize: 13, fontWeight: '800', color: '#0F0F1A', textAlign: 'center', marginBottom: 2 },
-  followers: { fontSize: 10.5, color: '#9AA0AF', marginBottom: 8, fontWeight: '500' },
+  name: { fontSize: 13, fontFamily: font.extraBold, color: '#0F0F1A', textAlign: 'center', marginBottom: 2 },
+  followers: { fontSize: 10.5, color: '#9AA0AF', marginBottom: 8, fontFamily: font.medium },
 
   gainPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.full,
     marginBottom: 8,
   },
-  gainTxt: { fontSize: 13, fontWeight: '900' },
+  gainTxt: { fontSize: 13, fontFamily: font.black },
 
   bio: {
     fontSize: 10.5, color: '#9AA0AF', textAlign: 'center',
@@ -552,12 +552,14 @@ const tc = StyleSheet.create({
     justifyContent: 'center', gap: 4,
   },
   followBtnOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  followTxt: { fontSize: 12, fontWeight: '800', color: colors.primary },
+  followTxt: { fontSize: 12, fontFamily: font.extraBold, color: colors.primary },
   followTxtOn: { color: '#FFF' },
 });
 
-// ─ Legacy alias (React.memo ile optimize) ────────────────────────────────────
+// â”€ Legacy alias (React.memo ile optimize) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const VideoCard = React.memo(function VideoCard({ item, onPress }: { item: VideoItem; onPress?: () => void }) {
+  if (!item?.id) return null;
   if (item.type === 'savings') return <SavingsCard item={item} onPress={onPress} />;
   return <HorizontalVideoCard item={item} onPress={onPress} />;
 });
+

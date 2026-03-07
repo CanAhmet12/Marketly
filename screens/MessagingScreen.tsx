@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, FlatList, TextInput,
   KeyboardAvoidingView, Platform, Image, ActivityIndicator,
-  Animated, Dimensions,
+  Animated, Dimensions, Alert, Clipboard, Modal, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +10,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
 import { useConversations, useDirectMessages, DMConversation, DMMessage } from '../hooks/useMessages';
-import { colors, shadow, radius } from '../constants/theme';
+import { colors, shadow, radius, font } from '../constants/theme';
+import { supabase } from '../lib/supabase';
 
 const { width: W } = Dimensions.get('window');
 
@@ -44,6 +45,102 @@ function formatTime(iso: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 // CONVERSATION LIST VIEW
 // ─────────────────────────────────────────────────────────────────────────────
+/** Yeni konuşma başlatma modal'ı — kullanıcı arar, tıklar, chat açılır */
+function NewConversationModal({
+  visible, onClose, onStartChat,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onStartChat: (userId: string, username: string, avatarUrl?: string) => void;
+}) {
+  const { user } = useAuth();
+  const [query, setQuery]     = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url, verified')
+        .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+        .neq('id', user?.id ?? '')
+        .limit(12);
+      setResults(data ?? []);
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, user?.id]);
+
+  const handleClose = () => { setQuery(''); setResults([]); onClose(); };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+      <View style={nm.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        <View style={nm.sheet}>
+          <View style={nm.handle} />
+          <View style={nm.header}>
+            <Text style={nm.title}>Yeni Mesaj</Text>
+            <Pressable onPress={handleClose} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.text} />
+            </Pressable>
+          </View>
+          <View style={nm.searchRow}>
+            <Ionicons name="search-outline" size={16} color={colors.textMuted} />
+            <TextInput
+              style={nm.searchInput}
+              placeholder="Kullanıcı adı veya isim ara…"
+              placeholderTextColor={colors.textMuted}
+              value={query}
+              onChangeText={setQuery}
+              autoFocus
+              autoCapitalize="none"
+            />
+            {loading && <ActivityIndicator size="small" color={colors.primary} />}
+          </View>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {results.length === 0 && query.trim().length > 0 && !loading && (
+              <View style={nm.empty}>
+                <Ionicons name="people-outline" size={32} color={colors.textMuted} />
+                <Text style={nm.emptyTxt}>Kullanıcı bulunamadı</Text>
+              </View>
+            )}
+            {results.map(u => (
+              <Pressable
+                key={u.id}
+                style={({ pressed }) => [nm.userRow, pressed && { opacity: 0.7 }]}
+                onPress={() => {
+                  handleClose();
+                  onStartChat(u.id, u.username ?? u.full_name ?? 'Kullanıcı', u.avatar_url ?? undefined);
+                }}
+              >
+                {u.avatar_url ? (
+                  <Image source={{ uri: u.avatar_url }} style={nm.avatar} />
+                ) : (
+                  <View style={[nm.avatar, nm.avatarFallback]}>
+                    <Text style={nm.avatarLetter}>{(u.full_name ?? u.username ?? '?')[0].toUpperCase()}</Text>
+                  </View>
+                )}
+                <View style={nm.userInfo}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={nm.userName}>{u.full_name ?? u.username}</Text>
+                    {u.verified && <Ionicons name="checkmark-circle" size={13} color="#007AFF" />}
+                  </View>
+                  <Text style={nm.userHandle}>@{u.username}</Text>
+                </View>
+                <Ionicons name="chatbubble-outline" size={18} color={colors.textMuted} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function ConversationList({
   onOpenChat,
 }: {
@@ -53,6 +150,7 @@ function ConversationList({
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { conversations, loading, tablesExist, totalUnread, loadConversations } = useConversations();
+  const [showNewChat, setShowNewChat] = useState(false);
 
   const renderItem = ({ item }: { item: DMConversation }) => {
     const other    = item.other_user;
@@ -110,7 +208,13 @@ function ConversationList({
             </View>
           )}
         </View>
-        <View style={{ width: 36 }} />
+        <Pressable
+          style={cl.composeBtn}
+          onPress={() => setShowNewChat(true)}
+          hitSlop={8}
+        >
+          <Ionicons name="create-outline" size={22} color={colors.primary} />
+        </Pressable>
       </View>
 
       {/* Tablo yoksa — kullanıcı dostu boş durum */}
@@ -157,6 +261,41 @@ function ConversationList({
           contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
         />
       )}
+
+      {/* Yeni konuşma modal'ı */}
+      <NewConversationModal
+        visible={showNewChat}
+        onClose={() => setShowNewChat(false)}
+        onStartChat={async (targetUserId, targetUsername, targetAvatar) => {
+          if (!user?.id) return;
+          // Mevcut konuşmayı bul ya da yeni oluştur
+          const existing = conversations.find(c =>
+            (c.user1_id === user.id && c.user2_id === targetUserId) ||
+            (c.user2_id === user.id && c.user1_id === targetUserId)
+          );
+          if (existing) {
+            onOpenChat(existing);
+          } else {
+            // Yeni konuşma kaydı oluştur
+            const { data: newConv } = await supabase
+              .from('dm_conversations')
+              .upsert(
+                { user1_id: user.id, user2_id: targetUserId, last_message_at: new Date().toISOString() },
+                { onConflict: 'user1_id,user2_id' }
+              )
+              .select()
+              .single();
+            if (newConv) {
+              // Konuşmaları yenile ve aç
+              await loadConversations();
+              onOpenChat({
+                ...newConv,
+                other_user: { id: targetUserId, username: targetUsername, avatar_url: targetAvatar },
+              } as DMConversation);
+            }
+          }
+        }}
+      />
     </View>
   );
 }
@@ -177,6 +316,9 @@ const cl = StyleSheet.create({
     paddingHorizontal: 7, paddingVertical: 2,
   },
   totalBadgeTxt: { fontSize: 11, fontWeight: '800', color: '#fff' },
+  composeBtn: {
+    width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
+  },
 
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
@@ -263,6 +405,37 @@ function ChatView({
     const showTime = !prevMsg ||
       new Date(item.created_at).getTime() - new Date(prevMsg.created_at).getTime() > 5 * 60 * 1000;
 
+    const handleLongPress = () => {
+      const options: string[] = ['Kopyala', 'İptal'];
+      if (mine) options.splice(1, 0, 'Sil');
+
+      Alert.alert('Mesaj', undefined, [
+        {
+          text: 'Kopyala',
+          onPress: () => Clipboard.setString(item.content),
+        },
+        ...(mine ? [{
+          text: 'Sil',
+          style: 'destructive' as const,
+          onPress: () => {
+            Alert.alert('Mesajı Sil', 'Bu mesaj kalıcı olarak silinecek.', [
+              { text: 'Vazgeç', style: 'cancel' },
+              {
+                text: 'Sil', style: 'destructive',
+                onPress: async () => {
+                  try {
+                    const { supabase } = await import('../lib/supabase');
+                    await supabase.from('dm_messages').delete().eq('id', item.id);
+                  } catch {}
+                },
+              },
+            ]);
+          },
+        }] : []),
+        { text: 'İptal', style: 'cancel' },
+      ]);
+    };
+
     return (
       <View>
         {showTime && (
@@ -279,12 +452,16 @@ function ChatView({
           )}
           {!mine && isSameAsNext && <View style={{ width: 28 }} />}
 
-          <View style={[
-            cv.bubble,
-            mine ? cv.bubbleMe : cv.bubbleThem,
-            isSameAsPrev && mine   && cv.bubbleMeGrouped,
-            isSameAsPrev && !mine  && cv.bubbleThemGrouped,
-          ]}>
+          <Pressable
+            onLongPress={handleLongPress}
+            delayLongPress={400}
+            style={[
+              cv.bubble,
+              mine ? cv.bubbleMe : cv.bubbleThem,
+              isSameAsPrev && mine   && cv.bubbleMeGrouped,
+              isSameAsPrev && !mine  && cv.bubbleThemGrouped,
+            ]}
+          >
             <Text style={[cv.bubbleTxt, mine && cv.bubbleTxtMe]}>{item.content}</Text>
             {/* Okundu ikonu (gönderilen mesajlarda) */}
             {mine && (
@@ -295,7 +472,7 @@ function ChatView({
                 style={cv.readIcon}
               />
             )}
-          </View>
+          </Pressable>
         </View>
       </View>
     );
@@ -509,3 +686,35 @@ export function MessagingScreen() {
     />
   );
 }
+
+const nm = StyleSheet.create({
+  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  sheet: {
+    backgroundColor: colors.bgPure,
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 40,
+    maxHeight: '80%',
+  },
+  handle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: 14 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  title: { fontSize: 17, color: colors.text, fontFamily: font.bold },
+  searchRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: colors.bg, borderRadius: radius.md,
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderWidth: 1, borderColor: colors.border, marginBottom: 12,
+  },
+  searchInput: { flex: 1, fontSize: 14, color: colors.text, fontFamily: font.regular },
+  userRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  avatar: { width: 44, height: 44, borderRadius: 22 },
+  avatarFallback: { backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { fontSize: 16, color: colors.primary, fontFamily: font.bold },
+  userInfo: { flex: 1 },
+  userName: { fontSize: 14, color: colors.text, fontFamily: font.semiBold },
+  userHandle: { fontSize: 12, color: colors.textMuted, fontFamily: font.regular, marginTop: 1 },
+  empty: { alignItems: 'center', paddingVertical: 32, gap: 10 },
+  emptyTxt: { fontSize: 14, color: colors.textMuted },
+});

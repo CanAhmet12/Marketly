@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius, shadow, font } from '../constants/theme';
 
 // ─── Unified signal type (RealSignal + legacy TradeSignal compatible) ─────────
 export interface SignalCardData {
@@ -160,6 +160,8 @@ export const SignalCard = memo(function SignalCard({ signal }: { signal: SignalC
   const dirBg    = isBuy ? colors.riseLight : isSell ? colors.fallLight : '#FFF5E0';
   const up = priceChange >= 0;
 
+  if (!signal?.id) return null;
+
   return (
     <View style={sc.card}>
       {signal.isNew && (
@@ -295,7 +297,7 @@ const cs = StyleSheet.create({
 const sc = StyleSheet.create({
   card: {
     backgroundColor: colors.bgPure, borderRadius: radius.lg,
-    marginHorizontal: 8, marginBottom: 10,
+    marginHorizontal: 0, marginBottom: 10,
     ...shadow.md, borderWidth: 1, borderColor: colors.border,
     overflow: 'hidden', position: 'relative',
   },
@@ -304,39 +306,39 @@ const sc = StyleSheet.create({
     backgroundColor: colors.primary + 'EE',
     paddingHorizontal: 7, paddingVertical: 3, borderRadius: radius.full,
   },
-  newBadgeTxt: { color: '#FFF', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
+  newBadgeTxt: { color: '#FFF', fontSize: 9, fontFamily: font.black, letterSpacing: 0.5 },
   creatorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 14, paddingTop: 14, paddingBottom: 10,
+    paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10,
     borderBottomWidth: 1, borderBottomColor: colors.divider,
   },
   avatar: { width: 38, height: 38, borderRadius: 19 },
   creatorInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  creatorName: { fontSize: 13, fontWeight: '700', color: colors.text },
+  creatorName: { fontSize: 13, fontFamily: font.bold, color: colors.text },
   verifiedDot: {
     width: 14, height: 14, borderRadius: 7,
     backgroundColor: colors.info, alignItems: 'center', justifyContent: 'center',
   },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
   successPill: { backgroundColor: colors.primaryLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  successTxt: { fontSize: 10, fontWeight: '700', color: colors.primaryDark },
-  dot: { fontSize: 10, color: colors.textMuted },
-  totalSig: { fontSize: 10, color: colors.textMuted },
+  successTxt: { fontSize: 10, fontFamily: font.bold, color: colors.primaryDark },
+  dot: { fontSize: 10, fontFamily: font.regular, color: colors.textMuted },
+  totalSig: { fontSize: 10, fontFamily: font.regular, color: colors.textMuted },
   rightMeta: { alignItems: 'flex-end', gap: 4 },
-  time: { fontSize: 10, color: colors.textMuted },
-  body: { paddingHorizontal: 14, paddingVertical: 12 },
+  time: { fontSize: 10, fontFamily: font.regular, color: colors.textMuted },
+  body: { paddingHorizontal: 12, paddingVertical: 12 },
   assetRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  logoBubble: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  logoTxt: { fontSize: 14, fontWeight: '900' },
+  logoBubble: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  logoTxt: { fontSize: 14, fontFamily: font.black },
   assetInfo: { flex: 1 },
-  assetSymbol: { fontSize: 16, fontWeight: '900', color: colors.text },
-  assetName: { fontSize: 11, color: colors.textMuted, marginTop: 1 },
+  assetSymbol: { fontSize: 17, fontFamily: font.black, color: colors.text, letterSpacing: -0.3 },
+  assetName: { fontSize: 11, fontFamily: font.regular, color: colors.textMuted, marginTop: 1 },
   dirBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.full,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full,
   },
-  dirTxt: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
+  dirTxt: { fontSize: 14, fontFamily: font.black, letterSpacing: 0.5 },
   priceGrid: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.bg, borderRadius: radius.md,
@@ -344,28 +346,28 @@ const sc = StyleSheet.create({
   },
   priceCell: { flex: 1, alignItems: 'center' },
   priceDivider: { width: 1, height: 24, backgroundColor: colors.border },
-  priceLbl: { fontSize: 9, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', marginBottom: 3 },
-  priceVal: { fontSize: 12, fontWeight: '800', color: colors.text },
-  rationale: { fontSize: 12.5, color: colors.textMuted, lineHeight: 18, marginBottom: 8 },
+  priceLbl: { fontSize: 9, fontFamily: font.bold, color: colors.textMuted, textTransform: 'uppercase', marginBottom: 3 },
+  priceVal: { fontSize: 12, fontFamily: font.bold, color: colors.text },
+  rationale: { fontSize: 13, fontFamily: font.regular, color: colors.textSub, lineHeight: 19, marginBottom: 8 },
   perfRow: { flexDirection: 'row' },
   perfPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.full,
   },
-  perfTxt: { fontSize: 11, fontWeight: '700' },
+  perfTxt: { fontSize: 11, fontFamily: font.bold },
   footer: {
     flexDirection: 'row', alignItems: 'center',
     borderTopWidth: 1, borderTopColor: colors.divider,
-    paddingHorizontal: 14, paddingVertical: 10, gap: 4,
+    paddingHorizontal: 12, paddingVertical: 10, gap: 4,
   },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6 },
-  actionTxt: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
+  actionTxt: { fontSize: 12, fontFamily: font.medium, color: colors.textMuted },
   copyBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    marginLeft: 4, paddingVertical: 8, borderRadius: radius.md,
+    marginLeft: 4, paddingVertical: 9, borderRadius: radius.md,
     backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary + '40',
   },
   copyBtnActive: { backgroundColor: colors.primary },
-  copyTxt: { fontSize: 12, fontWeight: '700', color: colors.primary },
+  copyTxt: { fontSize: 12, fontFamily: font.bold, color: colors.primary },
   copyTxtActive: { color: '#FFF' },
 });

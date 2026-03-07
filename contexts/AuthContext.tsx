@@ -66,21 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = () => setError(null);
 
-  // Streak güncelle: son girişten bu yana 1 gün geçtiyse streak +1, 2 gün geçtiyse sıfırla
-  const updateStreak = useCallback(async (userId: string, profile: any) => {
+  // Streak güncelle — sunucu taraflı RPC kullanır (client clock manipülasyonunu önler)
+  const updateStreak = useCallback(async (userId: string) => {
     try {
-      const now      = new Date();
-      const lastLogin = profile.last_login ? new Date(profile.last_login) : null;
-      if (!lastLogin) {
-        await supabase.from('profiles').update({ last_login: now.toISOString(), streak_days: 1 }).eq('id', userId);
-        return;
-      }
-      const daysSince = Math.floor((now.getTime() - lastLogin.getTime()) / 86_400_000);
-      if (daysSince === 0) return; // Aynı gün — değiştirme
-      const newStreak = daysSince === 1 ? (profile.streak_days ?? 0) + 1 : 1;
-      await supabase.from('profiles')
-        .update({ last_login: now.toISOString(), streak_days: newStreak })
-        .eq('id', userId);
+      // Tüm hesaplama DB'de NOW() ile yapılır; client saati güvenilmez
+      await supabase.rpc('update_user_streak', { p_user_id: userId });
     } catch { /* sessizce geç */ }
   }, []);
 
@@ -102,8 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(data as Profile);
       setUser(profileToUser(data as Profile, email));
 
-      // Streak güncelle (sessiz)
-      updateStreak(userId, data);
+      // Streak güncelle — sunucu taraflı (sessiz)
+      updateStreak(userId);
     } catch {
       setUser({ id: userId, name: email.split('@')[0], email });
     }
@@ -193,7 +183,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const cleanEmail    = email.trim().toLowerCase();
       const emailPrefix   = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
-      const randomSuffix  = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+      // Kriptografik güvenli suffix: Math.random() yerine timestamp + random bytes
+      const randomSuffix  = (Date.now() % 100000).toString().padStart(5, '0').slice(-4);
       const username      = (emailPrefix || 'user') + randomSuffix;
 
       const { data, error: authError } = await supabase.auth.signUp({
@@ -227,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             username,
             full_name:    name.trim(),
             avatar_url:   '',
-            referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+            referral_code: (Date.now().toString(36) + Math.random().toString(36).slice(2, 5)).toUpperCase().slice(0, 8),
           }, { onConflict: 'id' });
 
         if (profileError) {

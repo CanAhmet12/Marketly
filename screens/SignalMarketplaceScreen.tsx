@@ -13,7 +13,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '../contexts/ToastContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { supabase } from '../lib/supabase';
-import { shadow, colors } from '../constants/theme';
+import { shadow, colors, font } from '../constants/theme';
 
 interface AnalystPackage {
   id:             string;
@@ -149,6 +149,24 @@ function PackageDetailModal({
   const navigation = useNavigation<any>();
 
   const [subscribing, setSubscribing] = useState(false);
+  const [recentSignals, setRecentSignals] = useState<any[]>([]);
+  const [loadingSignals, setLoadingSignals] = useState(false);
+
+  // Modal açılınca analistin son 5 sinyalini çek
+  useEffect(() => {
+    if (!visible || !pkg) return;
+    setLoadingSignals(true);
+    supabase
+      .from('signals')
+      .select('id, asset_id, direction, entry_price, target_price, stop_loss, rationale, status, created_at, copies_count')
+      .eq('creator_id', pkg.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        setRecentSignals(data ?? []);
+        setLoadingSignals(false);
+      });
+  }, [visible, pkg?.id]);
 
   if (!pkg) return null;
 
@@ -228,17 +246,62 @@ function PackageDetailModal({
 
             {/* Recent performance */}
             <Text style={[dm.sectionTitle, { color: colors.text }]}>Son Sinyaller</Text>
-            <View style={dm.picksGrid}>
-              {pkg.top_picks.map(p => (
-                <View key={p.symbol} style={[dm.pickCard, { backgroundColor: p.up ? '#34C75910' : '#FF3B3B10', borderColor: p.up ? '#34C75930' : '#FF3B3B30' }]}>
-                  <Text style={[dm.pickSym, { color: colors.text }]}>{p.symbol}</Text>
-                  <Text style={[dm.pickPct, { color: p.up ? '#34C759' : '#FF3B3B' }]}>
-                    {p.up ? '+' : ''}{p.pct}%
-                  </Text>
-                  <Ionicons name={p.up ? 'trending-up' : 'trending-down'} size={16} color={p.up ? '#34C759' : '#FF3B3B'} />
-                </View>
-              ))}
-            </View>
+            {loadingSignals ? (
+              <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
+            ) : recentSignals.length > 0 ? (
+              <View style={dm.signalList}>
+                {recentSignals.map(sig => {
+                  const isBuy  = sig.direction === 'BUY';
+                  const isSell = sig.direction === 'SELL';
+                  const dirColor = isBuy ? '#34C759' : isSell ? '#FF3B3B' : '#FF9500';
+                  const dirLabel = isBuy ? '▲ AL' : isSell ? '▼ SAT' : '◆ BEKLE';
+                  const statusColor = sig.status === 'active' ? '#34C759' : sig.status === 'closed_win' ? '#007AFF' : '#FF3B3B';
+                  const statusLabel = sig.status === 'active' ? 'Aktif' : sig.status === 'closed_win' ? 'Başarılı' : sig.status === 'closed_loss' ? 'Başarısız' : 'Kapalı';
+                  return (
+                    <View key={sig.id} style={[dm.sigRow, { borderColor: dirColor + '30' }]}>
+                      <View style={[dm.sigDir, { backgroundColor: dirColor + '15' }]}>
+                        <Text style={[dm.sigDirTxt, { color: dirColor }]}>{dirLabel}</Text>
+                      </View>
+                      <View style={dm.sigInfo}>
+                        <Text style={[dm.sigAsset, { color: colors.text }]}>{sig.asset_id?.toUpperCase()}</Text>
+                        {sig.entry_price > 0 && (
+                          <Text style={[dm.sigPrices, { color: colors.textMuted }]}>
+                            Giriş: ${sig.entry_price}
+                            {sig.target_price > 0 ? `  TP: $${sig.target_price}` : ''}
+                            {sig.stop_loss > 0 ? `  SL: $${sig.stop_loss}` : ''}
+                          </Text>
+                        )}
+                        {sig.rationale ? (
+                          <Text style={[dm.sigRationale, { color: colors.textSub }]} numberOfLines={2}>{sig.rationale}</Text>
+                        ) : null}
+                      </View>
+                      <View style={dm.sigMeta}>
+                        <View style={[dm.sigStatus, { backgroundColor: statusColor + '15' }]}>
+                          <Text style={[dm.sigStatusTxt, { color: statusColor }]}>{statusLabel}</Text>
+                        </View>
+                        {sig.copies_count > 0 && (
+                          <Text style={[dm.sigCopies, { color: colors.textMuted }]}>
+                            {sig.copies_count} kopya
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={dm.picksGrid}>
+                {pkg.top_picks.map(p => (
+                  <View key={p.symbol} style={[dm.pickCard, { backgroundColor: p.up ? '#34C75910' : '#FF3B3B10', borderColor: p.up ? '#34C75930' : '#FF3B3B30' }]}>
+                    <Text style={[dm.pickSym, { color: colors.text }]}>{p.symbol}</Text>
+                    <Text style={[dm.pickPct, { color: p.up ? '#34C759' : '#FF3B3B' }]}>
+                      {p.up ? '+' : ''}{p.pct}%
+                    </Text>
+                    <Ionicons name={p.up ? 'trending-up' : 'trending-down'} size={16} color={p.up ? '#34C759' : '#FF3B3B'} />
+                  </View>
+                ))}
+              </View>
+            )}
           </ScrollView>
 
           {/* Subscribe button */}
@@ -485,7 +548,7 @@ export function SignalMarketplaceScreen() {
           renderItem={({ item }) => (
             <PackageCard pkg={item} onPress={() => openDetail(item)} />
           )}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 90, gap: 14 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 12, paddingBottom: insets.bottom + 90, gap: 14 }}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -605,6 +668,23 @@ const dm = StyleSheet.create({
   },
   pickSym: { fontSize: 12, fontWeight: '800' },
   pickPct: { fontSize: 15, fontWeight: '900' },
+
+  // Gerçek sinyal listesi
+  signalList: { paddingHorizontal: 16, gap: 8, marginBottom: 16 },
+  sigRow: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 10,
+    borderWidth: 1, borderRadius: 12, padding: 10,
+  },
+  sigDir: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, alignItems: 'center', justifyContent: 'center' },
+  sigDirTxt: { fontSize: 11, fontWeight: '900' },
+  sigInfo: { flex: 1 },
+  sigAsset: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  sigPrices: { fontSize: 11, marginBottom: 2 },
+  sigRationale: { fontSize: 11, lineHeight: 15 },
+  sigMeta: { alignItems: 'flex-end', gap: 4 },
+  sigStatus: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  sigStatusTxt: { fontSize: 10, fontWeight: '700' },
+  sigCopies: { fontSize: 10 },
 
   footer:       { padding: 20, borderTopWidth: 1, gap: 8 },
   subscribeBtn: { borderRadius: 14, overflow: 'hidden' },

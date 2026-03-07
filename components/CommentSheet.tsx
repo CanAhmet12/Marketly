@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useComments, Comment } from '../hooks/useComments';
 import { useAuth } from '../contexts/AuthContext';
-import { colors, radius, shadow } from '../constants/theme';
+import { colors, radius, shadow, font } from '../constants/theme';
 
 function timeAgo(iso: string) {
   const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
@@ -21,12 +21,14 @@ function timeAgo(iso: string) {
 
 // ─── Tek yorum satırı ─────────────────────────────────────────────────────────
 const CommentRow = memo(function CommentRow({
-  c, onLike, onDelete, isOwner,
+  c, onLike, onDelete, onReply, isOwner, depth = 0,
 }: {
-  c: Comment;
-  onLike: (id: string) => void;
+  c:        Comment;
+  onLike:   (id: string) => void;
   onDelete: (id: string) => void;
-  isOwner: boolean;
+  onReply:  (name: string) => void;
+  isOwner:  boolean;
+  depth?:   number;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -39,10 +41,11 @@ const CommentRow = memo(function CommentRow({
   };
 
   return (
-    <View style={cs.row}>
+    <View style={[cs.row, depth > 0 && cs.rowReply]}>
+      {depth > 0 && <View style={cs.replyLine} />}
       {c.author_avatar
-        ? <Image source={{ uri: c.author_avatar }} style={cs.avatar} />
-        : <View style={[cs.avatar, cs.avatarFb]}>
+        ? <Image source={{ uri: c.author_avatar }} style={[cs.avatar, depth > 0 && cs.avatarSm]} />
+        : <View style={[cs.avatar, cs.avatarFb, depth > 0 && cs.avatarSm]}>
             <Text style={cs.avatarLetter}>{c.author_name[0]?.toUpperCase()}</Text>
           </View>
       }
@@ -64,6 +67,10 @@ const CommentRow = memo(function CommentRow({
             {c.likes > 0 && (
               <Text style={[cs.likeCount, c.is_liked && { color: '#FF3B3B' }]}>{c.likes}</Text>
             )}
+          </Pressable>
+          <Pressable onPress={() => onReply(c.author_name)} hitSlop={8} style={cs.replyBtn}>
+            <Ionicons name="return-down-forward-outline" size={13} color={colors.textMuted} />
+            <Text style={cs.replyBtnTxt}>Yanıtla</Text>
           </Pressable>
           {isOwner && (
             <Pressable onPress={() => onDelete(c.id)} hitSlop={8} style={{ marginLeft: 8 }}>
@@ -88,6 +95,7 @@ export function CommentSheet({ postId, visible, onClose, onCommentAdded }: Props
   const insets          = useSafeAreaInsets();
   const { user, profile } = useAuth();
   const [text, setText] = useState('');
+  const [replyTo, setReplyTo] = useState<string | null>(null);
   const inputRef        = useRef<TextInput>(null);
   const listRef         = useRef<FlatList>(null);
   const slideAnim       = useRef(new Animated.Value(600)).current;
@@ -114,10 +122,17 @@ export function CommentSheet({ postId, visible, onClose, onCommentAdded }: Props
     }
   }, [comments.length]);
 
+  const handleReply = (authorName: string) => {
+    setReplyTo(authorName);
+    setText(`@${authorName} `);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
   const handleSubmit = async () => {
     if (!text.trim() || submitting) return;
     const content = text.trim();
     setText('');
+    setReplyTo(null);
     const ok = await addComment(content);
     if (ok) {
       onCommentAdded?.();
@@ -170,6 +185,7 @@ export function CommentSheet({ postId, visible, onClose, onCommentAdded }: Props
                 c={item}
                 onLike={toggleCommentLike}
                 onDelete={deleteComment}
+                onReply={handleReply}
                 isOwner={item.user_id === user?.id}
               />
             )}
@@ -184,6 +200,18 @@ export function CommentSheet({ postId, visible, onClose, onCommentAdded }: Props
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={10}
         >
+          {replyTo && (
+            <View style={cs.replyBanner}>
+              <Ionicons name="return-down-forward-outline" size={13} color={colors.primary} />
+              <Text style={cs.replyBannerTxt}>
+                <Text style={{ fontFamily: font.bold, color: colors.primary }}>@{replyTo}</Text>
+                {' '}kullanıcısına yanıt veriyorsunuz
+              </Text>
+              <Pressable onPress={() => { setReplyTo(null); setText(''); }} hitSlop={8}>
+                <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+              </Pressable>
+            </View>
+          )}
           <View style={[cs.inputBar, { paddingBottom: insets.bottom + 8 }]}>
             {profile?.avatar_url
               ? <Image source={{ uri: profile.avatar_url }} style={cs.inputAvatar} />
@@ -266,6 +294,21 @@ const cs = StyleSheet.create({
   bubbleActions:{ flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   likeBtn:      { flexDirection: 'row', alignItems: 'center', gap: 3 },
   likeCount:    { fontSize: 11, color: colors.textMuted },
+  replyBtn:     { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 10 },
+  replyBtnTxt:  { fontSize: 11, color: colors.textMuted },
+  rowReply:     { paddingLeft: 28 },
+  replyLine:    {
+    position: 'absolute', left: 32, top: 0, bottom: 0,
+    width: 2, backgroundColor: colors.border,
+  },
+  avatarSm:     { width: 28, height: 28, borderRadius: 14 },
+  replyBanner:  {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
+  },
+  replyBannerTxt: { flex: 1, fontSize: 12, color: colors.textSub },
 
   // Input bar
   inputBar: {

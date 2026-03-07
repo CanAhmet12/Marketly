@@ -6,17 +6,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, TextInput,
   ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Modal,
+  Animated, Image as RNImage,
 } from 'react-native';
 import { Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { RtcSurfaceView } from 'react-native-agora';
-import { useAgoraLive } from '../hooks/useAgoraLive';
+import { RtcSurfaceView, useAgoraLive } from '../hooks/useAgoraLive';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { colors, radius } from '../constants/theme';
+import { colors, radius, font } from '../constants/theme';
 
 const GIFTS = [
   { id: 'g1', icon: '💎', name: 'Elmas',  color: '#00BFFF', cost: 500 },
@@ -27,7 +27,30 @@ const GIFTS = [
   { id: 'g6', icon: '👏', name: 'Alkış',  color: '#00C853', cost:  10 },
 ];
 
-interface ChatMsg { id: string; user: string; text: string; avatar?: string; isGift?: boolean }
+interface ChatMsg { id: string; user: string; text: string; avatar?: string; isGift?: boolean; isMine?: boolean }
+
+/** Yeni mesaj gelince hafif titreme animasyonu yapan satır */
+function ChatBubble({ m }: { m: ChatMsg }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }).start();
+  }, []);
+  return (
+    <Animated.View style={[s.chatRow, m.isGift && s.chatRowGift, m.isMine && s.chatRowMine, { opacity: fadeAnim }]}>
+      {m.avatar ? (
+        <RNImage source={{ uri: m.avatar }} style={s.chatAvatar} />
+      ) : (
+        <View style={[s.chatAvatarPlaceholder, m.isMine && { backgroundColor: colors.primary + '80' }]}>
+          <Text style={{ fontSize: 9, color: '#FFF', fontFamily: font.bold }}>{m.user?.[0]?.toUpperCase() ?? '?'}</Text>
+        </View>
+      )}
+      <View style={s.chatBubble}>
+        <Text style={[s.chatUser, m.isGift && s.chatUserGift, m.isMine && s.chatUserMine]}>{m.user}</Text>
+        <Text style={[s.chatText, m.isGift && s.chatTextGift]}> {m.text}</Text>
+      </View>
+    </Animated.View>
+  );
+}
 
 export function LiveWatchScreen() {
   const insets     = useSafeAreaInsets();
@@ -65,7 +88,7 @@ export function LiveWatchScreen() {
 
     // Geçmiş mesajları yükle
     supabase.from('live_messages')
-      .select('id, username, content, is_gift, gift_icon, gift_name, created_at')
+      .select('id, username, content, is_gift, gift_icon, gift_name, created_at, avatar_url, user_id')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
       .limit(50)
@@ -74,6 +97,8 @@ export function LiveWatchScreen() {
           id: m.id, user: m.username ?? 'İzleyici',
           text: m.is_gift ? `${m.gift_icon} ${m.gift_name} gönderdi!` : m.content,
           isGift: m.is_gift,
+          avatar: m.avatar_url ?? undefined,
+          isMine: m.user_id === user?.id,
         })));
       });
 
@@ -88,6 +113,8 @@ export function LiveWatchScreen() {
             user:   msg.username ?? 'İzleyici',
             text:   isGift ? `${msg.gift_icon} ${msg.gift_name} gönderdi!` : msg.content,
             isGift,
+            avatar: msg.avatar_url ?? undefined,
+            isMine: msg.user_id === user?.id,
           }]);
           if (isGift) {
             const anim = { id: msg.id, icon: msg.gift_icon ?? '🎁', name: msg.gift_name ?? 'Hediye', sender: msg.username ?? 'İzleyici' };
@@ -131,15 +158,12 @@ export function LiveWatchScreen() {
     return () => { supabase.removeChannel(ended); };
   }, [postId, leaveChannel, navigation, toast]);
 
-  // Giriş: viewer_count artır
+  // Giriş: viewer_count artır (atomic RPC)
   useEffect(() => {
     if (!postId) return;
-    supabase.from('live_sessions')
-      .update({ viewer_count: (viewers || 0) + 1 })
-      .eq('post_id', postId)
-      .then(() => {});
+    supabase.rpc('increment_viewers', { session_post_id: postId }).then(() => {});
     return () => {
-      // Çıkış: viewer_count azalt
+      // Çıkış: viewer_count azalt (atomic RPC)
       supabase.rpc('decrement_viewers', { session_post_id: postId }).then(() => {});
     };
   }, [postId]);
@@ -155,11 +179,12 @@ export function LiveWatchScreen() {
     setChatMsg('');
     try {
       await supabase.from('live_messages').insert({
-        post_id:  postId,
-        user_id:  user?.id,
-        username: profile?.username ?? 'İzleyici',
-        content:  text,
-        is_gift:  false,
+        post_id:    postId,
+        user_id:    user?.id,
+        username:   profile?.username ?? 'İzleyici',
+        content:    text,
+        is_gift:    false,
+        avatar_url: profile?.avatar_url ?? null,
       });
     } catch { /* ignore */ }
   };
@@ -219,6 +244,8 @@ export function LiveWatchScreen() {
       setSendingGift(false);
     }
   };
+
+  const [chatExpanded, setChatExpanded] = useState(false);
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -296,19 +323,19 @@ export function LiveWatchScreen() {
         >
           <ScrollView
             ref={scrollRef}
-            style={s.chatList}
+            style={[s.chatList, chatExpanded && s.chatListExpanded]}
             contentContainerStyle={{ gap: 4, paddingBottom: 8 }}
             showsVerticalScrollIndicator={false}
           >
-            {messages.slice(-40).map(m => (
-              <View key={m.id} style={[s.chatRow, m.isGift && s.chatRowGift]}>
-                <Text style={[s.chatUser, m.isGift && s.chatUserGift]}>{m.user}</Text>
-                <Text style={[s.chatText, m.isGift && s.chatTextGift]}> {m.text}</Text>
-              </View>
+            {messages.slice(-60).map(m => (
+              <ChatBubble key={m.id} m={m} />
             ))}
           </ScrollView>
 
           <View style={[s.chatInputRow, { paddingBottom: insets.bottom + 8 }]}>
+            <Pressable style={s.expandBtn} onPress={() => setChatExpanded(e => !e)} hitSlop={6}>
+              <Ionicons name={chatExpanded ? 'chevron-down' : 'chevron-up'} size={14} color="rgba(255,255,255,0.7)" />
+            </Pressable>
             <Pressable style={s.giftBtn} onPress={() => setShowGifts(true)}>
               <Text style={s.giftBtnIcon}>🎁</Text>
             </Pressable>
@@ -412,13 +439,20 @@ const s = StyleSheet.create({
 
   chatWrap: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   chatList: { maxHeight: 180, paddingHorizontal: 12 },
-  chatRow:  { flexDirection: 'row', flexWrap: 'wrap' },
-  chatRowGift:   { backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 6, paddingHorizontal: 5, marginVertical: 1 },
-  chatUser:      { color: '#FFD700', fontSize: 12, fontWeight: '700' },
+  chatListExpanded: { maxHeight: 320 },
+  chatRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
+  chatRowGift:   { backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, marginVertical: 1 },
+  chatRowMine:   { backgroundColor: 'rgba(10,132,255,0.15)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, marginVertical: 1 },
+  chatAvatar:           { width: 20, height: 20, borderRadius: 10, marginTop: 1 },
+  chatAvatarPlaceholder:{ width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  chatBubble:    { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  chatUser:      { color: '#FFD700', fontSize: 12, fontFamily: font.bold },
   chatUserGift:  { color: '#FFD700' },
+  chatUserMine:  { color: '#5AC8FA' },
   chatText:      { color: '#FFF', fontSize: 12 },
   chatTextGift:  { color: '#FFE066' },
   chatInputRow:  { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 12, paddingTop: 8 },
+  expandBtn:     { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
   giftBtn:  { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   giftBtnIcon: { fontSize: 20 },
   chatField: { flex: 1, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radius.full, paddingHorizontal: 14, paddingVertical: 9, color: '#FFF', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },

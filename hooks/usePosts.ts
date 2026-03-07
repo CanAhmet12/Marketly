@@ -40,9 +40,10 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // ── pageRef: callback içinde page'i yakalamak yerine ref üzerinden oku
-  // Bu sayede fetchPosts her page değişiminde yeniden oluşturulmaz.
-  const pageRef = useRef(0);
+  // pageRef: callback içinde page'i yakalamak yerine ref üzerinden oku
+  const pageRef         = useRef(0);
+  // followingIds cache: her sayfa yüklemesinde DB'yi tekrar sorgulamaz
+  const followingIdsRef = useRef<string[] | null>(null);
 
   const fetchPosts = useCallback(async (reset = false) => {
     if (loading && !reset) return;
@@ -52,11 +53,15 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
       let followingIds: string[] = [];
 
       if (feedMode === 'following' && user?.id) {
-        const { data: followData } = await supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', user.id);
-        followingIds = (followData ?? []).map((f: any) => f.following_id);
+        // Cache'den oku — her sayfa yüklemesinde DB sorgusu yapma
+        if (followingIdsRef.current === null || reset) {
+          const { data: followData } = await supabase
+            .from('follows')
+            .select('following_id')
+            .eq('follower_id', user.id);
+          followingIdsRef.current = (followData ?? []).map((f: any) => f.following_id);
+        }
+        followingIds = followingIdsRef.current;
         if (followingIds.length === 0) {
           setPosts([]);
           setHasMore(false);
@@ -138,8 +143,10 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
   }, [user?.id, assetTag, feedMode, creatorId]);
 
   // feedMode / user / assetTag değişince sıfırdan yükle
+  // followingIds cache'ini de temizle
   useEffect(() => {
     pageRef.current = 0;
+    followingIdsRef.current = null; // cache invalidate
     setHasMore(true);
     fetchPosts(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,12 +210,10 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
       if (post.is_liked) {
         await supabase.from('post_likes').delete()
           .eq('user_id', user.id).eq('post_id', postId);
-        await supabase.from('posts')
-          .update({ likes: Math.max(0, post.likes - 1) }).eq('id', postId);
+        // DB trigger posts.likes sayacını otomatik azaltıyor
       } else {
         await supabase.from('post_likes').insert({ user_id: user.id, post_id: postId });
-        await supabase.from('posts')
-          .update({ likes: post.likes + 1 }).eq('id', postId);
+        // DB trigger posts.likes sayacını otomatik artırıyor
         if (post.user_id !== user.id) {
           createNotification({
             recipientId: post.user_id,
@@ -217,6 +222,7 @@ export function usePosts(assetTag?: string, feedMode: 'all' | 'following' = 'all
             title:       'Gönderini beğendi ❤️',
             body:        post.content.slice(0, 80),
             relatedId:   postId,
+            meta:        { post_id: postId, post_type: post.type ?? 'text' },
           });
         }
       }

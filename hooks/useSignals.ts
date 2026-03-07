@@ -2,9 +2,18 @@
  * useSignals — Supabase `signals` tablosundan gerçek sinyal verilerini çeken hook.
  * Profil JOIN yerine ayrı sorgu kullanır. Supabase boşsa [] döner.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { createNotification } from '../lib/notifications';
+
+// Harici placeholder servisi yerine deterministik renk avatarı
+function avatarUrl(userId: string): string {
+  const colors = ['4F46E5','0EA5E9','10B981','F59E0B','EF4444','8B5CF6','EC4899','14B8A6'];
+  const color  = colors[userId.charCodeAt(0) % colors.length];
+  const letter = userId.charAt(0).toUpperCase();
+  return `https://ui-avatars.com/api/?name=${letter}&background=${color}&color=fff&size=80&bold=true`;
+}
 
 export interface RealSignal {
   id:           string;
@@ -70,11 +79,16 @@ export function useSignals(opts: {
   const [signals,  setSignals]  = useState<RealSignal[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [hasMore,  setHasMore]  = useState(true);
-  const [page,     setPage]     = useState(0);
+
+  // useRef ile stale closure önleme (useVideos/usePosts patterni)
+  const pageRef    = useRef(0);
+  const loadingRef = useRef(false);
 
   const fetchSignals = useCallback(async (reset = false) => {
+    if (loadingRef.current && !reset) return;
+    loadingRef.current = true;
     setLoading(true);
-    const currentPage = reset ? 0 : page;
+    const currentPage = reset ? 0 : pageRef.current;
     try {
       // ── 1. Sinyalleri çek ──────────────────────────────────────────────
       let q = supabase
@@ -121,7 +135,7 @@ export function useSignals(opts: {
               id:       prof?.id       ?? row.creator_id,
               name:     prof?.full_name ?? prof?.username ?? 'Analist',
               handle:   `@${prof?.username ?? 'analist'}`,
-              avatar:   prof?.avatar_url ?? `https://i.pravatar.cc/80?u=${row.creator_id}`,
+              avatar:   prof?.avatar_url ?? avatarUrl(row.creator_id),
               verified: prof?.verified  ?? false,
               tier:     prof?.tier      ?? 'free',
               accuracy: prof?.signal_accuracy ?? 0,
@@ -129,21 +143,20 @@ export function useSignals(opts: {
           };
         });
 
-        if (reset) { setSignals(mapped); setPage(1); }
-        else        { setSignals(prev => [...prev, ...mapped]); setPage(p => p + 1); }
+        if (reset) { setSignals(mapped); pageRef.current = 1; }
+        else        { setSignals(prev => [...prev, ...mapped]); pageRef.current = currentPage + 1; }
         setHasMore(mapped.length === PAGE_SIZE);
-        setLoading(false);
         return;
       }
     } catch (e) {
       console.warn('[useSignals]', e);
+      if (reset) setSignals([]);
+      setHasMore(false);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
     }
-
-    if (reset) setSignals([]);
-    setHasMore(false);
-    setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, opts.assetId, opts.creatorId, opts.activeOnly]);
+  }, [opts.assetId, opts.creatorId, opts.activeOnly]);  // page artık dep değil
 
   useEffect(() => {
     fetchSignals(true);
@@ -176,6 +189,29 @@ export function useSignals(opts: {
           rationale:    data.rationale    ?? null,
         });
       if (error) throw error;
+
+      // Abone kullanıcılara bildirim gönder (arka planda, başarısızlık sessiz geçer)
+      const { data: subscribers } = await supabase
+        .from('signal_subscriptions')
+        .select('subscriber_id')
+        .eq('creator_id', user.id);
+
+      if (subscribers && subscribers.length > 0) {
+        const dirLabel = data.direction === 'BUY' ? '🟢 AL' : data.direction === 'SELL' ? '🔴 SAT' : '🟡 BEKLE';
+        await Promise.allSettled(
+          subscribers.map((sub: any) =>
+            createNotification({
+              recipientId: sub.subscriber_id,
+              senderId:    user.id,
+              type:        'signal',
+              title:       `⚡ Yeni Sinyal: ${data.asset_id.toUpperCase()}`,
+              body:        `${dirLabel} — ${data.rationale?.slice(0, 80) ?? data.direction}`,
+              meta:        { post_type: 'signal', asset_id: data.asset_id },
+            })
+          )
+        );
+      }
+
       await fetchSignals(true);
       return true;
     } catch { return false; }
@@ -184,77 +220,57 @@ export function useSignals(opts: {
   const likeSignal = useCallback(async (signalId: string): Promise<boolean> => {
     if (!user?.id) return false;
     try {
-      const sig = signals.find(s => s.id === signalId);
-      if (!sig) return false;
-
-      // Daha önce beğenip beğenmediğini kontrol et
-      const { data: existing } = await supabase
-        .from('signal_likes')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('signal_id', signalId)
-        .maybeSingle();
-
-      if (existing) {
-        // Beğeniyi geri al
-        await supabase.from('signal_likes').delete()
-          .eq('user_id', user.id).eq('signal_id', signalId);
-        await supabase.from('signals')
-          .update({ likes_count: Math.max(0, sig.likes_count - 1) })
-          .eq('id', signalId);
-        setSignals(prev =>
-          prev.map(s => s.id === signalId ? { ...s, likes_count: Math.max(0, s.likes_count - 1) } : s)
-        );
-      } else {
-        // Yeni beğeni
-        await supabase.from('signal_likes').upsert(
-          { user_id: user.id, signal_id: signalId },
-          { onConflict: 'user_id,signal_id' }
-        );
-        await supabase.from('signals')
-          .update({ likes_count: sig.likes_count + 1 })
-          .eq('id', signalId);
-        setSignals(prev =>
-          prev.map(s => s.id === signalId ? { ...s, likes_count: s.likes_count + 1 } : s)
-        );
-      }
+      // Atomic toggle via RPC — race condition yok
+      const { data, error } = await supabase.rpc('toggle_signal_like', {
+        p_user_id:   user.id,
+        p_signal_id: signalId,
+      });
+      if (error) throw error;
+      // RPC geriye { liked: bool, new_count: number } döner
+      const liked    = data?.liked    ?? false;
+      const newCount = data?.new_count ?? null;
+      setSignals(prev =>
+        prev.map(s => s.id === signalId ? {
+          ...s,
+          likes_count: newCount ?? (liked ? s.likes_count + 1 : Math.max(0, s.likes_count - 1)),
+        } : s)
+      );
       return true;
-    } catch { return false; }
-  }, [user?.id, signals]);
+    } catch (e) {
+      console.warn('[useSignals] likeSignal:', e);
+      return false;
+    }
+  }, [user?.id]);
 
   const copySignal = useCallback(async (signalId: string): Promise<boolean> => {
     if (!user?.id) return false;
     try {
-      const sig = signals.find(s => s.id === signalId);
-      if (!sig) return false;
-
-      // Aynı kullanıcı aynı sinyali iki kez kopyalayamasın
-      const { data: existing } = await supabase
-        .from('signal_copies')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('signal_id', signalId)
-        .maybeSingle();
-
-      if (!existing) {
-        await supabase.from('signal_copies').upsert(
-          { user_id: user.id, signal_id: signalId },
-          { onConflict: 'user_id,signal_id' }
-        );
-        await supabase.from('signals')
-          .update({ copies_count: sig.copies_count + 1 })
-          .eq('id', signalId);
+      // Atomic insert via RPC — idempotent
+      const { data, error } = await supabase.rpc('copy_signal_once', {
+        p_user_id:   user.id,
+        p_signal_id: signalId,
+      });
+      if (error) throw error;
+      const copied   = data?.copied    ?? false;
+      const newCount = data?.new_count ?? null;
+      if (copied) {
         setSignals(prev =>
-          prev.map(s => s.id === signalId ? { ...s, copies_count: s.copies_count + 1 } : s)
+          prev.map(s => s.id === signalId ? {
+            ...s,
+            copies_count: newCount ?? s.copies_count + 1,
+          } : s)
         );
       }
       return true;
-    } catch { return false; }
-  }, [user?.id, signals]);
+    } catch (e) {
+      console.warn('[useSignals] copySignal:', e);
+      return false;
+    }
+  }, [user?.id]);
 
   return {
     signals, loading, hasMore,
-    loadMore: () => { if (!loading && hasMore) fetchSignals(false); },
+    loadMore: () => { if (!loadingRef.current && hasMore) fetchSignals(false); },
     refetch:  () => fetchSignals(true),
     createSignal, likeSignal, copySignal,
   };

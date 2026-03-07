@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   TextInput, Modal, KeyboardAvoidingView, Platform,
@@ -11,8 +11,9 @@ import { useNavigation } from '@react-navigation/native';
 import { usePriceAlerts } from '../hooks/usePriceAlerts';
 import { useToast } from '../contexts/ToastContext';
 import { useMarketPrices } from '../hooks/useMarketPrices';
-import { shadow, colors } from '../constants/theme';
+import { shadow, colors, font } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 // ─── Add Alert Modal ──────────────────────────────────────────────────────────
 interface AddModalProps {
@@ -123,6 +124,26 @@ export function PriceAlertsScreen() {
   const { alerts, loading, addAlert, removeAlert } = usePriceAlerts();
   const { allAssets } = useMarketPrices();
   const [addModal, setAddModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory]   = useState<any[]>([]);
+  const [histLoading, setHistLoading] = useState(false);
+
+  // Tetiklenmiş alarm geçmişini çek (notifications tablosundan price_alert tipindekiler)
+  useEffect(() => {
+    if (!user?.id || !showHistory) return;
+    setHistLoading(true);
+    supabase
+      .from('notifications')
+      .select('id, title, body, created_at, is_read, meta')
+      .eq('user_id', user.id)
+      .eq('type', 'price_alert')
+      .order('created_at', { ascending: false })
+      .limit(30)
+      .then(({ data }) => {
+        setHistory(data ?? []);
+        setHistLoading(false);
+      });
+  }, [user?.id, showHistory]);
 
   const getPriceForAsset = (assetId: string): number | undefined => {
     const found = allAssets.find(a =>
@@ -171,9 +192,14 @@ export function PriceAlertsScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <Text style={s.headerTitle}>Fiyat Alarmları</Text>
-        <Pressable onPress={() => setAddModal(true)} style={s.addBtn} hitSlop={8}>
-          <Ionicons name="add-circle" size={26} color="#FF9500" />
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 4 }}>
+          <Pressable onPress={() => setShowHistory(h => !h)} style={s.addBtn} hitSlop={8}>
+            <Ionicons name="time-outline" size={22} color={showHistory ? '#FF9500' : colors.textMuted} />
+          </Pressable>
+          <Pressable onPress={() => setAddModal(true)} style={s.addBtn} hitSlop={8}>
+            <Ionicons name="add-circle" size={26} color="#FF9500" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Info banner */}
@@ -183,6 +209,38 @@ export function PriceAlertsScreen() {
           Fiyat hedefine ulaştığında bildirim alırsın. Alarm tetiklenince otomatik silinir.
         </Text>
       </View>
+
+      {/* Alarm geçmişi paneli */}
+      {showHistory && (
+        <View style={s.historyPanel}>
+          <View style={s.historyHeader}>
+            <Ionicons name="time-outline" size={16} color="#FF9500" />
+            <Text style={s.historyTitle}>Tetiklenen Alarmlar</Text>
+          </View>
+          {histLoading ? (
+            <ActivityIndicator color="#FF9500" size="small" style={{ marginVertical: 12 }} />
+          ) : history.length === 0 ? (
+            <Text style={s.historyEmpty}>Henüz tetiklenen alarm yok</Text>
+          ) : (
+            history.map(h => {
+              const meta = h.meta as any ?? {};
+              const date = new Date(h.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+              return (
+                <View key={h.id} style={s.historyRow}>
+                  <View style={s.historyIcon}>
+                    <Ionicons name="checkmark-circle" size={18} color="#34C759" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.historyRowTitle}>{h.title}</Text>
+                    <Text style={s.historyRowBody} numberOfLines={1}>{h.body}</Text>
+                  </View>
+                  <Text style={s.historyRowDate}>{date}</Text>
+                </View>
+              );
+            })
+          )}
+        </View>
+      )}
 
       {loading ? (
         <ActivityIndicator color="#FF9500" style={{ marginTop: 40 }} />
@@ -340,6 +398,26 @@ const s = StyleSheet.create({
   distTxt: { fontSize: 9, fontWeight: '700' },
   currentPriceTxt: { fontSize: 11, color: colors.textMuted, fontWeight: '500' },
   deleteBtn: { padding: 4 },
+
+  // Geçmiş paneli
+  historyPanel: {
+    marginHorizontal: 16, marginBottom: 10,
+    backgroundColor: colors.bgCard,
+    borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  historyHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  historyTitle:  { fontSize: 13, fontWeight: '800', color: colors.text },
+  historyEmpty:  { fontSize: 13, color: colors.textMuted, textAlign: 'center', paddingVertical: 8 },
+  historyRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  historyIcon:      { width: 28, alignItems: 'center' },
+  historyRowTitle:  { fontSize: 12, fontWeight: '700', color: colors.text },
+  historyRowBody:   { fontSize: 11, color: colors.textMuted, marginTop: 1 },
+  historyRowDate:   { fontSize: 10, color: colors.textMuted },
 
   emptyTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginTop: 12 },
   emptySub:   { fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20, marginTop: 6 },
