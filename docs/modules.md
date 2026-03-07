@@ -94,3 +94,36 @@ font.regular / font.medium / font.semiBold / font.bold / font.extraBold / font.b
 radius.sm / radius.md / radius.lg / radius.full
 shadow.card / shadow.lg
 ```
+
+---
+
+## backend/ (Node.js API — DigitalOcean sunucuda çalışır)
+
+**Görev:** Kripto/hisse/döviz/emtia fiyatlarını periyodik olarak çeker, Supabase `asset_prices` tablosuna yazar.
+
+**Port:** 3001
+**Dil:** JavaScript (Node.js 18+)
+**Framework:** Express.js
+**Process Manager:** PM2 (production)
+**Cron:** node-cron ile zamanlanmış görevler
+
+**Detaylı setup ve komutlar:** `backend/README.md` dosyasını oku.
+
+**Endpoint'ler:**
+- `GET /health` — Durum kontrolü
+- `GET /api/prices` — Tüm güncel fiyatlar
+- `GET /api/prices?category=crypto` — Sadece kripto
+- `GET /api/prices/status` — Cron job durumu
+
+**Mobil app bağlantısı:** `hooks/useMarketPrices.ts` bu API'yi kullanır.
+
+**Ortam değişkenleri:** `.env` (SUPABASE_SERVICE_KEY, FINNHUB_API_KEY)
+
+**Kurulum:**
+```bash
+ssh root@<sunucu-ip>
+cd /root/Marketly/backend
+npm install
+pm2 start ecosystem.config.js
+pm2 save
+```

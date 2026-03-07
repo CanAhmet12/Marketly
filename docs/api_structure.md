@@ -104,9 +104,90 @@ EXPO_PUBLIC_AGORA_APP_ID=xxxx
 
 # backend/.env
 SUPABASE_URL=https://xxxx.supabase.co
-SUPABASE_SERVICE_KEY=eyJ...
+SUPABASE_SERVICE_KEY=eyJ...   # service_role key — RLS bypass (admin)
 FINNHUB_API_KEY=xxxx
+PORT=3001
+NODE_ENV=production
 
 # Supabase Secrets (Dashboard)
 OPENAI_API_KEY=sk-...
 ```
+
+---
+
+## Backend API (Price Service)
+
+**Base URL:** `http://<sunucu-ip>:3001` veya production'da `https://api.marketly.app`
+
+**Teknoloji:** Node.js 18+ / Express.js / PM2
+
+**Görev:** Kripto/hisse/döviz/emtia fiyatlarını periyodik olarak çeker, Supabase `asset_prices` tablosuna yazar.
+
+### Endpoint'ler
+
+```bash
+GET /health
+# Sunucu durum kontrolü
+Response: { "status": "ok", "uptime": "3600s" }
+
+GET /api/prices
+# Tüm güncel fiyatlar
+Query: ?category=crypto|stocks|forex|commodities
+Response: {
+  "success": true,
+  "count": 42,
+  "data": [
+    { "id": "bitcoin", "symbol": "BTC", "price": 65000.50, "change_percent": 2.35, "spark": [...] }
+  ]
+}
+
+GET /api/prices/status
+# Cron job durumu
+Response: { "running": true, "lastRun": "2026-03-07T10:00:00Z", "nextRun": "..." }
+```
+
+### Mobil App Entegrasyonu
+
+```typescript
+// hooks/useMarketPrices.ts
+const API_URL = 'http://<sunucu-ip>:3001/api/prices';
+const response = await fetch(API_URL);
+const { data } = await response.json();
+```
+
+**Sunucu IP değişirse bu hook'u güncelle.**
+
+### Cron Zamanlaması (src/jobs/priceJob.js)
+
+- Kripto: her 2 dakika (`*/2 * * * *`)
+- Hisse: her 5 dakika (`*/5 * * * *`)
+- Döviz: her 10 dakika (`*/10 * * * *`)
+- Emtia: her 15 dakika (`*/15 * * * *`)
+
+### Dış API'ler (Rate Limit)
+
+- **CoinGecko:** 50 req/min (ücretsiz) → Kripto fiyat + OHLC
+- **Yahoo Finance:** Sınırsız (ücretsiz) → Hisse fiyatları
+- **Finnhub:** 60 req/min (ücretsiz, API key gerekli) → Borsa verileri
+
+**Not:** Rate limit aşarsan (429) cron interval'i uzat.
+
+### Komutlar (DigitalOcean sunucuda)
+
+```bash
+ssh root@<sunucu-ip>
+cd /root/Marketly/backend
+
+# İlk kurulum
+npm install
+pm2 start ecosystem.config.js
+pm2 save
+pm2 startup
+
+# Bakım
+pm2 logs marketly-api      # Canlı log izle
+pm2 status                 # Durum kontrol
+pm2 restart marketly-api   # Yeniden başlat
+```
+
+**Detaylı dokümantasyon:** `backend/README.md`

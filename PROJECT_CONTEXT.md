@@ -23,7 +23,7 @@ Instagram + YouTube + Robinhood karışımı. Analistler sinyal satar, kullanıc
 | State | React Context (Auth/TabBar/Toast/Currency/Theme) |
 | Navigasyon | React Navigation 7 (NativeStack + BottomTabs) |
 | BaaS | Supabase (PostgreSQL, Auth, Realtime, Storage, Edge Functions) |
-| Fiyat API | Node.js/Express — port 3001, CoinGecko/Yahoo/Finnhub |
+| Fiyat API | Node.js/Express — port 3001, DigitalOcean VPS |
 | Canlı Yayın | react-native-agora 4.5 (dev build gerekli, Expo Go'da stub) |
 | AI | OpenAI GPT-4o-mini (Supabase Edge Function: `ai-chat`) |
 | Animasyon | React Native Animated API (spring/timing/loop) |
@@ -35,12 +35,18 @@ Instagram + YouTube + Robinhood karışımı. Analistler sinyal satar, kullanıc
 
 ```
 [Expo App] ──Supabase JS──► [Supabase: DB + Auth + Realtime + Storage]
-           ──HTTP──────────► [Node.js Price API :3001]
+           ──HTTP──────────► [Node.js Price API :3001 — DigitalOcean VPS]
                              └─► [CoinGecko / Yahoo / Finnhub]
 [Supabase Edge Functions]
   ├── ai-chat          → OpenAI GPT-4o-mini
   └── check-price-alerts → push bildirim
 ```
+
+**Backend API Bağlantısı:**
+- Mobil app `hooks/useMarketPrices.ts` kullanır.
+- Base URL: `http://<sunucu-ip>:3001/api/prices` (production'da `https://api.marketly.app`)
+- Fiyatlar 2-15 dakikada bir güncellenir (kategori bazlı cron).
+- **Detaylı dokümantasyon:** `backend/README.md`
 
 ---
 
@@ -55,7 +61,8 @@ navigation/   RootNavigator.tsx — tüm route tanımları
 constants/    theme.ts — colors, font, radius, shadow design tokens
 lib/          supabase.ts, database.types.ts, avatarUrl.ts, agora-stub.js
 supabase/     Edge Functions: ai-chat/, check-price-alerts/
-backend/      Node.js fiyat API (ayrı proje — src/routes, src/jobs, src/services)
+backend/      Node.js fiyat API (DigitalOcean VPS, PM2, port 3001)
+              └─ README.md — kurulum, komutlar, API endpoint'leri
 docs/         AI dokümantasyon (modules.md, architecture.md, api_structure.md...)
 ```
 
