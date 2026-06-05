@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISCOVER MOTION SYSTEM
+   
+   Purpose: Premium animations for discover cards
+   - Staggered entrance (pulse, video, live, signal)
+   - Live badge pulsing
+   - Hover interactions
+   - Smooth transitions
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────────────────────────────
+   STAGGERED ENTRANCE ANIMATION
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes discover-card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.discover-pulse-card,
+.discover-video-card,
+.discover-video-full-card,
+.discover-live-card,
+.discover-signal-card,
+.discover-creator-card {
+  animation: discover-card-entrance 380ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   LIVE BADGE PULSING ANIMATION
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes live-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.92;
+  }
+}
+
+@keyframes live-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+}
+
+.discover-live-badge {
+  animation: live-badge-pulse 1s ease-in-out infinite;
+}
+
+.discover-live-dot {
+  animation: live-dot-pulse 1s ease-in-out infinite;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   HOVER STATES
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Pulse card hover: subtle scale */
+.discover-pulse-card:hover {
+  /* Applied via Tailwind group-hover:scale-[1.02] */
+}
+
+/* Video card hover: lift up */
+.discover-video-card:hover {
+  /* Applied via Tailwind group-hover:-translate-y-1 */
+}
+
+/* Live card hover: scale + shadow glow */
+.discover-live-card:hover {
+  /* Applied via Tailwind group-hover:scale-[1.02] + shadow */
+}
+
+/* Signal card hover: shadow intensify */
+.discover-signal-card:hover {
+  /* Applied via Tailwind hover:shadow-[...] */
+}
+
+/* Creator card hover: scale */
+.discover-creator-card:hover {
+  /* Applied via Tailwind hover:scale-105 */
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   ACTIVE/PRESS STATES
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.discover-pulse-card:active,
+.discover-live-card:active {
+  transform: scale(0.985);
+}
+
+.discover-video-card:active {
+  transform: translateY(0);
+}
+
+.discover-creator-card:active {
+  transform: scale(0.985);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   SMOOTH TRANSITIONS (GLOBAL)
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.discover-pulse-card,
+.discover-video-card,
+.discover-video-full-card,
+.discover-live-card,
+.discover-signal-card,
+.discover-creator-card {
+  transition-property: transform, box-shadow, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   PERFORMANCE OPTIMIZATIONS
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.discover-pulse-card,
+.discover-video-card,
+.discover-video-full-card,
+.discover-live-card,
+.discover-signal-card,
+.discover-creator-card {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discover-pulse-card:active,
+  .discover-live-card:active,
+  .discover-video-card:active,
+  .discover-creator-card:active {
+    transform: none;
+  }
+}

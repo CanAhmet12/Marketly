@@ -1,0 +1,275 @@
+/**
+ * Home / Akış — global theme token'ları (html[data-theme]) kullanır.
+ */
+
+.ms-home-surface {
+  /* Phase 1F — tipografi hiyerarşisi: başlık güçlü, gövde okunaklı, ray ikincil */
+  --type-page: 1.5rem;
+  --type-page--leading: 1.16;
+  --type-page--weight: 700;
+  --type-subtitle: 0.9375rem;
+  --type-subtitle--leading: 1.42;
+  --type-subtitle--weight: 500;
+  --type-meta: 0.875rem;
+  --type-meta--leading: 1.45;
+  --type-meta--weight: 500;
+  --type-rail-body: 0.9375rem;
+  --type-rail-body--leading: 1.48;
+  --home-rail-line: 1.48;
+  --type-overline: 0.6875rem;
+  --type-overline--leading: 1.3;
+  --type-overline--weight: 600;
+  --type-overline--tracking: 0.08em;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/** Phase 1F — Home üst yüzey: sayfa sarmalayıcı ile birleşince biraz daha sıkı */
+.ms-home-surface.ms-page-wrapper.ms-page-wrapper--compact {
+  padding-top: var(--sp-2);
+  padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+}
+
+.ms-home-feed-layout {
+  width: 100%;
+  max-width: min(92rem, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(0.75rem, 2.2vw, 1.25rem);
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 0;
+  justify-items: stretch;
+}
+
+@media (min-width: 1280px) {
+  .ms-home-feed-layout {
+    /* Feed + sağ ray tek kompozisyon: 1fr sütun tüm kalan genişliği alır (içte ekstra max-width yok) */
+    grid-template-columns: minmax(0, 1fr) minmax(18.75rem, 21.25rem);
+    column-gap: clamp(1.75rem, 2.2vw, 2.5rem);
+  }
+}
+
+.ms-home-feed-primary {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ms-home-feed-primary-inner {
+  width: 100%;
+  min-width: 0;
+  /* Eski editorial sütun kilidi: max-width + mx-auto beslemeyi daraltıp raydan kopuk gösteriyordu */
+  max-width: none;
+  margin-inline: 0;
+  justify-self: stretch;
+  overflow-x: hidden;
+}
+
+.ms-home-feed-rail {
+  min-width: 0;
+  padding-bottom: var(--sp-6);
+  color: color-mix(in srgb, var(--color-text) 88%, var(--color-bg) 12%);
+}
+
+@media (min-width: 1280px) {
+  .ms-home-feed-rail {
+    position: sticky;
+    top: calc(var(--chrome-top-offset) + 0.35rem);
+    max-height: calc(100dvh - var(--chrome-top-offset) - 1rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-inline: 0.5rem 0.125rem;
+    margin-inline-start: 0;
+    border-left: 1px solid color-mix(in srgb, var(--color-divider) 24%, transparent);
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-divider) 55%, transparent) transparent;
+    mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 8px), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 8px), transparent);
+  }
+
+  .ms-home-feed-rail::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .ms-home-feed-rail::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-meta) 38%, transparent);
+    border-radius: 999px;
+  }
+}
+
+/** Sağ ray — tipografi ve satır ritmi (kutu yok) */
+.ms-home-rail-root {
+  font-size: var(--type-rail-body);
+  line-height: var(--type-rail-body--leading);
+}
+
+.ms-home-rail-root nav a {
+  display: block;
+  padding-block: 0.15rem;
+}
+
+.ms-home-page-title {
+  font-size: var(--type-page);
+  line-height: var(--type-page--leading);
+  font-weight: var(--type-page--weight);
+  letter-spacing: -0.03em;
+}
+
+.ms-home-page-subtitle {
+  font-size: var(--type-subtitle);
+  line-height: var(--type-subtitle--leading);
+  font-weight: var(--type-subtitle--weight);
+  color: var(--color-text-secondary);
+  letter-spacing: -0.012em;
+}
+
+.ms-home-rail-row-link {
+  font-size: var(--type-rail-body);
+  line-height: var(--type-rail-body--leading);
+}
+
+.ms-home-ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 1.15rem;
+  animation: ms-home-ticker-marquee 44s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-home-ticker-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    row-gap: 0.35rem;
+  }
+}
+
+@keyframes ms-home-ticker-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ms-home-rail-slot + .ms-home-rail-slot {
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-divider) 30%, transparent);
+}
+
+/**
+ * Phase 1D — zaman çizelgesi satırı: süreklilik, hafif hover (ince işaretçi + reduced motion).
+ */
+.ms-home-feed-row {
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ms-home-surface .ms-home-feed-row:hover {
+    background-color: color-mix(in srgb, #ffffff 3.5%, var(--color-bg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-home-feed-row {
+    transition: none;
+  }
+}
+
+.ms-home-rail-overline {
+  font-size: var(--type-overline);
+  line-height: var(--type-overline--leading);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: var(--type-overline--tracking);
+  text-transform: uppercase;
+  color: var(--color-meta);
+  opacity: 0.88;
+  margin-bottom: 0.35rem;
+}
+
+/* —— Home presentation layer (structure, not token-only) —— */
+.ms-home-ambient-rail__block + .ms-home-ambient-rail__block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-divider) 24%, transparent);
+}
+
+.ms-home-ambient-rail__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 82%, var(--color-bg) 18%);
+}
+
+.ms-home-editorial-post__fullbleed {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-elevated) 40%, transparent) 0%, transparent 55%);
+}
+
+.ms-home-cinematic-post__stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-home-highlight-rail__strip {
+  mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+}
+
+/**
+ * Home-native akış listesi — editoryal süreklilik, ağır border-stack yok.
+ */
+.ms-home-native-stream > .ms-home-native-item {
+  padding-block: 0.5rem 1.15rem;
+  padding-inline: clamp(0.15rem, 1vw, 0.35rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background-color 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ms-home-native-stream > .ms-home-native-item:last-child {
+  border-bottom: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ms-home-native-stream > .ms-home-native-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-home-native-stream > .ms-home-native-item {
+    transition: none;
+  }
+}
+
+/* Home native: lifted post surface (Tailwind-safe: no color-mix, no -- in selector) */
+.ms-home-native-surf {
+  background: #12121a;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 48px -32px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ms-home-native-surf:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 22px 56px -30px rgba(0, 0, 0, 0.58);
+  }
+}
+
+.ms-home-ambient-summary {
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ms-home-feed-hero {
+  margin-bottom: 0.125rem;
+}

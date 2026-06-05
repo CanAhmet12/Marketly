@@ -1,0 +1,397 @@
+/**
+ * FOREX CANVAS — /markets/category/forex
+ * Kripto (gold) ve BIST (mavi) ile aynı layout sistemi.
+ * Kimlik rengi: Derin violet #8b5cf6
+ */
+
+.forex-canvas {
+  /* Forex violet — ana kimlik */
+  --cc-gold:             #8b5cf6;
+  --cc-gold-amber:       #7c3aed;
+  --cc-gold-dim:         rgba(139, 92, 246, 0.65);
+  --cc-gold-glow:        rgba(139, 92, 246, 0.10);
+  --cc-gold-bg:          rgba(139, 92, 246, 0.07);
+
+  /* Pozitif — evrensel yeşil */
+  --cc-teal:             #22c55e;
+  --cc-teal-muted:       rgba(34, 197, 94, 0.55);
+  --cc-teal-bg:          rgba(34, 197, 94, 0.07);
+
+  /* Negatif — evrensel kırmızı */
+  --cc-rose:             #ef4444;
+  --cc-rose-muted:       rgba(239, 68, 68, 0.55);
+  --cc-rose-bg:          rgba(239, 68, 68, 0.07);
+
+  /* GBP/USD ikincil — indigo */
+  --cc-violet:           #6366f1;
+  --cc-violet-bg:        rgba(99, 102, 241, 0.08);
+  --cc-violet-glow:      rgba(99, 102, 241, 0.10);
+
+  /* Canvas zemin */
+  --cc-canvas:           var(--color-bg);
+  --cc-surface:          var(--color-surface);
+  --cc-surface-raised:   var(--color-bg-elevated);
+  --cc-border:           var(--color-border);
+  --cc-border-subtle:    var(--color-divider);
+
+  --cc-text:             var(--color-text);
+  --cc-text-secondary:   var(--color-text-secondary);
+  --cc-meta:             var(--color-meta);
+
+  background: var(--cc-canvas);
+  color: var(--cc-text);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Forex violet atmosfer — sol üstten */
+.forex-canvas::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 160px;
+  width: 55%;
+  height: 45%;
+  background: radial-gradient(ellipse at 25% 10%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.forex-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   PULSE BAR ICON OVERRIDES
+   ================================ */
+
+/* EUR/USD icon — violet */
+.forex-canvas .cc-pulse-cell-icon--btc {
+  background: #8b5cf6;
+  color: #fff;
+}
+
+/* GBP/USD icon — indigo */
+.forex-canvas .cc-pulse-cell-icon--eth {
+  background: #6366f1;
+  color: #fff;
+}
+
+.forex-canvas .cc-pulse-value--btc {
+  color: #8b5cf6;
+  text-shadow: 0 0 24px rgba(139, 92, 246, 0.3);
+}
+
+/* ================================
+   REGIME OVERRIDES
+   ================================ */
+
+.forex-canvas .cc-regime-headline--bull {
+  color: #8b5cf6;
+  text-shadow: 0 0 40px rgba(139, 92, 246, 0.25);
+}
+
+.forex-canvas .cc-regime-headline-wrap::before {
+  background: radial-gradient(ellipse at 30% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+}
+
+.forex-canvas .cc-dom-value {
+  color: #8b5cf6;
+  text-shadow: 0 0 32px rgba(139, 92, 246, 0.3);
+}
+
+/* ================================
+   PANEL OVERRIDES
+   ================================ */
+
+.forex-canvas .cc-asset-panel--btc {
+  border-top-color: #8b5cf6;
+}
+
+.forex-canvas .cc-asset-panel--eth {
+  border-top-color: #6366f1;
+}
+
+.forex-canvas .cc-asset-logo--btc {
+  background: #8b5cf6;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.3);
+}
+
+.forex-canvas .cc-asset-logo--eth {
+  background: #6366f1;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.25);
+}
+
+.forex-canvas .cc-asset-panel--btc .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(139,92,246,0.05) 0%, transparent 80%);
+}
+
+.forex-canvas .cc-asset-panel--eth .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(99,102,241,0.04) 0%, transparent 80%);
+}
+
+.forex-canvas .cc-asset-tf-btn--active {
+  color: #8b5cf6;
+  border-color: rgba(139,92,246,0.35);
+  background: rgba(139,92,246,0.07);
+}
+
+/* ================================
+   MOVERS / SCREENER OVERRIDES
+   ================================ */
+
+.forex-canvas .cc-movers-v2-row:hover .cc-movers-v2-symbol {
+  color: #8b5cf6;
+}
+
+.forex-canvas .cc-screener-chip--active {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  background: rgba(139,92,246,0.07);
+}
+
+.forex-canvas .cc-screener-symbol-link:hover {
+  color: #8b5cf6;
+}
+
+.forex-canvas .cc-screener-tbody tr.cc-screener-row--featured {
+  border-left: 2px solid #8b5cf6;
+}
+
+.forex-canvas .cc-screener-tbody tr.cc-screener-row--featured .cc-screener-symbol {
+  color: #8b5cf6;
+}
+
+/* ================================
+   BOTTOM / ZONE LINK OVERRIDES
+   ================================ */
+
+.forex-canvas .cc-bottom-panel-link:hover { color: #8b5cf6; }
+.forex-canvas .cc-zone-label-link         { color: rgba(139,92,246,0.65); }
+.forex-canvas .cc-zone-label-link:hover   { color: #8b5cf6; }
+
+.forex-canvas .cc-news-tag {
+  background: rgba(139,92,246,0.07);
+  color: rgba(139,92,246,0.8);
+}
+
+/* ================================
+   SEANS GÖSTERGESİ — Forex özgü
+   ================================ */
+
+.fc-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fc-session-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc-session-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fc-session-dot--active {
+  background: #8b5cf6;
+  box-shadow: 0 0 6px rgba(139,92,246,0.5);
+}
+
+.fc-session-dot--soon {
+  background: rgba(139,92,246,0.4);
+}
+
+.fc-session-dot--closed {
+  background: rgba(255,255,255,0.12);
+}
+
+.fc-session-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+  min-width: 48px;
+}
+
+.fc-session-label--active {
+  color: #8b5cf6;
+}
+
+.fc-session-time {
+  font-size: 10px;
+  color: var(--cc-meta);
+}
+
+/* ================================
+   PARA BİRİMİ GÜÇ GRID
+   ================================ */
+
+.fc-currency-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 800px) {
+  .fc-currency-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ================================
+   FX SCREENER ÖZGÜ
+   ================================ */
+
+.fc-bid-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: right;
+}
+
+.fc-bid {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-ask {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-spread {
+  font-size: 10px;
+  color: var(--cc-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fc-session-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.fc-session-badge--active {
+  background: rgba(139,92,246,0.12);
+  color: #8b5cf6;
+}
+
+.fc-session-badge--closed {
+  background: rgba(255,255,255,0.04);
+  color: var(--cc-meta);
+}
+
+/* ================================
+   EMTİA KORELASYON
+   ================================ */
+
+.fc-commodity-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fc-commodity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 0;
+}
+
+.fc-commodity-row + .fc-commodity-row {
+  border-top: 1px solid var(--cc-border-subtle);
+}
+
+.fc-commodity-symbol {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cc-text);
+  min-width: 72px;
+}
+
+.fc-commodity-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.fc-commodity-change {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ================================
+   VOLATİLİTE BAR (Pulse cell 7)
+   ================================ */
+
+.fc-volatility {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fc-vol-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.fc-vol-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.fc-vol-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.fc-vol-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.fc-vol-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.fc-vol-label {
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 2px;
+}

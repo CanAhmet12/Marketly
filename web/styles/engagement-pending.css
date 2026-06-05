@@ -1,0 +1,11 @@
+.engagement-pending {
+  opacity: 0.62;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .engagement-pending {
+    transition: none;
+  }
+}

@@ -1,0 +1,178 @@
+/* Pulse yorum bottom sheet */
+.pulse-comments-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+}
+
+.pulse-comments-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.pulse-comments-sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(72vh, 520px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px 16px 0 0;
+  background: var(--color-bg-elevated, #12121a);
+  color: var(--color-text, #fff);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.pulse-comments-sheet__handle {
+  width: 36px;
+  height: 4px;
+  margin: 8px auto 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.pulse-comments-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+}
+
+.pulse-comments-sheet__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pulse-comments-sheet__count {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.55));
+}
+
+.pulse-comments-sheet__close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.pulse-comments-sheet__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 14px 8px;
+}
+
+.pulse-comments-sheet__empty {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.55));
+}
+
+.pulse-comments-sheet__row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pulse-comments-sheet__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pulse-comments-sheet__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pulse-comments-sheet__author {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pulse-comments-sheet__time {
+  font-size: 11px;
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.45));
+}
+
+.pulse-comments-sheet__text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pulse-comments-sheet__composer {
+  padding: 10px 14px max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pulse-comments-sheet__form {
+  display: flex;
+  gap: 8px;
+}
+
+.pulse-comments-sheet__input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.pulse-comments-sheet__send {
+  border: none;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--color-primary, #14b8a6);
+  color: #fff;
+  cursor: pointer;
+}
+
+.pulse-comments-sheet__send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pulse-comments-sheet__login {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.pulse-comments-sheet__login-link {
+  color: var(--color-primary, #14b8a6);
+  font-weight: 600;
+}
+
+.pulse-comments-sheet__error {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #f87171;
+}
+
+@media (min-width: 768px) {
+  .pulse-comments-sheet__panel {
+    left: 50%;
+    right: auto;
+    width: min(420px, 100%);
+    transform: translateX(-50%);
+  }
+}

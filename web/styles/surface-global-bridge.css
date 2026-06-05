@@ -1,0 +1,18 @@
+/**
+ * Surface global bridge — Seçenek A
+ * Sayfa kökleri global theme.css token'larını gölgelemez.
+ * Yerel --xxx-* alias'ları yalnızca var(--color-*) referansıdır.
+ */
+
+/* Ortak nötr alias seti — canvas sınıfları kök bloklarında kullanılır */
+.canvas-neutral-tokens {
+  --canvas-bg: var(--color-bg);
+  --canvas-surface: var(--color-surface);
+  --canvas-surface-2: var(--color-bg-elevated);
+  --canvas-border: var(--color-border);
+  --canvas-border-subtle: var(--color-divider);
+  --canvas-text: var(--color-text);
+  --canvas-text-2: var(--color-text-secondary);
+  --canvas-meta: var(--color-meta);
+  --canvas-hover: var(--color-surface-hover);
+}

@@ -36,6 +36,14 @@ yarn-error.*
 .env*.local
 backend/.env
 
+# Supabase CLI temp
+supabase/.temp/
+
+# Web build artifacts (web/ has own .gitignore; belt-and-suspenders)
+web/.next/
+web/out/
+web/node_modules/
+
 # typescript
 *.tsbuildinfo
 

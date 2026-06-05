@@ -1,0 +1,90 @@
+@import "tailwindcss";
+@import "../styles/theme.css";
+@import "../styles/surface-global-bridge.css";
+@import "../styles/motion.css";
+@import "../styles/layout-containers.css";
+@import "../styles/canvas-pages-light-theme.css";
+@import "../styles/mutation-toast.css";
+@import "../styles/engagement-pending.css";
+
+/*
+ * Tek sans yığını — ağ fontu yok; serif geri dönüşü yok.
+ * `--font-inter` yalnızca Tailwind / eski referanslar için alias.
+ */
+:root {
+  --font-sans-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-inter: var(--font-sans-stack);
+  --font-sans: var(--font-sans-stack);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans-stack);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+}
+
+html {
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.58;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1;
+  overflow-x: hidden;
+}
+
+:where(button, input, textarea, select, optgroup) {
+  font: inherit;
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: inherit;
+  font-style: normal;
+}
+
+@keyframes marketly-soft-in {
+  from {
+    opacity: 0.88;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .marketly-main-enter {
+    animation: marketly-soft-in 0.55s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  :where(a, button, input, textarea, select, summary, [role="tab"], [role="menuitem"], [role="switch"]) {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+:where(a, button, input, textarea, select, summary, [role="tab"], [role="menuitem"], [role="switch"]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+:where(button:disabled, input:disabled, textarea:disabled, select:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+:where(input, textarea)::placeholder {
+  color: color-mix(in srgb, var(--color-text-secondary) 72%, var(--color-bg) 28%);
+}

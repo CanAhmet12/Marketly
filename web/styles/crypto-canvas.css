@@ -1,0 +1,1371 @@
+/**
+ * CRYPTO CANVAS — /markets/category/crypto
+ * Sinematik tek yüzey. BTC-gold atmosfer.
+ * Kart/panel yok — her şey #06070b üzerinde akar.
+ */
+
+/* ================================
+   CANVAS + RENK SİSTEMİ
+   ================================ */
+
+.crypto-canvas {
+  --cc-canvas:           var(--color-bg);
+  --cc-surface:          var(--color-surface);
+  --cc-surface-raised:   var(--color-bg-elevated);
+  --cc-border:           var(--color-border);
+  --cc-border-subtle:    var(--color-divider);
+
+  --cc-gold:             #f59e0b;
+  --cc-gold-amber:       #d97706;
+  --cc-gold-dim:         rgba(245, 158, 11, 0.65);
+  --cc-gold-glow:        rgba(245, 158, 11, 0.10);
+  --cc-gold-bg:          rgba(245, 158, 11, 0.07);
+
+  --cc-teal:             #2dd4bf;
+  --cc-teal-muted:       rgba(45, 212, 191, 0.55);
+  --cc-teal-bg:          rgba(45, 212, 191, 0.07);
+
+  --cc-rose:             #fb7185;
+  --cc-rose-muted:       rgba(251, 113, 133, 0.55);
+  --cc-rose-bg:          rgba(251, 113, 133, 0.07);
+
+  --cc-violet:           #a78bfa;
+  --cc-violet-bg:        rgba(167, 139, 250, 0.08);
+  --cc-violet-glow:      rgba(167, 139, 250, 0.10);
+
+  --cc-text:             var(--color-text);
+  --cc-text-secondary:   var(--color-text-secondary);
+  --cc-meta:             var(--color-meta);
+
+  background: var(--cc-canvas);
+  color: var(--cc-text);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Çok hafif BTC gold atmosfer — sağ üst köşeden */
+.crypto-canvas::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 60%;
+  height: 50%;
+  background: radial-gradient(ellipse at 80% 10%, rgba(245, 158, 11, 0.045) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Tüm içerik glow'un önünde */
+.crypto-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   DIVIDER
+   ================================ */
+
+.cc-divider {
+  height: 1px;
+  background: var(--cc-border-subtle);
+  width: 100%;
+  border: none;
+}
+
+/* ================================
+   SECTION / ZONE
+   ================================ */
+
+.cc-section { min-width: 0; }
+
+.cc-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+}
+
+.cc-section-label--gold { color: var(--cc-gold-dim); }
+
+.cc-zone-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cc-zone-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--cc-border-subtle);
+}
+
+.cc-zone-label-link {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cc-gold-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: auto;
+  transition: color 0.1s;
+}
+
+.cc-zone-label-link:hover { color: var(--cc-gold); }
+
+/* ================================
+   RENK YARDIMCILARI
+   ================================ */
+
+.cc-up      { color: var(--cc-teal); }
+.cc-down    { color: var(--cc-rose); }
+.cc-neutral { color: var(--cc-meta); }
+.cc-gold-amber { color: var(--cc-gold-amber); }
+.cc-violet  { color: var(--cc-violet); }
+
+/* ================================
+   PULSE BAR — Zone 0
+   Kutu yok. Sadece alt çizgi.
+   ================================ */
+
+.cc-pulse-bar-v2 {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid var(--cc-border-subtle);
+  /* background/border/border-radius yok — canvas üzerinde */
+}
+
+@media (max-width: 1100px) {
+  .cc-pulse-bar-v2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .cc-pulse-bar-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cc-pulse-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px 16px 0;
+  border-right: 1px solid var(--cc-border-subtle);
+  min-width: 0;
+}
+
+.cc-pulse-cell:last-child { border-right: none; }
+
+.cc-pulse-cell-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-pulse-cell-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.cc-pulse-cell-icon--btc {
+  background: var(--cc-gold);
+  color: #000;
+}
+
+.cc-pulse-cell-icon--eth {
+  background: var(--cc-violet);
+  color: #fff;
+}
+
+.cc-pulse-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--cc-meta);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cc-pulse-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.cc-pulse-value--btc {
+  color: var(--cc-gold);
+  text-shadow: 0 0 24px rgba(245, 158, 11, 0.3);
+}
+
+.cc-pulse-value--btcd { color: var(--cc-text); }
+
+.cc-pulse-change {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cc-pulse-sparkline {
+  height: 30px;
+  margin-top: 6px;
+}
+
+/* Fear & Greed gauge */
+.cc-fg-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cc-fg-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-fg-value {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cc-fg-band {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Altcoin progress */
+.cc-alt-season {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cc-alt-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.cc-alt-big {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cc-alt-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.cc-alt-bar-track {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.cc-alt-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.cc-alt-mode {
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Fear/Greed colors */
+.cc-fg-extreme-fear  { color: #ef4444; }
+.cc-fg-fear          { color: #f97316; }
+.cc-fg-neutral       { color: var(--cc-meta); }
+.cc-fg-greed         { color: var(--cc-teal); }
+.cc-fg-extreme-greed { color: var(--cc-gold); }
+
+/* ================================
+   REGIME DOMINANCE — Zone 1 Sol
+   Kart yok — canvas üzerinde yüzer.
+   ================================ */
+
+.cc-regime-dom-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .cc-regime-dom-grid { grid-template-columns: 1fr; }
+}
+
+/* BULL MARKET arkasına hafif gold glow */
+.cc-regime-headline-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.cc-regime-headline-wrap::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-20%, -55%);
+  width: 320px;
+  height: 120px;
+  background: radial-gradient(ellipse at 30% 50%, rgba(245, 158, 11, 0.10) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cc-regime-headline {
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.cc-regime-headline--bull  {
+  color: var(--cc-gold);
+  text-shadow: 0 0 40px rgba(245, 158, 11, 0.25);
+}
+.cc-regime-headline--bear  { color: var(--cc-rose); }
+.cc-regime-headline--chop  { color: var(--cc-text-secondary); }
+
+.cc-regime-icon {
+  font-size: 34px;
+  line-height: 1;
+  margin-right: 4px;
+}
+
+.cc-regime-summary {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cc-text-secondary);
+  line-height: 1.55;
+  max-width: 42ch;
+  margin-top: 8px;
+}
+
+.cc-regime-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--cc-border-subtle);
+  padding-top: 16px;
+}
+
+@media (max-width: 560px) {
+  .cc-regime-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; }
+}
+
+.cc-regime-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 16px;
+}
+
+.cc-regime-stat + .cc-regime-stat {
+  border-left: 1px solid var(--cc-border-subtle);
+  padding-left: 16px;
+  padding-right: 0;
+}
+
+.cc-regime-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+}
+
+.cc-regime-stat-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* BTC Dominance hero */
+.cc-dom-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.cc-dom-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+}
+
+.cc-dom-value {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 900;
+  color: var(--cc-gold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-shadow: 0 0 32px rgba(245, 158, 11, 0.3);
+}
+
+.cc-dom-change {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-dom-bar {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cc-border);
+  display: flex;
+  margin-top: 8px;
+}
+
+.cc-dom-bar-btc {
+  height: 100%;
+  background: var(--cc-gold);
+  border-radius: 999px 0 0 999px;
+}
+
+.cc-dom-bar-eth {
+  height: 100%;
+  background: var(--cc-teal);
+}
+
+.cc-dom-bar-alt {
+  height: 100%;
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 0 999px 999px 0;
+  flex: 1;
+}
+
+.cc-dom-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cc-dom-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+}
+
+.cc-dom-legend-dot {
+  width: 8px;
+  height: 3px;
+  border-radius: 999px;
+}
+
+/* ================================
+   SEGMENT HEATMAP — Zone 1 Sağ
+   Kart yok. Sadece sol renkli border.
+   ================================ */
+
+.cc-seg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 480px) {
+  .cc-seg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.cc-seg-cell {
+  padding: 10px 0 10px 12px;
+  border-radius: 0;
+  /* border ve background kaldırıldı */
+  border-left: 2px solid var(--cc-border-subtle);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Isı seviyesine göre sol border rengi */
+.cc-seg-cell--hot-strong  { border-left-color: var(--cc-teal); }
+.cc-seg-cell--hot-mild    { border-left-color: rgba(45, 212, 191, 0.4); }
+.cc-seg-cell--neutral     { border-left-color: var(--cc-border); }
+.cc-seg-cell--cold-mild   { border-left-color: rgba(251, 113, 133, 0.4); }
+.cc-seg-cell--cold-strong { border-left-color: var(--cc-rose); }
+
+.cc-seg-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cc-seg-icon {
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cc-seg-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--cc-meta);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-seg-change {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cc-seg-sparkline {
+  height: 36px;
+  margin-top: 4px;
+}
+
+/* ================================
+   BTC / ETH PANELS — Zone 2
+   Kart yok. Sadece üst aksan çizgisi.
+   ================================ */
+
+.cc-asset-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 640px) {
+  .cc-asset-panels { grid-template-columns: 1fr; }
+}
+
+.cc-asset-panel {
+  padding: 20px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  /* background ve border kaldırıldı */
+  background: transparent;
+}
+
+/* İki panel arasına ince dikey çizgi */
+.cc-asset-panel + .cc-asset-panel {
+  border-left: 1px solid var(--cc-border-subtle);
+}
+
+.cc-asset-panel--btc {
+  border-top: 2px solid var(--cc-gold);
+}
+
+.cc-asset-panel--eth {
+  border-top: 2px solid var(--cc-violet);
+}
+
+/* Chart alanı hafif tonal atmosfer */
+.cc-asset-panel--btc .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(245,158,11,0.04) 0%, transparent 80%);
+  border-radius: 6px;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+
+.cc-asset-panel--eth .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(167,139,250,0.04) 0%, transparent 80%);
+  border-radius: 6px;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+
+.cc-asset-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cc-asset-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.cc-asset-logo--btc {
+  background: var(--cc-gold);
+  color: #000;
+  box-shadow: 0 0 16px rgba(245,158,11,0.3);
+}
+
+.cc-asset-logo--eth {
+  background: var(--cc-violet);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(167,139,250,0.25);
+}
+
+.cc-asset-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cc-asset-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.cc-asset-price {
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 900;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.cc-asset-change {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-asset-stats-row {
+  display: flex;
+  gap: 0;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cc-border-subtle);
+  flex-wrap: wrap;
+}
+
+.cc-asset-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 18px;
+}
+
+.cc-asset-stat + .cc-asset-stat {
+  border-left: 1px solid var(--cc-border-subtle);
+  padding-left: 18px;
+  padding-right: 0;
+}
+
+.cc-asset-stat-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+  white-space: nowrap;
+}
+
+.cc-asset-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cc-asset-chart {
+  margin-top: 16px;
+  height: 140px;
+  width: 100%;
+}
+
+.cc-asset-timeframes {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.cc-asset-tf-btn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  color: var(--cc-meta);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.cc-asset-tf-btn:hover {
+  color: var(--cc-text-secondary);
+  background: rgba(255,255,255,0.04);
+}
+
+.cc-asset-tf-btn--active {
+  color: var(--cc-gold);
+  border-color: rgba(245,158,11,0.35);
+  background: var(--cc-gold-bg);
+}
+
+/* ================================
+   TOP MOVERS — Zone 2 Sağ
+   Kart yok. Sol border aksan.
+   ================================ */
+
+.cc-movers-v2 {
+  padding: 0 0 0 20px;
+  border-left: 1px solid var(--cc-border-subtle);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* background ve border (diğer kenarlarda) yok */
+}
+
+.cc-movers-v2-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--cc-border-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+  padding-top: 4px;
+}
+
+.cc-movers-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1;
+  padding-top: 12px;
+}
+
+.cc-movers-v2-col {
+  padding: 0 10px;
+  min-width: 0;
+}
+
+.cc-movers-v2-col:first-child { padding-left: 0; }
+
+.cc-movers-v2-col + .cc-movers-v2-col {
+  border-left: 1px solid var(--cc-border-subtle);
+}
+
+.cc-movers-v2-col-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-movers-v2-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  text-decoration: none;
+}
+
+.cc-movers-v2-row + .cc-movers-v2-row {
+  border-top: 1px solid var(--cc-border-subtle);
+}
+
+.cc-movers-v2-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-movers-v2-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cc-movers-v2-symbol {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.1s;
+}
+
+.cc-movers-v2-row:hover .cc-movers-v2-symbol { color: var(--cc-gold); }
+
+.cc-movers-v2-val {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ================================
+   SIGNAL STRIP — Zone 4
+   ================================ */
+
+.cc-signal-strip { min-width: 0; }
+
+.cc-signal-strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.cc-signal-strip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+}
+
+.cc-signal-bias-bar {
+  height: 4px;
+  width: 180px;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cc-signal-bias-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cc-teal);
+  transition: width 0.4s ease;
+}
+
+.cc-signal-rows { display: flex; flex-direction: column; gap: 0; }
+
+.cc-signal-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  text-decoration: none;
+}
+
+.cc-signal-row + .cc-signal-row { border-top: 1px solid var(--cc-border-subtle); }
+
+.cc-signal-row-symbol {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cc-text);
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* BTC satırı gold */
+.cc-signal-row--btc .cc-signal-row-symbol {
+  color: var(--cc-gold);
+}
+
+.cc-signal-row-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: var(--cc-text-secondary);
+}
+
+.cc-signal-row-bar {
+  flex: 1;
+  min-width: 60px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+}
+
+.cc-signal-row-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cc-teal);
+  transition: width 0.4s ease;
+}
+
+/* BTC bar = gold */
+.cc-signal-row--btc .cc-signal-row-bar-fill {
+  background: var(--cc-gold);
+}
+
+.cc-signal-row-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-teal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cc-signal-row--btc .cc-signal-row-pct {
+  color: var(--cc-gold);
+}
+
+.cc-signal-row-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cc-meta);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ================================
+   SCREENER BOARD — Zone 5
+   ================================ */
+
+.cc-screener { width: 100%; min-width: 0; }
+
+.cc-screener-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.cc-screener-chip {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--cc-border-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.cc-screener-chip:hover {
+  border-color: var(--cc-border);
+  color: var(--cc-text-secondary);
+}
+
+.cc-screener-chip--active {
+  border-color: var(--cc-gold);
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+.cc-screener-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.cc-screener-table-wrap.mkt-vt-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.cc-screener-thead.mkt-vt-sticky-thead th {
+  background: var(--cc-surface);
+}
+
+.cc-screener-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cc-screener-thead th {
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cc-meta);
+  border-bottom: 1px solid var(--cc-border-subtle);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.cc-screener-thead th:first-child { padding-left: 0; }
+
+.cc-screener-tbody tr {
+  border-bottom: 1px solid var(--cc-border-subtle);
+  transition: background 0.1s;
+  cursor: pointer;
+  position: relative;
+}
+
+.cc-screener-tbody tr:last-child { border-bottom: none; }
+.cc-screener-tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+/* BTC satırı — gold sol aksan */
+.cc-screener-tbody tr.cc-screener-row--btc {
+  border-left: 2px solid var(--cc-gold);
+}
+
+.cc-screener-tbody tr.cc-screener-row--btc .cc-screener-symbol {
+  color: var(--cc-gold);
+}
+
+.cc-screener-tbody td {
+  padding: 10px 12px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.cc-screener-tbody td:first-child { padding-left: 0; }
+
+.cc-screener-rank {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  font-variant-numeric: tabular-nums;
+  width: 28px;
+}
+
+.cc-screener-symbol {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-screener-symbol-link { text-decoration: none; transition: color 0.1s; }
+.cc-screener-symbol-link:hover { color: var(--cc-gold); }
+
+.cc-screener-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cc-meta);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-screener-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cc-screener-change {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cc-screener-mcap, .cc-screener-vol {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cc-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cc-screener-spark { width: 72px; }
+
+/* ================================
+   BOTTOM STRIP — Zone 3
+   Kart yok. 3 kolon doğrudan canvas'ta.
+   ================================ */
+
+.cc-bottom-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 900px) {
+  .cc-bottom-strip {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 900px) {
+  .cc-bottom-strip { grid-template-columns: 1fr 1fr; }
+}
+
+.cc-bottom-panel {
+  /* background ve border kaldırıldı */
+  padding: 0 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.cc-bottom-panel + .cc-bottom-panel {
+  padding-left: 24px;
+  border-left: 1px solid var(--cc-border-subtle);
+}
+
+.cc-bottom-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cc-border-subtle);
+  margin-bottom: 12px;
+}
+
+.cc-bottom-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cc-text-secondary);
+}
+
+.cc-bottom-panel-link {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cc-gold-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.1s;
+}
+
+.cc-bottom-panel-link:hover { color: var(--cc-gold); }
+
+/* Watchlist horizontal scroll */
+.cc-watchlist-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.cc-watchlist-scroll::-webkit-scrollbar { display: none; }
+
+.cc-watchlist-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 76px;
+  flex-shrink: 0;
+  text-decoration: none;
+  padding-right: 16px;
+  border-right: 1px solid var(--cc-border-subtle);
+}
+
+.cc-watchlist-item:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.cc-watchlist-symbol {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cc-text);
+}
+
+.cc-watchlist-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cc-watchlist-change {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-watchlist-spark { height: 24px; margin-top: 4px; }
+
+/* News rows */
+.cc-news-rows { display: flex; flex-direction: column; gap: 0; }
+
+.cc-news-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 0;
+  text-decoration: none;
+}
+
+.cc-news-row + .cc-news-row { border-top: 1px solid var(--cc-border-subtle); }
+
+.cc-news-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-news-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--cc-gold-bg);
+  color: var(--cc-gold-dim);
+  letter-spacing: 0.03em;
+}
+
+.cc-news-time { font-size: 10px; color: var(--cc-meta); }
+
+.cc-news-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.1s;
+}
+
+.cc-news-row:hover .cc-news-title { color: var(--cc-text); }
+
+/* Calendar rows */
+.cc-calendar-rows { display: flex; flex-direction: column; gap: 0; }
+
+.cc-cal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.cc-cal-row + .cc-cal-row { border-top: 1px solid var(--cc-border-subtle); }
+
+.cc-cal-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  /* background kaldırıldı */
+  background: transparent;
+}
+
+.cc-cal-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.cc-cal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-cal-date { font-size: 10px; color: var(--cc-meta); }
+
+/* ================================
+   RESPONSIVE — GENEL
+   ================================ */
+
+@media (max-width: 640px) {
+  .cc-pulse-cell {
+    padding: 12px 14px 12px 0;
+  }
+
+  .cc-pulse-value {
+    font-size: 16px;
+  }
+
+  .cc-asset-price {
+    font-size: 22px;
+  }
+
+  .cc-seg-change {
+    font-size: 15px;
+  }
+
+  .cc-bottom-panel + .cc-bottom-panel {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--cc-border-subtle);
+    padding-top: 20px;
+    margin-top: 20px;
+  }
+}

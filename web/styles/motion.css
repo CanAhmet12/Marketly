@@ -1,0 +1,398 @@
+/**
+ * GLOBAL MOTION SYSTEM
+ * 
+ * Marketly web canonical motion primitives.
+ * Reference standard: Discover page (FAZ D).
+ * 
+ * Philosophy:
+ * - Subtle, expensive, smooth
+ * - GPU accelerated (transform-based)
+ * - 60fps guarantee
+ * - No jank, no aggressive bounce
+ * - Quality feel, not showiness
+ */
+
+/* ================================
+   ENTRANCE ANIMATIONS
+   ================================ */
+
+/**
+ * Primary entrance animation
+ * Usage: Cards, grid items, feed rows
+ * Apply with staggered delay: style={{ animationDelay: `${index * 50}ms` }}
+ */
+.motion-entrance {
+  animation: motion-fade-slide-up var(--motion-duration-entrance) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+}
+
+@keyframes motion-fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/**
+ * Simple fade-in (no slide)
+ * Usage: Modals, dropdowns, overlays
+ */
+.motion-fade-in {
+  animation: motion-fade var(--motion-duration-crossfade) ease-out backwards;
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * Slide down entrance
+ * Usage: Dropdowns, notifications
+ */
+.motion-slide-down {
+  animation: motion-slide-down-anim 200ms ease-out backwards;
+}
+
+@keyframes motion-slide-down-anim {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================
+   HOVER STATES
+   ================================ */
+
+/**
+ * Lift hover (translateY)
+ * Usage: Horizontal cards, feed rows, list items
+ * Recommendation: Combine with .motion-shadow-deepen
+ */
+.motion-hover-lift {
+  transition: transform 200ms var(--motion-ease-out, ease-out), box-shadow 200ms var(--motion-ease-out, ease-out);
+}
+.motion-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/**
+ * Scale hover (scale 1.02)
+ * Usage: Compact cards, grid items (PulseCard, LiveCard)
+ * Recommendation: Combine with .motion-shadow-deepen
+ */
+.motion-hover-scale {
+  transition: transform 200ms var(--motion-ease-out, ease-out), box-shadow 200ms var(--motion-ease-out, ease-out);
+}
+.motion-hover-scale:hover {
+  transform: scale(1.01);
+}
+
+/**
+ * Small scale hover (scale 1.05)
+ * Usage: Avatar cards, small interactive elements (CreatorCard)
+ */
+.motion-hover-scale-sm {
+  transition: transform 200ms var(--motion-ease-out, ease-out);
+}
+.motion-hover-scale-sm:hover {
+  transform: scale(1.03);
+}
+
+/**
+ * Shadow deepen on hover
+ * Usage: All cards (combine with lift or scale)
+ */
+.motion-shadow-deepen {
+  transition: box-shadow 200ms var(--motion-ease-out, ease-out);
+}
+
+/**
+ * Image scale on hover (for card thumbnails)
+ * Usage: Apply to card wrapper, image will scale inside
+ */
+.motion-img-scale img {
+  transition: transform 200ms var(--motion-ease-out, ease-out);
+}
+.motion-img-scale:hover img {
+  transform: scale(1.02);
+}
+
+/* ================================
+   ACTIVE (PRESS) STATE
+   ================================ */
+
+/**
+ * Press scale-down
+ * Usage: All interactive cards, buttons
+ */
+.motion-active-press {
+  transition: transform var(--motion-fast);
+}
+.motion-active-press:active {
+  transform: scale(0.985);
+}
+
+/* ================================
+   SPECIAL ANIMATIONS
+   ================================ */
+
+/**
+ * Live badge pulse
+ * Usage: Live broadcast indicators, online status dots
+ */
+.motion-live-pulse {
+  animation: motion-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes motion-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/**
+ * Shimmer loading (skeleton)
+ * Usage: Skeleton loaders, loading placeholders
+ */
+.motion-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-divider) 0%,
+    color-mix(in srgb, var(--color-divider) 50%, white) 50%,
+    var(--color-divider) 100%
+  );
+  background-size: 200% 100%;
+  animation: motion-shimmer-anim 1.85s ease-in-out infinite;
+}
+
+@keyframes motion-shimmer-anim {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ================================
+   HOME TIMELINE MOTION
+   ================================ */
+
+/**
+ * Calm timeline entrance
+ * Usage: Home feed timeline rows
+ * Subtle fade with no slide for editorial calm
+ */
+.motion-timeline-row {
+  animation: motion-timeline-fade 400ms ease-out backwards;
+}
+
+@keyframes motion-timeline-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * Timeline row hover
+ * Usage: Home feed rows
+ * Very subtle background tint on hover
+ */
+.motion-timeline-hover {
+  transition: background-color 150ms ease-out;
+}
+
+/* ================================
+   MODAL / DRAWER ANIMATIONS
+   ================================ */
+
+/**
+ * Modal scale entrance
+ * Usage: Modals, dialogs
+ */
+.motion-modal-enter {
+  animation: motion-modal-enter-anim var(--motion-duration-modal) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+}
+
+@keyframes motion-modal-enter-anim {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/**
+ * Drawer slide from right
+ * Usage: Side drawers, detail panels
+ */
+.motion-drawer-enter-right {
+  animation: motion-drawer-right-anim var(--motion-duration-drawer) var(--motion-ease-out, ease-out) backwards;
+}
+
+@keyframes motion-drawer-right-anim {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/** Bottom sheet (mobil filtre vb.) */
+.motion-sheet-enter-bottom {
+  animation: motion-sheet-bottom-anim var(--motion-duration-sheet) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+}
+
+@keyframes motion-sheet-bottom-anim {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================
+   BACKDROP ANIMATIONS
+   ================================ */
+
+/**
+ * Backdrop fade-in
+ * Usage: Modal/drawer backdrops
+ */
+.motion-backdrop-enter {
+  animation: motion-backdrop-fade var(--motion-duration-backdrop) ease-out backwards;
+}
+
+/* P7-002 — sekme / panel geçişi */
+.motion-panel-crossfade {
+  animation: motion-panel-crossfade var(--motion-duration-crossfade) var(--motion-ease-out, ease-out) backwards;
+}
+
+@keyframes motion-panel-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* P7-004 — piyasalar fiyat flash */
+.mkt-price-flash--rise {
+  animation: mkt-price-flash-rise var(--motion-duration-price-flash) ease-out;
+}
+
+.mkt-price-flash--fall {
+  animation: mkt-price-flash-fall var(--motion-duration-price-flash) ease-out;
+}
+
+@keyframes mkt-price-flash-rise {
+  0% {
+    background-color: color-mix(in srgb, var(--color-rise) 24%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes mkt-price-flash-fall {
+  0% {
+    background-color: color-mix(in srgb, var(--color-fall) 22%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes motion-backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ================================
+   PERFORMANCE OPTIMIZATIONS
+   ================================ */
+
+/**
+ * GPU acceleration hint
+ * Apply to animated elements for better performance
+ */
+.motion-gpu-accelerate {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/**
+ * Reduce motion support
+ * Respect user's motion preferences
+ */
+@media (prefers-reduced-motion: reduce) {
+  .motion-entrance,
+  .motion-fade-in,
+  .motion-slide-down,
+  .motion-timeline-row,
+  .motion-modal-enter,
+  .motion-drawer-enter-right,
+  .motion-sheet-enter-bottom,
+  .motion-backdrop-enter,
+  .motion-panel-crossfade,
+  .mkt-price-flash--rise,
+  .mkt-price-flash--fall {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    background-color: transparent;
+  }
+
+  .motion-hover-lift:hover,
+  .motion-hover-scale:hover,
+  .motion-hover-scale-sm:hover,
+  .motion-active-press:active {
+    transform: none;
+  }
+
+  .motion-live-pulse {
+    animation: none;
+    opacity: 1;
+  }
+
+  .motion-shimmer {
+    animation: none;
+  }
+
+  .motion-img-scale img {
+    transform: none;
+  }
+}

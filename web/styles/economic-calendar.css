@@ -1,0 +1,454 @@
+/**
+ * EKONOMİK TAKVİM — /economic-calendar
+ * Investing.com / ForexFactory tarzı profesyonel takvim.
+ */
+
+.ec-page {
+  --ec-bg:       var(--color-bg);
+  --ec-surface:  var(--color-surface);
+  --ec-surface-2:var(--color-bg-elevated);
+  --ec-border:   var(--color-border);
+  --ec-border-2: var(--color-divider);
+  --ec-text:     var(--color-text);
+  --ec-text-2:   var(--color-text-secondary);
+  --ec-meta:     var(--color-meta);
+  --ec-accent:   var(--color-primary);
+
+  /* Etki renkleri */
+  --ec-high:     #ef4444;
+  --ec-high-bg:  rgba(239,68,68,0.10);
+  --ec-med:      #f97316;
+  --ec-med-bg:   rgba(249,115,22,0.10);
+  --ec-low:      #64748b;
+  --ec-low-bg:   rgba(100,116,139,0.08);
+
+  /* Kategori renkleri */
+  --ec-inflation: #f59e0b;
+  --ec-growth:    #3b82f6;
+  --ec-employment:#22c55e;
+  --ec-monetary:  #8b5cf6;
+  --ec-trade:     #14b8a6;
+  --ec-speech:    #fb923c;
+
+  background: var(--ec-bg);
+  color: var(--ec-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================
+   HEADER
+   ================================ */
+
+.ec-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 22px 0 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--ec-border-2);
+}
+
+.ec-header-left { display: flex; flex-direction: column; gap: 3px; }
+
+.ec-header-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ec-meta);
+}
+
+.ec-header-title {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--ec-text);
+  line-height: 1;
+}
+
+.ec-header-actions {
+  display: flex; gap: 8px;
+}
+
+.ec-header-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 13px;
+  border-radius: 7px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--ec-border);
+  color: var(--ec-meta);
+  cursor: pointer; transition: all 0.1s;
+  text-decoration: none;
+}
+
+.ec-header-btn:hover { background: rgba(255,255,255,0.07); color: var(--ec-text-2); }
+
+/* ================================
+   FILTER BAR
+   ================================ */
+
+.ec-filters {
+  position: sticky;
+  top: calc(var(--chrome-top-offset, 0px) + 6px);
+  z-index: 20;
+  background: rgba(7,8,13,0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ec-border-2);
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.ec-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.ec-filter-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ec-meta);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.ec-filter-divider {
+  width: 1px; height: 18px;
+  background: var(--ec-border-2);
+}
+
+.ec-filter-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 700;
+  border: 1px solid var(--ec-border-2);
+  cursor: pointer;
+  background: transparent;
+  color: var(--ec-meta);
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+
+.ec-filter-btn:hover { border-color: var(--ec-border); color: var(--ec-text-2); }
+
+.ec-filter-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ec-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.ec-filter-btn--active {
+  border-color: var(--ec-accent);
+  color: var(--ec-accent);
+  background: rgba(15,157,117,0.07);
+}
+
+.ec-filter-btn--high.active   { border-color: var(--ec-high); color: var(--ec-high); background: var(--ec-high-bg); }
+.ec-filter-btn--med.active    { border-color: var(--ec-med);  color: var(--ec-med);  background: var(--ec-med-bg);  }
+
+/* ================================
+   HERO EVENT (günün en önemli olayı)
+   ================================ */
+
+.ec-hero-event {
+  background: var(--ec-surface);
+  border: 1px solid var(--ec-border);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ec-hero-impact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ec-impact-circles {
+  display: flex;
+  gap: 3px;
+}
+
+.ec-impact-circle {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.ec-impact-circle--filled-3 { background: var(--ec-high); }
+.ec-impact-circle--filled-2 { background: var(--ec-med); }
+.ec-impact-circle--filled-1 { background: var(--ec-low); }
+.ec-impact-circle--empty { background: rgba(255,255,255,0.08); }
+
+.ec-hero-body { flex: 1; min-width: 0; }
+
+.ec-hero-time-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.ec-hero-time {
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ec-text-2);
+}
+
+.ec-country-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ec-country-code {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ec-meta);
+  text-transform: uppercase;
+}
+
+.ec-hero-title {
+  font-size: 18px; font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--ec-text);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.ec-data-row {
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+
+.ec-data-cell {
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.ec-data-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ec-meta);
+}
+
+.ec-data-value {
+  font-size: 16px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ec-text);
+}
+
+.ec-data-value--beat { color: #22c55e; }
+.ec-data-value--miss { color: #ef4444; }
+.ec-data-value--pending { color: var(--ec-meta); font-size: 13px; }
+
+/* ================================
+   DAY SECTIONS
+   ================================ */
+
+.ec-day-section { margin-bottom: 28px; }
+
+.ec-day-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ec-day-label {
+  font-size: 13px; font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ec-text-2);
+}
+
+.ec-day-line {
+  flex: 1; height: 1px;
+  background: var(--ec-border-2);
+}
+
+.ec-day-count {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  color: var(--ec-meta);
+}
+
+/* ================================
+   EVENT TABLE
+   ================================ */
+
+.ec-table-wrap {
+  background: var(--ec-surface);
+  border: 1px solid var(--ec-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ec-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ec-table thead th {
+  padding: 8px 14px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ec-meta);
+  border-bottom: 1px solid var(--ec-border-2);
+  text-align: left;
+  background: rgba(255,255,255,0.015);
+  white-space: nowrap;
+}
+
+.ec-table thead th.right { text-align: right; }
+.ec-table thead th.center { text-align: center; }
+
+.ec-table tbody tr {
+  border-bottom: 1px solid var(--ec-border-2);
+  transition: background 0.1s;
+  cursor: default;
+}
+
+.ec-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.ec-table tbody tr:last-child { border-bottom: none; }
+
+.ec-table tbody td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+
+/* Saat kolonu */
+.ec-time-cell {
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ec-text-2);
+  white-space: nowrap;
+}
+
+.ec-time-cell--upcoming { color: var(--ec-accent); }
+
+/* Ülke kolonu */
+.ec-country-cell {
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+
+/* Olay adı */
+.ec-event-cell { min-width: 200px; }
+
+.ec-event-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--ec-text);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.ec-event-badges {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.ec-cat-badge {
+  font-size: 9px; font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ec-cat-badge--inflation  { background: rgba(245,158,11,0.12); color: #fbbf24; }
+.ec-cat-badge--growth     { background: rgba(59,130,246,0.12);  color: #93c5fd; }
+.ec-cat-badge--employment { background: rgba(34,197,94,0.10);   color: #86efac; }
+.ec-cat-badge--monetary   { background: rgba(139,92,246,0.12);  color: #c4b5fd; }
+.ec-cat-badge--trade      { background: rgba(20,184,166,0.10);  color: #5eead4; }
+.ec-cat-badge--speech     { background: rgba(251,146,60,0.12);  color: #fdba74; }
+
+.ec-sym-tag {
+  font-size: 9px; font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.45);
+  font-family: var(--font-mono, monospace);
+}
+
+/* Etki kolonu */
+.ec-impact-cell {
+  display: flex; gap: 3px; align-items: center;
+  justify-content: center;
+}
+
+/* Sayısal kolonlar */
+.ec-num-cell {
+  text-align: right;
+  font-size: 13px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ec-num-cell--prev    { color: var(--ec-text-2); }
+.ec-num-cell--fcst    { color: var(--ec-text); }
+.ec-num-cell--beat    { color: #22c55e; }
+.ec-num-cell--miss    { color: #ef4444; }
+.ec-num-cell--pending { color: var(--ec-meta); font-size: 11px; letter-spacing: 0.03em; }
+
+/* Watchlist badge */
+.ec-wl-badge {
+  font-size: 9px; font-weight: 800;
+  padding: 2px 6px; border-radius: 3px;
+  background: rgba(15,157,117,0.14);
+  color: #0f9d75;
+}
+
+/* ================================
+   STATS STRIP (özet banner)
+   ================================ */
+
+.ec-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  background: var(--ec-surface);
+  border: 1px solid var(--ec-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 640px) { .ec-stats-strip { grid-template-columns: repeat(2,1fr); } }
+
+.ec-strip-stat {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 12px 16px;
+}
+
+.ec-strip-stat + .ec-strip-stat { border-left: 1px solid var(--ec-border-2); }
+
+.ec-strip-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--ec-meta);
+}
+
+.ec-strip-value {
+  font-size: 20px; font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--ec-text);
+}
+
+.ec-strip-sub {
+  font-size: 10px;
+  color: var(--ec-meta);
+}

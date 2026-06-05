@@ -1,0 +1,154 @@
+/**
+ * Piyasalar — "Liquid Matte Canvas" (yalnızca .markets-fluid-scope altında)
+ */
+
+.markets-fluid-scope {
+  --ms-spark-up: #10b981;
+  --ms-spark-down: #ef4444;
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Eski premium “kutu” yardımcıları — akışta şeffaf */
+.markets-fluid-scope .ms-metric-block {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+.markets-fluid-scope .ms-hero-stat {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+html[data-theme="light"] .markets-fluid-scope {
+  background: linear-gradient(
+    165deg,
+    var(--color-bg) 0%,
+    var(--color-bg-subtle) 46%,
+    color-mix(in srgb, var(--color-bg-subtle) 80%, #e6e4e0 20%) 100%
+  );
+}
+
+html[data-theme="dark"] .markets-fluid-scope {
+  background: linear-gradient(
+    165deg,
+    var(--color-bg-elevated) 0%,
+    var(--color-bg-subtle) 50%,
+    var(--color-bg) 100%
+  );
+}
+
+.markets-fluid-scope .markets-hero-sheen {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--color-text) 3%, transparent) 0%,
+    transparent 55%
+  );
+}
+
+html[data-theme="dark"] .markets-fluid-scope .markets-hero-sheen {
+  background: linear-gradient(155deg, color-mix(in srgb, #ffffff 4%, transparent) 0%, transparent 58%);
+}
+
+/* Sıvı cam — blur 25px, ~%5 katman */
+.markets-fluid-scope .markets-glass-25 {
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html[data-theme="light"] .markets-fluid-scope .markets-glass-25 {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="dark"] .markets-fluid-scope .markets-glass-25 {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Arama odağı: tuval hafif kararır (yalnızca piyasalar sütunu) */
+.markets-fluid-scope .markets-search-dim {
+  position: relative;
+}
+
+.markets-fluid-scope .markets-search-dim::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: transparent;
+  transition: background 0.28s ease;
+}
+
+html[data-theme="light"] .markets-fluid-scope:has(.markets-search-wrap:focus-within) .markets-search-dim::before {
+  background: color-mix(in srgb, #0f172a 7%, transparent);
+}
+
+html[data-theme="dark"] .markets-fluid-scope:has(.markets-search-wrap:focus-within) .markets-search-dim::before {
+  background: rgba(0, 0, 0, 0.38);
+}
+
+.markets-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Varlık satırı — kutu rengi yok, hover’da yumuşak iç parıltı */
+.markets-fluid-scope .markets-asset-flow {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: box-shadow 0.32s ease, filter 0.32s ease;
+}
+
+html[data-theme="light"] .markets-fluid-scope .markets-asset-flow:hover {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 24%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent),
+    0 12px 48px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+html[data-theme="dark"] .markets-fluid-scope .markets-asset-flow:hover {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #ffffff 8%, transparent),
+    0 12px 48px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markets-fluid-scope .markets-asset-flow {
+    transition: none;
+  }
+}
+
+.markets-filter-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* Sanal tablo — sticky thead + scroll container */
+.mkt-vt-scroll {
+  overflow-y: auto;
+  overscroll-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mkt-vt-sticky-thead tr {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.mkt-vt-sticky-thead th {
+  background: var(--color-surface);
+}
+
+.markets-dense-table-wrap.mkt-vt-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+}

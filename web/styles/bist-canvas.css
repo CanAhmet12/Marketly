@@ -1,0 +1,270 @@
+/**
+ * BIST CANVAS — /markets/category/bist
+ * Kripto canvas ile aynı layout sistemi.
+ * Sadece renk değişkenleri BIST mavi kimliğine ayarlanır.
+ */
+
+.bist-canvas {
+  /* BTC gold → BIST mavi */
+  --cc-gold:             #3b82f6;
+  --cc-gold-amber:       #2563eb;
+  --cc-gold-dim:         rgba(59, 130, 246, 0.65);
+  --cc-gold-glow:        rgba(59, 130, 246, 0.10);
+  --cc-gold-bg:          rgba(59, 130, 246, 0.07);
+
+  /* Pozitif → borsa yeşili */
+  --cc-teal:             #22c55e;
+  --cc-teal-muted:       rgba(34, 197, 94, 0.55);
+  --cc-teal-bg:          rgba(34, 197, 94, 0.07);
+
+  /* Negatif → borsa kırmızısı */
+  --cc-rose:             #ef4444;
+  --cc-rose-muted:       rgba(239, 68, 68, 0.55);
+  --cc-rose-bg:          rgba(239, 68, 68, 0.07);
+
+  /* Violet → BIST 30 açık mavi */
+  --cc-violet:           #60a5fa;
+  --cc-violet-bg:        rgba(96, 165, 250, 0.08);
+  --cc-violet-glow:      rgba(96, 165, 250, 0.10);
+
+  /* Canvas zemin — global theme */
+  --cc-canvas:           var(--color-bg);
+  --cc-surface:          var(--color-surface);
+  --cc-surface-raised:   var(--color-bg-elevated);
+  --cc-border:           var(--color-border);
+  --cc-border-subtle:    var(--color-divider);
+
+  --cc-text:             var(--color-text);
+  --cc-text-secondary:   var(--color-text-secondary);
+  --cc-meta:             var(--color-meta);
+
+  background: var(--cc-canvas);
+  color: var(--cc-text);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* BIST mavi atmosfer — sol üst köşeden */
+.bist-canvas::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 160px; /* sidebar sonrası */
+  width: 55%;
+  height: 45%;
+  background: radial-gradient(ellipse at 30% 10%, rgba(59, 130, 246, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bist-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   BIST PULSE BAR ICON OVERRIDES
+   ================================ */
+
+/* BIST 100 icon — mavi */
+.bist-canvas .cc-pulse-cell-icon--btc {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* BIST 30 icon — açık mavi */
+.bist-canvas .cc-pulse-cell-icon--eth {
+  background: #60a5fa;
+  color: #fff;
+}
+
+/* BIST 100 değeri mavi */
+.bist-canvas .cc-pulse-value--btc {
+  color: #3b82f6;
+  text-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
+}
+
+/* ================================
+   BIST MARKET STATE (regime override)
+   ================================ */
+
+.bist-canvas .cc-regime-headline--bull {
+  color: #3b82f6;
+  text-shadow: 0 0 40px rgba(59, 130, 246, 0.25);
+}
+
+.bist-canvas .cc-regime-headline-wrap::before {
+  background: radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+}
+
+.bist-canvas .cc-dom-value {
+  color: #3b82f6;
+  text-shadow: 0 0 32px rgba(59, 130, 246, 0.3);
+}
+
+/* ================================
+   BIST INDEX PANELS OVERRIDE
+   ================================ */
+
+.bist-canvas .cc-asset-panel--btc {
+  border-top-color: #3b82f6;
+}
+
+.bist-canvas .cc-asset-panel--eth {
+  border-top-color: #60a5fa;
+}
+
+.bist-canvas .cc-asset-logo--btc {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.3);
+}
+
+.bist-canvas .cc-asset-logo--eth {
+  background: #60a5fa;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.25);
+}
+
+.bist-canvas .cc-asset-panel--btc .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(59,130,246,0.05) 0%, transparent 80%);
+}
+
+.bist-canvas .cc-asset-panel--eth .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(96,165,250,0.04) 0%, transparent 80%);
+}
+
+.bist-canvas .cc-asset-tf-btn--active {
+  color: #3b82f6;
+  border-color: rgba(59,130,246,0.35);
+  background: rgba(59,130,246,0.07);
+}
+
+/* ================================
+   BIST SCREENER OVERRIDES
+   ================================ */
+
+.bist-canvas .cc-screener-chip--active {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: rgba(59,130,246,0.07);
+}
+
+.bist-canvas .cc-screener-symbol-link:hover {
+  color: #3b82f6;
+}
+
+.bist-canvas .cc-screener-tbody tr.cc-screener-row--featured {
+  border-left: 2px solid #3b82f6;
+}
+
+.bist-canvas .cc-screener-tbody tr.cc-screener-row--featured .cc-screener-symbol {
+  color: #3b82f6;
+}
+
+/* ================================
+   BIST MOVERS OVERRIDE
+   ================================ */
+
+.bist-canvas .cc-movers-v2-row:hover .cc-movers-v2-symbol {
+  color: #3b82f6;
+}
+
+/* ================================
+   BIST BOTTOM STRIP LINK OVERRIDE
+   ================================ */
+
+.bist-canvas .cc-bottom-panel-link:hover {
+  color: #3b82f6;
+}
+
+.bist-canvas .cc-news-tag {
+  background: rgba(59,130,246,0.07);
+  color: rgba(59,130,246,0.8);
+}
+
+.bist-canvas .cc-zone-label-link {
+  color: rgba(59,130,246,0.65);
+}
+
+.bist-canvas .cc-zone-label-link:hover {
+  color: #3b82f6;
+}
+
+/* ================================
+   DÖVİZ & EMTİA — BIST'e özgü
+   ================================ */
+
+.bc-fx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.bc-fx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 0;
+}
+
+.bc-fx-row + .bc-fx-row {
+  border-top: 1px solid var(--cc-border-subtle);
+}
+
+.bc-fx-symbol {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+}
+
+.bc-fx-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.bc-fx-change {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ================================
+   SEKTÖR GRID — 2x4 BIST layout
+   ================================ */
+
+.bc-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 800px) {
+  .bc-sector-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ================================
+   BIST SCREENER TL FORMAT
+   ================================ */
+
+.bc-screener-sector {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  white-space: nowrap;
+}

@@ -1,0 +1,369 @@
+/**
+ * Home (hv-ref) — light tema düzeltmeleri
+ * Kart/layout aynı; chrome, feed metni, rail, discover band plakaları.
+ */
+
+html[data-theme="light"] .hv-ref {
+  --hv-stream-tint: var(--color-card-plate);
+  --hv-teal-muted: color-mix(in srgb, var(--color-primary) 38%, transparent);
+}
+
+/* ─── Toolbar + tabs ─────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref__icon-btn {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__icon-btn:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 42%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__tab {
+  color: var(--color-tab-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__tab:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
+}
+
+/* ─── Market ticker strip ────────────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-strip__item:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-strip__sym {
+  color: var(--color-text-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-strip__item:hover .hv-ref-strip__sym {
+    color: var(--color-text);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-strip__price {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-strip__chg[data-sign="flat"] {
+  color: var(--color-text-tertiary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-strip__item:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+/* ─── Stories ────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__hit:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__label {
+  color: var(--color-text-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-stories__hit:hover .hv-ref-stories__label {
+    color: var(--color-text);
+  }
+}
+
+/* ─── Feed articles ──────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-article__name {
+  color: var(--color-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-article:hover .hv-ref-article__name {
+    color: var(--color-text);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__badge {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__title {
+  color: var(--color-text);
+}
+
+/* ─── Right rail ─────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__h {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__action-link {
+  color: var(--color-primary-dark);
+  text-decoration-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-rail__action-link:hover {
+    color: var(--color-primary);
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 42%, transparent);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__action-link:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-dot {
+  background: color-mix(in srgb, var(--color-text) 22%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-dot[data-accent="up"] {
+  background: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-dot[data-accent="down"] {
+  background: var(--color-fall);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-dot[data-accent="flat"] {
+  background: color-mix(in srgb, var(--color-text-tertiary) 55%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-lab {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-pct {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-pct[data-accent="up"] {
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__sc-pct[data-accent="down"] {
+  color: var(--color-fall);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref__rail-col--ambient .hv-ref-rail__sc-row:hover .hv-ref-rail__sc-lab {
+    color: var(--color-text);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__cue {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__cue--up {
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__cue--down {
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__cue-dot {
+  background: color-mix(in srgb, var(--color-text-tertiary) 45%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__event-title {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__event-time,
+html[data-theme="light"] .hv-ref .hv-ref-rail__event-detail {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-flow {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-sep {
+  color: var(--color-divider);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest[data-strength="high"] {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest[data-strength="mid"] {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest[data-strength="low"] {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-meta {
+  color: var(--color-meta);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-meta::before {
+  color: var(--color-divider);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-rank {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-tag {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-views {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-delta {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-delta[data-accent="up"] {
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__trend-delta[data-accent="down"] {
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__creator-placeholder {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__creator-name {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__creator-tier {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__creator-handle {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__follow {
+  color: var(--color-primary-dark);
+  text-decoration-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-rail__follow:hover {
+    color: var(--color-primary);
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 42%, transparent);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__follow:focus-visible {
+  outline-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* ─── Discover bands (renderer bileşenleri) ─────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-discover-band::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 55%, transparent), transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band--live::before {
+  background: linear-gradient(90deg, color-mix(in srgb, #ef4444 55%, transparent), transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band--signals::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-text-secondary) 35%, transparent), transparent);
+}
+
+/* Discover hub kart plakaları — koyu leke yerine beyaz yüzey */
+html[data-theme="light"] .hv-ref .discover-live-cinema {
+  background: var(--color-card-plate);
+  box-shadow: var(--shadow-rail-compact);
+}
+
+@media (hover: hover) {
+  html[data-theme="light"] .hv-ref .discover-live-cinema:hover {
+    box-shadow: var(--shadow-rail-compact-hover);
+  }
+}
+
+html[data-theme="light"] .hv-ref .discover-live-cinema--hero {
+  box-shadow: var(--shadow-rail-hero);
+}
+
+html[data-theme="light"] .hv-ref .discover-pulse-tile {
+  background: var(--color-card-plate);
+  box-shadow: var(--shadow-card);
+}
+
+@media (hover: hover) {
+  html[data-theme="light"] .hv-ref .discover-pulse-tile:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+html[data-theme="light"] .hv-ref .discover-video-editorial .ms-home-cinematic-post__below {
+  background: var(--color-card-plate);
+  border-top-color: var(--color-divider);
+}
+
+html[data-theme="light"] .hv-ref .discover-sig-strip {
+  background: var(--color-card-plate);
+  box-shadow: var(--shadow-card);
+}
+
+html[data-theme="light"] .hv-ref .discover-sig-strip__dir--buy {
+  color: #047857;
+  background: color-mix(in srgb, #10b981 12%, #ffffff 88%);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .hv-ref .discover-sig-strip__dir--sell {
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 10%, #ffffff 90%);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .hv-ref .discover-sig-strip__dir--hold {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .hv-ref .discover-sig-strip__meter-fill {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 35%, transparent), var(--color-primary));
+  box-shadow: none;
+}
+
+/* Home feed surface (ms-home-surface) — native post kartları */
+html[data-theme="light"] .ms-home-surface .ms-home-feed-row:hover {
+  background-color: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ms-home-native-stream > .ms-home-native-item {
+  border-bottom-color: var(--color-divider);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .ms-home-native-stream > .ms-home-native-item:hover {
+    background-color: var(--color-surface-hover);
+  }
+}
+
+html[data-theme="light"] .ms-home-native-surf {
+  background: var(--color-card-plate);
+  border-color: var(--color-border-card);
+  box-shadow: var(--shadow-card);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .ms-home-native-surf:hover {
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+html[data-theme="light"] .ms-home-ambient-summary {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}

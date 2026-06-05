@@ -1,0 +1,111 @@
+/**
+ * MARKETLY GLOBAL CONTAINER SYSTEM
+ *
+ * Philosophy:
+ * - AppShell owns sidebar offset and horizontal clipping.
+ * - Containers never add mx-auto unless the surface explicitly needs centering.
+ * - Wide surfaces: width 100%, no max-width constraint.
+ * - Editorial surfaces: readable max-width, aligned to start (not centered).
+ */
+
+/* ================================
+   CONTAINER PRIMITIVES
+   ================================ */
+
+/** Editorial — Home timeline, Post detail. Readable column, left-aligned. */
+.ms-container-editorial {
+  width: 100%;
+  max-width: 48rem;
+  padding-left: var(--sp-4);
+  padding-right: var(--sp-4);
+}
+
+/** Standard — Settings, Notifications, Upload, Close friends. */
+.ms-container-standard {
+  width: 100%;
+  max-width: 52rem;
+  padding-left: var(--sp-4);
+  padding-right: var(--sp-4);
+}
+
+/** Discovery — Discover grids. Full main-area width. */
+.ms-container-discovery {
+  width: 100%;
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+}
+
+/** Markets — Markets, Signals, Portfolio, Calendar, News. Full width. */
+.ms-container-markets {
+  width: 100%;
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+}
+
+/** Wide — Channel, Studio, Messages, Results. Full width. */
+.ms-container-wide {
+  width: 100%;
+  padding-left: var(--sp-4);
+  padding-right: var(--sp-4);
+}
+
+/** Full — Watch/video, media-first pages. Full width, minimal padding. */
+.ms-container-full {
+  width: 100%;
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+}
+
+/* ================================
+   RESPONSIVE ADJUSTMENTS
+   ================================ */
+
+@media (max-width: 640px) {
+  .ms-container-editorial,
+  .ms-container-standard {
+    padding-left: var(--sp-3);
+    padding-right: var(--sp-3);
+  }
+
+  .ms-container-discovery,
+  .ms-container-markets,
+  .ms-container-wide,
+  .ms-container-full {
+    padding-left: var(--sp-2);
+    padding-right: var(--sp-2);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .ms-container-editorial {
+    max-width: 52rem;
+  }
+}
+
+/* ================================
+   PAGE WRAPPER
+   ================================ */
+
+.ms-page-wrapper {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding-top: var(--sp-4);
+  padding-bottom: calc(var(--sp-12) + env(safe-area-inset-bottom, 0px));
+}
+
+.ms-page-wrapper--no-top {
+  padding-top: 0;
+}
+
+.ms-page-wrapper--compact {
+  padding-top: var(--sp-3);
+  padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+}
+
+/** Yatay chip / tab şeritleri — dokunma kaydırması, taşmayı sütunda tut */
+.ms-rail-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}

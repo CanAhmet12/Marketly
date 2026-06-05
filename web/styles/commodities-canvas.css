@@ -1,0 +1,312 @@
+/**
+ * COMMODITIES CANVAS — /markets/category/commodities
+ * Kimlik rengi: Bakir/Amber #f97316
+ * Kripto gold (#f59e0b) daha koyu, sicak turuncu — toprak, metal, enerji hissi.
+ */
+
+.commodities-canvas {
+  /* Emtia bakir/amber — ana kimlik */
+  --cc-gold:             #f97316;
+  --cc-gold-amber:       #ea580c;
+  --cc-gold-dim:         rgba(249, 115, 22, 0.65);
+  --cc-gold-glow:        rgba(249, 115, 22, 0.10);
+  --cc-gold-bg:          rgba(249, 115, 22, 0.07);
+
+  /* Pozitif — evrensel yesil */
+  --cc-teal:             #22c55e;
+  --cc-teal-muted:       rgba(34, 197, 94, 0.55);
+  --cc-teal-bg:          rgba(34, 197, 94, 0.07);
+
+  /* Negatif — evrensel kirmizi */
+  --cc-rose:             #ef4444;
+  --cc-rose-muted:       rgba(239, 68, 68, 0.55);
+  --cc-rose-bg:          rgba(239, 68, 68, 0.07);
+
+  /* Petrol ikincil — koyu turuncu */
+  --cc-violet:           #ea580c;
+  --cc-violet-bg:        rgba(234, 88, 12, 0.08);
+  --cc-violet-glow:      rgba(234, 88, 12, 0.10);
+
+  /* Canvas zemin */
+  --cc-canvas:           var(--color-bg);
+  --cc-surface:          var(--color-surface);
+  --cc-surface-raised:   var(--color-bg-elevated);
+  --cc-border:           var(--color-border);
+  --cc-border-subtle:    var(--color-divider);
+
+  --cc-text:             var(--color-text);
+  --cc-text-secondary:   var(--color-text-secondary);
+  --cc-meta:             var(--color-meta);
+
+  background: var(--cc-canvas);
+  color: var(--cc-text);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Emtia amber atmosfer — sag ust */
+.commodities-canvas::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 45%;
+  background: radial-gradient(ellipse at 80% 10%, rgba(249, 115, 22, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.commodities-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   PULSE BAR ICON OVERRIDES
+   ================================ */
+
+/* Altin icon — amber */
+.commodities-canvas .cc-pulse-cell-icon--btc {
+  background: #f97316;
+  color: #fff;
+}
+
+/* Gumus icon — koyu amber */
+.commodities-canvas .cc-pulse-cell-icon--eth {
+  background: #ea580c;
+  color: #fff;
+}
+
+.commodities-canvas .cc-pulse-value--btc {
+  color: #f97316;
+  text-shadow: 0 0 24px rgba(249, 115, 22, 0.3);
+}
+
+/* ================================
+   REGIME OVERRIDES
+   ================================ */
+
+.commodities-canvas .cc-regime-headline--bull {
+  color: #f97316;
+  text-shadow: 0 0 40px rgba(249, 115, 22, 0.25);
+}
+
+.commodities-canvas .cc-regime-headline-wrap::before {
+  background: radial-gradient(ellipse at 30% 50%, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+}
+
+.commodities-canvas .cc-dom-value {
+  color: #f97316;
+  text-shadow: 0 0 32px rgba(249, 115, 22, 0.3);
+}
+
+/* ================================
+   PANEL OVERRIDES
+   ================================ */
+
+.commodities-canvas .cc-asset-panel--btc {
+  border-top-color: #f97316;
+}
+
+.commodities-canvas .cc-asset-panel--eth {
+  border-top-color: #ea580c;
+}
+
+.commodities-canvas .cc-asset-logo--btc {
+  background: #f97316;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.3);
+}
+
+.commodities-canvas .cc-asset-logo--eth {
+  background: #ea580c;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(234, 88, 12, 0.25);
+}
+
+.commodities-canvas .cc-asset-panel--btc .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(249,115,22,0.05) 0%, transparent 80%);
+}
+
+.commodities-canvas .cc-asset-panel--eth .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(234,88,12,0.04) 0%, transparent 80%);
+}
+
+.commodities-canvas .cc-asset-tf-btn--active {
+  color: #f97316;
+  border-color: rgba(249,115,22,0.35);
+  background: rgba(249,115,22,0.07);
+}
+
+/* ================================
+   MOVERS / SCREENER OVERRIDES
+   ================================ */
+
+.commodities-canvas .cc-movers-v2-row:hover .cc-movers-v2-symbol {
+  color: #f97316;
+}
+
+.commodities-canvas .cc-screener-chip--active {
+  border-color: #f97316;
+  color: #f97316;
+  background: rgba(249,115,22,0.07);
+}
+
+.commodities-canvas .cc-screener-symbol-link:hover {
+  color: #f97316;
+}
+
+.commodities-canvas .cc-screener-tbody tr.cc-screener-row--featured {
+  border-left: 2px solid #f97316;
+}
+
+.commodities-canvas .cc-screener-tbody tr.cc-screener-row--featured .cc-screener-symbol {
+  color: #f97316;
+}
+
+/* ================================
+   BOTTOM / LINKS OVERRIDES
+   ================================ */
+
+.commodities-canvas .cc-bottom-panel-link:hover   { color: #f97316; }
+.commodities-canvas .cc-zone-label-link           { color: rgba(249,115,22,0.65); }
+.commodities-canvas .cc-zone-label-link:hover     { color: #f97316; }
+.commodities-canvas .cc-news-tag {
+  background: rgba(249,115,22,0.07);
+  color: rgba(249,115,22,0.8);
+}
+
+/* ================================
+   EMTİA TREND PUANI (Pulse cell 7)
+   ================================ */
+
+.cm-trend-score {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cm-trend-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.cm-trend-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cm-trend-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.cm-trend-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.cm-trend-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.cm-trend-label {
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* ================================
+   EMTİA SINIFI GRID
+   ================================ */
+
+.cm-class-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 640px) {
+  .cm-class-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ================================
+   EMTİA SCREENER — BİRİM KOLONU
+   ================================ */
+
+.cm-unit-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  color: var(--cc-meta);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+/* ================================
+   DXY KORELASYON PANEL
+   ================================ */
+
+.cm-correlation-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cm-corr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.cm-corr-row + .cm-corr-row {
+  border-top: 1px solid var(--cc-border-subtle);
+}
+
+.cm-corr-symbol {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cc-text);
+  min-width: 72px;
+}
+
+.cm-corr-bar-wrap {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  position: relative;
+}
+
+.cm-corr-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  position: absolute;
+}
+
+.cm-corr-val {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 38px;
+  text-align: right;
+}

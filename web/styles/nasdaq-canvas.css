@@ -1,0 +1,323 @@
+/**
+ * NASDAQ CANVAS — /markets/category/nasdaq
+ * Kimlik rengi: Elektrik Cyan #06b6d4
+ * Teknoloji, dijital inovasyon, Silicon Valley hissi.
+ */
+
+.nasdaq-canvas {
+  /* Elektrik cyan — NASDAQ ana kimlik */
+  --cc-gold:             #06b6d4;
+  --cc-gold-amber:       #0891b2;
+  --cc-gold-dim:         rgba(6, 182, 212, 0.65);
+  --cc-gold-glow:        rgba(6, 182, 212, 0.10);
+  --cc-gold-bg:          rgba(6, 182, 212, 0.07);
+
+  /* Pozitif — evrensel yesil */
+  --cc-teal:             #22c55e;
+  --cc-teal-muted:       rgba(34, 197, 94, 0.55);
+  --cc-teal-bg:          rgba(34, 197, 94, 0.07);
+
+  /* Negatif — evrensel kirmizi */
+  --cc-rose:             #ef4444;
+  --cc-rose-muted:       rgba(239, 68, 68, 0.55);
+  --cc-rose-bg:          rgba(239, 68, 68, 0.07);
+
+  /* S&P 500 ikincil — koyu cyan */
+  --cc-violet:           #0891b2;
+  --cc-violet-bg:        rgba(8, 145, 178, 0.08);
+  --cc-violet-glow:      rgba(8, 145, 178, 0.10);
+
+  /* Canvas zemin */
+  --cc-canvas:           var(--color-bg);
+  --cc-surface:          var(--color-surface);
+  --cc-surface-raised:   var(--color-bg-elevated);
+  --cc-border:           var(--color-border);
+  --cc-border-subtle:    var(--color-divider);
+
+  --cc-text:             var(--color-text);
+  --cc-text-secondary:   var(--color-text-secondary);
+  --cc-meta:             var(--color-meta);
+
+  background: var(--cc-canvas);
+  color: var(--cc-text);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Elektrik cyan atmosfer — sol ust */
+.nasdaq-canvas::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 160px;
+  width: 55%;
+  height: 45%;
+  background: radial-gradient(ellipse at 25% 10%, rgba(6, 182, 212, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.nasdaq-canvas > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================
+   PULSE BAR ICON OVERRIDES
+   ================================ */
+
+.nasdaq-canvas .cc-pulse-cell-icon--btc {
+  background: #06b6d4;
+  color: #000;
+}
+
+.nasdaq-canvas .cc-pulse-cell-icon--eth {
+  background: #0891b2;
+  color: #fff;
+}
+
+.nasdaq-canvas .cc-pulse-value--btc {
+  color: #06b6d4;
+  text-shadow: 0 0 24px rgba(6, 182, 212, 0.3);
+}
+
+/* ================================
+   REGIME OVERRIDES
+   ================================ */
+
+.nasdaq-canvas .cc-regime-headline--bull {
+  color: #06b6d4;
+  text-shadow: 0 0 40px rgba(6, 182, 212, 0.25);
+}
+
+.nasdaq-canvas .cc-regime-headline-wrap::before {
+  background: radial-gradient(ellipse at 30% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+}
+
+.nasdaq-canvas .cc-dom-value {
+  color: #06b6d4;
+  text-shadow: 0 0 32px rgba(6, 182, 212, 0.3);
+}
+
+/* ================================
+   PANEL OVERRIDES
+   ================================ */
+
+.nasdaq-canvas .cc-asset-panel--btc { border-top-color: #06b6d4; }
+.nasdaq-canvas .cc-asset-panel--eth { border-top-color: #0891b2; }
+
+.nasdaq-canvas .cc-asset-logo--btc {
+  background: #06b6d4;
+  color: #000;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.3);
+}
+
+.nasdaq-canvas .cc-asset-logo--eth {
+  background: #0891b2;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(8, 145, 178, 0.25);
+}
+
+.nasdaq-canvas .cc-asset-panel--btc .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(6,182,212,0.05) 0%, transparent 80%);
+}
+
+.nasdaq-canvas .cc-asset-panel--eth .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(8,145,178,0.04) 0%, transparent 80%);
+}
+
+.nasdaq-canvas .cc-asset-tf-btn--active {
+  color: #06b6d4;
+  border-color: rgba(6,182,212,0.35);
+  background: rgba(6,182,212,0.07);
+}
+
+/* ================================
+   MOVERS / SCREENER OVERRIDES
+   ================================ */
+
+.nasdaq-canvas .cc-movers-v2-row:hover .cc-movers-v2-symbol { color: #06b6d4; }
+
+.nasdaq-canvas .cc-screener-chip--active {
+  border-color: #06b6d4;
+  color: #06b6d4;
+  background: rgba(6,182,212,0.07);
+}
+
+.nasdaq-canvas .cc-screener-symbol-link:hover { color: #06b6d4; }
+
+.nasdaq-canvas .cc-screener-tbody tr.cc-screener-row--featured {
+  border-left: 2px solid #06b6d4;
+}
+
+.nasdaq-canvas .cc-screener-tbody tr.cc-screener-row--featured .cc-screener-symbol {
+  color: #06b6d4;
+}
+
+/* ================================
+   BOTTOM / LINKS OVERRIDES
+   ================================ */
+
+.nasdaq-canvas .cc-bottom-panel-link:hover   { color: #06b6d4; }
+.nasdaq-canvas .cc-zone-label-link           { color: rgba(6,182,212,0.65); }
+.nasdaq-canvas .cc-zone-label-link:hover     { color: #06b6d4; }
+
+.nasdaq-canvas .cc-news-tag {
+  background: rgba(6,182,212,0.07);
+  color: rgba(6,182,212,0.8);
+}
+
+/* ================================
+   PIYASA RUH HALI GAUGE (Pulse cell 6)
+   ================================ */
+
+.nq-mood-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ================================
+   FED PIVOT BAR (Pulse cell 7)
+   ================================ */
+
+.nq-fed-pivot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nq-fed-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.nq-fed-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.nq-fed-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.nq-fed-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.nq-fed-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #06b6d4;
+  transition: width 0.4s ease;
+}
+
+.nq-fed-label {
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 2px;
+  color: #06b6d4;
+}
+
+/* ================================
+   TECH SEKTOR GRID — 2x4
+   ================================ */
+
+.nq-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+@media (max-width: 800px) {
+  .nq-sector-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ================================
+   NASDAQ SCREENER — P/E SUTUNU
+   ================================ */
+
+.nq-pe-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.nq-pe-badge--high { color: var(--cc-rose); }
+.nq-pe-badge--low  { color: var(--cc-teal); }
+
+.nq-sector-chip {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(6,182,212,0.07);
+  color: rgba(6,182,212,0.7);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+/* ================================
+   KAZANC TAKVIMI
+   ================================ */
+
+.nq-earnings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.nq-earnings-row + .nq-earnings-row {
+  border-top: 1px solid var(--cc-border-subtle);
+}
+
+.nq-earnings-ticker {
+  font-size: 13px;
+  font-weight: 800;
+  color: #06b6d4;
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.nq-earnings-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.nq-earnings-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nq-earnings-date {
+  font-size: 10px;
+  color: var(--cc-meta);
+}
+
+.nq-earnings-est {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+  white-space: nowrap;
+}

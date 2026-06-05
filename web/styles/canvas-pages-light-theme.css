@@ -1,0 +1,505 @@
+/**
+ * Canvas sayfaları — light tema (Faz 3)
+ * Channel, arama, ayarlar, mesajlar, studio, upload, piyasa canvas'ları.
+ * Medya üstü overlay metinleri (haber kartı, thumb badge) dokunulmaz.
+ */
+
+/* ─── Ortak: market canvas hover/chip yüzeyleri ───────────────────────────── */
+
+html[data-theme="light"] :is(
+  .crypto-canvas,
+  .bist-canvas,
+  .forex-canvas,
+  .commodities-canvas,
+  .nasdaq-canvas
+) .cc-asset-tf-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] :is(
+  .crypto-canvas,
+  .bist-canvas,
+  .forex-canvas,
+  .commodities-canvas,
+  .nasdaq-canvas
+) .cc-signal-row-count {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] :is(
+  .crypto-canvas,
+  .bist-canvas,
+  .forex-canvas,
+  .commodities-canvas,
+  .nasdaq-canvas
+) .cc-screener-tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .forex-canvas .fc-session-dot--closed {
+  background: color-mix(in srgb, var(--color-text) 18%, transparent);
+}
+
+html[data-theme="light"] .commodities-canvas .cm-trend-bar {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+/* ─── CHANNEL ─────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .ch-canvas .ch-cover-gradient {
+  background: linear-gradient(135deg, #e8e6e2 0%, #f2f1ef 48%, #eceae6 100%);
+}
+
+html[data-theme="light"] .ch-canvas .ch-avatar {
+  box-shadow: 0 0 0 1px var(--color-border-card);
+}
+
+html[data-theme="light"] .ch-canvas .ch-handle-sep {
+  color: var(--color-divider);
+}
+
+html[data-theme="light"] .ch-canvas .ch-btn--follow {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .ch-canvas .ch-btn--follow:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+}
+
+html[data-theme="light"] .ch-canvas .ch-btn--following {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .ch-canvas .ch-btn--following:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ch-canvas .ch-room-pill:hover {
+  border-color: var(--color-border);
+}
+
+/* ─── SEARCH ──────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .sr-canvas .sr-search-bar:focus-within {
+  border-bottom-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+html[data-theme="light"] .sr-canvas .sr-search-clear:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .sr-canvas .sr-search-btn {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .sr-canvas .sr-search-btn:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .sr-canvas .sr-progress {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sr-canvas .sr-progress-bar {
+  background: var(--color-primary);
+}
+
+html[data-theme="light"] .sr-canvas .sr-tab-count {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sr-canvas .sr-tab--active .sr-tab-count {
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface) 86%);
+}
+
+html[data-theme="light"] .sr-canvas .sr-video-tag {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .sr-canvas .sr-signal-row:hover {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .sr-canvas .sr-signal-symbol-badge {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sr-canvas .sr-confidence-bar {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+html[data-theme="light"] .sr-canvas .sr-confidence-fill {
+  background: var(--color-primary);
+}
+
+html[data-theme="light"] .sr-canvas .sr-dir-badge--hold {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sr-canvas .sr-post-tag {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sr-canvas .sr-composer-chip,
+html[data-theme="light"] .sr-canvas .sr-discussion-chip {
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .sr-canvas .sr-composer-chip:hover,
+html[data-theme="light"] .sr-canvas .sr-suggest-chip:hover,
+html[data-theme="light"] .sr-canvas .sr-discussion-chip:hover {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .sr-canvas .sr-discovery-card:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+/* ─── SETTINGS ──────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .sg-shell .sg-quick-link:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .sg-shell .sg-nav-item:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .sg-shell .sg-nav-item--active {
+  background: var(--color-surface-muted);
+}
+
+@media (hover: hover) {
+  html[data-theme="light"] .sg-shell .sg-nav-item--active:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+html[data-theme="light"] .sg-shell .sg-input:focus,
+html[data-theme="light"] .sg-shell .sg-textarea:focus {
+  border-bottom-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+html[data-theme="light"] .sg-shell .sg-select:focus {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+html[data-theme="light"] .sg-shell .sg-toggle-btn--off {
+  background: color-mix(in srgb, var(--color-text) 18%, transparent);
+}
+
+/* ─── MESSAGES ──────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .msg-canvas .msg-bubble--mine {
+  background: var(--color-primary);
+  color: #fafafa;
+}
+
+html[data-theme="light"] .msg-canvas .msg-bubble--theirs {
+  background: var(--color-surface);
+  border-color: var(--color-border-card);
+}
+
+/* ─── STUDIO ──────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .studio-shell .studio-profile-mini {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .studio-shell .studio-profile-mini:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .studio-shell .studio-hbtn--ghost {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .studio-shell .studio-hbtn--ghost:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .studio-shell .studio-hbtn--accent {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .studio-shell .studio-hbtn--accent:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .studio-shell .st-tf-btn:hover,
+html[data-theme="light"] .studio-shell .st-content-card:hover,
+html[data-theme="light"] .studio-shell .st-tier-table tbody tr:hover,
+html[data-theme="light"] .studio-shell .st-content-row:hover,
+html[data-theme="light"] .studio-shell .st-list-item:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .studio-shell .st-content-card:hover {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .studio-shell .st-tier-table thead th {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .studio-shell .st-aud-bar {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+html[data-theme="light"] .studio-shell .st-qa-link--primary:hover,
+html[data-theme="light"] .studio-shell .st-qa-link--secondary:hover,
+html[data-theme="light"] .studio-shell .st-qa-link--ghost:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ─── UPLOAD ──────────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .up-canvas .up-user-avatar {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .up-canvas .up-input:focus,
+html[data-theme="light"] .up-canvas .up-select:focus {
+  border-bottom-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+html[data-theme="light"] .up-canvas .up-dropzone,
+html[data-theme="light"] .up-canvas .up-dir-btn,
+html[data-theme="light"] .up-canvas .up-chip,
+html[data-theme="light"] .up-canvas .up-risk-btn {
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .up-canvas .up-dir-btn:hover,
+html[data-theme="light"] .up-canvas .up-chip:hover,
+html[data-theme="light"] .up-canvas .up-risk-btn:hover,
+html[data-theme="light"] .up-canvas .up-dropzone:hover,
+html[data-theme="light"] .up-canvas .up-conv-dot:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .up-canvas .up-conv-dot--active {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  background: var(--color-primary-light);
+}
+
+/* ─── ASSET DETAIL ────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .ad-canvas .ad-section-link {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .ad-canvas .ad-btn--ghost {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .ad-canvas .ad-btn--ghost:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ad-canvas .ad-analyst-avatar {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .ad-canvas .ad-tf-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ad-canvas .ad-signal-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ─── SIGNALS PAGE ────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .sp-canvas .sp-intel-strip {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .sp-canvas .sp-card-avatar {
+  background: linear-gradient(135deg, var(--color-surface-muted), var(--color-surface));
+}
+
+/* ─── PORTFOLIO ───────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .pf-canvas .pf-header-btn {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .pf-canvas .pf-header-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .pf-canvas .pf-tf-btn:hover,
+html[data-theme="light"] .pf-canvas .pf-holdings-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .pf-canvas .pf-holdings-table thead th {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .pf-canvas .pf-weight-bar {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+/* ─── WATCHLIST ───────────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .wl-page .wl-btn--ghost {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .wl-page .wl-btn--ghost:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .wl-page .wl-table thead th {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .wl-page .wl-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ─── MARKET NEWS (chrome only — kart overlay metni aynı) ─────────────────── */
+
+html[data-theme="light"] .mn-page .mn-header-site {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .mn-page .mn-header-btn {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .mn-page .mn-header-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .mn-page .mn-tabs {
+  border-bottom-color: var(--color-divider);
+}
+
+html[data-theme="light"] .mn-page .mn-tab {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .mn-page .mn-tab:hover {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .mn-page .mn-tab-count {
+  background: var(--color-surface-muted);
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .mn-page .mn-tab--all.active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
+html[data-theme="light"] .mn-page .mn-tab--crypto.active {
+  color: #b45309;
+  border-bottom-color: #d97706;
+}
+
+html[data-theme="light"] .mn-page .mn-tab--macro.active {
+  color: #1d4ed8;
+  border-bottom-color: #2563eb;
+}
+
+html[data-theme="light"] .mn-page .mn-tab--earnings.active {
+  color: #15803d;
+  border-bottom-color: #16a34a;
+}
+
+html[data-theme="light"] .mn-page .mn-tab--flows.active {
+  color: #6d28d9;
+  border-bottom-color: #7c3aed;
+}
+
+html[data-theme="light"] .mn-page .mn-tab--local.active {
+  color: #0f766e;
+  border-bottom-color: #0d9488;
+}
+
+html[data-theme="light"] .mn-page .mn-badge-impact--1 {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+/* ─── ECONOMIC CALENDAR ─────────────────────────────────────────────────────── */
+
+html[data-theme="light"] .ec-page .ec-header-btn {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .ec-page .ec-header-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ec-page .ec-impact-circle--empty {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+html[data-theme="light"] .ec-page .ec-filter-btn {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .ec-page .ec-filter-btn:hover {
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .ec-page .ec-table thead th {
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .ec-page .ec-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .ec-page .ec-sym-tag {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--inflation {
+  color: #a16207;
+  background: color-mix(in srgb, #f59e0b 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--growth {
+  color: #1d4ed8;
+  background: color-mix(in srgb, #3b82f6 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--employment {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--monetary {
+  color: #6d28d9;
+  background: color-mix(in srgb, #8b5cf6 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--trade {
+  color: #0f766e;
+  background: color-mix(in srgb, #14b8a6 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .ec-page .ec-cat-badge--speech {
+  color: #c2410c;
+  background: color-mix(in srgb, #fb923c 12%, #ffffff 88%);
+}

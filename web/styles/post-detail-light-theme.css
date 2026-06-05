@@ -1,0 +1,142 @@
+/**
+ * Post detail — light tema düzeltmeleri
+ * Medya overlay (counter, nav, lightbox) koyu kalır.
+ */
+
+html[data-theme="light"] .pd-canvas {
+  --pd-surface-soft: var(--color-card-plate);
+  --pd-bg-elevated: var(--color-surface);
+  --pd-accent-soft: var(--color-primary-light);
+  --pd-accent-glow: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-sep {
+  color: var(--color-divider);
+}
+
+html[data-theme="light"] .pd-canvas .pd-asset-chip {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .pd-canvas .pd-asset-chip:hover {
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-badge--verified {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-badge--elite {
+  color: #a16207;
+  background: color-mix(in srgb, #f59e0b 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-badge--pro {
+  color: #0f766e;
+  background: color-mix(in srgb, #14b8a6 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--signal {
+  color: #a16207;
+  background: color-mix(in srgb, #f59e0b 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--live {
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 10%, #ffffff 90%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--pulse {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+}
+
+html[data-theme="light"] .pd-canvas .pd-media-shell {
+  box-shadow:
+    0 0 0 1px var(--color-border-card),
+    var(--shadow-card-md);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--liked {
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--liked:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-fall) 10%, transparent);
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--saved {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--saved:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--accent {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn--accent:hover:not(:disabled) {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .pd-canvas .pd-follow-btn {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-follow-btn:hover {
+  background: color-mix(in srgb, var(--color-primary) 14%, #ffffff 86%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-follow-btn--active {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text-secondary);
+  border-color: var(--color-divider);
+}
+
+html[data-theme="light"] .pd-canvas .pd-signal-dir--buy {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-signal-dir--sell {
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-stance-btn--agree {
+  color: #15803d;
+  border-color: color-mix(in srgb, #22c55e 28%, transparent);
+  background: color-mix(in srgb, #22c55e 8%, #ffffff 92%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-stance-btn--disagree {
+  color: #b91c1c;
+  border-color: color-mix(in srgb, #ef4444 28%, transparent);
+  background: color-mix(in srgb, #ef4444 8%, #ffffff 92%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-text) 3%, transparent) 0%,
+    var(--color-divider) 50%,
+    color-mix(in srgb, var(--color-text) 3%, transparent) 100%
+  );
+}
+
+html[data-theme="light"] .pd-canvas .pd-lightbox-close {
+  background: color-mix(in srgb, #ffffff 14%, #000000 86%);
+  color: #ffffff;
+}
+
+html[data-theme="light"] .pd-canvas .pd-submit-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}

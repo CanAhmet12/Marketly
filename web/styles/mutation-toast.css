@@ -1,0 +1,30 @@
+.mutation-toast-host {
+  pointer-events: none;
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 9999;
+  transform: translateX(-50%);
+  width: min(92vw, 22rem);
+}
+
+.mutation-toast-host__pill {
+  border-radius: 999px;
+  box-shadow: var(--shadow-card-md);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 0.55rem 0.9rem;
+  text-align: center;
+}
+
+.mutation-toast-host__pill--error {
+  background: color-mix(in srgb, var(--color-text) 92%, var(--color-surface));
+  color: var(--color-surface);
+}
+
+.mutation-toast-host__pill--info {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}

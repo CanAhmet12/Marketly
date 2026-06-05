@@ -1,0 +1,566 @@
+/**
+ * PİYASA HABER ODASI — Tüm kartlar: fotoğraf + gradient + başlık üstte
+ * Bloomberg / Reuters / CNBC tarzı dark haber sayfası
+ */
+
+.mn-page {
+  --mn-bg:       var(--color-bg);
+  --mn-surface:  var(--color-surface);
+  --mn-border:   var(--color-border);
+  --mn-text:     var(--color-text);
+  --mn-text-2:   var(--color-text-secondary);
+  --mn-meta:     var(--color-meta);
+  background: var(--mn-bg);
+  color: var(--mn-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================
+   PAGE HEADER
+   ================================ */
+
+.mn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.mn-header-left { display: flex; align-items: center; gap: 14px; }
+
+.mn-header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.mn-header-site {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.mn-header-title {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--mn-text);
+  line-height: 1;
+}
+
+.mn-header-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255,255,255,0.10);
+}
+
+.mn-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 5px;
+  background: #dc2626;
+  font-size: 10px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mn-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: mn-blink 1.2s infinite;
+}
+
+@keyframes mn-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.mn-header-actions { display: flex; gap: 8px; }
+
+.mn-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-decoration: none;
+}
+
+.mn-header-btn:hover { background: rgba(255,255,255,0.08); color: #94a3b8; }
+
+/* ================================
+   CATEGORY TABS
+   ================================ */
+
+.mn-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(255,255,255,0.05);
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 4px 0 28px;
+}
+
+.mn-tabs::-webkit-scrollbar { display: none; }
+
+.mn-tab {
+  padding: 11px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.01em;
+}
+
+.mn-tab:hover { color: #94a3b8; }
+
+.mn-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, #3b82f6 55%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.mn-tab-count {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+  color: #64748b;
+}
+
+.mn-tab--all.active     { color: #f1f5f9; border-bottom-color: #f1f5f9; }
+.mn-tab--crypto.active  { color: #f59e0b; border-bottom-color: #f59e0b; }
+.mn-tab--macro.active   { color: #60a5fa; border-bottom-color: #3b82f6; }
+.mn-tab--earnings.active{ color: #4ade80; border-bottom-color: #22c55e; }
+.mn-tab--flows.active   { color: #c4b5fd; border-bottom-color: #8b5cf6; }
+.mn-tab--local.active   { color: #2dd4bf; border-bottom-color: #14b8a6; }
+
+/* ================================
+   HERO SECTION — dengeli oranlar
+   ================================ */
+
+.mn-hero {
+  display: grid;
+  grid-template-columns: 3fr 2fr;   /* 60% ana, 40% yan */
+  gap: 14px;
+  margin-bottom: 40px;
+  align-items: stretch;             /* Eşit yükseklik */
+}
+
+@media (max-width: 1000px) { .mn-hero { grid-template-columns: 1fr; } }
+
+/* ─── Hero ana kart ─── */
+.mn-hero-main {
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 420px;    /* Ana kart biraz daha tall */
+}
+
+.mn-hero-main .mn-card-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.mn-hero-main:hover .mn-card-img { transform: scale(1.03); }
+
+/* Sinematik gradient */
+.mn-hero-main .mn-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.90) 0%,
+    rgba(0,0,0,0.55) 38%,
+    rgba(0,0,0,0.15) 65%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+.mn-hero-main .mn-card-top {
+  position: absolute;
+  top: 14px; left: 14px;
+  z-index: 3;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+
+.mn-hero-main .mn-card-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 14px 18px 18px;
+  z-index: 3;
+}
+
+.mn-hero-main .mn-card-headline {
+  font-size: clamp(22px, 2.6vw, 30px);   /* Daha büyük hero başlığı */
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.mn-hero-main .mn-card-meta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.60);
+  display: flex; align-items: center; gap: 6px;
+}
+
+.mn-hero-main .mn-card-symbols { margin-top: 8px; }
+
+/* Kategori rengi sol şerit */
+.mn-hero-main .mn-card-stripe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 4px;
+  z-index: 4;
+  border-radius: 0;
+}
+
+/* ─── Hero yan kartlar — 2 kart, büyük ─── */
+.mn-hero-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 420px;   /* Ana kart ile tam aynı */
+}
+
+.mn-hero-side-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  flex: 1;          /* 2 kart, her biri ~200px */
+  min-height: 0;
+  transition: transform 0.2s;
+}
+
+.mn-hero-side-card:hover { transform: scale(1.01); }
+
+.mn-hero-side-card .mn-card-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.mn-hero-side-card:hover .mn-card-img { transform: scale(1.04); }
+
+.mn-hero-side-card .mn-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.65) 40%,
+    rgba(0,0,0,0.20) 70%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+.mn-hero-side-card .mn-card-top {
+  position: absolute;
+  top: 8px; left: 10px;
+  z-index: 3;
+  display: flex; gap: 4px;
+}
+
+.mn-hero-side-card .mn-card-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 8px 12px 10px;
+  z-index: 3;
+}
+
+.mn-hero-side-card .mn-card-headline {
+  font-size: 16px;    /* Daha büyük başlık */
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  margin-bottom: 5px;
+}
+
+.mn-hero-side-card .mn-card-meta {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  display: flex; align-items: center; gap: 4px;
+}
+
+.mn-hero-side-card .mn-card-meta-src {
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+}
+
+/* ================================
+   SECTION HEADER
+   ================================ */
+
+.mn-section { margin-bottom: 40px; }
+
+.mn-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.mn-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--mn-text);
+  text-transform: uppercase;
+}
+
+.mn-section-stripe {
+  height: 18px;
+  width: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mn-see-all {
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #475569;
+  transition: color 0.1s;
+}
+
+.mn-see-all:hover { color: #94a3b8; }
+
+/* ================================
+   NEWS GRID
+   ================================ */
+
+.mn-grid {
+  display: grid;
+  gap: 16px;
+}
+
+/* Tüm grid'ler max 3 kolon — 4 çok sıkışık */
+.mn-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mn-grid--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }  /* 4 → 3'e düşürüldü */
+
+@media (max-width: 900px)  { .mn-grid--3, .mn-grid--4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .mn-grid--3, .mn-grid--4 { grid-template-columns: 1fr; } }
+
+/* ================================
+   NEWS CARD — HABER KARTI
+   Tüm kartlar: fotoğraf + gradient + başlık üstte
+   ================================ */
+
+.mn-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  display: block;
+  aspect-ratio: 4 / 3;   /* 4:3 — 16:9'dan daha tall, daha fazla içerik */
+}
+
+.mn-card:hover { transform: translateY(-3px); }
+
+/* Kategori üst şerit */
+.mn-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 4;
+  border-radius: 10px 10px 0 0;
+}
+
+.mn-card--crypto::before   { background: #f59e0b; }
+.mn-card--macro::before    { background: #3b82f6; }
+.mn-card--earnings::before { background: #22c55e; }
+.mn-card--flows::before    { background: #8b5cf6; }
+.mn-card--local::before    { background: #14b8a6; }
+
+/* Fotoğraf */
+.mn-card .mn-card-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.mn-card:hover .mn-card-img { transform: scale(1.05); }
+
+/* Sinematik gradient */
+.mn-card .mn-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.90) 0%,
+    rgba(0,0,0,0.55) 40%,
+    rgba(0,0,0,0.12) 68%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+/* Üst badges */
+.mn-card .mn-card-top {
+  position: absolute;
+  top: 10px; left: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Alt içerik — görüntü üzerinde */
+.mn-card .mn-card-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 12px 13px;
+  z-index: 3;
+}
+
+.mn-card .mn-card-headline {
+  font-size: 16px;   /* Büyük, okunabilir */
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  margin-bottom: 6px;
+}
+
+.mn-card .mn-card-meta {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  display: flex; align-items: center; gap: 5px;
+}
+
+.mn-card .mn-card-meta-src {
+  font-weight: 700;
+  color: rgba(255,255,255,0.78);
+}
+
+.mn-card .mn-card-symbols {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+/* ================================
+   BADGE SİSTEMİ
+   ================================ */
+
+.mn-badge-impact {
+  display: inline-flex;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mn-badge-impact--3 { background: rgba(220,38,38,0.85);   color: #fff; }
+.mn-badge-impact--2 { background: rgba(249,115,22,0.80);  color: #fff; }
+.mn-badge-impact--1 { background: rgba(0,0,0,0.50); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.80); }
+
+.mn-badge-cat {
+  display: inline-flex;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+}
+
+.mn-badge-cat--crypto   { color: #fbbf24; }
+.mn-badge-cat--macro    { color: #93c5fd; }
+.mn-badge-cat--earnings { color: #86efac; }
+.mn-badge-cat--flows    { color: #c4b5fd; }
+.mn-badge-cat--local    { color: #5eead4; }
+
+.mn-sym-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.50);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.65);
+  font-family: var(--font-mono, monospace);
+}
+
+.mn-watchlist-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(15,157,117,0.75);
+  color: #fff;
+}
+
+.mn-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mn-card--link:hover {
+  transform: translateY(-2px);
+}
+
+.mn-card--link:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 3px;
+}

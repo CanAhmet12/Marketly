@@ -1,0 +1,2704 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISCOVER VISUAL REFERENCE — Scoped styles  (root: .dvr-surface)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tokens ─────────────────────────────────────────────────────────────── */
+.dvr-surface {
+  --dvr-bg:            var(--color-bg);
+  --dvr-bg-card:       var(--color-surface);
+  --dvr-bg-card-hover: var(--color-surface-hover);
+  --dvr-bg-signal:     var(--color-bg);
+  --dvr-bg-creator:    var(--color-bg);
+  --dvr-border:        var(--color-border);
+  --dvr-border-hover:  var(--color-border-strong);
+  --dvr-surface:       var(--color-bg);
+  --dvr-surface-soft:  transparent;
+  --dvr-border-soft:   var(--color-divider);
+  --dvr-card-plate:    var(--color-card-plate);
+  --dvr-thumb-well:    var(--color-thumb-bg);
+
+  --dvr-text:          var(--color-text);
+  --dvr-text-2:        var(--color-text-secondary);
+  --dvr-text-3:        var(--color-text-tertiary);
+  --dvr-text-muted:    var(--color-muted);
+
+  --dvr-teal:          var(--color-primary);
+  --dvr-teal-dim:      color-mix(in srgb, var(--color-primary) 28%, transparent);
+  --dvr-teal-glow:     color-mix(in srgb, var(--color-primary) 6%, transparent);
+
+  /* Live rail — büyük medya yüzeyi (~3–3.5 kart / viewport) */
+  --dvr-live-card-w:      clamp(420px, 44vw, 560px);
+  --dvr-live-compact-w:   clamp(248px, 28vw, 320px);
+  --dvr-pulse-card-w:     clamp(156px, 16.2vw, 200px);
+  --dvr-video-card-w:     clamp(292px, 32vw, 392px);
+  --dvr-creator-tile-w:   clamp(222px, 23.5vw, 278px);
+  --dvr-rail-gap:         0.75rem;
+
+  /* Layout */
+  --dvr-pad:           clamp(0.75rem, 1.6vw, 1.25rem);
+  --dvr-max:           min(1720px, 100%);
+  --dvr-stream-gap:    clamp(1rem, 1.62vw, 1.42rem);
+
+  /* Motion */
+  --dvr-ease:          cubic-bezier(0.22, 1, 0.36, 1);
+  --dvr-dur:           200ms;
+
+  --dvr-chrome-top:    var(--chrome-top-offset, 56px);
+  /* Üst chrome dikey ritim (ticker → tab → chip → içerik) */
+  --dvr-chrome-ticker-py:   clamp(0.4rem, 0.78vw, 0.52rem);
+  --dvr-chrome-tab-gap:     clamp(0.46rem, 0.9vw, 0.58rem);
+  --dvr-chrome-chip-py:     clamp(0.28rem, 0.52vw, 0.4rem);
+  /* Chip satırı → ilk içerik: ~+4–8px nefes (önceki min’e göre) */
+  --dvr-chrome-content-gap: clamp(1.18rem, 1.78vw, 1.52rem);
+
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100dvh - var(--dvr-chrome-top));
+  background: var(--dvr-bg);
+  color: var(--dvr-text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+@media (max-width: 720px) {
+  .dvr-surface {
+    --dvr-live-card-w: clamp(288px, 86vw, 400px);
+    --dvr-live-compact-w: clamp(216px, 70vw, 292px);
+  }
+}
+
+/* ─── Üst chrome bloğu (ticker + sticky) — tek editorial sistem ─────────── */
+.dvr-top-chrome {
+  position: relative;
+  z-index: 40;
+}
+
+/* ─── Market atmosphere bar (ticker taşıyıcı) ───────────────────────────── */
+.dvr-market-atmosphere {
+  border-bottom: none;
+}
+
+/* ─── Ticker strip — sakin, premium piyasa şeridi ─────────────────────────── */
+.dvr-ticker-strip {
+  overflow: hidden;
+  background: var(--dvr-bg);
+  border-bottom: 1px solid var(--dvr-border-soft);
+}
+
+.dvr-ticker-inner {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-inline: var(--dvr-pad);
+  padding-block: var(--dvr-chrome-ticker-py);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+}
+.dvr-ticker-inner::-webkit-scrollbar { display: none; }
+
+.dvr-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.72rem;
+  border-right: 1px solid rgba(255 255 255 / 0.028);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) { .dvr-ticker-item:hover { background: rgba(255 255 255 / 0.022); } }
+
+.dvr-ticker-symbol {
+  font-size: 0.59375rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(210 215 228 / 0.88);
+}
+.dvr-ticker-price  { font-size: 0.59375rem; font-weight: 500; color: rgba(165 172 190 / 0.72); }
+.dvr-ticker-change { font-size: 0.53125rem; font-weight: 700; }
+.dvr-ticker-change--up   { color: rgba(52 211 153 / 0.88); }
+.dvr-ticker-change--down { color: rgba(248 113 113 / 0.88); }
+
+/* ─── Sticky tab bar — Discover navigasyonu ──────────────────────────────── */
+.dvr-sticky-bar {
+  position: sticky;
+  top: var(--dvr-chrome-top);
+  z-index: 40;
+  background: var(--dvr-bg);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border-bottom: 1px solid var(--dvr-border-soft);
+  box-shadow: 0 1px 0 var(--color-divider), 0 8px 28px color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+
+/* Sekme altı — Masadaki Konular + Piyasayı Konuşanlar (kompakt giriş katmanı) */
+.dvr-chrome-discovery {
+  border-top: 1px solid rgba(255 255 255 / 0.03);
+  background: transparent;
+  padding-block: clamp(0.22rem, 0.42vw, 0.32rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.18rem, 0.38vw, 0.28rem);
+}
+
+.dvr-chrome-discovery .dvr-mkt-block--chrome {
+  margin: 0;
+}
+
+.dvr-chrome-discovery .dvr-mkt-block__shell--chrome {
+  padding-bottom: 0;
+}
+
+/* Hikâye şeridi — ana sayfa hv-ref-stories ile aynı mantık, Keşfet kromu */
+.dvr-stories {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 0.15rem var(--dvr-pad) 0.35rem;
+  margin-inline: calc(-1 * var(--dvr-pad));
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--dvr-pad), #000 calc(100% - 1.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--dvr-pad), #000 calc(100% - 1.5rem), transparent 100%);
+}
+
+.dvr-stories::-webkit-scrollbar {
+  display: none;
+}
+
+.dvr-stories__hit {
+  flex: 0 0 auto;
+  width: 4.35rem;
+  padding: 0.2rem 0.15rem 0.15rem;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+  border-radius: 0.55rem;
+}
+
+.dvr-stories__hit:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 42%, transparent);
+  outline-offset: 2px;
+}
+
+.dvr-stories__hit[data-viewed="true"] .dvr-stories__ring {
+  opacity: 0.55;
+}
+
+.dvr-stories__ring {
+  position: relative;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-inline: auto;
+  border-radius: 999px;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 72%, transparent),
+    color-mix(in srgb, #f59e0b 55%, transparent)
+  );
+}
+
+.dvr-stories__ring[data-tone="slate"] {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.55), rgba(100, 116, 139, 0.45));
+}
+
+.dvr-stories__ring[data-add="true"] {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  padding: 0;
+}
+
+.dvr-stories__inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--dvr-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dvr-stories__label {
+  margin-top: 0.28rem;
+  font-size: 0.625rem;
+  line-height: 1.25;
+  font-weight: 650;
+  color: rgba(210, 214, 224, 0.72);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dvr-stories__badge {
+  position: absolute;
+  right: -2px;
+  top: -1px;
+  z-index: 1;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.24rem;
+  border-radius: 0.22rem;
+}
+
+.dvr-stories__badge[data-kind="live"] {
+  background: rgba(248, 113, 113, 0.92);
+  color: #0a0a0e;
+}
+
+.dvr-stories__badge[data-kind="new"] {
+  background: rgba(62, 228, 205, 0.88);
+  color: #0a0a0e;
+}
+
+.dvr-stories__plus {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: rgba(62, 228, 205, 0.55);
+  line-height: 1;
+}
+
+.dvr-stories__hit--skeleton {
+  width: 4.35rem;
+  height: 4.6rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+  animation: dvr-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dvr-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.dvr-stories--loading {
+  pointer-events: none;
+}
+
+/* Üst şerit: başlıksız rail — tek satır yatay scroll */
+.dvr-mkt-block__shell--rail-only {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.dvr-topic-rail-chrome {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.dvr-topic-rail-chrome__mask {
+  position: relative;
+  margin-right: calc(-1 * var(--dvr-pad));
+  padding-right: var(--dvr-pad);
+  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 2.25rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 2.25rem), transparent 100%);
+}
+
+@media (max-width: 639px) {
+  .dvr-topic-rail-chrome__mask {
+    margin-right: calc(-1 * var(--dvr-pad));
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+.dvr-topic-rail-chrome__track {
+  width: 100%;
+  min-width: 0;
+  scroll-padding-inline: 0.15rem;
+}
+
+/* Topic chip — yatay rail hücresi (grid/wrap devre dışı) */
+.dvr-topic-chip.dvr-topic-chip--rail-row {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 8.5rem;
+  max-width: 12.25rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.26rem 0.4rem 0.24rem;
+  border-radius: 0.55rem;
+}
+
+.dvr-topic-chip--rail-row .dvr-topic-chip__title {
+  padding-left: 0.28rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: -0.026em;
+  line-height: 1.2;
+}
+
+.dvr-topic-chip--rail-row .dvr-topic-chip__tickers {
+  padding-left: 0.28rem;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+}
+
+.dvr-topic-chip--rail-row .dvr-topic-chip__heat {
+  margin-left: 0.28rem;
+  margin-top: 0.02rem;
+  font-size: 0.46875rem;
+  padding: 0.05rem 0.26rem;
+}
+
+.dvr-topic-chip--rail-row .dvr-topic-chip__accent {
+  top: 0.28rem;
+  bottom: 0.28rem;
+}
+
+.dvr-mkt-block--chrome .dvr-mkt-block__head--chrome {
+  margin-bottom: 0.38rem;
+  align-items: center;
+}
+
+.dvr-mkt-block__title--chrome {
+  font-size: clamp(0.72rem, 0.28vw + 0.64rem, 0.82rem) !important;
+  letter-spacing: -0.028em !important;
+}
+
+.dvr-mkt-block__subtitle--chrome {
+  margin-top: 0.12rem !important;
+  font-size: 0.59375rem !important;
+  line-height: 1.35 !important;
+  max-width: 34rem;
+}
+
+.dvr-mkt-block__see-all--chrome {
+  margin-top: 0 !important;
+  font-size: 0.625rem !important;
+}
+
+.dvr-face-rail--chrome .dvr-face-rail__mask--chrome {
+  margin-right: calc(-1 * var(--dvr-pad));
+  padding-right: var(--dvr-pad);
+}
+
+.dvr-face-item--chrome {
+  width: 112px !important;
+  padding: 0.12rem 0.1rem 0.22rem !important;
+}
+
+@media (min-width: 900px) {
+  .dvr-face-item--chrome {
+    width: 124px !important;
+  }
+}
+
+.dvr-face-item--chrome .dvr-face-item__halo {
+  top: 26px;
+  width: 64px;
+  height: 64px;
+}
+
+.dvr-face-item--chrome .dvr-face-item__ring {
+  margin-bottom: 0.22rem !important;
+  padding: 2px !important;
+}
+
+.dvr-face-item--chrome .dvr-face-badge {
+  margin-bottom: 0.18rem !important;
+  font-size: 0.46875rem !important;
+  padding: 0.06rem 0.28rem !important;
+}
+
+.dvr-face-item--chrome .dvr-face-item__name {
+  font-size: 0.65625rem !important;
+}
+
+.dvr-face-item--chrome .dvr-face-item__context {
+  margin-top: 0.14rem !important;
+  font-size: 0.53125rem !important;
+  line-height: 1.28 !important;
+}
+
+.dvr-face-item__photo-wrap {
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255 255 255 / 0.1),
+    0 4px 14px rgba(0 0 0 / 0.38);
+}
+
+.dvr-face-item__ring .dvr-face-item__photo {
+  display: block;
+  border-radius: 999px;
+}
+
+.dvr-sticky-bar__inner {
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding-inline: var(--dvr-pad);
+  padding-top: var(--dvr-chrome-tab-gap);
+  padding-bottom: calc(var(--dvr-chrome-tab-gap) * 0.55);
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────────────────── */
+.dvr-tab-bar {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 0.12rem;
+}
+
+.dvr-tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.52rem 0.82rem;
+  margin-bottom: -1px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(165 172 190 / 0.82);
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) {
+  .dvr-tab:hover { color: rgba(210 215 228 / 0.92); }
+}
+.dvr-tab--active,
+.dvr-tab[data-active="true"] {
+  color: rgba(252 252 253 / 0.98);
+  font-weight: 700;
+  border-bottom-color: color-mix(in srgb, var(--dvr-teal) 88%, transparent);
+}
+
+.dvr-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dvr-teal) 48%, transparent);
+  outline-offset: 2px;
+}
+
+.dvr-live-tab-dot {
+  animation: dvr-live-dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dvr-live-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.38; }
+}
+
+/* ─── Content wrapper — sticky giriş katmanından sonra nefes alanı ───────── */
+.dvr-content {
+  padding-block: var(--dvr-chrome-content-gap) clamp(2.25rem, 5vw, 4rem);
+}
+
+/* ─── Stream ─────────────────────────────────────────────────────────────── */
+.dvr-stream {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dvr-stream-gap);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* ─── Feed skeleton + error ──────────────────────────────────────────────── */
+.dvr-skeleton-block {
+  border-radius: 0.85rem;
+  background: var(--color-divider);
+  animation: dvr-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes dvr-skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+
+.dvr-skeleton-line {
+  border-radius: 0.35rem;
+  background: var(--color-divider);
+  animation: dvr-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.dvr-skeleton-line--ticker {
+  height: 2rem;
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+.dvr-skeleton-line--label {
+  height: 0.75rem;
+  width: 7rem;
+  margin-bottom: 0.65rem;
+}
+
+.dvr-skeleton-line--stories {
+  height: 4.5rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.dvr-skeleton-tab {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.dvr-skeleton-rail {
+  padding-block: 0.15rem;
+}
+
+.dvr-skeleton-hscroll {
+  display: flex;
+  gap: var(--dvr-rail-gap);
+  overflow: hidden;
+}
+
+.dvr-skeleton-hscroll--chips {
+  gap: 0.45rem;
+  padding-block: 0.35rem;
+}
+
+.dvr-skeleton-block--live-hero {
+  width: min(100%, var(--dvr-live-card-w));
+  aspect-ratio: 16 / 9;
+}
+
+.dvr-skeleton-block--pulse-tile {
+  width: var(--dvr-pulse-card-w);
+  aspect-ratio: 9 / 16;
+  flex-shrink: 0;
+}
+
+.dvr-skeleton-block--video-tile {
+  width: var(--dvr-video-card-w);
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+}
+
+.dvr-skeleton-block--live-compact {
+  width: min(100%, 280px);
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+}
+
+.dvr-skeleton-block--chip {
+  height: 1.65rem;
+  width: clamp(5.5rem, 14vw, 8rem);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.dvr-skeleton-live-grid {
+  display: grid;
+  gap: var(--dvr-rail-gap);
+}
+
+.dvr-error-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin: 0 var(--dvr-pad);
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 28%, var(--dvr-border));
+  background: color-mix(in srgb, var(--color-danger) 6%, var(--dvr-bg));
+}
+
+.dvr-error-banner__text {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dvr-text-2);
+}
+
+.dvr-error-banner__retry {
+  border: 1px solid var(--dvr-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--dvr-text);
+  background: var(--dvr-bg-card);
+  cursor: pointer;
+  transition: background var(--dvr-dur) var(--dvr-ease);
+}
+
+@media (hover: hover) {
+  .dvr-error-banner__retry:hover {
+    background: var(--dvr-bg-card-hover);
+  }
+}
+
+.dvr-error-banner__retry:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dvr-teal) 48%, transparent);
+  outline-offset: 2px;
+}
+
+/* ─── Rail section ───────────────────────────────────────────────────────── */
+.dvr-rail-section { width: 100%; background: var(--dvr-surface-soft); }
+
+.dvr-rail-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.62rem;
+  /* Aligned with hscroll padding */
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  /* reset block margin from above */
+  margin-block-start: 0;
+}
+
+.dvr-rail-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.dvr-rail-series {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(62 228 205 / 0.58);
+  line-height: 1.2;
+}
+
+.dvr-rail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(165 172 190 / 0.78);
+  line-height: 1.15;
+}
+.dvr-rail-label--live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(254 202 202 / 0.94);
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+.dvr-rail-label--live > span:first-of-type {
+  flex-shrink: 0;
+  align-self: center;
+  box-shadow: 0 0 0 1px rgba(0 0 0 / 0.35);
+}
+.dvr-rail-label--teal   { color: rgba(62 228 205 / 0.62); }
+.dvr-rail-label--signal { color: rgba(251 191 36 / 0.62); }
+
+.dvr-rail-header:has(.dvr-rail-label--live) .dvr-rail-see-all {
+  color: rgba(175 182 200 / 0.88);
+}
+
+.dvr-rail-see-all {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(165 172 190 / 0.82);
+  text-decoration: none;
+  transition: color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) { .dvr-rail-see-all:hover { color: var(--dvr-teal); } }
+
+/* ─── HScroll — rail geometry (aligned with rail header) ─────────────────── */
+.dvr-hscroll-wrap {
+  position: relative;
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding-inline: var(--dvr-pad);
+  /* Kart gölgeleri overflow-x kırpmasın (tasarım aynı, yalnızca nefes alanı) */
+  padding-bottom: 1.75rem;
+  background: transparent;
+}
+
+.dvr-hscroll {
+  padding-block: 0.35rem 1.45rem;
+  scroll-padding-block-end: 1rem;
+}
+
+.dvr-hscroll-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: var(--dvr-pad);
+  bottom: 1.25rem;
+  width: 36px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(270deg, var(--dvr-bg) 28%, transparent 100%);
+}
+
+.dvr-hscroll--snap {
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
+}
+.dvr-hscroll--snap > * {
+  scroll-snap-align: start;
+}
+
+.dvr-live-peak-band--stream-start {
+  margin-top: clamp(0.3rem, 0.62vw, 0.5rem);
+}
+
+.dvr-hscroll-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 2rem;
+  height: 2rem;
+  margin-top: -1rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(5 5 6 / 0.52);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  color: rgba(252 252 253 / 0.78);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dvr-dur) var(--dvr-ease), background-color var(--dvr-dur) var(--dvr-ease);
+  box-shadow: 0 0 0 1px rgba(255 255 255 / 0.045);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.dvr-hscroll-nav--prev {
+  left: max(0.35rem, calc(var(--dvr-pad) - 0.25rem));
+}
+.dvr-hscroll-nav--prev::before {
+  content: "‹";
+  display: block;
+  transform: translateY(-1px);
+}
+.dvr-hscroll-nav--next {
+  right: max(0.35rem, calc(var(--dvr-pad) - 0.25rem));
+}
+.dvr-hscroll-nav--next::before {
+  content: "›";
+  display: block;
+  transform: translateY(-1px);
+}
+@media (hover: hover) {
+  .dvr-hscroll-wrap:hover .dvr-hscroll-nav { opacity: 0.88; }
+  .dvr-hscroll-nav:hover { background: rgba(8 9 12 / 0.72); color: var(--dvr-teal); }
+}
+@media (max-width: 720px), (hover: none) {
+  .dvr-hscroll-nav { display: none; }
+}
+
+/* ─── Rail item widths ───────────────────────────────────────────────────── */
+.dvr-live-rail-item    { width: var(--dvr-live-card-w); }
+.dvr-live-compact-item { width: var(--dvr-live-compact-w); }
+.dvr-pulse-rail-item   { width: var(--dvr-pulse-card-w); }
+.dvr-video-rail-item   { width: var(--dvr-video-card-w); }
+.dvr-creator-rail-item { width: var(--dvr-creator-tile-w); }
+
+/* Rail sarmalayıcı — kart bileşeni tam genişlik (tasarım/token değişmez) */
+.dvr-live-rail-item > .dvr-live-card,
+.dvr-live-compact-item > .dvr-live-card,
+.dvr-pulse-rail-item > .dvr-pulse-card,
+.dvr-video-rail-item > .dvr-video-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ─── Padded section (non-rail content) ─────────────────────────────────── */
+.dvr-section-padded {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+  background: var(--dvr-surface-soft);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LIVE CARDS — medya yüzeyi (rail reset: daha az metin, daha büyük görsel)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-live-card {
+  background: transparent;
+}
+
+.dvr-live-card--rail {
+  border: 1px solid rgba(255 255 255 / 0.055);
+  background: var(--dvr-card-plate);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.045),
+    0 10px 28px rgba(0 0 0 / 0.42),
+    0 26px 52px rgba(0 0 0 / 0.28),
+    0 1px 0 rgba(255 255 255 / 0.06) inset;
+  transition: box-shadow var(--dvr-dur) var(--dvr-ease), transform var(--dvr-dur) var(--dvr-ease);
+}
+
+@media (hover: hover) {
+  .dvr-live-card--rail:hover {
+    box-shadow:
+      0 0 0 1px rgba(255 255 255 / 0.065),
+      0 14px 36px rgba(0 0 0 / 0.48),
+      0 32px 64px rgba(0 0 0 / 0.32),
+      0 1px 0 rgba(255 255 255 / 0.07) inset;
+    transform: translateY(-3px);
+  }
+  .dvr-live-card--rail.dvr-live-card--heat:hover {
+    box-shadow:
+      0 0 0 1px rgba(254 202 202 / 0.12),
+      0 14px 36px rgba(0 0 0 / 0.46),
+      0 32px 64px rgba(0 0 0 / 0.34),
+      0 0 48px rgba(248 113 113 / 0.1),
+      0 1px 0 rgba(255 255 255 / 0.06) inset;
+  }
+}
+
+.dvr-live-card--compact {
+  background: var(--dvr-card-plate);
+  border: 1px solid rgba(255 255 255 / 0.055);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.04),
+    0 8px 24px rgba(0 0 0 / 0.38),
+    0 1px 0 rgba(255 255 255 / 0.05) inset;
+  transition: box-shadow var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+}
+
+@media (hover: hover) {
+  .dvr-live-card--compact:hover {
+    border-color: rgba(255 255 255 / 0.08);
+    box-shadow:
+      0 0 0 1px rgba(255 255 255 / 0.055),
+      0 12px 32px rgba(0 0 0 / 0.44),
+      0 1px 0 rgba(255 255 255 / 0.06) inset;
+  }
+}
+
+.dvr-live-media--rail {
+  aspect-ratio: 16 / 10;
+  background: var(--dvr-thumb-well);
+  box-shadow: inset 0 0 0 1px rgba(255 255 255 / 0.045);
+}
+
+.dvr-live-media--compact {
+  aspect-ratio: 16 / 10;
+  background: var(--dvr-thumb-well);
+}
+
+.dvr-live-thumb-well {
+  background: var(--dvr-thumb-well);
+}
+
+.dvr-pulse-thumb-well,
+.dvr-video-thumb-well {
+  background: var(--dvr-thumb-well);
+}
+
+.dvr-live-thumb--rail svg,
+.dvr-live-thumb--rail [class*="svg"],
+.dvr-live-thumb--compact svg,
+.dvr-live-thumb--compact [class*="svg"] {
+  opacity: 1;
+}
+
+.dvr-live-read-grad {
+  height: 58%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0 0 0 / 0.08) 35%,
+    rgba(0 0 0 / 0.42) 72%,
+    rgba(0 0 0 / 0.72) 100%
+  );
+}
+
+.dvr-live-thumb-grain {
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image:
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255 255 255 / 0.018) 0,
+      rgba(255 255 255 / 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0 0 0 / 0.04) 0,
+      rgba(0 0 0 / 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+
+.dvr-live-play-anchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 520px) {
+  .dvr-live-play-anchor {
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.dvr-live-thumb-vignette {
+  background: radial-gradient(ellipse 78% 92% at 50% 42%, transparent 35%, rgba(0 0 0 / 0.22) 100%);
+  mix-blend-mode: normal;
+  opacity: 0.42;
+}
+
+.dvr-live-broadcast-veil {
+  background: linear-gradient(180deg, rgba(0 0 0 / 0.14) 0%, transparent 48%);
+  opacity: 0.35;
+  mix-blend-mode: normal;
+}
+
+.dvr-live-card--rail .dvr-live-broadcast-veil {
+  opacity: 0.28;
+}
+
+/* Kompakt kart: tek hafif üst ton (TSX’te ağır opacity kaldırıldı) */
+.dvr-live-card--compact .dvr-live-broadcast-veil {
+  background: linear-gradient(180deg, rgba(0 0 0 / 0.12) 0%, transparent 55%);
+  opacity: 0.22;
+}
+
+.dvr-live-avatar-ring {
+  box-shadow: 0 0 0 1px rgba(248 113 113 / 0.32);
+}
+
+.dvr-live-badge {
+  background: color-mix(in srgb, #b91c1c 80%, #0a0808);
+  box-shadow:
+    inset 0 0 0 1px rgba(255 255 255 / 0.08),
+    0 1px 6px rgba(0 0 0 / 0.4);
+  letter-spacing: 0.08em;
+}
+
+.dvr-live-tag-min {
+  border-radius: 0.2rem;
+  padding: 0.18rem 0.42rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(252 252 253 / 0.78);
+  background: rgba(0 0 0 / 0.38);
+  border: 1px solid rgba(255 255 255 / 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dvr-live-title-link {
+  text-decoration: none;
+}
+
+.dvr-live-title-link:focus-visible {
+  outline: 2px solid rgba(45 212 191 / 0.65);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
+.dvr-live-title--hero {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.1vw + 0.62rem, 1.28rem);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  text-shadow:
+    0 2px 4px rgba(0 0 0 / 0.95),
+    0 4px 24px rgba(0 0 0 / 0.65);
+}
+
+.dvr-live-title--compact {
+  margin: 0;
+  font-size: clamp(0.72rem, 0.55vw + 0.58rem, 0.88rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  text-shadow:
+    0 1px 3px rgba(0 0 0 / 0.92),
+    0 0 16px rgba(0 0 0 / 0.5);
+}
+
+.dvr-live-meta-row {
+  font-variant-numeric: tabular-nums;
+}
+
+.dvr-live-play-fab {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dvr-live-play-fab:focus-visible {
+  outline: 2px solid rgba(45 212 191 / 0.75);
+  outline-offset: 2px;
+}
+
+.dvr-live-play-fab--rail {
+  background: rgba(255 255 255 / 0.14);
+  box-shadow:
+    0 10px 32px rgba(0 0 0 / 0.5),
+    inset 0 1px 0 rgba(255 255 255 / 0.28);
+  border: 1px solid rgba(255 255 255 / 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition:
+    transform 200ms var(--dvr-ease),
+    background-color 200ms var(--dvr-ease),
+    box-shadow 200ms var(--dvr-ease);
+}
+
+@media (hover: hover) {
+  .dvr-live-play-anchor.dvr-live-play-fab--rail:hover {
+    background: rgba(255 255 255 / 0.24);
+    box-shadow:
+      0 14px 40px rgba(0 0 0 / 0.55),
+      inset 0 1px 0 rgba(255 255 255 / 0.35),
+      0 0 28px rgba(255 255 255 / 0.08);
+    transform: translate(-50%, -50%) scale(1.07);
+  }
+}
+
+@media (max-width: 520px) {
+  .dvr-live-play-anchor.dvr-live-play-fab--rail:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+/* Kompakt canlı kart — play medya merkezi */
+.dvr-live-play-anchor--compact {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 520px) {
+  .dvr-live-play-anchor--compact {
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.dvr-live-card__footer--slim {
+  background: linear-gradient(180deg, rgba(6 7 12 / 0.55), rgba(4 4 8 / 0.92));
+  border-top: 1px solid rgba(255 255 255 / 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dvr-viewer-badge {
+  background: rgba(0 0 0 / 0.52);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.5625rem;
+}
+
+.dvr-viewer-badge--live {
+  background: rgba(0 0 0 / 0.48);
+  border: 1px solid rgba(255 255 255 / 0.07);
+  font-size: 0.59375rem;
+}
+
+.dvr-tag-chip {
+  background: rgba(0 0 0 / 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PULSE CARDS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-pulse-card { min-width: 0; }
+
+.dvr-pulse-media-veil {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(0 0 0 / 0.34) 100%
+  );
+  mix-blend-mode: normal;
+  opacity: 0.5;
+}
+
+.dvr-pulse-hook {
+  color: rgba(210 215 228 / 0.78);
+}
+
+.dvr-pulse-format-pill {
+  background: rgba(0 0 0 / 0.42);
+  border: 1px solid rgba(255 255 255 / 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* 9:16 aspect — asymmetry via CSS classes assigned in surface */
+.dvr-pulse-thumb--featured,
+.dvr-pulse-thumb--standard,
+.dvr-pulse-thumb--tall {
+  aspect-ratio: 9 / 16;
+  position: relative;
+  overflow: hidden;
+  background: var(--dvr-thumb-well);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.055),
+    0 8px 26px rgba(0 0 0 / 0.4),
+    0 1px 0 rgba(255 255 255 / 0.04) inset;
+  transition: box-shadow var(--dvr-dur) var(--dvr-ease), transform var(--dvr-dur) var(--dvr-ease);
+}
+
+.dvr-pulse-thumb--topic-tile {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: var(--dvr-thumb-well);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.055),
+    0 8px 26px rgba(0 0 0 / 0.4),
+    0 1px 0 rgba(255 255 255 / 0.04) inset;
+  transition: box-shadow var(--dvr-dur) var(--dvr-ease), transform var(--dvr-dur) var(--dvr-ease);
+}
+
+.dvr-pulse-thumb--tall { aspect-ratio: 3 / 5; }   /* slightly taller */
+
+@media (hover: hover) {
+  .dvr-pulse-card:hover .dvr-pulse-thumb--featured,
+  .dvr-pulse-card:hover .dvr-pulse-thumb--standard,
+  .dvr-pulse-card:hover .dvr-pulse-thumb--tall,
+  .dvr-pulse-card:hover .dvr-pulse-thumb--topic-tile {
+    box-shadow:
+      0 0 0 1px rgba(255 255 255 / 0.075),
+      0 12px 34px rgba(0 0 0 / 0.48),
+      0 1px 0 rgba(255 255 255 / 0.05) inset;
+    transform: translateY(-2px) scale(1.015);
+  }
+}
+
+.dvr-pulse-tag       { background: rgba(0 0 0 / 0.48); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.dvr-duration-badge  { background: rgba(0 0 0 / 0.58); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.dvr-pulse-title     { color: var(--dvr-text); }
+.dvr-pulse-meta      { color: var(--dvr-text-3); }
+.dvr-pulse-views     { color: var(--dvr-text-muted); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VIDEO CARDS  — editorial / cinematic, distinct from live
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-video-card { min-width: 0; }
+
+.dvr-video-thumb {
+  background: var(--dvr-thumb-well);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.055),
+    0 10px 30px rgba(0 0 0 / 0.42),
+    0 1px 0 rgba(255 255 255 / 0.04) inset;
+  transition: box-shadow var(--dvr-dur) var(--dvr-ease), transform var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-video-card:hover .dvr-video-thumb {
+    box-shadow:
+      0 0 0 1px rgba(62 228 205 / 0.14),
+      0 14px 38px rgba(0 0 0 / 0.5),
+      0 1px 0 rgba(255 255 255 / 0.05) inset;
+    transform: translateY(-2px);
+  }
+}
+
+.dvr-video-tag   { background: rgba(0 0 0 / 0.48); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+
+.dvr-video-series-eyebrow {
+  background: rgba(0 0 0 / 0.32);
+  border: 1px solid rgba(255 255 255 / 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 3px 12px rgba(0 0 0 / 0.18);
+}
+
+/* Editorial typography — calm, deep */
+.dvr-video-title {
+  font-size: clamp(0.75rem, 0.45vw + 0.65rem, 0.875rem);
+  font-weight: 600;
+  line-height: 1.38;
+  color: var(--dvr-text);
+  letter-spacing: -0.003em;
+}
+.dvr-video-meta  { font-size: 0.6875rem; color: var(--dvr-text-3); }
+.dvr-video-stats { font-size: 0.625rem; color: var(--dvr-text-muted); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SIGNAL STREAM  — tape / intelligence feed
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-sig-stream-section {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.dvr-sig-stream-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.dvr-sig-stream {
+  display: flex;
+  flex-direction: column;
+  /* No card border separation — tape-like continuity */
+  gap: 1px;
+  background: transparent;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--dvr-border-soft);
+}
+
+/* ─── Signal tile ─────────────────────────────────────────────────────────── */
+.dvr-sig-tile {
+  background: transparent;
+  transition: background-color var(--dvr-dur) var(--dvr-ease);
+  border-left: 3px solid transparent; /* override by accent class */
+}
+@media (hover: hover) {
+  .dvr-sig-tile:hover { background: var(--dvr-bg-card-hover); }
+}
+
+.dvr-sig-accent { border-radius: 0; }  /* left accent bar styling handled inline */
+
+.dvr-sig-symbol {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--dvr-text);
+  line-height: 1;
+}
+
+.dvr-sig-dir {
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.dvr-sig-dir--buy  { color: #6ee7b7; }
+.dvr-sig-dir--sell { color: #fca5a5; }
+.dvr-sig-dir--hold { color: #fde68a; }
+
+.dvr-sig-rationale {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--dvr-text-2);
+}
+
+.dvr-sig-level      { font-size: 0.625rem; tabular-nums: 1; }
+.dvr-sig-level-label { color: rgba(165 172 190 / 0.45); font-weight: 700; font-size: 0.5rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.dvr-sig-level-value { color: var(--dvr-text-2); }
+.dvr-sig-tf {
+  color: var(--dvr-text-muted);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--dvr-text) 6%, transparent);
+  padding: 1px 0.375rem;
+  font-size: 0.53125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dvr-sig-age {
+  margin-top: 0.25rem;
+  font-size: 0.59375rem;
+  font-weight: 500;
+  color: var(--dvr-text-muted);
+  text-align: right;
+}
+.dvr-sig-analyst {
+  margin-top: 0.125rem;
+  max-width: 7rem;
+  font-size: 0.5625rem;
+  color: var(--dvr-text-3);
+  text-align: right;
+}
+.dvr-sig-conf       { font-size: 0.5rem; font-weight: 700; color: var(--dvr-text-muted); }
+
+.dvr-sig-rr-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--dvr-teal);
+  background: var(--dvr-teal-glow);
+  border: 1px solid var(--dvr-teal-dim);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  tabular-nums: 1;
+}
+
+/* Compact signal pill */
+.dvr-sig-compact {
+  background: transparent;
+  border: 1px solid var(--dvr-border-soft);
+  transition: background-color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-sig-compact:hover { background: var(--dvr-bg-card-hover); border-color: var(--dvr-border); }
+}
+.dvr-sig-compact-symbol { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.02em; color: var(--dvr-text); }
+.dvr-sig-compact-rationale { font-size: 0.59375rem; font-weight: 500; color: var(--dvr-text-2); }
+.dvr-sig-compact-age { font-size: 0.5625rem; color: var(--dvr-text-muted); }
+
+.dvr-sig-conf-track { background: color-mix(in srgb, var(--dvr-text) 8%, transparent); }
+
+/* ─── Signal interruption block ──────────────────────────────────────────── */
+.dvr-sig-interruption {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.dvr-sig-interruption--tight .dvr-sig-compact-list {
+  gap: 1px;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px var(--dvr-border-soft);
+}
+.dvr-sig-interruption--tight .dvr-sig-compact {
+  padding: 0.4rem 0.65rem;
+  border-color: rgba(255 255 255 / 0.03);
+}
+
+.dvr-sig-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--dvr-border-soft);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CREATOR CARDS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tile (vertical card for rail) ─────────────────────────────────────── */
+.dvr-creator-tile {
+  background: transparent;
+  border: 1px solid var(--dvr-border-soft);
+  transition: background-color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-creator-tile:hover { background: var(--dvr-bg-card-hover); border-color: var(--dvr-border-hover); }
+}
+
+.dvr-creator-live-badge {
+  background: rgba(127 29 29 / 0.4);
+  border: 1px solid rgba(248 113 113 / 0.22);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.dvr-creator-status-badge {
+  background: var(--dvr-teal-glow);
+  color: var(--dvr-teal);
+  border: 1px solid var(--dvr-teal-dim);
+  border-radius: 0.25rem;
+  padding: 0.18rem 0.45rem;
+}
+
+.dvr-creator-follow-btn {
+  background: var(--dvr-teal-glow);
+  border: 1px solid var(--dvr-teal-dim);
+  color: var(--dvr-teal);
+  transition: background-color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+}
+.dvr-creator-follow-btn--active {
+  background: rgba(62 228 205 / 0.12);
+  border-color: rgba(62 228 205 / 0.35);
+  color: var(--dvr-teal);
+}
+@media (hover: hover) {
+  .dvr-creator-follow-btn:hover { background: rgba(62 228 205 / 0.12); border-color: rgba(62 228 205 / 0.45); }
+}
+
+.dvr-creator-name     { font-size: 0.875rem; font-weight: 700; color: var(--dvr-text); letter-spacing: -0.005em; }
+.dvr-creator-handle   { font-size: 0.6875rem; color: var(--dvr-text-muted); margin-top: 1px; }
+.dvr-creator-specialty { font-size: 0.6875rem; font-weight: 500; color: var(--dvr-text-3); }
+.dvr-creator-formats  { font-size: 0.625rem; color: var(--dvr-text-3); }
+.dvr-creator-followers { font-size: 0.625rem; font-weight: 600; color: var(--dvr-text-muted); }
+
+.dvr-creator-tile__footer {
+  border-top: 1px solid var(--dvr-border-soft);
+}
+
+.dvr-creator-row__name { color: var(--dvr-text); }
+.dvr-creator-row__specialty { color: var(--dvr-text-3); }
+.dvr-creator-row__followers { color: var(--dvr-text-muted); }
+.dvr-creator-row__follow--active {
+  background: color-mix(in srgb, var(--dvr-text) 10%, transparent);
+  color: var(--dvr-text-muted);
+}
+
+.dvr-creator-graph__name {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--dvr-text);
+}
+.dvr-creator-graph__meta { color: var(--dvr-text-3); }
+
+/* ─── Row (horizontal compact for interruption) ──────────────────────────── */
+.dvr-creator-row {
+  background: transparent;
+  border: 1px solid var(--dvr-border-soft);
+  transition: background-color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-creator-row:hover { background: var(--dvr-bg-card-hover); border-color: var(--dvr-border); }
+}
+
+/* ─── Interruption block ─────────────────────────────────────────────────── */
+.dvr-creator-interruption {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.dvr-creator-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--dvr-border);
+}
+
+/* Grid for creators tab */
+.dvr-creators-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+@media (min-width: 640px)  { .dvr-creators-grid { grid-template-columns: repeat(2, 1fr); gap: 0.625rem; } }
+@media (min-width: 1100px) { .dvr-creators-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ATMOSPHERE / DISCOVERY CHIPS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-atm-strip {
+  overflow: hidden;
+}
+
+.dvr-atm-inner {
+  display: flex;
+  gap: 0.38rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding-block: 0.08rem 0.12rem;
+}
+.dvr-atm-inner::-webkit-scrollbar { display: none; }
+
+.dvr-atm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.52rem;
+  border-radius: 999px;
+  background: rgba(255 255 255 / 0.03);
+  border: 1px solid rgba(255 255 255 / 0.048);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.98;
+  transition: background-color var(--dvr-dur) var(--dvr-ease), border-color var(--dvr-dur) var(--dvr-ease), opacity var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-atm-chip:hover {
+    background: rgba(255 255 255 / 0.048);
+    border-color: rgba(255 255 255 / 0.078);
+    opacity: 1;
+  }
+}
+
+.dvr-atm-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: rgba(178 186 204 / 0.9);
+  letter-spacing: 0.02em;
+}
+.dvr-atm-sub {
+  font-size: 0.53125rem;
+  font-weight: 600;
+  tabular-nums: 1;
+  color: rgba(155 165 188 / 0.82);
+}
+.dvr-atm-sub--neutral { color: var(--dvr-text-3); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MINI SIGNAL STRIP
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dvr-mini-signal-strip { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.dvr-mini-signal-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+
+.dvr-mini-signal-label { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(165 172 190 / 0.65); }
+.dvr-mini-signal-link  { font-size: 0.6875rem; font-weight: 600; color: var(--dvr-text-muted); text-decoration: none; transition: color var(--dvr-dur) var(--dvr-ease); }
+@media (hover: hover) { .dvr-mini-signal-link:hover { color: var(--dvr-teal); } }
+
+.dvr-mini-signal-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.dvr-mini-signal-pill {
+  padding: 0.3rem 0.65rem;
+  background: transparent;
+  border: 1px solid var(--dvr-border-soft);
+  text-decoration: none;
+  transition: border-color var(--dvr-dur) var(--dvr-ease), background-color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) { .dvr-mini-signal-pill:hover { border-color: var(--dvr-border); background: var(--dvr-bg-card-hover); } }
+
+.dvr-mini-sig-bar      { border-radius: 999px; }
+.dvr-mini-signal-symbol { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.03em; color: var(--dvr-text); }
+.dvr-mini-signal-dir    { font-size: 0.5rem; line-height: 1; }
+.dvr-mini-signal-change { font-size: 0.5625rem; font-weight: 600; }
+.dvr-mini-signal-age    { font-size: 0.5rem; color: var(--dvr-text-muted); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ENTRANCE ANIMATIONS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes dvr-entrance {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dvr-live-card,
+.dvr-pulse-card,
+.dvr-video-card,
+.dvr-sig-tile,
+.dvr-sig-compact,
+.dvr-creator-tile,
+.dvr-creator-row {
+  animation: dvr-entrance 320ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Hover depth for thumbnails — subtle parallax feel */
+@media (hover: hover) {
+  .dvr-live-card--rail:hover,
+  .dvr-video-card:hover {
+    will-change: transform;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 03 — discovery rhythm, topic orbits, atmosphere, color psychology
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tek zemin — ek renkli atmosfer katmanı yok */
+.dvr-surface::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: transparent;
+  opacity: 0;
+}
+.dvr-market-atmosphere,
+.dvr-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Top “market internet” tension */
+.dvr-market-internet-teaser {
+  border-bottom: 1px solid var(--dvr-border-soft);
+  background: var(--dvr-bg);
+}
+.dvr-market-internet-teaser__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding: 0.35rem var(--dvr-pad);
+}
+.dvr-market-internet-teaser__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(248 113 113 / 0.85);
+  box-shadow: 0 0 12px rgba(248 113 113 / 0.45);
+  animation: dvr-teaser-pulse 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dvr-market-internet-teaser__pulse { animation: none; }
+}
+@keyframes dvr-teaser-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.92); }
+}
+.dvr-market-internet-teaser__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(165 172 190 / 0.72);
+}
+.dvr-market-internet-teaser__chip {
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgba(255 255 255 / 0.045);
+  border: 1px solid rgba(255 255 255 / 0.06);
+  color: rgba(252 252 253 / 0.78);
+  font-weight: 700;
+}
+.dvr-market-internet-teaser__chip--muted {
+  color: rgba(165 172 190 / 0.55);
+  border-color: rgba(255 255 255 / 0.04);
+}
+
+/* Live peak band — sayfa zeminiyle bütünleşik (ayrı kırmızı panel yok) */
+.dvr-live-peak-band {
+  position: relative;
+  padding-block: clamp(0.2rem, 0.65vw, 0.48rem);
+  margin-inline: calc(-1 * var(--dvr-pad));
+  padding-inline: var(--dvr-pad);
+  background: transparent;
+  border-bottom: none;
+}
+
+/* Sadece “Şu an canlı” peak rail — kart aralığı + nav daha pasif */
+.dvr-hscroll.dvr-hscroll--snap.dvr-hscroll--live-rail {
+  gap: 1.125rem !important;
+  scroll-padding-inline: var(--dvr-pad);
+}
+@media (min-width: 900px) {
+  .dvr-hscroll.dvr-hscroll--snap.dvr-hscroll--live-rail {
+    gap: 1.25rem !important;
+  }
+}
+
+.dvr-live-peak-band .dvr-hscroll-wrap {
+  position: relative;
+}
+
+.dvr-live-peak-band .dvr-hscroll-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 1.25rem auto;
+  width: min(36px, 5.5vw);
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(270deg, var(--dvr-bg) 22%, transparent 100%);
+}
+
+.dvr-live-peak-band .dvr-hscroll-nav {
+  opacity: 0.62;
+}
+@media (hover: hover) {
+  .dvr-live-peak-band .dvr-hscroll-wrap:hover .dvr-hscroll-nav {
+    opacity: 0.88;
+  }
+}
+
+/* Valley — ambient, lower contrast */
+.dvr-stream-valley {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+  opacity: 1;
+  filter: none;
+}
+.dvr-stream-valley--tight {
+  margin-block: -0.2rem;
+  opacity: 0.94;
+}
+
+/* Live urgency + heat — rail gölgeleriyle uyumlu, ince iç ışık */
+.dvr-live-card--heat {
+  border: 1px solid rgba(255 255 255 / 0.05);
+  background: var(--dvr-card-plate);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.04),
+    0 10px 28px rgba(0 0 0 / 0.4),
+    0 26px 52px rgba(0 0 0 / 0.3),
+    0 0 40px rgba(248 113 113 / 0.08),
+    0 1px 0 rgba(255 255 255 / 0.055) inset;
+}
+.dvr-live-card--urgency-lead {
+  border: 1px solid rgba(254 202 202 / 0.12);
+  background: var(--dvr-card-plate);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.05),
+    0 12px 32px rgba(0 0 0 / 0.44),
+    0 30px 58px rgba(0 0 0 / 0.32),
+    0 0 48px rgba(248 113 113 / 0.1),
+    0 1px 0 rgba(255 255 255 / 0.06) inset;
+}
+.dvr-live-heat-glow {
+  background: radial-gradient(ellipse 80% 90% at 50% 100%, rgba(248 113 113 / 0.08), transparent 62%);
+  animation: dvr-live-heat-breathe 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dvr-live-heat-glow { animation: none; }
+}
+@keyframes dvr-live-heat-breathe {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 0.95; }
+}
+.dvr-live-urgency-row {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dvr-live-chat-pill {
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgba(0 0 0 / 0.35);
+  border: 1px solid rgba(255 255 255 / 0.08);
+  color: rgba(252 252 253 / 0.88);
+}
+.dvr-live-heat-pill {
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgba(248 113 113 / 0.18);
+  border: 1px solid rgba(248 113 113 / 0.35);
+  color: rgba(254 202 202 / 0.95);
+}
+
+/* Pulse variants — controlled asymmetry */
+.dvr-pulse-variant-badge--breaking {
+  background: rgba(248 113 113 / 0.22);
+  border: 1px solid rgba(248 113 113 / 0.35);
+  color: rgba(254 226 226 / 0.95);
+}
+.dvr-pulse-variant-badge--trending {
+  background: rgba(34 211 238 / 0.12);
+  border: 1px solid rgba(62 228 205 / 0.28);
+  color: rgba(165 243 252 / 0.92);
+}
+.dvr-pulse-card--breaking {
+  filter: drop-shadow(0 0 10px rgba(248 113 113 / 0.05));
+}
+.dvr-pulse-card--trending .dvr-pulse-thumb--standard,
+.dvr-pulse-card--trending .dvr-pulse-thumb--featured,
+.dvr-pulse-card--trending .dvr-pulse-thumb--tall,
+.dvr-pulse-card--trending .dvr-pulse-thumb--topic-tile {
+  box-shadow:
+    0 0 0 1px rgba(62 228 205 / 0.22),
+    0 8px 26px rgba(0 0 0 / 0.38),
+    0 1px 0 rgba(255 255 255 / 0.04) inset;
+}
+
+/* Prestige video layer — tighter vertical rhythm */
+.dvr-deep-prestige-wrap {
+  position: relative;
+  padding-block: clamp(0.42rem, 0.72vw, 0.68rem);
+  margin-inline: calc(-1 * var(--dvr-pad));
+  padding-inline: var(--dvr-pad);
+  background: var(--dvr-surface-soft);
+  border-block: none;
+}
+.dvr-deep-prestige-wrap::after {
+  display: none;
+}
+.dvr-deep-prestige-wrap .dvr-rail-header {
+  margin-bottom: 0.65rem;
+}
+.dvr-deep-prestige-wrap .dvr-rail-series {
+  color: rgba(62 228 205 / 0.72);
+  letter-spacing: 0.16em;
+}
+.dvr-video-card--prestige .dvr-video-thumb {
+  border-radius: 0.875rem;
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.065),
+    0 16px 44px rgba(0 0 0 / 0.48),
+    0 1px 0 rgba(255 255 255 / 0.05) inset;
+}
+.dvr-video-title--prestige {
+  font-size: clamp(0.92rem, 0.58vw + 0.66rem, 1.08rem);
+  font-weight: 800;
+  letter-spacing: -0.024em;
+  line-height: 1.22;
+}
+.dvr-video-meta--prestige { font-size: 0.6875rem; color: rgba(210 215 228 / 0.82); }
+.dvr-video-stats--prestige { font-size: 0.625rem; color: rgba(165 172 190 / 0.72); }
+
+/* Pulse — always-on preview cue + topic density */
+.dvr-pulse-play-hint {
+  opacity: 0.88;
+  transition: transform 180ms var(--dvr-ease), opacity 160ms var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-pulse-card.group:hover .dvr-pulse-play-hint {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+/* Signal tape — subtle “alive” shimmer */
+.dvr-sig-stream-section--tape .dvr-sig-stream-header {
+  margin-bottom: 0.65rem;
+}
+.dvr-sig-stream--tape .dvr-sig-tile {
+  position: relative;
+  overflow: hidden;
+}
+.dvr-sig-stream--tape .dvr-sig-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255 255 255 / 0.016) 45%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: dvr-sig-tape-shimmer 4.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dvr-sig-stream--tape .dvr-sig-tile::after { animation: none; }
+}
+.dvr-sig-stream--tape .dvr-sig-tile:nth-child(2n)::after { animation-delay: 0.6s; }
+.dvr-sig-stream--tape .dvr-sig-tile:nth-child(3n)::after { animation-delay: 1.1s; }
+@keyframes dvr-sig-tape-shimmer {
+  0% { transform: translateX(-100%); }
+  55% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Tümü — ambient signal band (ince, tablo değil) */
+.dvr-sig-stream-section--ambient {
+  padding-inline: var(--dvr-pad);
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+}
+.dvr-sig-stream-section--ambient .dvr-sig-stream-header {
+  margin-bottom: 0.45rem;
+}
+.dvr-sig-ambient-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: transparent;
+}
+
+.dvr-sig-feed-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  text-decoration: none;
+  font-size: 0.625rem;
+  background: var(--dvr-surface);
+  border-bottom: 1px solid var(--dvr-border-soft);
+  transition: background-color var(--dvr-dur) var(--dvr-ease);
+}
+.dvr-sig-feed-line:last-child { border-bottom: 0; }
+@media (hover: hover) {
+  .dvr-sig-feed-line:hover { background: var(--dvr-bg-card-hover); }
+}
+.dvr-sig-feed-line__sym {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--dvr-text);
+  flex: 0 0 auto;
+}
+.dvr-sig-feed-line__dir {
+  flex: 0 0 auto;
+  font-size: 0.5625rem;
+}
+.dvr-sig-feed-line__name {
+  flex: 0 1 auto;
+  max-width: min(36%, 9rem);
+  min-width: 0;
+  color: rgba(165 172 190 / 0.78);
+  font-weight: 600;
+}
+.dvr-sig-feed-line__why {
+  flex: 1 1 120px;
+  min-width: 0;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  color: rgba(165 172 190 / 0.62);
+}
+.dvr-sig-feed-line__age {
+  font-size: 0.5625rem;
+  color: rgba(120 130 150 / 0.55);
+}
+
+.dvr-sig-feed-line--featured .dvr-sig-feed-line__why {
+  color: rgba(210 215 228 / 0.78);
+}
+
+.dvr-sig-feed-line--featured {
+  background: var(--dvr-surface);
+  border-left: 2px solid rgba(62 228 205 / 0.32);
+  border-bottom-color: var(--dvr-border-soft);
+}
+.dvr-sig-feed-line--featured .dvr-sig-feed-line__sym {
+  color: rgba(252 252 253 / 0.98);
+}
+.dvr-sig-feed-line--featured .dvr-sig-feed-line__name {
+  color: rgba(210 215 228 / 0.82);
+}
+
+.dvr-sig-interruption--ambient {
+  opacity: 1;
+  filter: none;
+}
+
+.dvr-rail-label--peak {
+  color: rgba(251 191 36 / 0.78);
+  letter-spacing: 0.14em;
+}
+
+.dvr-discovery-hot-peak {
+  position: relative;
+  padding-block: 0.05rem;
+}
+.dvr-discovery-hot-peak::before {
+  display: none;
+}
+
+/* ─── Topic ecosystem — compact cluster (Phase 04) ───────────────────────── */
+.dvr-topic-cluster {
+  position: relative;
+  margin-inline: 0;
+  padding: 0;
+  border-block: none;
+  background: var(--dvr-surface-soft);
+  overflow: hidden;
+  --dvr-live-card-w: 100%;
+  --dvr-live-compact-w: 100%;
+  --dvr-video-card-w: 100%;
+  --dvr-pulse-card-w: 100%;
+}
+.dvr-topic-cluster::before { display: none; }
+
+.dvr-topic-cluster__shell {
+  position: relative;
+  z-index: 1;
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding: clamp(0.32rem, 0.55vw, 0.48rem) var(--dvr-pad);
+  border-radius: 0.45rem;
+}
+.dvr-topic-cluster--fed .dvr-topic-cluster__shell,
+.dvr-topic-cluster--btc .dvr-topic-cluster__shell,
+.dvr-topic-cluster--gold .dvr-topic-cluster__shell {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dvr-topic-cluster__header {
+  margin-bottom: 0.48rem;
+  padding-bottom: 0.32rem;
+  border-bottom: none;
+}
+.dvr-topic-cluster__kicker {
+  display: block;
+  font-size: 0.59375rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(62 228 205 / 0.52);
+  margin-bottom: 0.2rem;
+}
+.dvr-topic-cluster__title {
+  margin: 0;
+  font-size: clamp(0.9rem, 0.65vw + 0.72rem, 1.12rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--dvr-text);
+  line-height: 1.2;
+}
+.dvr-topic-cluster__tagline {
+  margin: 0.28rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--dvr-text-3);
+  line-height: 1.42;
+  max-width: 52rem;
+}
+.dvr-topic-cluster__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+.dvr-topic-cluster__tag {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255 255 255 / 0.035);
+  color: rgba(210 215 228 / 0.72);
+}
+
+/* Topic — 3×2 medya grid (desktop), tek aile oran 16:9 */
+.dvr-topic-cluster__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .dvr-topic-cluster__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem 0.6rem;
+  }
+}
+@media (min-width: 980px) {
+  .dvr-topic-cluster__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.58rem 0.65rem;
+  }
+}
+
+.dvr-topic-cluster__tile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dvr-topic-cluster__tile .dvr-live-card--compact,
+.dvr-topic-cluster__tile .dvr-video-card--topic-tile,
+.dvr-topic-cluster__tile .dvr-pulse-card--topic-tile {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.dvr-topic-cluster__tile .dvr-live-media--compact {
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+}
+
+.dvr-topic-cluster__tile .dvr-video-thumb,
+.dvr-topic-cluster__tile .dvr-pulse-thumb--topic-tile {
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+}
+
+/* Süre rozeti — alt overlay ile çakışmayı azalt */
+.dvr-topic-cluster__tile .dvr-duration-badge {
+  bottom: 2.65rem;
+  right: 0.45rem;
+  z-index: 12;
+}
+
+.dvr-topic-cluster__tile .dvr-pulse-play-hint {
+  bottom: 2.55rem;
+}
+
+/* ═══ Piyasayı Konuşanlar + Masadaki Konular (Marketly editorial blocks) ═══ */
+
+.dvr-mkt-block {
+  width: 100%;
+  background: transparent;
+}
+
+.dvr-mkt-block__shell {
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  padding-inline: var(--dvr-pad);
+  padding-bottom: 0.2rem;
+}
+
+.dvr-mkt-block__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.62rem;
+}
+
+.dvr-mkt-block__head-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dvr-mkt-block__title {
+  margin: 0;
+  font-size: clamp(0.84rem, 0.45vw + 0.72rem, 0.98rem);
+  font-weight: 800;
+  letter-spacing: -0.032em;
+  line-height: 1.18;
+  color: rgba(252 252 253 / 0.96);
+}
+
+.dvr-mkt-block__subtitle {
+  margin: 0.26rem 0 0;
+  max-width: 38rem;
+  font-size: 0.65625rem;
+  font-weight: 500;
+  line-height: 1.48;
+  color: rgba(155 164 182 / 0.58);
+}
+
+.dvr-mkt-block__see-all {
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(165 172 190 / 0.82);
+  text-decoration: none;
+  transition: color var(--dvr-dur) var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-mkt-block__see-all:hover {
+    color: var(--dvr-teal);
+  }
+}
+
+/* ─── Piyasayı Konuşanlar — creator face rail (kutu yok) ─────────────────── */
+.dvr-face-rail {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.dvr-face-rail__mask {
+  position: relative;
+  margin-right: calc(-1 * var(--dvr-pad));
+  padding-right: var(--dvr-pad);
+  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 3.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 3.5rem), transparent 100%);
+}
+@media (max-width: 639px) {
+  .dvr-face-rail__mask {
+    margin-right: calc(-1 * var(--dvr-pad));
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+.dvr-face-rail__track {
+  width: 100%;
+  min-width: 0;
+  scroll-padding-inline: 0.25rem;
+}
+
+.dvr-face-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 0 0 auto;
+  width: 132px;
+  padding: 0.2rem 0.15rem 0.35rem;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border-radius: 0.75rem;
+  transition: transform 180ms var(--dvr-ease);
+}
+@media (min-width: 900px) {
+  .dvr-face-item {
+    width: 148px;
+  }
+}
+@media (hover: hover) {
+  .dvr-face-item:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.dvr-face-item__halo {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 38px;
+  width: 88px;
+  height: 88px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  opacity: 0.35;
+  background: radial-gradient(circle, var(--dvr-face-halo, rgba(62 228 205 / 0.12)) 0%, transparent 68%);
+}
+.dvr-face-item--tone-live {
+  --dvr-face-halo: rgba(248 113 113 / 0.22);
+}
+.dvr-face-item--tone-crypto {
+  --dvr-face-halo: rgba(167 139 250 / 0.2);
+}
+.dvr-face-item--tone-macro {
+  --dvr-face-halo: rgba(251 191 36 / 0.14);
+}
+.dvr-face-item--tone-bist {
+  --dvr-face-halo: rgba(45 212 191 / 0.18);
+}
+
+.dvr-face-item__ring {
+  position: relative;
+  z-index: 1;
+  padding: 3px;
+  border-radius: 999px;
+  margin-bottom: 0.35rem;
+}
+.dvr-face-item__ring--live {
+  box-shadow:
+    0 0 0 2px rgba(248 113 113 / 0.58),
+    0 0 22px rgba(239 68 68 / 0.2);
+}
+.dvr-face-item__ring--trend {
+  box-shadow:
+    0 0 0 2px rgba(34 211 238 / 0.45),
+    0 0 18px rgba(6 182 212 / 0.16);
+}
+.dvr-face-item__ring--new {
+  box-shadow:
+    0 0 0 2px rgba(251 191 36 / 0.48),
+    0 0 16px rgba(245 158 11 / 0.14);
+}
+.dvr-face-item__ring--hot {
+  box-shadow:
+    0 0 0 2px rgba(167 139 250 / 0.45),
+    0 0 18px rgba(139 92 246 / 0.14);
+}
+
+.dvr-face-item__avatar {
+  box-shadow:
+    inset 0 0 0 1px rgba(255 255 255 / 0.1),
+    0 6px 20px rgba(0 0 0 / 0.45);
+}
+
+.dvr-face-item__live-dot {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f87171;
+  box-shadow: 0 0 0 2px rgba(0 0 0 / 0.5);
+}
+
+.dvr-face-badge {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 0.28rem;
+  border-radius: 0.28rem;
+  padding: 0.1rem 0.34rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(255 255 255 / 0.08);
+}
+.dvr-face-badge--live {
+  color: rgba(254 202 202 / 0.95);
+  background: rgba(239 68 68 / 0.12);
+  box-shadow: inset 0 0 0 1px rgba(248 113 113 / 0.25);
+}
+.dvr-face-badge--trend {
+  color: rgba(207 250 254 / 0.9);
+  background: rgba(6 182 212 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(34 211 238 / 0.2);
+}
+.dvr-face-badge--new {
+  color: rgba(254 243 199 / 0.88);
+  background: rgba(245 158 11 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(251 191 36 / 0.2);
+}
+.dvr-face-badge--hot {
+  color: rgba(233 213 255 / 0.9);
+  background: rgba(139 92 246 / 0.1);
+  box-shadow: inset 0 0 0 1px rgba(167 139 250 / 0.2);
+}
+
+.dvr-face-item__name {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  font-size: 0.71875rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: rgba(252 252 253 / 0.95);
+}
+
+.dvr-face-item__context {
+  position: relative;
+  z-index: 1;
+  margin: 0.22rem 0 0;
+  width: 100%;
+  font-size: 0.59375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(165 172 190 / 0.68);
+}
+
+.dvr-face-item__cta {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.32rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(62 228 205 / 0);
+  transition: color 160ms var(--dvr-ease);
+}
+@media (hover: hover) {
+  .dvr-face-item:hover .dvr-face-item__cta {
+    color: rgba(62 228 205 / 0.78);
+  }
+}
+
+/* ─── Masadaki Konular — topic chip board ─────────────────────────────────── */
+.dvr-topic-board {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem 0.42rem;
+  width: 100%;
+  min-width: 0;
+  align-content: flex-start;
+}
+
+.dvr-topic-chip {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  min-width: 0;
+  padding: 0.4rem 0.5rem 0.38rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255 255 255 / 0.025);
+  box-shadow: inset 0 0 0 1px rgba(255 255 255 / 0.055);
+  transition:
+    transform 180ms var(--dvr-ease),
+    box-shadow 180ms var(--dvr-ease),
+    background-color 180ms var(--dvr-ease);
+  flex: 1 1 auto;
+}
+.dvr-topic-chip--sm {
+  flex: 1 1 calc(38% - 0.35rem);
+  min-width: min(100%, 8.5rem);
+}
+.dvr-topic-chip--md {
+  flex: 1 1 calc(46% - 0.35rem);
+  min-width: min(100%, 11rem);
+}
+.dvr-topic-chip--lg {
+  flex: 1 1 calc(58% - 0.35rem);
+  min-width: min(100%, 13.5rem);
+}
+@media (min-width: 980px) {
+  .dvr-topic-chip--sm {
+    flex: 0 1 auto;
+    min-width: 7.75rem;
+  }
+  .dvr-topic-chip--md {
+    flex: 1 1 12rem;
+    min-width: 10.5rem;
+  }
+  .dvr-topic-chip--lg {
+    flex: 1 1 14rem;
+    min-width: 12.5rem;
+  }
+}
+@media (hover: hover) {
+  .dvr-topic-chip:hover {
+    transform: translateY(-1px);
+    background: rgba(255 255 255 / 0.04);
+    box-shadow:
+      inset 0 0 0 1px rgba(255 255 255 / 0.08),
+      0 8px 24px rgba(0 0 0 / 0.28);
+  }
+}
+
+.dvr-topic-chip__accent {
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  width: 2px;
+  border-radius: 2px;
+  opacity: 0.65;
+  background: var(--dvr-chip-accent, rgba(62 228 205 / 0.55));
+}
+.dvr-topic-chip--macro {
+  --dvr-chip-accent: rgba(251 191 36 / 0.65);
+}
+.dvr-topic-chip--crypto {
+  --dvr-chip-accent: rgba(167 139 250 / 0.65);
+}
+.dvr-topic-chip--bist {
+  --dvr-chip-accent: rgba(45 212 191 / 0.62);
+}
+.dvr-topic-chip--commodity {
+  --dvr-chip-accent: rgba(251 191 36 / 0.5);
+}
+.dvr-topic-chip--equity {
+  --dvr-chip-accent: rgba(52 211 153 / 0.58);
+}
+.dvr-topic-chip--deriv {
+  --dvr-chip-accent: rgba(148 163 184 / 0.6);
+}
+
+.dvr-topic-chip__title {
+  padding-left: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.2;
+  color: rgba(252 252 253 / 0.95);
+}
+
+.dvr-topic-chip__tickers {
+  padding-left: 0.35rem;
+  font-size: 0.53125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(155 164 182 / 0.62);
+}
+
+.dvr-topic-chip__heat {
+  margin-left: 0.35rem;
+  margin-top: 0.05rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.32rem;
+  border-radius: 0.28rem;
+  color: rgba(165 172 190 / 0.72);
+  background: rgba(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255 255 255 / 0.06);
+}
+.dvr-topic-chip__heat--hot {
+  color: rgba(254 215 170 / 0.92);
+  background: rgba(251 146 60 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(251 146 60 / 0.2);
+}
+.dvr-topic-chip__heat--rising {
+  color: rgba(167 243 208 / 0.9);
+  background: rgba(16 185 129 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(52 211 153 / 0.18);
+}
+.dvr-topic-chip__heat--watch {
+  color: rgba(186 230 253 / 0.88);
+  background: rgba(14 165 233 / 0.07);
+  box-shadow: inset 0 0 0 1px rgba(56 189 248 / 0.16);
+}
+.dvr-topic-chip__heat--risk {
+  color: rgba(254 202 202 / 0.9);
+  background: rgba(239 68 68 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(248 113 113 / 0.18);
+}
+.dvr-topic-chip__heat--new {
+  color: rgba(233 213 255 / 0.9);
+  background: rgba(139 92 246 / 0.08);
+  box-shadow: inset 0 0 0 1px rgba(167 139 250 / 0.18);
+}
+
+/* Üreticiler sekmesi — graph biraz daha sıkı */
+.dvr-creator-graph {
+  margin-top: 0.1rem;
+  padding-top: 0.45rem;
+  border-top-color: rgba(255 255 255 / 0.04);
+}
+.dvr-creator-graph__eyebrow {
+  margin-bottom: 0.45rem;
+}
+.dvr-creator-graph__context {
+  min-height: 0;
+  font-size: 0.5625rem;
+  line-height: 1.3;
+}
+.dvr-creator-graph__link {
+  padding: 0.4rem 0.3rem 0.5rem;
+}
+
+/* Mini sinyal strip — kompakt */
+.dvr-mini-signal-strip--compact .dvr-mini-signal-header {
+  margin-bottom: 0.3rem;
+}
+.dvr-mini-signal-strip--compact .dvr-mini-signal-label {
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+}
+
+/* Section flow */
+.dvr-stream > .dvr-topic-cluster + .dvr-rail-section {
+  margin-top: -0.15rem;
+}
+
+/* ─── Bağımsız dikey sayfalar (/live, /pulse, …) ─────────────────────────── */
+.dvr-surface--vertical-page .dvr-sticky-bar {
+  display: none;
+}
+
+.dvr-vertical-page-head {
+  padding: var(--dvr-pad);
+  padding-bottom: 0;
+  border-bottom: 1px solid var(--dvr-border-soft);
+}
+
+.dvr-vertical-page-head__row {
+  margin-bottom: 0.65rem;
+}
+
+.dvr-vertical-back {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--dvr-text-3);
+  text-decoration: none;
+  transition: color var(--dvr-dur) var(--dvr-ease);
+}
+
+.dvr-vertical-back:hover {
+  color: var(--dvr-teal);
+}
+
+.dvr-vertical-page-head__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dvr-vertical-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #f87171;
+  flex-shrink: 0;
+}
+
+.dvr-vertical-page-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw + 0.9rem, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--dvr-text);
+}
+
+.dvr-vertical-page-desc {
+  margin: 0.45rem 0 0;
+  max-width: 42rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--dvr-text-3);
+}
+
+.dvr-content--vertical-page {
+  padding-top: calc(var(--dvr-chrome-content-gap) * 0.85);
+}
+
+.dvr-vertical-grid-section {
+  padding-inline: var(--dvr-pad);
+}
+
+/* Rail içi grid — 3. sıra ile aynı sunum (tam sayfa 1–2. sıra) */
+.dvr-vertical-grid-section--in-rail {
+  padding-inline: var(--dvr-pad);
+  padding-block: 0 0.2rem;
+  max-width: var(--dvr-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.dvr-discovery-hot-peak.dvr-vertical-grid-section {
+  padding-inline: var(--dvr-pad);
+  padding-block: 0.05rem 0;
+}
+
+.dvr-discovery-hot-peak.dvr-vertical-grid-section .dvr-rail-header {
+  margin-bottom: 0.62rem;
+}
+
+.dvr-pulse-full-grid .dvr-pulse-card,
+.dvr-video-full-grid .dvr-video-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dvr-live-full-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--dvr-rail-gap);
+}
+
+.dvr-pulse-full-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr));
+  gap: var(--dvr-rail-gap);
+  justify-items: center;
+}
+
+.dvr-video-full-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 292px), 1fr));
+  gap: calc(var(--dvr-rail-gap) + 0.15rem);
+}
+
+.dvr-creators-grid--full {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 222px), 1fr));
+}
+
+@media (min-width: 1024px) {
+  .dvr-pulse-full-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
