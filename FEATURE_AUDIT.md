@@ -6,13 +6,14 @@
 
 ## Oturum HOME-PERSONALIZATION-B — SPRINT B Home & Personalization Richness Restore (5 Haziran 2026)
 
-- **Durum:** ✅ Tamamlandı. Karar: `READY_FOR_DEPLOY`
+- **Durum:** ✅ Tamamlandı. Karar: `DEPLOYED`
 - **Restore:** home interests/pulse/ambient, live recommendations, saved intel, membership intel, settings hub
 - **Mapper katmanı:** `build-home-live-intelligence`, `build-live-recommendations`, `build-saved-intelligence`, `enrich-membership-intel`, `build-settings-hub-from-live`
 - **TypeScript + build:** ✅
 - **Rapor:** `HOME_PERSONALIZATION_RICHNESS_RESTORE_REPORT.md`
-- **Deploy:** ⏳ Bekliyor (web-only)
-- **Sonraki:** Vercel deploy + smoke (home rail, saved, subscriptions, settings)
+- **Commit:** `4ccfc18` — Sprint A+B web live richness (54 dosya)
+- **Deploy:** ✅ Vercel prod `dpl_2mhVSMpjcNJVPevBGvhw1ro2ZNo8`
+- **Sonraki:** Smoke (home rail, saved, subscriptions, settings)
 
 ---
 
