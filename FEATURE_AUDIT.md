@@ -1,6 +1,21 @@
 # Marketly — Özellik Denetim ve Geliştirme Takip Dosyası
 > Her oturumda bu dosya güncellenir. Yapılanlar ✅, devam edenler 🔄, bekleyenler ⏳ olarak işaretlenir.
-> Son güncelleme: Launch Preparation Mega Sprint (5 Haziran 2026)
+> Son güncelleme: Commit & Deploy Mega Sprint (5 Haziran 2026)
+
+---
+
+## Oturum COMMIT-DEPLOY-MEGA — Commit & Deploy Mega Sprint (5 Haziran 2026)
+
+- **Durum:** 🟡 Kısmi. Karar: `DEPLOY_BLOCKED`
+- **Commit:** `9c73ed4` — `feat(web): prepare Marketly web for closed beta launch` (957 dosya, APP hariç)
+- **Push:** ❌ `origin` remote yok
+- **Build:** ✅ `tsc` + `next build`
+- **Lint:** ⚠️ 126 eski error (build geçti)
+- **Security:** ✅ secret commit yok; RLS probe SAFE
+- **Production probe:** asset_prices/comments/video_comments deny ✅; RPC ✅; fetch-market-news ✅
+- **WEB deploy:** ❌ Vercel/remote yok — manuel adım gerekli
+- **Rapor:** `COMMIT_DEPLOY_PRODUCTION_REPORT.md`
+- **Sonraki:** `git remote add` → push → Vercel (root=web) → smoke test
 
 ---
 
