@@ -1,12 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { fetchMarketAssets } from "@/features/markets/fetch-market-assets";
 import { fetchTrendingSignals } from "@/features/home/fetch-home-extras";
+import {
+  buildHomeAmbientSummaryFromLive,
+  buildLiveInterestsFromMarketData,
+} from "@/features/home/lib/build-home-live-intelligence";
 import type { HomeVisualRailLink } from "@/features/home/visual/mock-data";
+import { fetchMarketAssets } from "@/features/markets/fetch-market-assets";
+import { fetchMarketNewsRows } from "@/features/markets/fetch-market-news";
 
 export type HomeEditorialChips = {
   today: HomeVisualRailLink[];
   trending: HomeVisualRailLink[];
+  interests: HomeVisualRailLink[];
+  pulseSummary: string;
 };
 
 function formatPct(change: number): string {
@@ -14,11 +21,12 @@ function formatPct(change: number): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(2).replace(".", ",")}%`;
 }
 
-/** asset_prices movers + signals → home today/trending chips */
+/** asset_prices movers + signals + news → home editorial chips */
 export async function fetchHomeEditorialChips(client: SupabaseClient): Promise<HomeEditorialChips> {
-  const [assets, signals] = await Promise.all([
+  const [assets, signals, newsRows] = await Promise.all([
     fetchMarketAssets(client),
     fetchTrendingSignals(client, 8),
+    fetchMarketNewsRows(client, 3),
   ]);
 
   const movers = [...assets]
@@ -42,5 +50,8 @@ export async function fetchHomeEditorialChips(client: SupabaseClient): Promise<H
     href: `/signals/${s.id}`,
   }));
 
-  return { today, trending };
+  const interests = buildLiveInterestsFromMarketData(assets, signals);
+  const pulseSummary = buildHomeAmbientSummaryFromLive(assets, signals, newsRows);
+
+  return { today, trending, interests, pulseSummary };
 }

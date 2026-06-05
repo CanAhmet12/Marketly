@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { memo, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { EmptyState } from "@/components/states";
 import { PrefetchOnHoverLink } from "@/components/ui/prefetch-on-hover-link";
@@ -10,10 +11,16 @@ import { renderVirtualTableRows, useVirtualTableRows } from "@/features/markets/
 import { WatchlistPageSkeleton } from "@/features/markets/components/markets-states";
 import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
 import { useMarketsWatchlist } from "@/features/markets/hooks/use-markets-watchlist";
+import { useWatchlistIntelligence } from "@/features/markets/hooks/use-watchlist-intelligence";
 import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 import { getMarketsRepository } from "@/features/markets/repository";
 import type { MarketAssetView } from "@/features/markets/types";
+import { buildPersonalizedSignalRelevance } from "@/features/signals/lib/build-personalized-signal-relevance";
+import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
 import { getSignalsRepository } from "@/features/signals/repository";
+import { queryKeys } from "@/lib/query-keys";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { MARKETS_WATCHLIST_ROW_HEIGHT } from "@/hooks/use-virtual-table-rows";
 import { isMockDataEnabled } from "@/mock/config";
 import { cn } from "@/lib/cn";
@@ -134,16 +141,22 @@ export function WatchlistPageClient() {
   );
   const symbols   = [...watchlist].sort();
 
-  const intel = useMemo(
-    () => mRepo.getWatchlistIntelligenceBundle(Array.from(watchlist), Array.from(pinned)),
-    [mRepo, watchlist, pinned],
-  );
+  const intel = useWatchlistIntelligence(Array.from(watchlist), Array.from(pinned));
 
-  const portfolioSyms = useMemo(() => mRepo.getPortfolioIntelligenceBundle().portfolioSymbols, [mRepo]);
-  const personalized  = useMemo(
-    () => sRepo.getPersonalizedSignalRelevance(Array.from(watchlist), portfolioSyms),
-    [sRepo, watchlist, portfolioSyms],
-  );
+  const liveSignalsQuery = useQuery({
+    queryKey: queryKeys.signalsFeed(),
+    queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient()),
+    enabled: !mockOn && isSupabaseConfigured(),
+    staleTime: 60_000,
+  });
+
+  const personalized = useMemo(() => {
+    if (mockOn) {
+      const portfolioSyms = mRepo.getPortfolioIntelligenceBundle().portfolioSymbols;
+      return sRepo.getPersonalizedSignalRelevance(Array.from(watchlist), portfolioSyms);
+    }
+    return buildPersonalizedSignalRelevance(liveSignalsQuery.data ?? [], Array.from(watchlist), [], null);
+  }, [mockOn, mRepo, sRepo, watchlist, liveSignalsQuery.data]);
 
   const vt = useVirtualTableRows({
     count: symbols.length,

@@ -16,7 +16,7 @@ import { EmptyState }                   from "@/components/states";
 import { usePrefersReducedMotion }      from "@/hooks/use-prefers-reduced-motion";
 import { runViewTransition }            from "@/lib/navigation/view-transition";
 import { useAssetDetailLocalMocks }     from "@/features/markets/hooks/use-asset-detail-local-mocks";
-import { useMarketAssetsLive }          from "@/features/markets/hooks/use-market-assets";
+import { useAssetIntelligence }         from "@/features/markets/hooks/use-asset-intelligence";
 import { useMarketsWatchlist }          from "@/features/markets/hooks/use-markets-watchlist";
 import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 import { getMarketsRepository } from "@/features/markets/repository";
@@ -54,32 +54,7 @@ export function MarketSymbolPageClient() {
     trackAssetView(symStable, "markets_symbol");
   }, [symStable, decoded]);
 
-  const baseBundle = useMemo(() => {
-    const s = decoded.trim();
-    if (!s) return null;
-    return repo.getAssetIntelligenceBundle(s);
-  }, [repo, decoded]);
-
-  const { assets: liveAssets } = useMarketAssetsLive();
-  const bundle = useMemo(() => {
-    if (!baseBundle || mockOn) return baseBundle;
-    const live = liveAssets.find((a) => a.symbol.toUpperCase() === symStable);
-    if (!live || live.price <= 0) return baseBundle;
-    const trend: "flat" | "up" | "down" =
-      live.change_percent > 0 ? "up" : live.change_percent < 0 ? "down" : "flat";
-    return {
-      ...baseBundle,
-      asset: {
-        ...baseBundle.asset,
-        name: live.name || baseBundle.asset.name,
-        price: live.price,
-        change_percent: live.change_percent,
-        volume: live.volume ?? baseBundle.asset.volume,
-        trend,
-        sparkline: live.sparkline ?? baseBundle.asset.sparkline,
-      },
-    };
-  }, [baseBundle, mockOn, liveAssets, symStable]);
+  const { bundle, isLoading: intelLoading } = useAssetIntelligence(decoded);
 
   const liveOff = !mockOn && (!bundle || bundle.asset.price <= 0 || bundle.asset.name === "Veri bekleniyor");
 
@@ -105,6 +80,13 @@ export function MarketSymbolPageClient() {
   }
 
   if (!bundle) {
+    if (!mockOn && intelLoading) {
+      return (
+        <div className="ms-page-wrapper ms-container-markets min-w-0 py-16">
+          <EmptyState title="Yükleniyor" description="Canlı kotasyon ve sinyal verisi hazırlanıyor." tone="market" compact />
+        </div>
+      );
+    }
     return (
       <div className="ms-page-wrapper ms-container-markets">
         <EmptyState title="Veri yüklenemedi" description="Varlık istihbaratı hazırlanamadı." actionLabel="Piyasalara dön" actionHref={MARKETS_HUB_PATH} tone="market" />

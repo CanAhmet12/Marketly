@@ -209,10 +209,10 @@ export function DiscoverVisualReferenceSurface({
     <div className="dvr-surface" aria-busy={feedLoading}>
       {feedLoading ? <span className="sr-only">Keşfet içeriği yükleniyor.</span> : null}
       {feedError ? (
-        <span className="sr-only">Keşfet verisi yüklenemedi; örnek içerik gösteriliyor.</span>
+        <span className="sr-only">Keşfet verisi yüklenemedi; içerik boş veya geçici olarak kullanılamıyor.</span>
       ) : null}
       {!feedEnabled && !feedLoading ? (
-        <span className="sr-only">Canlı veri kaynağı kullanılamıyor; örnek içerik gösteriliyor.</span>
+        <span className="sr-only">Canlı veri kaynağı kullanılamıyor; içerik şu an görüntülenemiyor.</span>
       ) : null}
 
       <header className="dvr-top-chrome">
@@ -240,7 +240,7 @@ export function DiscoverVisualReferenceSurface({
 
       {feedError && onFeedRetry ? (
         <div className="dvr-error-banner" role="alert">
-          <p className="dvr-error-banner__text">Keşfet akışı yüklenemedi. Örnek içerik gösteriliyor.</p>
+          <p className="dvr-error-banner__text">Keşfet akışı yüklenemedi. İçerik şu an görüntülenemiyor.</p>
           <button type="button" className="dvr-error-banner__retry" onClick={onFeedRetry}>
             Tekrar dene
           </button>

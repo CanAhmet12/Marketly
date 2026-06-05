@@ -50,7 +50,11 @@ export type EditorialRailBundle = {
 export function buildEditorialRailBundle(
   intel: InterestIntelligenceSnapshot,
   recommendedCreators?: RecommendedCreatorCard[],
-  liveChips?: { today: HomeVisualRailLink[]; trending: HomeVisualRailLink[] },
+  liveChips?: {
+    today: HomeVisualRailLink[];
+    trending: HomeVisualRailLink[];
+    interests?: HomeVisualRailLink[];
+  },
 ): EditorialRailBundle {
   const repo = getHomeRepository();
   const strip = buildMarketStripShortcuts();
@@ -66,6 +70,9 @@ export function buildEditorialRailBundle(
   );
 
   let interests = buildInterestsFromIntel(intel);
+  if (!isMockDataEnabled() && interests.length === 0 && (liveChips?.interests?.length ?? 0) > 0) {
+    interests = [...(liveChips?.interests ?? [])];
+  }
   if (isMockDataEnabled() && interests.length < 5) {
     const merged = [...interests];
     for (const row of EDITORIAL_MOCK_INTERESTS_FALLBACK) {

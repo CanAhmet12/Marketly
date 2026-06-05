@@ -111,28 +111,39 @@ export function MembershipDetailClient({ creatorId }: Props) {
       <p className="mt-5 max-w-3xl text-[13px] font-medium leading-relaxed text-[var(--color-text-secondary)]">{detail.overview}</p>
       <p className="mt-2 text-[12px] font-semibold text-[var(--color-text)]">Strateji odağı · {detail.strategy_summary}</p>
 
-      <section className="mt-8 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-        <h2 className="text-[12px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Ekonomi istihbaratı</h2>
-        <dl className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {(
-            [
-              ["Abone ivmesi", detail.intel.subscriber_momentum_label],
-              ["Premium etkileşim", detail.intel.premium_engagement_label],
-              ["Tutarlılık", detail.intel.consistency_label],
-              ["Premium isabet", detail.intel.premium_hit_rate_label],
-              ["Kurumsal güven", detail.intel.institutional_confidence_label],
-              ["Oda katılımı", detail.intel.room_participation_label],
-              ["Strateji kalitesi", detail.intel.strategy_quality_label],
-              ["Premium ısı", detail.intel.premium_activity_heat_label],
-            ] as const
-          ).map(([k, v]) => (
-            <div key={k} className="rounded border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,transparent)] px-2.5 py-2">
-              <dt className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">{k}</dt>
-              <dd className="mt-1 text-[11px] font-semibold leading-snug text-[var(--color-text-secondary)]">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {(
+        [
+          ["Takipçi", detail.intel.subscriber_momentum_label],
+          ["İçerik yoğunluğu", detail.intel.premium_engagement_label],
+          ["Son aktivite", detail.intel.consistency_label],
+          ["Aktif çağrılar", detail.intel.premium_hit_rate_label],
+          ["Strateji kalitesi", detail.intel.strategy_quality_label],
+          ["Aktivite ısısı", detail.intel.premium_activity_heat_label],
+        ] as const
+      ).some(([, v]) => v.trim().length > 0) ? (
+        <section className="mt-8 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <h2 className="text-[12px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Üretici aktivitesi</h2>
+          <dl className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {(
+              [
+                ["Takipçi", detail.intel.subscriber_momentum_label],
+                ["İçerik yoğunluğu", detail.intel.premium_engagement_label],
+                ["Son aktivite", detail.intel.consistency_label],
+                ["Aktif çağrılar", detail.intel.premium_hit_rate_label],
+                ["Strateji kalitesi", detail.intel.strategy_quality_label],
+                ["Aktivite ısısı", detail.intel.premium_activity_heat_label],
+              ] as const
+            )
+              .filter(([, v]) => v.trim().length > 0)
+              .map(([k, v]) => (
+                <div key={k} className="rounded border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,transparent)] px-2.5 py-2">
+                  <dt className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">{k}</dt>
+                  <dd className="mt-1 text-[11px] font-semibold leading-snug text-[var(--color-text-secondary)]">{v}</dd>
+                </div>
+              ))}
+          </dl>
+        </section>
+      ) : null}
 
       <section className="mt-8">
         <h2 className="text-[14px] font-bold text-[var(--color-text)]">Kilitler</h2>

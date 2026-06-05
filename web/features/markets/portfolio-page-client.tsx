@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useId, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/use-auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPortfolioHoldings, type PortfolioHoldingLive } from "@/features/markets/fetch-portfolio-holdings";
+import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
+import {
+  buildPortfolioIntelligenceFromLive,
+  type PortfolioLiveStats,
+} from "@/features/markets/lib/live-richness/build-portfolio-intelligence-from-live";
+import { buildPersonalizedSignalRelevance } from "@/features/signals/lib/build-personalized-signal-relevance";
+import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
+import { queryKeys } from "@/lib/query-keys";
 
 import { EmptyState } from "@/components/states";
 import { PortfolioPageSkeleton } from "@/features/markets/components/markets-states";
@@ -115,7 +124,14 @@ function PerformanceChart({ series }: { series: number[] }) {
    ALLOCATION DONUT (SVG)
    ================================ */
 
-function AllocationDonut({ holdings }: { portfolio: PortfolioIntelligenceBundle; holdings: PortfolioIntelligenceBundle["holdings"] }) {
+function AllocationDonut({
+  holdings,
+  totalValue,
+}: {
+  portfolio?: PortfolioIntelligenceBundle;
+  holdings: PortfolioIntelligenceBundle["holdings"];
+  totalValue: number;
+}) {
   const id = useId().replace(/:/g, "");
   const cx = 90; const cy = 90; const outerR = 78; const innerR = 52;
   const totalW = holdings.reduce((s, h) => s + h.weightPct, 0) || 100;
@@ -159,7 +175,7 @@ function AllocationDonut({ holdings }: { portfolio: PortfolioIntelligenceBundle;
           TOPLAM
         </text>
         <text x={cx} y={cy + 12} textAnchor="middle" fontSize="15" fontWeight="900" fill="#f1f5f9" fontFamily="system-ui" letterSpacing="-0.5">
-          ${(PORTFOLIO_STATS.totalValue / 1000).toFixed(1)}K
+          ${(totalValue / 1000).toFixed(1)}K
         </text>
       </svg>
 
@@ -201,6 +217,15 @@ export function PortfolioPageClient() {
   const { user } = useAuth();
   const [liveHoldings, setLiveHoldings] = useState<PortfolioHoldingLive[]>([]);
   const [liveLoading, setLiveLoading] = useState(false);
+  const { assets: liveAssets } = useMarketAssetsLive();
+
+  const liveSignalsQuery = useQuery({
+    queryKey: queryKeys.signalsFeed(),
+    queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient()),
+    enabled: !mockOn && isSupabaseConfigured(),
+    staleTime: 60_000,
+  });
+
   useEffect(() => {
     if (mockOn || !user?.id || !isSupabaseConfigured()) return;
     setLiveLoading(true);
@@ -208,6 +233,21 @@ export function PortfolioPageClient() {
       .then(setLiveHoldings)
       .finally(() => setLiveLoading(false));
   }, [mockOn, user?.id]);
+
+  const liveDerived = useMemo(() => {
+    if (mockOn || liveHoldings.length === 0) return null;
+    return buildPortfolioIntelligenceFromLive(liveHoldings, liveAssets, liveSignalsQuery.data ?? []);
+  }, [mockOn, liveHoldings, liveAssets, liveSignalsQuery.data]);
+
+  const livePersonalized = useMemo(() => {
+    if (mockOn || !liveDerived) return null;
+    return buildPersonalizedSignalRelevance(
+      liveSignalsQuery.data ?? [],
+      [],
+      liveDerived.bundle.portfolioSymbols,
+      null,
+    );
+  }, [mockOn, liveDerived, liveSignalsQuery.data]);
 
   if (!mockOn) {
     if (liveLoading) return <PortfolioPageSkeleton />;
@@ -218,32 +258,268 @@ export function PortfolioPageClient() {
         </div>
       );
     }
-    const totalValue = liveHoldings.reduce((s, h) => s + h.total_value, 0);
-    const totalPnL   = liveHoldings.reduce((s, h) => s + h.pnl, 0);
-    const totalCost  = liveHoldings.reduce((s, h) => s + h.avg_cost * h.quantity, 0);
-    const totalPnLPct = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+    if (!liveDerived) return <PortfolioPageSkeleton />;
+
+    const portfolio = liveDerived.bundle;
+    const s: PortfolioLiveStats = liveDerived.stats;
+    const { risk, overlaps, holdings, strategyMix, headlineSentiment } = portfolio;
+    const personalized = livePersonalized ?? { headline: "Portföy sinyalleri", rows: [] };
+
     return (
-      <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0 py-8 flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <span className="text-[var(--color-meta)] text-xs uppercase tracking-wider">Toplam Portföy</span>
-          <span className="text-3xl font-bold">{fmtCurrency(totalValue)}</span>
-          <span className={`text-sm font-semibold ${changeClass(totalPnL)}`}>
-            {fmtCurrency(totalPnL)} ({fmtPct(totalPnLPct)})
-          </span>
+      <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0">
+        <div className="pf-header">
+          <div className="pf-header-left">
+            <span className="pf-header-tag">Marketly · Yatırım</span>
+            <h1 className="pf-header-title">Canlı Portföy</h1>
+          </div>
+          <div className="pf-header-actions">
+            <Link href="/watchlist" className="pf-header-btn">⭐ İzleme Listesi</Link>
+            <Link href="/signals" className="pf-header-btn">📊 Sinyaller</Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-2">
-          {liveHoldings.map((h) => (
-            <div key={h.asset_id} className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
-              <div className="flex flex-col">
-                <span className="font-semibold text-sm">{h.asset_id}</span>
-                <span className="text-xs text-[var(--color-meta)]">{h.quantity} adet · ort. {fmtCurrency(h.avg_cost)}</span>
+
+        <div className="pf-hero">
+          <div className="pf-stat">
+            <span className="pf-stat-label">Toplam Değer</span>
+            <span className="pf-stat-value pf-stat-value--accent">{fmtCurrency(s.totalValue)}</span>
+            <span className="pf-stat-change pf-stat-change--neutral" style={{ fontSize: 11, color: "#475569" }}>
+              Yatırılan: {fmtCurrency(s.investedCost)}
+            </span>
+          </div>
+          <div className="pf-stat">
+            <span className="pf-stat-label">Günlük hareket</span>
+            <span className={cn("pf-stat-value", s.todayPnLPct >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
+              {fmtPct(s.todayPnLPct)}
+            </span>
+            <span className="pf-stat-change pf-stat-change--neutral">Ort. değişim</span>
+          </div>
+          <div className="pf-stat">
+            <span className="pf-stat-label">Toplam P&L</span>
+            <span className={cn("pf-stat-value", s.totalPnL >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
+              {s.totalPnL >= 0 ? "+" : ""}{fmtCurrency(s.totalPnL)}
+            </span>
+            <span className={cn("pf-stat-change", changeStatClass(s.totalPnLPct))}>{fmtPct(s.totalPnLPct)}</span>
+          </div>
+          <div className="pf-stat">
+            <span className="pf-stat-label">Pozisyon</span>
+            <span className="pf-stat-value">{holdings.length}</span>
+            <span className="pf-stat-change pf-stat-change--neutral">{headlineSentiment.slice(0, 22)}</span>
+          </div>
+          <div className="pf-stat">
+            <span className="pf-stat-label">Risk Skoru</span>
+            <span className="pf-stat-value" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
+              {s.riskScore}<span style={{ fontSize: 12, opacity: 0.6 }}>/100</span>
+            </span>
+            <span className="pf-stat-change pf-stat-change--neutral">{s.riskLabel}</span>
+          </div>
+        </div>
+
+        <div className="pf-main">
+          <div className="pf-left">
+            <div className="pf-block">
+              <div className="pf-block-header">
+                <div className="pf-block-title">
+                  <span className="pf-block-stripe" />
+                  Portföy Performansı
+                </div>
               </div>
-              <div className="flex flex-col items-end">
-                <span className="font-semibold text-sm">{fmtCurrency(h.total_value)}</span>
-                <span className={`text-xs font-semibold ${changeClass(h.pnl)}`}>{fmtPct(h.pnl_percent)}</span>
+              <div className="pf-chart-wrap">
+                <PerformanceChart series={s.perfSeries} />
               </div>
             </div>
-          ))}
+
+            <div className="pf-block">
+              <div className="pf-block-header">
+                <div className="pf-block-title">
+                  <span className="pf-block-stripe" />
+                  Pozisyonlar
+                </div>
+              </div>
+              <div className="pf-holdings" style={{ marginTop: 12 }}>
+                <table className="pf-holdings-table">
+                  <thead>
+                    <tr>
+                      <th>Varlık</th>
+                      <th>Kategori</th>
+                      <th>Ağırlık</th>
+                      <th className="right">Değer</th>
+                      <th className="right">P&L %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {holdings.map((h) => {
+                      const liveH = liveHoldings.find(
+                        (x) => x.asset_id.toUpperCase() === h.symbol.toUpperCase(),
+                      );
+                      const color = CAT_COLORS[h.category] ?? "#64748b";
+                      const pnlPct = liveH?.pnl_percent ?? 0;
+                      return (
+                        <tr key={h.symbol} onClick={() => { window.location.href = h.href; }}>
+                          <td>
+                            <Link href={h.href} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                              <div className="pf-holding-name">{h.symbol}</div>
+                              <div className="pf-holding-fullname">{h.name}</div>
+                            </Link>
+                          </td>
+                          <td>
+                            <span className={cn("pf-cat-badge", `pf-cat-badge--${h.category}`)}>{h.category}</span>
+                          </td>
+                          <td>
+                            <div className="pf-weight-cell">
+                              <div className="pf-weight-row">
+                                <span className="pf-weight-pct">%{h.weightPct}</span>
+                                <div className="pf-weight-bar">
+                                  <div className="pf-weight-fill" style={{ width: `${Math.min(100, h.weightPct * 1.5)}%`, background: color }} />
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="pf-price-val">{liveH ? fmtCurrency(liveH.total_value) : "—"}</span>
+                          </td>
+                          <td>
+                            <span className={cn("pf-pnl-val", changeClass(pnlPct))}>{fmtPct(pnlPct)}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <aside className="pf-sidebar">
+            <div className="pf-sidebar-inner">
+              <div className="pf-block">
+                <div className="pf-block-header">
+                  <div className="pf-block-title">
+                    <span className="pf-block-stripe" />
+                    Dağılım
+                  </div>
+                </div>
+                <AllocationDonut holdings={holdings} totalValue={s.totalValue} />
+              </div>
+
+              <div className="pf-block">
+                <div className="pf-block-header">
+                  <div className="pf-block-title">
+                    <span className="pf-block-stripe" />
+                    Strateji Karması
+                  </div>
+                </div>
+                <div className="pf-strategy-rows">
+                  {strategyMix.map((mix, i) => {
+                    const colors = ["#0f9d75", "#3b82f6", "#8b5cf6"];
+                    return (
+                      <div key={mix.label} className="pf-strat-row">
+                        <div className="pf-strat-header">
+                          <span className="pf-strat-label">{mix.label}</span>
+                          <span className="pf-strat-pct">%{mix.pct}</span>
+                        </div>
+                        <div className="pf-strat-bar">
+                          <div className="pf-strat-fill" style={{ width: `${mix.pct}%`, background: colors[i % colors.length] }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pf-block">
+                <div className="pf-block-header">
+                  <div className="pf-block-title">
+                    <span className="pf-block-stripe" style={{ background: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }} />
+                    Risk Analizi
+                  </div>
+                </div>
+                <div className="pf-risk-body">
+                  <div className="pf-risk-gauge">
+                    <div>
+                      <div className="pf-risk-score" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
+                        {s.riskScore}
+                      </div>
+                      <div className="pf-risk-label">{s.riskLabel} Risk</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      {[
+                        { label: "Konsantrasyon", val: risk.concentrationLabel },
+                        { label: "Volatilite", val: risk.volCluster },
+                        { label: "Rejim", val: risk.regimeAlignment },
+                      ].map((item) => (
+                        <div key={item.label} className="pf-risk-item">
+                          <span className="pf-risk-item-label">{item.label}</span>
+                          <span className="pf-risk-item-value">{item.val}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {risk.sectorTop.length > 0 && (
+                    <div className="pf-sector-rows">
+                      {risk.sectorTop.map((sec) => (
+                        <div key={sec.label} className="pf-sector-row">
+                          <span className="pf-sector-label">{sec.label}</span>
+                          <div className="pf-sector-bar">
+                            <div className="pf-sector-fill" style={{ width: `${sec.pct}%` }} />
+                          </div>
+                          <span className="pf-sector-pct">%{sec.pct}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div className="pf-bottom-zone" style={{ marginTop: 20 }}>
+          <div className="pf-block">
+            <div className="pf-block-header">
+              <div className="pf-block-title">
+                <span className="pf-block-stripe" />
+                Analist Örtüşmesi
+              </div>
+            </div>
+            <div className="pf-analyst-rows">
+              {overlaps.overlappingAnalysts.length === 0 ? (
+                <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Portföy sembollerinde aktif sinyal yok.</p>
+              ) : (
+                overlaps.overlappingAnalysts.map((a) => (
+                  <Link key={a.href} href={a.href} className="pf-analyst-row">
+                    <div className="pf-analyst-avatar">{a.display.slice(0, 1).toUpperCase()}</div>
+                    <span className="pf-analyst-name">{a.display}</span>
+                    <span className="pf-analyst-count">{a.count} sinyal</span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="pf-block">
+            <div className="pf-block-header">
+              <div className="pf-block-title">
+                <span className="pf-block-stripe" />
+                Portföy Sinyalleri
+              </div>
+              <Link href="/signals" className="pf-block-link">Tümü →</Link>
+            </div>
+            <div className="pf-signal-rows">
+              {personalized.rows.length === 0 ? (
+                <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Sinyal örtüşmesi bulunamadı.</p>
+              ) : (
+                personalized.rows.slice(0, 5).map((row) => (
+                  <Link key={row.id} href={row.href} className="pf-signal-row">
+                    <span className="pf-signal-sym">{row.symbol}</span>
+                    <div className="pf-signal-info">
+                      <div className="pf-signal-reason">{row.reason}</div>
+                      <div className="pf-signal-meta">{row.analystDisplay} · {row.direction}</div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -423,7 +699,7 @@ export function PortfolioPageClient() {
                   Dağılım
                 </div>
               </div>
-              <AllocationDonut portfolio={portfolio} holdings={holdings} />
+              <AllocationDonut portfolio={portfolio} holdings={holdings} totalValue={s.totalValue} />
             </div>
 
             {/* Strateji Mix */}

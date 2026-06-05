@@ -1,6 +1,59 @@
 # Marketly — Özellik Denetim ve Geliştirme Takip Dosyası
 > Her oturumda bu dosya güncellenir. Yapılanlar ✅, devam edenler 🔄, bekleyenler ⏳ olarak işaretlenir.
-> Son güncelleme: Commit & Deploy Mega Sprint (5 Haziran 2026)
+> Son güncelleme: Home & Personalization Richness Restore Sprint B (5 Haziran 2026)
+
+---
+
+## Oturum HOME-PERSONALIZATION-B — SPRINT B Home & Personalization Richness Restore (5 Haziran 2026)
+
+- **Durum:** ✅ Tamamlandı. Karar: `READY_FOR_DEPLOY`
+- **Restore:** home interests/pulse/ambient, live recommendations, saved intel, membership intel, settings hub
+- **Mapper katmanı:** `build-home-live-intelligence`, `build-live-recommendations`, `build-saved-intelligence`, `enrich-membership-intel`, `build-settings-hub-from-live`
+- **TypeScript + build:** ✅
+- **Rapor:** `HOME_PERSONALIZATION_RICHNESS_RESTORE_REPORT.md`
+- **Deploy:** ⏳ Bekliyor (web-only)
+- **Sonraki:** Vercel deploy + smoke (home rail, saved, subscriptions, settings)
+
+---
+
+## Oturum LIVE-RICHNESS-A — SPRINT A Live Richness Restore (5 Haziran 2026)
+
+- **Durum:** ✅ Tamamlandı. Karar: `DEPLOYED`
+- **Restore:** asset symbol intel, watchlist intel, playlist detail, portfolio UI, discover error copy
+- **Mapper katmanı:** `lib/live-richness/*` + playlist fetch + personalized signals (no mock)
+- **TypeScript + build:** ✅
+- **Rapor:** `LIVE_RICHNESS_RESTORE_REPORT.md`
+- **Deploy:** ✅ Vercel prod `dpl_8R2HXibUjT8JRkb1xuVC93bfPV86`
+- **Sonraki:** SPRINT B (home rails, settings)
+
+---
+
+## Oturum FULL-WEB-LIVE-AUDIT — Full Live Regression & Feature Parity Audit (5 Haziran 2026)
+
+- **Durum:** ✅ Tamamlandı (analiz only). Karar: `REGRESSIONS_FOUND_FIXABLE_WITH_WEB`
+- **Kapsam:** 51 route, repository/fetch gap, mock/live parity, production smoke
+- **P0 aktif regression:** Yok (kategori restore sonrası)
+- **PRODUCT_BLOCKED:** onboarding (`EMPTY_CATALOG`), close-friends (`live_sparse`)
+- **P1 mock rich/live poor:** discussion layer, home rails, asset intel, playlists, studio economy
+- **WEB mapper yeterli:** asset symbol, watchlist intel, playlist fetch, discover copy
+- **Backend gerekli:** onboarding, close-friends, discussion RPC, server personalization
+- **Rapor:** `FULL_WEB_LIVE_REGRESSION_AUDIT_REPORT.md`
+- **Sonraki:** SPRINT A — asset intel mapper, playlist fetch, discover copy fix
+
+---
+
+## Oturum MARKETS-CAT-RESTORE-MEGA — Markets Category Live Restore (5 Haziran 2026)
+
+- **Durum:** ✅ Tamamlandı. Karar: `DEPLOYED`
+- **Sorun:** Launch Prep `MarketsPageClient` fallback — tüm kategoriler genel sayfa
+- **Çözüm:** `build-*-dashboard-from-assets` mapper + `useCategoryDashboard` hook
+- **Restore:** crypto/forex/bist/nasdaq/commodities özel canvas (mock false)
+- **BIST/NASDAQ:** Sembol kümesi ayrımı (exchange alanı yok)
+- **Gizlenen widgetlar:** segment heatmap, currency heatmap, bottom strip (çoğu)
+- **TypeScript + build:** ✅
+- **Rapor:** `MARKETS_CATEGORY_LIVE_RESTORE_REPORT.md`
+- **Deploy:** ✅ Vercel prod — 5 kategori canvas smoke test geçti
+- **Sonraki:** Git commit (web-only) + BIST/NASDAQ sembol kümesi genişletme (DB'ye göre)
 
 ---
 

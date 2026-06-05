@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/states";
 import { PlaylistPageSkeleton } from "@/features/playlists/playlist-page-skeleton";
 import { useAuth } from "@/features/auth/use-auth";
 import type { PlaylistDetailPayload } from "@/features/playlists/domain/types";
-import { getPlaylistRepository } from "@/features/playlists/repository";
+import { usePlaylistDetail } from "@/features/playlists/hooks/use-playlist-detail";
 import { cn } from "@/lib/cn";
 import { formatCompactCount } from "@/lib/format-compact-count";
 import { isMockDataEnabled } from "@/mock/config";
@@ -37,19 +37,15 @@ export function PlaylistPageClient({ playlistId, playingId }: Props) {
   const viewerId = user?.id ?? null;
   const viewedRef = useRef<string | null>(null);
 
-  const detail = useMemo(
-    () => getPlaylistRepository().getPlaylistDetail(playlistId, viewerId, playingId ?? null),
-    [playlistId, viewerId, playingId],
-  );
+  const { detail, isLoading } = usePlaylistDetail(playlistId, viewerId, playingId ?? null);
 
   useEffect(() => {
-    if (!detail) return;
+    if (!detail || isMockDataEnabled()) return;
     if (viewedRef.current === playlistId) return;
     viewedRef.current = playlistId;
-    getPlaylistRepository().recordPlaylistView(playlistId, viewerId);
-  }, [detail, playlistId, viewerId]);
+  }, [detail, playlistId]);
 
-  if (!isInitialized) {
+  if (!isInitialized || isLoading) {
     return <PlaylistPageSkeleton />;
   }
 

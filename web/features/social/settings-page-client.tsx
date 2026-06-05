@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
 import { InterestProfileStrip } from "@/features/personalization/components/interest-profile-strip";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
+import { useSettingsHubLive } from "@/features/settings/hooks/use-settings-hub-live";
 import { getSettingsRepository } from "@/features/settings/repository";
 import {
   resolveSettingsSection,
@@ -158,7 +159,7 @@ export function SettingsPageClient() {
   const { bundle, hydrated, updateProfile, updateNotifications, updatePrivacy, updateAppearance, updateSecurity, resetMock } =
     useSettingsPreferences(uid, seed);
 
-  const hub = useMemo(() => {
+  const baseHub = useMemo(() => {
     void resetTick;
     void pSnap.recommendRev;
     void pSnap.adaptiveRev;
@@ -174,13 +175,14 @@ export function SettingsPageClient() {
     pSnap.explorationRev, pSnap.watchRev, pSnap.affinity.meta.eventCount, mockOn,
   ]);
 
+  const { hub } = useSettingsHubLive(baseHub, user?.id ?? null, profile, bundle.notifications);
+
   const bump = useCallback(() => setResetTick((t) => t + 1), []);
 
   useEffect(() => {
     if (!user) return;
-    if (activeSection === "ilgi" && !mockOn) pushSection("hesap");
-    else if (activeSection === "studio" && !hub.creator.visible) pushSection("hesap");
-  }, [activeSection, mockOn, hub.creator.visible, user, pushSection]);
+    if (activeSection === "studio" && !hub.creator.visible) pushSection("hesap");
+  }, [activeSection, hub.creator.visible, user, pushSection]);
 
   const onResetFull     = useCallback(() => { settingsRepo.resetFullPersonalization();         bump(); }, [settingsRepo, bump]);
   const onResetRec      = useCallback(() => { settingsRepo.resetRecommendationMemory();        bump(); }, [settingsRepo, bump]);
@@ -474,8 +476,8 @@ export function SettingsPageClient() {
               </button>
             </div>
 
-            {hub.data_mode === "live_sparse" && hub.personalization.intel_lines.length === 0 ? (
-              <div className="sg-info">Canlı modda ilgi özeti sunucudan beslenecek.</div>
+            {!mockOn && hub.personalization.intel_lines.length === 0 ? (
+              <div className="sg-info">İzleme listesi ve kayıtlarınla ilgi profilin oluşuyor.</div>
             ) : hub.personalization.intel_lines.length > 0 ? (
               <div className="sg-intel-table">
                 {hub.personalization.intel_lines.map((row) => (
@@ -508,8 +510,17 @@ export function SettingsPageClient() {
             <SectionHeader title="İlgi Profili" desc="Platformdaki ilgi alanlarının ve eğilimlerinin özeti." />
             {mockOn ? (
               <InterestProfileStrip variant="full" intel={pSnap.intel} />
+            ) : hub.personalization.intel_lines.length > 0 ? (
+              <div className="sg-intel-table">
+                {hub.personalization.intel_lines.map((row) => (
+                  <div key={row.id} className="sg-intel-row">
+                    <span className="sg-intel-key">{row.label}</span>
+                    <span className="sg-intel-val">{row.value}</span>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div className="sg-info">İlgi profili canlı modda sunucu verisiyle oluşturulacak.</div>
+              <div className="sg-info">Sembol izle, üretici takip et veya içerik kaydet — profil buna göre şekillenir.</div>
             )}
           </>
         );

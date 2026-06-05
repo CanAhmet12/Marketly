@@ -20,7 +20,7 @@ export function useHomeEditorialChips() {
   });
 
   return {
-    chips: query.data ?? { today: [], trending: [] },
+    chips: query.data ?? { today: [], trending: [], interests: [], pulseSummary: "" },
     isLoading: liveMode && query.isLoading,
     mockOn,
     liveMode,

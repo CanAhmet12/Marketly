@@ -53,13 +53,13 @@ export function DiscoverVerticalPageShell({
 
       {feedError && onFeedRetry ? (
         <div className="dvr-error-banner" role="alert">
-          <p className="dvr-error-banner__text">Akış yüklenemedi. Örnek içerik gösteriliyor.</p>
+          <p className="dvr-error-banner__text">Akış yüklenemedi. İçerik şu an görüntülenemiyor.</p>
           <button type="button" className="dvr-error-banner__retry" onClick={onFeedRetry}>
             Tekrar dene
           </button>
         </div>
       ) : feedError ? (
-        <span className="sr-only">Veri yüklenemedi; örnek içerik gösteriliyor.</span>
+        <span className="sr-only">Veri yüklenemedi; içerik boş veya geçici olarak kullanılamıyor.</span>
       ) : null}
 
       <div className="dvr-content dvr-content--vertical-page">{children}</div>

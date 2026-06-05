@@ -68,16 +68,28 @@ function CreatorCard({ c, dense }: { c: MembershipDiscoveryCard; dense?: boolean
           <HeatMicro score={c.heat_score} />
         </div>
       </div>
-      <dl className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 border-t border-[var(--ms-border-hairline)] pt-2 text-[10px] font-medium text-[var(--color-text-secondary)]">
-        <div>
-          <dt className="text-[var(--color-meta)]">Abone ivmesi</dt>
-          <dd className="truncate">{c.intel.subscriber_momentum_label}</dd>
-        </div>
-        <div>
-          <dt className="text-[var(--color-meta)]">Oda katılımı</dt>
-          <dd className="truncate">{c.intel.room_participation_label}</dd>
-        </div>
-      </dl>
+      {[c.intel.subscriber_momentum_label, c.intel.premium_engagement_label, c.intel.consistency_label].some((v) => v.trim()) ? (
+        <dl className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 border-t border-[var(--ms-border-hairline)] pt-2 text-[10px] font-medium text-[var(--color-text-secondary)]">
+          {c.intel.subscriber_momentum_label.trim() ? (
+            <div>
+              <dt className="text-[var(--color-meta)]">Takipçi</dt>
+              <dd className="truncate">{c.intel.subscriber_momentum_label}</dd>
+            </div>
+          ) : null}
+          {c.intel.premium_engagement_label.trim() ? (
+            <div>
+              <dt className="text-[var(--color-meta)]">İçerik</dt>
+              <dd className="truncate">{c.intel.premium_engagement_label}</dd>
+            </div>
+          ) : null}
+          {c.intel.consistency_label.trim() ? (
+            <div>
+              <dt className="text-[var(--color-meta)]">Son aktivite</dt>
+              <dd className="truncate">{c.intel.consistency_label}</dd>
+            </div>
+          ) : null}
+        </dl>
+      ) : null}
     </Link>
   );
 }

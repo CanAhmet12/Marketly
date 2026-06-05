@@ -8,7 +8,9 @@ import { RecommendationNetworkRails } from "@/features/personalization/component
 import { DiscussionPersonalizedRail } from "@/features/social/components/discussion-personalized-rail";
 import { HomeTopicCommunityRails } from "@/features/social/components/home-topic-community-rails";
 import { homeAmbientContextSummary } from "@/features/feed/home-intel-copy";
+import { useHomeLiveContext } from "@/features/home/hooks/use-home-live-context";
 import { getHomeRepository } from "@/features/home/repository";
+import { HomeLivePersonalizationRail } from "@/features/personalization/components/home-live-personalization-rail";
 import { isMockDataEnabled } from "@/mock/config";
 import type { InterestIntelligenceSnapshot } from "@/features/personalization/domain/personalization-types";
 
@@ -32,9 +34,10 @@ type Props = {
  */
 export function HomeAmbientRail({ viewerId, intel, className = "" }: Props) {
   const mockOn = isMockDataEnabled();
-  const pulse = getHomeRepository().getMarketPulse();
-  const summary = homeAmbientContextSummary(intel);
-  const markets = pulse.slice(0, 3);
+  const liveCtx = useHomeLiveContext(viewerId);
+  const pulse = mockOn ? getHomeRepository().getMarketPulse() : (liveCtx.pulse ?? getHomeRepository().getMarketPulse());
+  const summary = mockOn ? homeAmbientContextSummary(intel) : (liveCtx.summary ?? homeAmbientContextSummary(intel));
+  const markets = pulse.slice(0, 6);
 
   return (
     <div className={`ms-home-ambient-rail ms-home-rail-root text-[var(--color-text)] ${className}`}>
@@ -78,6 +81,19 @@ export function HomeAmbientRail({ viewerId, intel, className = "" }: Props) {
             </Link>
           </div>
         </section>
+      ) : liveCtx.recommendations ? (
+        <section className="ms-home-ambient-rail__block">
+          <h3 className="ms-home-ambient-rail__title">Sana özel</h3>
+          <div className="mt-2.5">
+            <HomeLivePersonalizationRail bundle={liveCtx.recommendations} variant="forYou" />
+            <Link
+              href="/discover"
+              className="mt-2 inline-flex min-h-10 items-center text-[14px] font-semibold text-[var(--color-primary)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--color-primary)_45%,transparent)]"
+            >
+              Keşfet
+            </Link>
+          </div>
+        </section>
       ) : null}
 
       {mockOn ? (
@@ -86,6 +102,13 @@ export function HomeAmbientRail({ viewerId, intel, className = "" }: Props) {
           <div className="mt-2.5 space-y-3">
             <DiscussionPersonalizedRail ambient />
             <RecommendationNetworkRails viewerId={viewerId} ambient railHome maxAmbientItems={1} />
+          </div>
+        </section>
+      ) : liveCtx.recommendations ? (
+        <section className="ms-home-ambient-rail__block">
+          <h3 className="ms-home-ambient-rail__title">Topluluk</h3>
+          <div className="mt-2.5">
+            <HomeLivePersonalizationRail bundle={liveCtx.recommendations} variant="community" />
           </div>
         </section>
       ) : null}

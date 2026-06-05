@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  buildCreatorEconomyIntel,
+  enrichMembershipCard,
+  fetchCreatorActivitySnapshots,
+  fetchCreatorDetailEnrichment,
+} from "@/features/subscriptions/lib/enrich-membership-intel";
 import type {
   MembershipDetailPayload,
   MembershipDiscoveryCard,
@@ -116,7 +122,12 @@ export async function fetchMembershipCatalog(
       console.warn("[subscriptions] fetchMembershipCatalog", error?.message);
       return [];
     }
-    return (data as ProfileRow[]).map(mapCatalogCard);
+    const cards = (data as ProfileRow[]).map(mapCatalogCard);
+    const snapshots = await fetchCreatorActivitySnapshots(
+      client,
+      cards.map((c) => c.creator_id),
+    );
+    return cards.map((card) => enrichMembershipCard(card, snapshots.get(card.creator_id)));
   } catch (e) {
     console.warn("[subscriptions] fetchMembershipCatalog", e);
     return [];
@@ -138,6 +149,8 @@ export async function fetchMembershipDetail(
     const row = data as ProfileRow;
     const premium = buildPremiumTier(row.subscription_price);
     const tiers = premium ? [buildFreeTier(), premium] : [buildFreeTier()];
+    const enrichment = await fetchCreatorDetailEnrichment(client, creatorId);
+    const intel = buildCreatorEconomyIntel(enrichment.snapshot);
 
     return {
       creator_id: row.id,
@@ -146,17 +159,17 @@ export async function fetchMembershipDetail(
       avatar_url: row.avatar_url,
       verified: Boolean(row.verified),
       overview: row.bio?.trim() || "Üretici üyelik kataloğu — ödeme entegrasyonu henüz aktif değil.",
-      strategy_summary: "Strateji özeti kanal ve sinyaller sekmesinde.",
+      strategy_summary: enrichment.strategy_summary,
       tiers,
-      intel: { ...EMPTY_INTEL },
+      intel,
       unlocks_editorial: premium
         ? ["Premium sinyaller", "Özel odalar", "Arşiv önizlemesi"]
         : ["Herkese açık akış"],
       room_previews: [],
-      discussion_previews: [],
-      signal_previews: [],
-      activity_timeline: [],
-      archive_hint: "Ödeme sistemi bağlandığında arşiv erişimi burada açılacak.",
+      discussion_previews: enrichment.discussion_previews,
+      signal_previews: enrichment.signal_previews,
+      activity_timeline: enrichment.activity_timeline,
+      archive_hint: enrichment.signal_previews.length > 0 ? "Sinyal arşivi kanal sekmesinde." : "İçerik arşivi oluşunca burada görünecek.",
       links: {
         channel: `/channel/${row.id}`,
         signals: `/channel/${row.id}?tab=signals`,
@@ -171,14 +184,20 @@ export async function fetchMembershipDetail(
 
 export function buildSubscriptionsHubPayload(catalog: MembershipDiscoveryCard[]): SubscriptionsHubPayload {
   const hasCatalog = catalog.length > 0;
+  const activeCreators = catalog.filter((c) => c.heat_score >= 0.55).length;
+  const signalHeavy = catalog.filter((c) => c.strategy_focus_label === "Sinyal odaklı").length;
   return {
     headline: "Üyelik merkezi",
     subline: hasCatalog
-      ? "Üretici üyelik kataloğu canlı profil verisinden geliyor. Satın alma yakında — şimdilik keşif ve kanal üzerinden inceleyebilirsin."
+      ? "Üretici üyelik kataloğu canlı profil ve içerik aktivitesinden geliyor. Satın alma yakında — şimdilik keşif ve kanal üzerinden inceleyebilirsin."
       : "Henüz ücretli üyelik tanımlayan üretici yok. Keşfet ve sinyaller üzerinden ilerleyebilirsin.",
-    affinity_line: "Kişiselleştirme sunucu tarafında açıldığında öneriler burada görünecek.",
+    affinity_line: hasCatalog
+      ? activeCreators > 0
+        ? `${activeCreators} üretici son dönemde aktif · ${signalHeavy > 0 ? "sinyal masaları öne çıkıyor" : "içerik akışı dengeli"}`
+        : "Katalog canlı — üretici aktivitesi izleniyor"
+      : "Takip ve izleme listesi oluşturdukça öneriler burada zenginleşir.",
     cold_start: !hasCatalog,
-    strategy_profile_label: "Profil oluşuyor",
+    strategy_profile_label: hasCatalog ? (signalHeavy >= catalog.length / 2 ? "Sinyal ağırlıklı" : "Dengeli strateji") : "Profil oluşuyor",
     active_memberships: [],
     catalog,
     rails: {
@@ -192,9 +211,9 @@ export function buildSubscriptionsHubPayload(catalog: MembershipDiscoveryCard[])
       high_conviction: catalog.filter((c) => c.tier_keys.includes("elite")).slice(0, 4),
     },
     platform_intel: {
-      premium_circulation_label: hasCatalog ? `${catalog.length} ücretli katman` : "Premium dolaşım verisi bekleniyor",
-      room_desk_label: "Oda / masa yoğunluğu bekleniyor",
-      signal_archive_label: "Arşiv erişim özeti bekleniyor",
+      premium_circulation_label: hasCatalog ? `${catalog.length} ücretli katman` : "Henüz ücretli katman yok",
+      room_desk_label: activeCreators > 0 ? `${activeCreators} aktif üretici` : "Üretici aktivitesi düşük",
+      signal_archive_label: signalHeavy > 0 ? `${signalHeavy} sinyal odaklı üretici` : "Sinyal arşivi oluşuyor",
     },
     nav: {
       signals: "/signals",

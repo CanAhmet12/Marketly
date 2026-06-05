@@ -40,4 +40,6 @@ export const queryKeys = {
   homeEditorialChips: () => ["home-editorial-chips"] as const,
   membershipCatalog: () => ["membership-catalog"] as const,
   membershipDetail: (creatorId: string) => ["membership-detail", creatorId] as const,
+  playlistDetail: (playlistId: string, viewerKey: string | null | undefined) =>
+    ["playlist-detail", playlistId, viewerKey ?? "anon"] as const,
 } as const;

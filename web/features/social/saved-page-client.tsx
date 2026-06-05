@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
@@ -8,6 +9,7 @@ import { useSavedPostsPage } from "@/features/social/hooks/use-saved-posts-page"
 import { SafeAvatar } from "@/components/ui/safe-avatar";
 import { isVideoLikePost } from "@/features/feed/feed-display";
 import type { FeedPost } from "@/features/feed/types";
+import { buildSavedIntelligenceFromPosts } from "@/features/social/lib/build-saved-intelligence";
 import { formatSocialRelativeTime } from "@/features/social/lib/social-format";
 
 function postHref(post: FeedPost): string {
@@ -18,6 +20,7 @@ function postHref(post: FeedPost): string {
 export function SavedPageClient() {
   const { user, isInitialized } = useAuth();
   const { posts, ready, loading, error, unsave, refetch } = useSavedPostsPage();
+  const intel = useMemo(() => buildSavedIntelligenceFromPosts(posts), [posts]);
 
   if (!isInitialized || !ready || loading) {
     return <div className="sv-page"><div className="sv-skeleton" aria-hidden /></div>;
@@ -55,15 +58,46 @@ export function SavedPageClient() {
         <div>
           <p className="sv-kicker">Koleksiyon</p>
           <h1 className="sv-title">Kaydedilenler</h1>
-          <p className="sv-sub">Feed, watch ve gönderi detayından kaydettiğiniz içerikler.</p>
+          <p className="sv-sub">{intel.trendSummary}</p>
         </div>
-        <span className="sv-count">{posts.length} kayıt</span>
+        <span className="sv-count">{intel.total} kayıt</span>
       </header>
+
+      {posts.length > 0 && (intel.categoryChips.length > 0 || intel.creatorChips.length > 0) ? (
+        <section className="sv-intel" aria-label="Koleksiyon özeti">
+          {intel.categoryChips.length > 0 ? (
+            <div className="sv-intel-block">
+              <p className="sv-intel-label">Alan dağılımı</p>
+              <div className="sv-intel-chips">
+                {intel.categoryChips.map((chip) => (
+                  <span key={chip.label} className="sv-intel-chip">
+                    {chip.label}
+                    <span className="sv-intel-chip-count">{chip.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {intel.creatorChips.length > 0 ? (
+            <div className="sv-intel-block">
+              <p className="sv-intel-label">Üretici dağılımı</p>
+              <div className="sv-intel-chips">
+                {intel.creatorChips.map((chip) => (
+                  <span key={chip.label} className="sv-intel-chip">
+                    {chip.label}
+                    <span className="sv-intel-chip-count">{chip.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {posts.length === 0 ? (
         <EmptyState
           title="Henüz kayıt yok"
-          description="Gönderilerdeki kaydet simgesine dokunarak buraya ekleyin."
+          description={intel.emptyCta ?? "Gönderilerdeki kaydet simgesine dokunarak buraya ekleyin."}
           actionLabel="Keşfet"
           actionHref="/discover"
           tone="social"
