@@ -4,7 +4,7 @@
 
 Sprint B, mock-true zenginliğini mock-false modda mevcut Supabase verilerinden türeterek home ve kişiselleştirme katmanına geri yükledi. Yeni tablo, RPC, Edge Function veya SQL eklenmedi; APP dokunulmadı.
 
-**Karar:** `READY_FOR_DEPLOY`
+**Karar:** `DEPLOYED`
 
 | Alan | Önce (live) | Sonra (live) |
 |------|-------------|--------------|
