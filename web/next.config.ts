@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       { source: "/watchlist", destination: "/hub/watchlist", permanent: true },
       { source: "/price-alerts", destination: "/hub/price-alerts", permanent: true },
       { source: "/subscriptions", destination: "/hub/subscriptions", permanent: true },
+      { source: "/subscriptions/:creatorId", destination: "/hub/subscriptions/:creatorId", permanent: true },
       { source: "/messages", destination: "/hub/messages", permanent: true },
       { source: "/messages/:conversationId", destination: "/hub/messages/:conversationId", permanent: true },
       { source: "/notifications", destination: "/hub/notifications", permanent: true },

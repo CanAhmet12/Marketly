@@ -35,35 +35,8 @@ export function NotificationsPageSkeleton() {
   );
 }
 
-/** `/subscriptions` hub loading */
-export function SubscriptionsPageSkeleton() {
-  return (
-    <div className="ms-page-wrapper ms-container-standard min-w-0 pb-10 pt-6" aria-busy="true">
-      <div className="motion-shimmer mb-2 h-4 w-28 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-3 h-7 w-56 max-w-full rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-6 h-4 w-full max-w-md rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-4 h-9 w-full max-w-sm rounded-full bg-[var(--color-divider)]" />
-      <SkeletonList count={4} />
-    </div>
-  );
-}
-
-/** `/subscriptions/[creatorId]` loading */
-export function MembershipDetailSkeleton() {
-  return (
-    <div className="ms-page-wrapper ms-container-standard min-w-0 pb-12 pt-6" aria-busy="true">
-      <div className="flex gap-4">
-        <div className="motion-shimmer h-16 w-16 shrink-0 rounded-full bg-[var(--color-divider)]" />
-        <div className="flex-1 space-y-2">
-          <div className="motion-shimmer h-4 w-24 rounded bg-[var(--color-divider)]" />
-          <div className="motion-shimmer h-6 w-40 rounded bg-[var(--color-divider)]" />
-        </div>
-      </div>
-      <div className="motion-shimmer mt-8 h-32 w-full rounded-xl bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mt-6 h-48 w-full rounded-xl bg-[var(--color-divider)]" />
-    </div>
-  );
-}
+/** `/subscriptions` loading — re-export subscriptions v2 skeleton */
+export { SubscriptionsPageSkeleton, MembershipDetailSkeleton } from "@/features/subscriptions/components/subscriptions-states";
 
 /** `/close-friends` loading */
 export function CloseFriendsPageSkeleton() {

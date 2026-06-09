@@ -48,6 +48,7 @@ export class SupabaseSubscriptionRepository implements SubscriptionRepository {
       },
       nav: { ...NAV },
       data_mode: "live_sparse",
+      write_enabled: false,
     };
   }
 
@@ -94,6 +95,8 @@ export class SupabaseSubscriptionRepository implements SubscriptionRepository {
         rooms_tab: `/channel/${encodeURIComponent(creatorId)}?tab=rooms`,
         discover: "/discover",
       },
+      subscription: { subscribed: false, tier: null, subscribed_at: null },
+      write_enabled: false,
     };
   }
 }

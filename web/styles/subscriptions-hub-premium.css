@@ -1,55 +1,42 @@
 /**
- * Abonelikler — Hub Premium uyarlama (connect zone)
+ * Abonelikler — Hub Premium köprü
  */
 
-.hp-canvas .sub-hub-page {
-  padding: 0;
+.hp-canvas--embedded-subscriptions {
+  --sub-zone: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-subscriptions .hp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-subscriptions .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-subscriptions .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-subscriptions .hp-body {
+  margin-top: 20px;
   gap: var(--hp-space-section);
 }
 
-.hp-canvas .sub-hub-page .social-hub-pill {
-  border-color: var(--hp-border);
-  background: var(--hp-surface);
-}
-
-.hp-canvas .sub-hub-page .social-hub-pill:hover {
-  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
-  background: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
-}
-
-.hp-canvas .sub-hub-page .social-hub-card {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-glass-border);
-  background: var(--hp-glass);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
-}
-
-.hp-canvas .sub-hub-page .social-hub-card:hover {
-  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-glass-border));
-}
-
-.hp-canvas .sub-hub-active {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-glass-border);
-  background: var(--hp-glass);
-  box-shadow: var(--hp-shadow-block);
-}
-
-.hp-canvas .sub-hub-intel {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-zone-border);
-  background: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
-    var(--hp-surface) 100%
-  );
-}
-
-.hp-canvas .sub-hub-empty {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-border);
-}
-
-.hp-canvas .sub-hub-rail-title {
-  font-family: var(--font-bold);
+.hp-canvas--embedded-subscriptions .sub-studio {
+  width: 100%;
+  min-width: 0;
 }

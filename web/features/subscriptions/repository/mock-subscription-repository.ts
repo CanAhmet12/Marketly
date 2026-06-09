@@ -391,7 +391,7 @@ export class MockSubscriptionRepository implements SubscriptionRepository {
           handle: card.handle.startsWith("@") ? card.handle : `@${card.handle}`,
           tier_label: tier,
           renew_hint: h % 3 === 0 ? "Yenileme penceresi açık (mock)" : null,
-          href_detail: `/subscriptions/${encodeURIComponent(id)}`,
+          href_detail: `/hub/subscriptions/${encodeURIComponent(id)}`,
           href_channel: `/channel/${encodeURIComponent(id)}`,
         };
       })
@@ -419,6 +419,7 @@ export class MockSubscriptionRepository implements SubscriptionRepository {
       },
       nav: { ...NAV },
       data_mode: "mock",
+      write_enabled: false,
     };
   }
 
@@ -520,6 +521,12 @@ export class MockSubscriptionRepository implements SubscriptionRepository {
         rooms_tab: `/channel/${encodeURIComponent(trimmed)}?tab=rooms`,
         discover: "/discover",
       },
+      subscription: {
+        subscribed: Boolean(viewerId && getMockFollowingCreatorIds(viewerId).includes(trimmed)),
+        tier: "premium",
+        subscribed_at: null,
+      },
+      write_enabled: false,
     };
   }
 }

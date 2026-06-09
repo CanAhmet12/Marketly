@@ -7,7 +7,7 @@ export function SettingsPageSkeleton() {
     <div className="stg-studio stg-skeleton" aria-busy="true" aria-label="Ayarlar yükleniyor">
       <div className="stg-skeleton-page stg-surface">
         <div className="stg-skeleton-segment">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="stg-skeleton-tab motion-shimmer" />
           ))}
         </div>

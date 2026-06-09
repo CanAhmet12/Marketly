@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { fetchMembershipDetail } from "@/features/subscriptions/fetch-membership-catalog";
 import {
-  buildSubscriptionsHubPayload,
-  fetchMembershipCatalog,
-  fetchMembershipDetail,
-} from "@/features/subscriptions/fetch-membership-catalog";
+  buildEmptySubscriptionsHubPayload,
+  fetchSubscriptionsHubLive,
+} from "@/features/subscriptions/lib/fetch-subscriptions-hub-live";
 import { getSubscriptionRepository } from "@/features/subscriptions/repository";
 import { queryKeys } from "@/lib/query-keys";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -24,18 +24,18 @@ export function useSubscriptionsHub(viewerId: string | null) {
   );
 
   const query = useQuery({
-    queryKey: queryKeys.membershipCatalog(),
-    queryFn: async () => {
-      const catalog = await fetchMembershipCatalog(getSupabaseBrowserClient());
-      return buildSubscriptionsHubPayload(catalog);
-    },
+    queryKey: queryKeys.membershipHub(viewerId),
+    queryFn: () => fetchSubscriptionsHubLive(getSupabaseBrowserClient(), viewerId),
     enabled: liveMode,
     staleTime: 180_000,
   });
 
   return {
-    payload: mockOn ? mockPayload : (query.data ?? buildSubscriptionsHubPayload([])),
+    payload: mockOn ? mockPayload : (query.data ?? buildEmptySubscriptionsHubPayload()),
     isLoading: liveMode && query.isLoading,
+    isError: liveMode && query.isError,
+    error: query.error,
+    refetch: query.refetch,
     mockOn,
     liveMode,
   };
@@ -51,8 +51,8 @@ export function useMembershipDetail(creatorId: string, viewerId: string | null) 
   );
 
   const query = useQuery({
-    queryKey: queryKeys.membershipDetail(creatorId),
-    queryFn: () => fetchMembershipDetail(getSupabaseBrowserClient(), creatorId),
+    queryKey: queryKeys.membershipDetail(creatorId, viewerId),
+    queryFn: () => fetchMembershipDetail(getSupabaseBrowserClient(), creatorId, viewerId),
     enabled: liveMode && Boolean(creatorId),
     staleTime: 180_000,
   });
@@ -60,6 +60,9 @@ export function useMembershipDetail(creatorId: string, viewerId: string | null) 
   return {
     detail: mockOn ? mockDetail : (query.data ?? null),
     isLoading: liveMode && query.isLoading,
+    isError: liveMode && query.isError,
+    error: query.error,
+    refetch: query.refetch,
     mockOn,
     liveMode,
   };

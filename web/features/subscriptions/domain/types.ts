@@ -116,7 +116,15 @@ export type SubscriptionsHubPayload = {
     watch: string;
     markets: string;
   };
-  data_mode: "mock" | "live_sparse";
+  data_mode: "mock" | "live_sparse" | "live";
+  /** WEB yazma kapısı açık mı (abone ol / iptal) */
+  write_enabled?: boolean;
+};
+
+export type MembershipViewerSubscription = {
+  subscribed: boolean;
+  tier: string | null;
+  subscribed_at: string | null;
 };
 
 export type SignalPreviewLine = {
@@ -174,4 +182,6 @@ export type MembershipDetailPayload = {
     rooms_tab: string;
     discover: string;
   };
+  subscription: MembershipViewerSubscription;
+  write_enabled: boolean;
 };

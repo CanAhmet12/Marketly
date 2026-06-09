@@ -52,7 +52,9 @@ export const queryKeys = {
   economicCalendarDetail: (eventId: string) => ["economic-calendar-detail", eventId] as const,
   homeEditorialChips: () => ["home-editorial-chips"] as const,
   membershipCatalog: () => ["membership-catalog"] as const,
-  membershipDetail: (creatorId: string) => ["membership-detail", creatorId] as const,
+  membershipHub: (viewerId: string | null | undefined) => ["membership-hub", viewerId ?? "anon"] as const,
+  membershipDetail: (creatorId: string, viewerId: string | null | undefined = null) =>
+    ["membership-detail", creatorId, viewerId ?? "anon"] as const,
   playlistDetail: (playlistId: string, viewerKey: string | null | undefined) =>
     ["playlist-detail", playlistId, viewerKey ?? "anon"] as const,
 } as const;

@@ -22,6 +22,7 @@ export type SettingsNavItem = {
   id: SettingsSectionId;
   label: string;
   tone: string;
+  groupStart?: boolean;
   Icon: typeof SettingsIconHesap;
 };
 
@@ -70,42 +71,40 @@ type Props = {
 };
 
 export function SettingsNavPanel({ active, onSelect, hideStudio, hideInterest }: Props) {
-  const items = useMemo(
-    () =>
-      SETTINGS_NAV_GROUPS.flatMap((group) => group.items).filter((item) => {
-        if (item.id === "studio" && hideStudio) return false;
-        if (item.id === "ilgi" && hideInterest) return false;
-        return true;
-      }),
-    [hideStudio, hideInterest],
-  );
+  const items = useMemo(() => {
+    const flat: SettingsNavItem[] = [];
+    for (const group of SETTINGS_NAV_GROUPS) {
+      let groupStarted = false;
+      for (const item of group.items) {
+        if (item.id === "studio" && hideStudio) continue;
+        if (item.id === "ilgi" && hideInterest) continue;
+        flat.push({ ...item, groupStart: !groupStarted });
+        groupStarted = true;
+      }
+    }
+    return flat;
+  }, [hideStudio, hideInterest]);
 
   return (
     <nav className="stg-nav-top" aria-label="Ayarlar bölümleri">
-      <div className="stg-nav-segment-wrap">
-        <div className="stg-nav-segment" role="tablist">
-          {items.map((item) => {
-            const on = active === item.id;
-            const Icon = item.Icon;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                aria-current={on ? "page" : undefined}
-                onClick={() => onSelect(item.id)}
-                className={cn("stg-nav-tab", on && "stg-nav-tab--active")}
-                data-tone={item.tone}
-              >
-                <span className="stg-nav-tab-icon" aria-hidden>
-                  <Icon />
-                </span>
-                <span className="stg-nav-tab-label">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      <div className="stg-nav-segment" role="tablist">
+        {items.map((item) => {
+          const on = active === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              aria-current={on ? "page" : undefined}
+              onClick={() => onSelect(item.id)}
+              className={cn("stg-nav-tab", on && "stg-nav-tab--active", item.groupStart && "stg-nav-tab--group-start")}
+              data-tone={item.tone}
+            >
+              <span className="stg-nav-tab-label">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

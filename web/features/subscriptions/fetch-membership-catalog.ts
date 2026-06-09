@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { fetchViewerSubscription } from "@/features/subscriptions/lib/fetch-active-memberships";
 import {
   buildCreatorEconomyIntel,
   enrichMembershipCard,
   fetchCreatorActivitySnapshots,
   fetchCreatorDetailEnrichment,
 } from "@/features/subscriptions/lib/enrich-membership-intel";
+import { isSubscriptionWriteEnabled } from "@/features/subscriptions/lib/subscription-persistence";
 import type {
   MembershipDetailPayload,
   MembershipDiscoveryCard,
@@ -58,7 +60,7 @@ function mapCatalogCard(row: ProfileRow): MembershipDiscoveryCard {
     rel_kind: "rising_premium",
     tier_keys: tierKeys,
     intel: { ...EMPTY_INTEL },
-    href_detail: `/subscriptions/${row.id}`,
+    href_detail: `/hub/subscriptions/${row.id}`,
     href_channel: `/channel/${row.id}`,
     heat_score: row.subscription_price ? 0.6 : 0.3,
   };
@@ -137,6 +139,7 @@ export async function fetchMembershipCatalog(
 export async function fetchMembershipDetail(
   client: SupabaseClient,
   creatorId: string,
+  viewerId: string | null = null,
 ): Promise<MembershipDetailPayload | null> {
   try {
     const { data, error } = await client
@@ -151,14 +154,23 @@ export async function fetchMembershipDetail(
     const tiers = premium ? [buildFreeTier(), premium] : [buildFreeTier()];
     const enrichment = await fetchCreatorDetailEnrichment(client, creatorId);
     const intel = buildCreatorEconomyIntel(enrichment.snapshot);
+    const subscription = viewerId
+      ? await fetchViewerSubscription(client, viewerId, creatorId)
+      : { subscribed: false, tier: null, subscribed_at: null };
+    const write_enabled = isSubscriptionWriteEnabled();
+    const displayName = row.full_name?.trim() || row.username?.trim() || "Üretici";
 
     return {
       creator_id: row.id,
-      display_name: row.full_name?.trim() || row.username?.trim() || "Üretici",
+      display_name: displayName,
       handle: `@${row.username ?? "user"}`,
       avatar_url: row.avatar_url,
       verified: Boolean(row.verified),
-      overview: row.bio?.trim() || "Üretici üyelik kataloğu — ödeme entegrasyonu henüz aktif değil.",
+      overview:
+        row.bio?.trim() ||
+        (premium
+          ? `${displayName} premium katman sunuyor. Abonelik kaydı profil üzerinden yönetilir.`
+          : "Bu üretici henüz ücretli katman tanımlamamış."),
       strategy_summary: enrichment.strategy_summary,
       tiers,
       intel,
@@ -169,13 +181,18 @@ export async function fetchMembershipDetail(
       discussion_previews: enrichment.discussion_previews,
       signal_previews: enrichment.signal_previews,
       activity_timeline: enrichment.activity_timeline,
-      archive_hint: enrichment.signal_previews.length > 0 ? "Sinyal arşivi kanal sekmesinde." : "İçerik arşivi oluşunca burada görünecek.",
+      archive_hint:
+        enrichment.signal_previews.length > 0
+          ? "Sinyal arşivi kanal sekmesinde."
+          : "İçerik arşivi oluşunca burada görünecek.",
       links: {
         channel: `/channel/${row.id}`,
         signals: `/channel/${row.id}?tab=signals`,
         rooms_tab: `/channel/${row.id}?tab=rooms`,
         discover: "/discover",
       },
+      subscription,
+      write_enabled,
     };
   } catch {
     return null;
