@@ -7,9 +7,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { useAuth } from "@/features/auth/use-auth";
+import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
 import { HubPageHeader } from "@/features/hub/components/hub-page-header";
 import { HubPageShell } from "@/features/hub/components/hub-page-shell";
 import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
+import { UploadPublishDock } from "@/features/upload/components/upload-publish-dock";
+import { UploadTypeRail, type UploadContentKind } from "@/features/upload/components/upload-type-rail";
 import type { MediaItem } from "@/features/feed/types";
 import { pulseHrefForPostId } from "@/features/pulse/pulse-href";
 import { insertUploadPost } from "@/features/upload/insert-upload-post";
@@ -33,7 +36,7 @@ import { cn } from "@/lib/cn";
 import type { ComposerIntentId } from "@/features/social/repository/composer-types";
 import { UploadComposerAdvanced } from "@/features/upload/upload-composer-advanced";
 
-type ContentKind = "post" | "signal" | "video" | "pulse" | "live";
+type ContentKind = UploadContentKind;
 
 const CONTENT_TYPES: { id: ContentKind; label: string; guide: string[] }[] = [
   {
@@ -103,10 +106,10 @@ function uploadPostId(result: { id: string } | { error: string }): string {
 
 function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
-    <div className="up-field">
-      <label className="up-label">
+    <div className="uv2-field">
+      <label className="uv2-label">
         {label}
-        {required && <span className="up-label-req">*</span>}
+        {required && <span className="uv2-label-req">*</span>}
       </label>
       {children}
     </div>
@@ -450,7 +453,16 @@ export function UploadPageClient() {
     <HubPageHeader
       kicker={hubPremiumKicker("tools", "Yayın")}
       title="İçerik Oluştur"
-      subtitle="Gönderi, sinyal, video, Pulse veya canlı yayın"
+      subtitle="Ne paylaşmak istiyorsun?"
+    />
+  );
+
+  const heroStrip = (
+    <HubHeroStrip
+      stats={[
+        { label: "Format", value: currentType.label, valueAccent: true },
+        { label: "Varlık", value: assetTag.trim() || "Seçilmedi" },
+      ]}
     />
   );
 
@@ -458,15 +470,10 @@ export function UploadPageClient() {
   if (!isSupabaseConfigured() && !mockOn) {
     return (
       <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader}>
-        <div className="up-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
-          <div className="up-page ms-container-wide" style={{ paddingTop: 40 }}>
-            <div style={{ padding: "20px 0", borderLeft: "2px solid rgba(239,68,68,0.4)", paddingLeft: 14 }}>
-              <p style={{ fontSize: 13, color: "rgba(239,68,68,0.8)", fontWeight: 600 }}>
-                Supabase yapılandırılmamış.
-              </p>
-              <p style={{ fontSize: 12, color: "var(--up-meta)", marginTop: 4 }}>
-                Demo modu için <code style={{ fontFamily: "monospace", fontSize: 11 }}>NEXT_PUBLIC_USE_MOCK=true</code> ortam değişkenini ekleyin.
-              </p>
+        <div className="uv2-studio ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
+          <div className="uv2-page ms-container-wide" style={{ paddingTop: 40 }}>
+            <div className="uv2-feedback uv2-feedback--error">
+              Supabase yapılandırılmamış. Demo için NEXT_PUBLIC_USE_MOCK=true ekleyin.
             </div>
           </div>
         </div>
@@ -475,59 +482,50 @@ export function UploadPageClient() {
   }
 
   return (
-    <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader}>
-    <div className="up-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
-      <div className="up-page ms-container-wide">
+    <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader} hero={heroStrip}>
+      <div className="uv2-studio ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
+        <div className="uv2-page ms-container-wide">
 
-        {/* Mock notice */}
-        {mockOn && (
-          <div className="up-notice">
-            <span style={{ fontSize: 11, color: "rgba(232,160,32,0.7)", fontWeight: 700, letterSpacing: "0.06em" }}>DEMO</span>
-            <span className="up-notice-text">Gerçek veritabanına yazılmaz — tüm akışlar simüle edilir.</span>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="up-header">
-          <div className="up-header-top">
-            <div>
-              <div className="up-title">İçerik Yayınla</div>
-              <div className="up-subtitle">Gönderi, sinyal, video, Pulse veya canlı yayın</div>
+          {mockOn && (
+            <div className="uv2-demo-banner">
+              <span className="uv2-demo-badge">DEMO</span>
+              <span>Gerçek veritabanına yazılmaz — akış simüle edilir.</span>
             </div>
-            {displayName && (
-              <div className="up-user-chip">
-                <div className="up-user-avatar">{initials}</div>
-                <span className="up-user-name">{displayName}</span>
-              </div>
-            )}
-          </div>
+          )}
 
-          {/* Type bar */}
-          <div className="up-type-bar">
-            {CONTENT_TYPES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => switchKind(t.id)}
-                className={cn("up-type-tab", kind === t.id && "up-type-tab--active")}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
+          {displayName ? (
+            <div className="uv2-creator-chip">
+              <div className="uv2-creator-avatar">{initials}</div>
+              <span className="uv2-creator-name">{displayName}</span>
+            </div>
+          ) : null}
 
-        {/* Main grid */}
-        <div className="up-grid">
+          <UploadTypeRail active={kind} onSelect={switchKind} />
 
-          {/* ── LEFT: form ── */}
-          <div className="up-form">
+          <div className="uv2-workspace">
+            <div className="uv2-main">
+              <div className="uv2-panel" data-tone={kind}>
 
             {/* ── POST FORM ── */}
             {kind === "post" && (
               <>
-                <div className="up-section">
-                  <UploadComposerAdvanced
+                <div className="uv2-block">
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={5}
+                    placeholder="Fikrini yaz — kısa ve net…"
+                    className="uv2-textarea uv2-textarea--hero"
+                  />
+                </div>
+
+                <details className="uv2-advanced">
+                  <summary className="uv2-advanced-summary">
+                    Gelişmiş ayarlar
+                    <span className="uv2-advanced-hint">Opsiyonel</span>
+                  </summary>
+                  <div className="uv2-advanced-body">
+                    <UploadComposerAdvanced
                     userId={uid}
                     contentKind={kind}
                     content={content}
@@ -553,63 +551,51 @@ export function UploadPageClient() {
                     setScheduledPublishAt={setScheduledPublishAt}
                     circleAudienceId={circleAudienceId}
                     setCircleAudienceId={setCircleAudienceId}
-                  />
-                </div>
-
-                <div className="up-section">
-                  <Field label="Metin" required>
-                    <textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={7}
-                      placeholder="Tezini kur — bağlam, seviye, risk ve senaryo…"
-                      className="up-input up-input--area"
                     />
-                  </Field>
-                </div>
+                  </div>
+                </details>
 
-                <div className="up-section">
-                  <Field label="Başlık (opsiyonel)">
+                <div className="uv2-block">
+                  <Field label="Başlık" >
                     <input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Opsiyonel başlık"
-                      className="up-input"
+                      className="uv2-input"
                     />
                   </Field>
-                  <div className="up-field" style={{ marginTop: 18 }}>
-                    <label className="up-label">Varlık etiketi</label>
+                  <Field label="Varlık">
                     <input
                       value={assetTag}
                       onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
-                      placeholder="ör. BTC"
-                      className="up-input up-input--mono"
-                      style={{ maxWidth: 160 }}
+                      placeholder="BTC"
+                      className="uv2-input uv2-input--mono"
+                      style={{ maxWidth: 180 }}
                     />
-                    <div className="up-chip-strip">
+                    <div className="uv2-chips">
                       {ASSET_CHIPS.map((chip) => (
                         <button key={chip} type="button" onClick={() => setAssetTag(chip)}
-                          className={cn("up-chip", assetTag === chip && "up-chip--active")}>
+                          className={cn("uv2-chip", assetTag === chip && "uv2-chip--active")}>
                           {chip}
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </Field>
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
+                  <p className="uv2-block-title">Görseller</p>
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={onDrop}
-                    className={cn("up-drop-zone", dragOver && "up-drop-zone--over")}
+                    className={cn("uv2-drop", dragOver && "uv2-drop--over")}
                     onClick={() => fileRef.current?.click()}
                   >
-                    <div className="up-drop-label">Görselleri sürükle veya seç</div>
-                    <div className="up-drop-hint">
-                      En fazla {UPLOAD_LIMITS.postImagesMax} görsel · JPEG, PNG, WebP, GIF
-                    </div>
-                    <button type="button" className="up-drop-btn" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
+                    <span className="uv2-drop-icon" aria-hidden>+</span>
+                    <p className="uv2-drop-title">Sürükle veya seç</p>
+                    <p className="uv2-drop-hint">En fazla {UPLOAD_LIMITS.postImagesMax} görsel · JPEG, PNG, WebP</p>
+                    <button type="button" className="uv2-drop-btn" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
                       Dosya seç
                     </button>
                     <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden"
@@ -617,11 +603,11 @@ export function UploadPageClient() {
                   </div>
 
                   {postFiles.length > 0 && (
-                    <div className="up-image-grid" style={{ marginTop: 12 }}>
+                    <div className="uv2-thumb-grid">
                       {postFiles.map((f, i) => (
-                        <div key={`${f.name}-${i}`} className="up-image-thumb">
+                        <div key={`${f.name}-${i}`} className="uv2-thumb">
                           <img src={postObjectUrls[i] ?? ""} alt="" />
-                          <button type="button" className="up-image-remove"
+                          <button type="button" className="uv2-thumb-remove"
                             onClick={() => setPostFiles((p) => p.filter((_, j) => j !== i))}>
                             ×
                           </button>
@@ -636,17 +622,17 @@ export function UploadPageClient() {
             {/* ── SIGNAL FORM ── */}
             {kind === "signal" && (
               <>
-                <div className="up-section">
-                  <div className="up-section-title">Yön</div>
-                  <div className="up-direction-group">
+                <div className="uv2-block">
+                  <div className="uv2-block-title">Yön</div>
+                  <div className="uv2-dir-group">
                     {SIGNAL_DIRECTIONS.map((d) => (
                       <button key={d} type="button"
                         onClick={() => setSignalDirection(d)}
                         className={cn(
-                          "up-dir-btn",
-                          signalDirection === d && d === "LONG"  && "up-dir-btn--long",
-                          signalDirection === d && d === "SHORT" && "up-dir-btn--short",
-                          signalDirection === d && d === "HOLD"  && "up-dir-btn--hold",
+                          "uv2-dir-btn",
+                          signalDirection === d && d === "LONG"  && "uv2-dir-btn--long",
+                          signalDirection === d && d === "SHORT" && "uv2-dir-btn--short",
+                          signalDirection === d && d === "HOLD"  && "uv2-dir-btn--hold",
                         )}>
                         {d}
                       </button>
@@ -654,19 +640,19 @@ export function UploadPageClient() {
                   </div>
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
                   <Field label="Varlık" required>
                     <input
                       value={assetTag}
                       onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
                       placeholder="BTC"
-                      className="up-input up-input--mono"
+                      className="uv2-input uv2-input--mono"
                       style={{ maxWidth: 180 }}
                     />
-                    <div className="up-chip-strip">
+                    <div className="uv2-chips">
                       {ASSET_CHIPS.map((chip) => (
                         <button key={chip} type="button" onClick={() => setAssetTag(chip)}
-                          className={cn("up-chip", assetTag === chip && "up-chip--active")}>
+                          className={cn("uv2-chip", assetTag === chip && "uv2-chip--active")}>
                           {chip}
                         </button>
                       ))}
@@ -674,51 +660,51 @@ export function UploadPageClient() {
                   </Field>
                 </div>
 
-                <div className="up-section">
-                  <div className="up-section-title">Fiyat Seviyeleri</div>
-                  <div className="up-price-row">
+                <div className="uv2-block">
+                  <div className="uv2-block-title">Fiyat Seviyeleri</div>
+                  <div className="uv2-price-row">
                     <Field label="Giriş">
                       <input value={signalEntry} onChange={(e) => setSignalEntry(e.target.value)}
                         placeholder="0.00" type="number" step="any"
-                        className="up-input up-input--mono" />
+                        className="uv2-input uv2-input--mono" />
                     </Field>
                     <Field label="Hedef">
                       <input value={signalTarget} onChange={(e) => setSignalTarget(e.target.value)}
                         placeholder="0.00" type="number" step="any"
-                        className="up-input up-input--mono" />
+                        className="uv2-input uv2-input--mono" />
                     </Field>
                     <Field label="Stop Loss">
                       <input value={signalStop} onChange={(e) => setSignalStop(e.target.value)}
                         placeholder="0.00" type="number" step="any"
-                        className="up-input up-input--mono" />
+                        className="uv2-input uv2-input--mono" />
                     </Field>
                   </div>
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
                     <div>
-                      <div className="up-section-title" style={{ marginBottom: 10 }}>Konviksiyon</div>
-                      <div className="up-conviction">
+                      <div className="uv2-block-title" style={{ marginBottom: 10 }}>Konviksiyon</div>
+                      <div className="uv2-conv-row">
                         {[1, 2, 3, 4, 5].map((n) => (
                           <button key={n} type="button"
                             onClick={() => setSignalConviction(n)}
-                            className={cn("up-conv-dot", signalConviction >= n && "up-conv-dot--active")}>
+                            className={cn("uv2-conv-dot", signalConviction >= n && "uv2-conv-dot--active")}>
                             {n}
                           </button>
                         ))}
-                        <span className="up-conv-label">
+                        <span style={{ fontSize: 12, color: "var(--color-meta)" }}>
                           {signalConviction === 1 ? "Zayıf" : signalConviction === 2 ? "Düşük" : signalConviction === 3 ? "Orta" : signalConviction === 4 ? "Güçlü" : "Çok Güçlü"}
                         </span>
                       </div>
                     </div>
                     <div>
-                      <div className="up-section-title" style={{ marginBottom: 10 }}>Risk</div>
-                      <div className="up-risk-group">
+                      <div className="uv2-block-title" style={{ marginBottom: 10 }}>Risk</div>
+                      <div className="uv2-risk-row">
                         {SIGNAL_RISK_LEVELS.map((r) => (
                           <button key={r} type="button"
                             onClick={() => setSignalRisk(r)}
-                            className={cn("up-risk-btn", signalRisk === r && "up-risk-btn--active")}>
+                            className={cn("uv2-risk-btn", signalRisk === r && "uv2-risk-btn--active")}>
                             {r}
                           </button>
                         ))}
@@ -727,24 +713,24 @@ export function UploadPageClient() {
                   </div>
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
                   <Field label="Zaman Dilimi">
                     <select value={signalTimeframe}
                       onChange={(e) => setSignalTimeframe(e.target.value as typeof signalTimeframe)}
-                      className="up-select" style={{ maxWidth: 240 }}>
+                      className="uv2-select" style={{ maxWidth: 240 }}>
                       {SIGNAL_TIMEFRAMES.map((tf) => <option key={tf}>{tf}</option>)}
                     </select>
                   </Field>
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
                   <Field label="Tez / Analiz" required>
                     <textarea
                       value={signalThesis}
                       onChange={(e) => setSignalThesis(e.target.value)}
                       rows={6}
                       placeholder="Sinyal gerekçesi, teknik veya temel analiz, kritik seviyeler…"
-                      className="up-input up-input--area"
+                      className="uv2-textarea"
                     />
                   </Field>
                 </div>
@@ -754,32 +740,33 @@ export function UploadPageClient() {
             {/* ── VIDEO / PULSE FORM ── */}
             {(kind === "video" || kind === "pulse") && (
               <>
-                <div className="up-section">
+                <div className="uv2-block">
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={onDrop}
-                    className={cn("up-drop-zone", dragOver && "up-drop-zone--over")}
+                    className={cn("uv2-drop", dragOver && "uv2-drop--over")}
                   >
                     {videoFile ? (
                       <>
-                        <div className="up-drop-file-name">{videoFile.name}</div>
-                        <div className="up-drop-file-size">{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
-                        <button type="button" className="up-drop-remove"
+                        <p className="uv2-drop-title">{videoFile.name}</p>
+                        <p className="uv2-drop-hint">{(videoFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                        <button type="button" className="uv2-drop-btn"
                           onClick={() => { setVideoFile(null); setThumbFile(null); }}>
                           Kaldır
                         </button>
                       </>
                     ) : (
                       <>
-                        <div className="up-drop-label">
-                          {kind === "pulse" ? "Pulse video sürükle veya seç" : "Video dosyasını sürükle veya seç"}
-                        </div>
-                        <div className="up-drop-hint">
+                        <span className="uv2-drop-icon" aria-hidden>▶</span>
+                        <p className="uv2-drop-title">
+                          {kind === "pulse" ? "Pulse video sürükle veya seç" : "Video sürükle veya seç"}
+                        </p>
+                        <p className="uv2-drop-hint">
                           MP4, WebM, MOV · maks. {Math.round(UPLOAD_LIMITS.videoMaxBytes / 1024 / 1024)} MB
-                          {kind === "pulse" ? ` · ≤${UPLOAD_LIMITS.shortMaxSeconds} saniye` : ""}
-                        </div>
-                        <button type="button" className="up-drop-btn" onClick={() => videoRef.current?.click()}>
+                          {kind === "pulse" ? ` · ≤${UPLOAD_LIMITS.shortMaxSeconds} sn` : ""}
+                        </p>
+                        <button type="button" className="uv2-drop-btn" onClick={() => videoRef.current?.click()}>
                           Dosya seç
                         </button>
                       </>
@@ -789,39 +776,39 @@ export function UploadPageClient() {
                   </div>
 
                   {videoPreviewUrl && (
-                    <video src={videoPreviewUrl} controls className="up-video-preview" playsInline />
+                    <video src={videoPreviewUrl} controls className="uv2-video-preview" playsInline />
                   )}
                 </div>
 
-                <div className="up-section">
+                <div className="uv2-block">
                   <Field label="Başlık" required>
                     <input value={title} onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Video başlığı" className="up-input" />
+                      placeholder="Video başlığı" className="uv2-input" />
                   </Field>
                   <div style={{ marginTop: 18 }}>
                     <Field label="Açıklama">
                       <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={4}
-                        placeholder="Video açıklaması…" className="up-input up-input--area" />
+                        placeholder="Video açıklaması…" className="uv2-textarea" />
                     </Field>
                   </div>
                   <div style={{ marginTop: 18 }}>
                     <Field label="Varlık etiketi">
                       <input value={assetTag} onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
-                        placeholder="ör. BTC" className="up-input up-input--mono" style={{ maxWidth: 160 }} />
+                        placeholder="ör. BTC" className="uv2-input uv2-input--mono" style={{ maxWidth: 160 }} />
                     </Field>
                   </div>
                 </div>
 
-                <div className="up-section">
-                  <div className="up-section-title">Kapak Görseli (opsiyonel)</div>
-                  <div className="up-thumb-row">
+                <div className="uv2-block">
+                  <div className="uv2-block-title">Kapak Görseli (opsiyonel)</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     {thumbFile && thumbPreviewUrl && (
                       <>
-                        <img src={thumbPreviewUrl} alt="" className="up-thumb-preview" />
-                        <button type="button" className="up-thumb-remove" onClick={() => setThumbFile(null)}>Kaldır</button>
+                        <img src={thumbPreviewUrl} alt="" className="uv2-thumb" style={{ width: 80, height: 80 }} />
+                        <button type="button" className="uv2-drop-btn" onClick={() => setThumbFile(null)}>Kaldır</button>
                       </>
                     )}
-                    <button type="button" className="up-thumb-btn" onClick={() => thumbRef.current?.click()}>
+                    <button type="button" className="uv2-drop-btn" onClick={() => thumbRef.current?.click()}>
                       {thumbFile ? "Değiştir" : "Kapak ekle"}
                     </button>
                   </div>
@@ -834,19 +821,19 @@ export function UploadPageClient() {
             {/* ── LIVE FORM ── */}
             {kind === "live" && (
               <>
-                <div className="up-section">
-                  <div className="up-live-indicator">
-                    <span className="up-live-dot" />
-                    <span className="up-live-text">Canlı yayın akışı</span>
+                <div className="uv2-block">
+                  <div className="uv2-live-badge">
+                    <span className="uv2-live-dot" />
+                    Canlı yayın
                   </div>
 
                   <Field label="Yayın başlığı" required>
                     <input value={title} onChange={(e) => setTitle(e.target.value)}
-                      placeholder="ör. Sabah Seans Yorumu — BIST Açılışı" className="up-input" />
+                      placeholder="ör. Sabah Seans Yorumu — BIST Açılışı" className="uv2-input" />
                   </Field>
                   <div style={{ marginTop: 18 }}>
                     <Field label="Kategori">
-                      <select value={liveCategory} onChange={(e) => setLiveCategory(e.target.value)} className="up-select" style={{ maxWidth: 260 }}>
+                      <select value={liveCategory} onChange={(e) => setLiveCategory(e.target.value)} className="uv2-select" style={{ maxWidth: 260 }}>
                         {LIVE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
                       </select>
                     </Field>
@@ -854,42 +841,42 @@ export function UploadPageClient() {
                   <div style={{ marginTop: 18 }}>
                     <Field label="Açıklama">
                       <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={4}
-                        placeholder="Yayında ne konuşulacak?" className="up-input up-input--area" />
+                        placeholder="Yayında ne konuşulacak?" className="uv2-textarea" />
                     </Field>
                   </div>
                   <div style={{ marginTop: 18 }}>
                     <Field label="Varlık etiketi">
                       <input value={assetTag} onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
-                        placeholder="ör. THYAO" className="up-input up-input--mono" style={{ maxWidth: 160 }} />
+                        placeholder="ör. THYAO" className="uv2-input uv2-input--mono" style={{ maxWidth: 160 }} />
                     </Field>
                   </div>
                   <div style={{ marginTop: 18 }}>
                     <Field label="Planlanmış tarih/saat (opsiyonel)">
                       <input type="datetime-local" value={liveScheduled} onChange={(e) => setLiveScheduled(e.target.value)}
-                        className="up-input" style={{ maxWidth: 240 }} />
+                        className="uv2-input" style={{ maxWidth: 240 }} />
                     </Field>
                   </div>
                 </div>
 
-                <div className="up-section">
-                  <div className="up-stream-key-box">
-                    <div className="up-stream-key-label">Yayın Anahtarı (Stream Key)</div>
-                    <div className="up-stream-key-val">
+                <div className="uv2-block">
+                  <div className="uv2-stream-box">
+                    <div className="uv2-stream-label">Stream Key</div>
+                    <div className="uv2-stream-key">
                       {mockOn ? "MOCK-KEY-XXXX-XXXX-XXXX" : "Yayın başlatıldığında oluşturulur"}
                     </div>
-                    <div className="up-stream-key-note">
-                      OBS Studio veya uyumlu yazılımla RTMP push — WebRTC desteği yakında.
-                    </div>
+                    <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--color-meta)" }}>
+                      OBS veya RTMP uyumlu yazılım
+                    </p>
                   </div>
                 </div>
 
-                <div className="up-section">
-                  <div className="up-section-title">Yayın Öncesi Kontrol</div>
-                  <div className="up-checklist">
+                <div className="uv2-block">
+                  <div className="uv2-block-title">Yayın Öncesi Kontrol</div>
+                  <div className="uv2-checklist">
                     {["Mikrofon çalışıyor", "Kamera/ekran hazır", "Bağlantı stabil", "Konu hazırlandı"].map((item) => (
-                      <label key={item} className="up-check-item">
+                      <label key={item} className="uv2-check">
                         <input type="checkbox" />
-                        <span className="up-check-label">{item}</span>
+                        <span>{item}</span>
                       </label>
                     ))}
                   </div>
@@ -897,79 +884,24 @@ export function UploadPageClient() {
               </>
             )}
 
-            {/* Feedback */}
-            {error && (
-              <div className="up-section">
-                <div className="up-error" role="alert" aria-live="assertive">{error}</div>
               </div>
-            )}
-            {mockSuccess && (
-              <div className="up-section">
-                <div className="up-success" role="status" aria-live="polite">{mockSuccess}</div>
-              </div>
-            )}
-            {progress && !error && (
-              <div className="up-section">
-                <div className="up-progress">
-                  <span className="up-spinner" />
-                  <span>{progress}</span>
-                </div>
-              </div>
-            )}
+            </div>
 
+            <UploadPublishDock
+              kind={kind}
+              guide={currentType.guide}
+              submitting={submitting}
+              mockOn={mockOn}
+              onPublish={() => void publish()}
+              error={error}
+              progress={progress}
+              mockSuccess={mockSuccess}
+            />
           </div>
 
-          {/* ── RIGHT: rail ── */}
-          <div className="up-rail">
-
-            {/* İçerik tipi rehberi */}
-            <div className="up-guide">
-              <div className="up-guide-title">{currentType.label} rehberi</div>
-              {currentType.guide.map((item) => (
-                <div key={item} className="up-guide-item">
-                  <span className="up-guide-item-dot" />
-                  <span className="up-guide-item-text">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Genel ipuçları */}
-            <div className="up-guide">
-              <div className="up-guide-title">İpuçları</div>
-              {[
-                "Tutarlı içerik takvimi takipçi sadakati oluşturur",
-                "Her içerik için varlık etiketi ekle",
-                "Sinyal doğruluk oranın profilinde gösterilir",
-                "İlk 48 saatte en yüksek etkileşim alınır",
-              ].map((item) => (
-                <div key={item} className="up-guide-item">
-                  <span className="up-guide-item-dot" />
-                  <span className="up-guide-item-text">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="up-cta">
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={() => void publish()}
-                aria-busy={submitting}
-                className="up-publish-btn"
-              >
-                {submitting ? "Yayınlanıyor…" : kind === "live" ? "Yayını Başlat" : "Yayınla"}
-              </button>
-              <div className="up-publish-note">
-                {mockOn ? "Demo modu — gerçek kayıt yapılmaz." : "Yayınlandıktan sonra akışta görünür."}
-              </div>
-            </div>
-
-          </div>
-
+          <div className="uv2-mobile-spacer" aria-hidden />
         </div>
       </div>
-    </div>
     </HubPageShell>
   );
 }

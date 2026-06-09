@@ -10,10 +10,6 @@ import { getSocialRepository } from "@/features/social/repository";
 import { cn } from "@/lib/cn";
 import { isMockDataEnabled } from "@/mock/config";
 
-const chip =
-  "max-w-full shrink-0 truncate rounded-full border px-2.5 py-1 text-[11px] font-semibold transition";
-const meta = "text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]";
-
 type ContentKind = "post" | "signal" | "video" | "pulse" | "live";
 
 export type UploadComposerAdvancedProps = {
@@ -87,7 +83,6 @@ export function UploadComposerAdvanced({
     [userId],
   );
   const [refHits, setRefHits] = useState<ComposerReferenceHit[]>([]);
-  const [summaryOpen, setSummaryOpen] = useState(true);
   const [draftNote, setDraftNote] = useState("");
   const [draftTick, setDraftTick] = useState(0);
 
@@ -268,23 +263,17 @@ export function UploadComposerAdvanced({
   if (contentKind !== "post") return null;
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className={meta}>Yayın bağlamı</p>
-          <p className="mt-1 text-[13px] font-semibold text-[var(--color-text)]">Yayın Bağlamı</p>
-          <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">Alıntı, hedef kitle ve referansları yapılandır.</p>
+    <div className="uv2-composer">
+      {mockOn ? (
+        <div className="uv2-demo-banner" style={{ marginBottom: 4 }}>
+          <span className="uv2-demo-badge">DEMO</span>
+          <span>Taslaklar tarayıcıda saklanır.</span>
         </div>
-        {!mockOn ? (
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", color: "rgba(232,160,32,0.65)", padding: "2px 8px", border: "1px solid rgba(232,160,32,0.2)", borderRadius: 4 }}>
-            DEMO
-          </span>
-        ) : null}
-      </div>
+      ) : null}
 
-      <div>
-        <p className={meta}>İçerik niyeti</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+      <div className="uv2-composer-section">
+        <p className="uv2-block-title">Niyet</p>
+        <div className="uv2-chips">
           {intents.map((it) => {
             const on = intentId === it.id;
             return (
@@ -293,12 +282,7 @@ export function UploadComposerAdvanced({
                 type="button"
                 title={it.hint}
                 onClick={() => setIntentId(on ? null : it.id)}
-                className={cn(
-                  chip,
-                  on
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-meta)] hover:border-[var(--color-primary)]/40",
-                )}
+                className={cn("uv2-chip", on && "uv2-chip--active")}
               >
                 {it.label}
               </button>
@@ -307,10 +291,9 @@ export function UploadComposerAdvanced({
         </div>
       </div>
 
-      <div>
-        <p className={meta}>Hedef kitle</p>
-        <p className="mt-0.5 text-[11px] font-medium text-[var(--color-muted)]">Özel daire veya genel akış — CloseFriends + üyelik modeli</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+      <div className="uv2-composer-section">
+        <p className="uv2-block-title">Kitle</p>
+        <div className="uv2-chips">
           {audiences.map((a) => {
             const on = circleAudienceId === a.id;
             return (
@@ -319,16 +302,8 @@ export function UploadComposerAdvanced({
                 type="button"
                 disabled={a.locked}
                 title={a.sub}
-                onClick={() => {
-                  if (!a.locked) setCircleAudienceId(a.id);
-                }}
-                className={cn(
-                  chip,
-                  a.locked ? "cursor-not-allowed opacity-50" : "",
-                  on
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-meta)] hover:border-[var(--color-primary)]/40",
-                )}
+                onClick={() => { if (!a.locked) setCircleAudienceId(a.id); }}
+                className={cn("uv2-chip", a.locked && "opacity-50 cursor-not-allowed", on && "uv2-chip--active")}
               >
                 {a.label}
               </button>
@@ -336,173 +311,154 @@ export function UploadComposerAdvanced({
           })}
         </div>
         {selectedAudience?.href_learn ? (
-          <Link href={selectedAudience.href_learn} className="mt-2 inline-block text-[11px] font-semibold text-[var(--color-primary-dark)] hover:underline">
-            Daire detayı
+          <Link href={selectedAudience.href_learn} className="uv2-composer-link">
+            Daire detayı →
           </Link>
         ) : null}
       </div>
 
       {(quotedPostId || quotedSignalId || discussionAnchorPostId) && (
-        <div>
-          <p className={meta}>Bağlı önizleme</p>
+        <div className="uv2-composer-section">
+          <p className="uv2-block-title">Bağlı içerik</p>
           {quotePreview ? (
-            <div className="mt-2 rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] p-3">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-primary-dark)]">{quotePreview.title}</p>
-              <p className="mt-1 text-[12px] font-semibold text-[var(--color-text)]">{quotePreview.subtitle}</p>
-              <p className="mt-1 line-clamp-3 text-[12px] leading-snug text-[var(--color-text-secondary)]">{quotePreview.snippet}</p>
-              <p className="mt-2 text-[11px] text-[var(--color-meta)]">{quotePreview.metaLine}</p>
-              <Link href={quotePreview.href} className="mt-2 inline-block text-[12px] font-semibold text-[var(--color-primary-dark)] hover:underline">
-                Bağlamı aç
-              </Link>
-              <div className="mt-2 flex flex-wrap gap-2">
+            <div className="uv2-composer-preview">
+              <p className="uv2-composer-preview-title">{quotePreview.title}</p>
+              <p style={{ marginTop: 4, fontSize: 13, fontFamily: "var(--font-bold)" }}>{quotePreview.subtitle}</p>
+              <p className="uv2-composer-preview-body">{quotePreview.snippet}</p>
+              <div style={{ marginTop: 10, display: "flex", gap: 12 }}>
+                <Link href={quotePreview.href} className="uv2-composer-link">Aç</Link>
                 <button
                   type="button"
-                  className="text-[11px] font-semibold text-[var(--color-danger)] hover:underline"
+                  className="uv2-composer-danger"
                   onClick={() => {
                     setQuotedPostId(null);
                     setQuotedSignalId(null);
                     setDiscussionAnchorPostId(null);
                   }}
                 >
-                  Bağlantıyı kaldır
+                  Kaldır
                 </button>
               </div>
             </div>
           ) : (
-            <p className="mt-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[12px] text-[var(--color-muted)]">
-              Referans bulunamadı — parametreleri kontrol edin veya arama ile seçin.
-            </p>
+            <p className="uv2-composer-preview-body">Referans bulunamadı.</p>
           )}
         </div>
       )}
 
       {threadSeed ? (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-          <p className={meta}>Zincir</p>
-          <p className="mt-1 text-[12px] font-semibold text-[var(--color-text)]">{threadSeed.parentAuthorLine}</p>
-          <p className="mt-1 line-clamp-2 text-[12px] text-[var(--color-text-secondary)]">{threadSeed.parentSnippet}</p>
+        <div className="uv2-composer-preview">
+          <p className="uv2-block-title">Zincir yanıtı</p>
+          <p style={{ marginTop: 6, fontSize: 12, fontFamily: "var(--font-bold)" }}>{threadSeed.parentAuthorLine}</p>
+          <p className="uv2-composer-preview-body">{threadSeed.parentSnippet}</p>
           {threadSeed.suggestedPrefix ? (
             <button
               type="button"
-              className="mt-2 text-[12px] font-semibold text-[var(--color-primary-dark)] hover:underline"
+              className="uv2-composer-link"
+              style={{ marginTop: 8, background: "none", border: "none", cursor: "pointer", padding: 0 }}
               onClick={() => setContent(threadSeed.suggestedPrefix + content)}
             >
-              Önerilen girişi ekle
+              Önerilen girişi ekle →
             </button>
           ) : null}
         </div>
       ) : null}
 
-      <div>
-        <p className={meta}>Referans ara</p>
+      <div className="uv2-composer-section">
+        <p className="uv2-block-title">Referans ara</p>
         <input
           value={refQuery}
           onChange={(e) => setRefQuery(e.target.value)}
-          placeholder="Sembol, oda, tartışma, üretici…"
-          className="mt-2 w-full max-w-md rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[13px] text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+          placeholder="Sembol, oda, tartışma…"
+          className="uv2-input"
         />
         {refHits.length > 0 ? (
-          <ul className="mt-2 flex max-h-40 flex-col gap-1 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1">
+          <div className="uv2-composer-ref-list">
             {refHits.map((h) => (
-              <li key={`${h.kind}-${h.id}`}>
-                <button
-                  type="button"
-                  onClick={() => applyRef(h)}
-                  className="flex w-full flex-col rounded-md px-2 py-1.5 text-left text-[12px] hover:bg-[var(--color-surface-hover)]"
-                >
-                  <span className="font-semibold text-[var(--color-text)]">
-                    <span className="text-[var(--color-meta)]">{h.kind} · </span>
-                    {h.label}
-                  </span>
-                  {h.sublabel ? <span className="text-[11px] text-[var(--color-muted)]">{h.sublabel}</span> : null}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-[12px] font-semibold text-[var(--color-text)]">
-          Hedef oda ID
-          <input
-            value={targetRoomId ?? ""}
-            onChange={(e) => setTargetRoomId(e.target.value.trim() || null)}
-            className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-primary)]"
-            placeholder="mock-room-…"
-          />
-        </label>
-        <label className="block text-[12px] font-semibold text-[var(--color-text)]">
-          Konu slug / ID
-          <input
-            value={targetTopicSlug ?? ""}
-            onChange={(e) => setTargetTopicSlug(e.target.value.trim() || null)}
-            className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-primary)]"
-            placeholder="macro-fed"
-          />
-        </label>
-        <label className="block text-[12px] font-semibold text-[var(--color-text)] sm:col-span-2">
-          Planlanmış not (yerel)
-          <input
-            type="datetime-local"
-            value={scheduledPublishAt}
-            onChange={(e) => setScheduledPublishAt(e.target.value)}
-            className="mt-1 w-full max-w-xs rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-primary)]"
-          />
-        </label>
-      </div>
-
-      <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-        <button type="button" className="flex w-full items-center justify-between text-left" onClick={() => setSummaryOpen((s) => !s)}>
-          <span className="text-[12px] font-bold text-[var(--color-text)]">Yayın özeti</span>
-          <span className="text-[11px] text-[var(--color-meta)]">{summaryOpen ? "Gizle" : "Göster"}</span>
-        </button>
-        {summaryOpen ? (
-          <div className="mt-2 space-y-1.5">
-            {publishSummary.lines.map((line, i) => (
-              <p key={`${i}-${line.slice(0, 24)}`} className="text-[12px] text-[var(--color-text-secondary)]">
-                · {line}
-              </p>
-            ))}
-            {publishSummary.warnings.map((w) => (
-              <p key={w} className="text-[12px] font-semibold text-amber-800">
-                {w}
-              </p>
+              <button key={`${h.kind}-${h.id}`} type="button" onClick={() => applyRef(h)} className="uv2-composer-ref-item">
+                <span style={{ fontFamily: "var(--font-bold)" }}>
+                  <span style={{ color: "var(--color-meta)" }}>{h.kind} · </span>
+                  {h.label}
+                </span>
+                {h.sublabel ? <span style={{ fontSize: 11, color: "var(--color-meta)" }}>{h.sublabel}</span> : null}
+              </button>
             ))}
           </div>
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-end gap-2 border-t border-[var(--color-divider)] pt-3">
+      <div className="uv2-composer-grid">
+        <div className="uv2-field">
+          <label className="uv2-label">Hedef oda</label>
+          <input
+            value={targetRoomId ?? ""}
+            onChange={(e) => setTargetRoomId(e.target.value.trim() || null)}
+            className="uv2-input"
+            placeholder="mock-room-…"
+          />
+        </div>
+        <div className="uv2-field">
+          <label className="uv2-label">Konu slug</label>
+          <input
+            value={targetTopicSlug ?? ""}
+            onChange={(e) => setTargetTopicSlug(e.target.value.trim() || null)}
+            className="uv2-input"
+            placeholder="macro-fed"
+          />
+        </div>
+        <div className="uv2-field" style={{ gridColumn: "1 / -1" }}>
+          <label className="uv2-label">Planlı yayın</label>
+          <input
+            type="datetime-local"
+            value={scheduledPublishAt}
+            onChange={(e) => setScheduledPublishAt(e.target.value)}
+            className="uv2-input"
+            style={{ maxWidth: 280 }}
+          />
+        </div>
+      </div>
+
+      <details className="uv2-advanced">
+        <summary className="uv2-advanced-summary">
+          Yayın özeti
+          <span className="uv2-advanced-hint">{publishSummary.lines.length} satır</span>
+        </summary>
+        <div className="uv2-advanced-body">
+          {publishSummary.lines.map((line, i) => (
+            <p key={`${i}-${line.slice(0, 24)}`} className="uv2-composer-preview-body">· {line}</p>
+          ))}
+          {publishSummary.warnings.map((w) => (
+            <p key={w} style={{ fontSize: 12, color: "#b45309", marginTop: 6 }}>{w}</p>
+          ))}
+        </div>
+      </details>
+
+      <div className="uv2-composer-draft-row">
         <input
           value={draftNote}
           onChange={(e) => setDraftNote(e.target.value)}
-          placeholder="Taslak adı (opsiyonel)"
-          className="min-w-0 flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[12px] outline-none focus:border-[var(--color-primary)] sm:max-w-xs"
+          placeholder="Taslak adı"
+          className="uv2-input"
+          style={{ flex: "1 1 160px", maxWidth: 240 }}
         />
-        <button
-          type="button"
-          onClick={onSaveDraft}
-          disabled={!userId}
-          className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-[12px] font-bold text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
-        >
+        <button type="button" onClick={onSaveDraft} disabled={!userId} className="uv2-drop-btn">
           Taslağı kaydet
         </button>
       </div>
 
       {drafts.length > 0 ? (
-        <div>
-          <p className={meta}>Taslaklar</p>
-          <ul className="mt-2 space-y-1">
+        <div className="uv2-composer-section">
+          <p className="uv2-block-title">Taslaklar</p>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
             {drafts.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center gap-2 text-[12px]">
-                <button type="button" className="font-semibold text-[var(--color-primary-dark)] hover:underline" onClick={() => onLoadDraft(d.id)}>
+              <li key={d.id} style={{ display: "flex", flexWrap: "wrap", gap: 10, fontSize: 12, alignItems: "center" }}>
+                <button type="button" className="uv2-composer-link" style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} onClick={() => onLoadDraft(d.id)}>
                   {d.label}
                 </button>
-                <span className="text-[var(--color-meta)]">{new Date(d.updatedAt).toLocaleString()}</span>
+                <span style={{ color: "var(--color-meta)" }}>{new Date(d.updatedAt).toLocaleString()}</span>
                 <button
                   type="button"
-                  className="text-[11px] font-semibold text-[var(--color-danger)] hover:underline"
+                  className="uv2-composer-danger"
                   onClick={() => {
                     if (!userId) return;
                     repo.deleteComposerDraft(userId, d.id);
@@ -515,9 +471,7 @@ export function UploadComposerAdvanced({
             ))}
           </ul>
         </div>
-      ) : (
-        <p className="text-[12px] text-[var(--color-muted)]">Kayıtlı taslak yok — mock modda tarayıcıya yazılır.</p>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -50,10 +50,16 @@ export function StudioPageSkeleton() {
 /** `/upload` loading */
 export function UploadPageSkeleton() {
   return (
-    <div className="ms-page-wrapper ms-container-standard min-w-0 py-8" aria-busy="true">
-      <div className="motion-shimmer mb-4 h-7 w-40 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-4 h-10 w-full max-w-xl rounded-full bg-[var(--color-divider)]" />
-      <div className="motion-shimmer h-56 w-full rounded-2xl bg-[var(--color-divider)]" />
+    <div className="uv2-studio ms-page-wrapper ms-container-wide min-w-0 py-8" aria-busy="true">
+      <div className="uv2-skeleton">
+        <div className="motion-shimmer h-6 w-48 rounded-lg bg-[var(--color-divider)]" />
+        <div className="uv2-skeleton-rail">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="uv2-skeleton-card motion-shimmer" />
+          ))}
+        </div>
+        <div className="uv2-skeleton-panel motion-shimmer" />
+      </div>
     </div>
   );
 }
