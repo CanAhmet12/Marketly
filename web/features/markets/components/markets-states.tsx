@@ -96,13 +96,23 @@ export function PortfolioPageSkeleton() {
   );
 }
 
-/** `/price-alerts` SSR Suspense fallback */
+/** `/price-alerts` hydration skeleton — finance zone DNA */
 export function PriceAlertsPageSkeleton() {
   return (
-    <div className="ms-page-wrapper ms-container-standard min-w-0 px-[var(--sp-3)] py-[var(--sp-4)]" aria-busy="true">
-      <div className="motion-shimmer mb-4 h-8 w-48 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-3 h-4 w-64 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer h-56 rounded-xl bg-[var(--color-divider)]" />
+    <div className="pa-page ms-page-wrapper ms-container-markets min-w-0" aria-busy="true">
+      <div className="motion-shimmer mb-4 h-3 w-28 rounded bg-[var(--color-divider)]" />
+      <div className="motion-shimmer mb-2 h-8 w-48 rounded bg-[var(--color-divider)]" />
+      <div className="motion-shimmer mb-4 h-4 w-72 max-w-full rounded bg-[var(--color-divider)]" />
+      <div className="grid gap-3 min-[640px]:grid-cols-4 mb-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="motion-shimmer h-16 rounded-xl bg-[var(--color-divider)]" />
+        ))}
+      </div>
+      <div className="motion-shimmer mb-4 h-20 rounded-xl bg-[var(--color-divider)]" />
+      <div className="pa-skeleton-grid">
+        <div className="motion-shimmer h-72 rounded-xl bg-[var(--color-divider)]" />
+        <div className="motion-shimmer h-72 rounded-xl bg-[var(--color-divider)]" />
+      </div>
     </div>
   );
 }

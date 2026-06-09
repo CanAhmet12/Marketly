@@ -1,61 +1,112 @@
 /**
- * Fiyat alarmları — Hub Premium uyarlama
+ * Fiyat alarmları — Hub Premium uyarlama (finance zone, wl-page DNA)
  */
 
 .hp-canvas .pa-page {
+  background: transparent;
+  color: inherit;
   padding: 0;
   gap: var(--hp-space-section);
+  --pa-accent: var(--hp-zone-1);
+  --pa-up: var(--hp-up);
+  --pa-down: var(--hp-down);
+  --pa-border: var(--hp-border);
+  --pa-border-2: var(--hp-border-2);
+  --pa-surface: var(--hp-surface);
+  --pa-text: var(--hp-text);
+  --pa-text-2: var(--hp-text-2);
+  --pa-meta: var(--hp-meta);
 }
 
-.hp-canvas .pa-group {
+.hp-canvas .pa-main {
+  position: relative;
+}
+
+.hp-canvas .pa-main::before {
+  content: "";
+  position: absolute;
+  inset: -40px -20px auto;
+  height: 120px;
+  background: radial-gradient(
+    ellipse 70% 80% at 20% 0%,
+    color-mix(in srgb, var(--hp-zone-1) 8%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hp-canvas .pa-left,
+.hp-canvas .pa-sidebar {
+  position: relative;
+  z-index: 1;
+}
+
+.hp-canvas .pa-block,
+.hp-canvas .pa-intel-zone {
   border-radius: var(--hp-radius-block);
   border-color: var(--hp-glass-border);
   background: var(--hp-glass);
   box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
 }
 
-.hp-canvas .pa-group-head {
-  border-bottom-color: var(--hp-border-2);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)),
-    var(--hp-surface)
-  );
+.hp-canvas .pa-block-stripe {
+  background: var(--hp-zone-1);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hp-zone-1) 25%, transparent);
 }
 
-.hp-canvas .pa-symbol {
+.hp-canvas .pa-sym-name,
+.hp-canvas .pa-recent-sym {
   color: var(--hp-zone-1);
-  font-family: var(--font-bold);
 }
 
-.hp-canvas .pa-stat {
-  border-color: var(--hp-zone-border);
-  border-radius: var(--hp-radius-block);
-  background: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
-    var(--hp-surface) 100%
-  );
-  box-shadow: var(--hp-shadow-block);
-}
-
-.hp-canvas .pa-stat-val {
+.hp-canvas .pa-spot-price,
+.hp-canvas .pa-pulse-val,
+.hp-canvas .pa-dist-count,
+.hp-canvas .pa-row-time,
+.hp-canvas .pa-recent-time {
   font-family: var(--hp-font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: var(--hp-type-stat);
-  letter-spacing: var(--hp-track-tight);
 }
 
-.hp-canvas .pa-row-label {
+.hp-canvas .pa-spot-pct--up {
+  color: color-mix(in srgb, var(--hp-up) 92%, #fff);
+}
+
+.hp-canvas .pa-spot-pct--down {
+  color: color-mix(in srgb, var(--hp-down) 92%, #fff);
+}
+
+.hp-canvas .pa-cond-badge--above {
+  color: color-mix(in srgb, var(--hp-up) 90%, var(--hp-text));
+  background: color-mix(in srgb, var(--hp-up) 12%, transparent);
+}
+
+.hp-canvas .pa-cond-badge--below {
+  color: color-mix(in srgb, var(--hp-down) 90%, var(--hp-text));
+  background: color-mix(in srgb, var(--hp-down) 12%, transparent);
+}
+
+.hp-canvas .pa-action-btn--market {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 28%, var(--hp-border));
+}
+
+.hp-canvas .pa-intel-chip:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-border));
+}
+
+.hp-canvas .pa-intel-zone__link:hover,
+.hp-canvas .pa-link-row:hover {
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas .pa-dist-fill {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas .pa-table th {
   font-family: var(--font-bold);
-}
-
-.hp-canvas .pa-row-time {
-  font-family: var(--hp-font-mono);
   font-size: var(--hp-type-2xs);
-}
-
-.hp-canvas .pa-skeleton {
-  border-radius: var(--hp-radius-block);
-  border: 1px solid var(--hp-glass-border);
+  letter-spacing: 0.09em;
 }

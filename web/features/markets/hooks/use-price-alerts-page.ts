@@ -21,6 +21,8 @@ export type PriceAlertRow = {
   label: string;
   createdAt: string;
   source: "mock" | "live";
+  condition?: "above" | "below";
+  targetPrice?: number;
 };
 
 function mockGroupsToRows(groups: AssetAlertGroup[]): PriceAlertRow[] {
@@ -42,6 +44,8 @@ function liveToRows(rows: LivePriceAlert[]): PriceAlertRow[] {
     label: r.label,
     createdAt: r.createdAt,
     source: "live" as const,
+    condition: r.condition,
+    targetPrice: r.targetPrice,
   }));
 }
 
@@ -110,5 +114,5 @@ export function usePriceAlertsPage() {
     return liveQuery.error instanceof Error ? liveQuery.error.message : "Alarmlar yüklenemedi";
   }, [mockOn, liveQuery.error]);
 
-  return { grouped, totalCount: rows.length, ready, loading, error, remove, refetch: liveQuery.refetch };
+  return { grouped, rows, totalCount: rows.length, ready, loading, error, remove, refetch: liveQuery.refetch };
 }
