@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import type { SettingsSectionId } from "@/features/settings/settings-section-params";
 import {
   SettingsIconBildirim,
@@ -62,70 +64,49 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
 
 type Props = {
   active: SettingsSectionId;
-  displayName?: string;
-  initials?: string;
-  email?: string;
   onSelect: (id: SettingsSectionId) => void;
   hideStudio?: boolean;
   hideInterest?: boolean;
 };
 
-export function SettingsNavPanel({
-  active,
-  displayName,
-  initials,
-  email,
-  onSelect,
-  hideStudio,
-  hideInterest,
-}: Props) {
+export function SettingsNavPanel({ active, onSelect, hideStudio, hideInterest }: Props) {
+  const items = useMemo(
+    () =>
+      SETTINGS_NAV_GROUPS.flatMap((group) => group.items).filter((item) => {
+        if (item.id === "studio" && hideStudio) return false;
+        if (item.id === "ilgi" && hideInterest) return false;
+        return true;
+      }),
+    [hideStudio, hideInterest],
+  );
+
   return (
-    <nav className="stg-nav" aria-label="Ayarlar bölümleri">
-      {displayName ? (
-        <div className="stg-nav-user">
-          <div className="stg-nav-avatar">{initials || "CR"}</div>
-          <div className="stg-nav-user-meta">
-            <span className="stg-nav-user-name">{displayName}</span>
-            {email ? <span className="stg-nav-user-email">{email}</span> : null}
-          </div>
+    <nav className="stg-nav-top" aria-label="Ayarlar bölümleri">
+      <div className="stg-nav-segment-wrap">
+        <div className="stg-nav-segment" role="tablist">
+          {items.map((item) => {
+            const on = active === item.id;
+            const Icon = item.Icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                aria-current={on ? "page" : undefined}
+                onClick={() => onSelect(item.id)}
+                className={cn("stg-nav-tab", on && "stg-nav-tab--active")}
+                data-tone={item.tone}
+              >
+                <span className="stg-nav-tab-icon" aria-hidden>
+                  <Icon />
+                </span>
+                <span className="stg-nav-tab-label">{item.label}</span>
+              </button>
+            );
+          })}
         </div>
-      ) : null}
-
-      {SETTINGS_NAV_GROUPS.map((group) => {
-        const items = group.items.filter((item) => {
-          if (item.id === "studio" && hideStudio) return false;
-          if (item.id === "ilgi" && hideInterest) return false;
-          return true;
-        });
-        if (items.length === 0) return null;
-
-        return (
-          <div key={group.title} className="stg-nav-group">
-            <p className="stg-nav-group-title">{group.title}</p>
-            <div className="stg-nav-list">
-              {items.map((item) => {
-                const on = active === item.id;
-                const Icon = item.Icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-current={on ? "page" : undefined}
-                    onClick={() => onSelect(item.id)}
-                    className={cn("stg-nav-item", on && "stg-nav-item--active")}
-                    data-tone={item.tone}
-                  >
-                    <span className="stg-nav-item-icon" aria-hidden>
-                      <Icon />
-                    </span>
-                    <span className="stg-nav-item-label">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      </div>
     </nav>
   );
 }

@@ -509,6 +509,7 @@ export function UploadPageClient() {
             </div>
           )}
 
+          <div className="uv2-surface">
           <UploadTypeRail active={kind} onSelect={switchKind} />
 
           <div className="uv2-workspace">
@@ -923,6 +924,7 @@ export function UploadPageClient() {
               progress={progress}
               mockSuccess={mockSuccess}
             />
+          </div>
           </div>
 
           <div className="uv2-mobile-spacer" aria-hidden />

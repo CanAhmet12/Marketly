@@ -5,25 +5,11 @@ import type { ReactNode } from "react";
 export function SettingsPageSkeleton() {
   return (
     <div className="stg-studio stg-skeleton" aria-busy="true" aria-label="Ayarlar yükleniyor">
-      <div className="stg-skeleton-grid">
-        <div className="stg-skeleton-nav">
-          <div className="stg-skeleton-nav-user">
-            <div className="stg-skeleton-avatar motion-shimmer" />
-            <div className="stg-skeleton-lines">
-              <div className="stg-skeleton-line stg-skeleton-line--md motion-shimmer" />
-              <div className="stg-skeleton-line stg-skeleton-line--sm motion-shimmer" />
-            </div>
-          </div>
-          <div className="stg-skeleton-pills">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="stg-skeleton-pill motion-shimmer" />
-            ))}
-          </div>
-          <div className="stg-skeleton-pills">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="stg-skeleton-pill motion-shimmer" />
-            ))}
-          </div>
+      <div className="stg-skeleton-page stg-surface">
+        <div className="stg-skeleton-segment">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="stg-skeleton-tab motion-shimmer" />
+          ))}
         </div>
 
         <div className="stg-skeleton-panel">

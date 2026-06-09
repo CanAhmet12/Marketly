@@ -534,28 +534,23 @@ export function SettingsPageClient() {
   return (
     <HubPageShell zone="tools" className="hp-canvas--embedded-settings" header={pageHeader}>
       <div className="stg-studio">
-        <div className="stg-page">
-          <div className="stg-workspace">
-            <SettingsNavPanel
-              active={activeSection}
-              displayName={displayName}
-              initials={initials}
-              email={user?.email ?? undefined}
-              onSelect={pushSection}
-              hideStudio={!hub.creator.visible}
-              hideInterest={!mockOn}
-            />
+        <div className="stg-page stg-surface">
+          <SettingsNavPanel
+            active={activeSection}
+            onSelect={pushSection}
+            hideStudio={!hub.creator.visible}
+            hideInterest={!mockOn}
+          />
 
-            <div
-              className={cn("stg-panel", !hydrated && "stg-panel--loading")}
-              data-section={activeSection}
-              role="region"
-              aria-labelledby="stg-active-section-title"
-              aria-busy={!hydrated}
-            >
-              {saveError ? <div className="stg-save-banner">{saveError}</div> : null}
-              {!hydrated ? <SettingsSectionSkeleton /> : renderSection()}
-            </div>
+          <div
+            className={cn("stg-panel", !hydrated && "stg-panel--loading")}
+            data-section={activeSection}
+            role="region"
+            aria-labelledby="stg-active-section-title"
+            aria-busy={!hydrated}
+          >
+            {saveError ? <div className="stg-save-banner">{saveError}</div> : null}
+            {!hydrated ? <SettingsSectionSkeleton /> : renderSection()}
           </div>
         </div>
       </div>

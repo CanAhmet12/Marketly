@@ -999,3 +999,170 @@
 .uv2-skeleton-rail { display: flex; gap: 10px; }
 .uv2-skeleton-card { width: 108px; height: 96px; border-radius: var(--uv2-radius); background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface)); }
 .uv2-skeleton-panel { height: 320px; border-radius: var(--uv2-radius); background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface)); }
+
+/* ── Flat canvas (tek yüzey, kart yok) ── */
+
+.uv2-surface {
+  --uv2-divider: color-mix(in srgb, var(--uv2-border) 72%, transparent);
+  border-radius: var(--uv2-radius);
+  border: 1px solid var(--uv2-border);
+  background: color-mix(in srgb, var(--color-text) 1.2%, var(--color-surface));
+  overflow: hidden;
+}
+
+.uv2-surface .uv2-type-segment-wrap {
+  padding: 12px 16px 0;
+}
+
+.uv2-surface .uv2-type-segment {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--uv2-divider);
+}
+
+.uv2-surface .uv2-workspace {
+  gap: 0;
+  align-items: stretch;
+}
+
+.uv2-surface .uv2-main {
+  gap: 0;
+}
+
+.uv2-surface .uv2-panel {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 20px 16px 24px;
+}
+
+.uv2-surface .uv2-panel::before {
+  display: none;
+}
+
+.uv2-surface .uv2-panel > .uv2-block + .uv2-block,
+.uv2-surface .uv2-panel > .uv2-meta-grid,
+.uv2-surface .uv2-panel > .uv2-advanced,
+.uv2-surface .uv2-panel > details {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--uv2-divider);
+}
+
+.uv2-surface .uv2-block + .uv2-block {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.uv2-surface .uv2-meta-card,
+.uv2-surface .uv2-advanced,
+.uv2-surface .uv2-advanced--panel,
+.uv2-surface .uv2-stream-box,
+.uv2-surface .uv2-feedback {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+}
+
+.uv2-surface .uv2-meta-card-icon,
+.uv2-surface .uv2-advanced-icon {
+  display: none;
+}
+
+.uv2-surface .uv2-meta-card {
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+}
+
+.uv2-surface .uv2-meta-grid {
+  gap: 18px 24px;
+}
+
+.uv2-surface .uv2-advanced-summary {
+  padding: 0 0 10px;
+  background: transparent;
+}
+
+.uv2-surface .uv2-advanced-body {
+  padding: 0 0 4px;
+  border-top: none;
+  background: transparent;
+}
+
+.uv2-surface .uv2-advanced-hint {
+  background: transparent;
+  padding: 0;
+}
+
+.uv2-surface .uv2-block--media {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.uv2-surface .uv2-drop {
+  border-radius: var(--uv2-radius-sm);
+  background: color-mix(in srgb, var(--color-text) 2%, var(--color-surface));
+}
+
+.uv2-surface .uv2-field-row,
+.uv2-surface .uv2-signal-grid,
+.uv2-surface .uv2-video-grid {
+  gap: 16px;
+}
+
+.uv2-surface .uv2-dock-card {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  border-left: 1px solid var(--uv2-divider);
+  min-height: 100%;
+}
+
+.uv2-surface .uv2-dock {
+  top: 0;
+}
+
+@media (max-width: 1024px) {
+  .uv2-surface .uv2-dock-card {
+    border-left: none;
+    border-top: 1px solid var(--uv2-divider);
+    padding-top: 14px;
+  }
+
+  .uv2-surface .uv2-dock {
+    background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+    backdrop-filter: blur(8px);
+  }
+}
+
+.uv2-surface .uv2-input,
+.uv2-surface .uv2-textarea,
+.uv2-surface .uv2-select {
+  background: color-mix(in srgb, var(--color-text) 2.5%, var(--color-surface));
+}
+
+.uv2-surface .uv2-textarea--hero {
+  background: transparent;
+}
+
+.uv2-surface .uv2-chip {
+  background: transparent;
+  border-color: var(--uv2-divider);
+}
+
+.uv2-surface .uv2-chip--active {
+  background: color-mix(in srgb, var(--uv2-tone, var(--uv2-zone)) 10%, var(--color-surface));
+}
+
+.uv2-surface .uv2-thumb {
+  border-color: var(--uv2-divider);
+}
