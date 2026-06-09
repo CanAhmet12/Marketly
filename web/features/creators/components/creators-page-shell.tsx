@@ -1,27 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 type Props = {
   children: ReactNode;
 };
 
+/** Minimal sayfa kabuğu — başlık/sekme yok; ana + sağ rail grid içinde */
 export function CreatorsPageShell({ children }: Props) {
   return (
-    <div className="creators-page ms-page-wrapper ms-container-full min-w-0 max-w-full">
-      <header className="creators-page__head">
-        <div className="creators-page__head-row">
-          <div className="creators-page__head-main">
-            <Link href="/discover" className="creators-page__back">
-              Keşfet
-            </Link>
-            <h1 className="creators-page__title">Üreticiler</h1>
-          </div>
-          <p className="creators-page__desc">Varlık ve format bazlı analist keşfi</p>
+    <div className="crt-v2-page ms-page-wrapper ms-page-wrapper--compact">
+      <div className="ms-container-wide">
+        <div className="crt-v2-layout" role="main">
+          {children}
         </div>
-      </header>
-      {children}
+      </div>
     </div>
   );
 }

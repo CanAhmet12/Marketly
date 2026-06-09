@@ -10,6 +10,8 @@ import type { AffinityContext } from "@/features/personalization/domain/personal
 
 import { computeSignalsHero } from "@/features/signals/lib/compute-signals-hero";
 import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
+import { getSignalRecommendationsCache } from "@/features/signals/signal-recommendations-cache";
+import { AlgoFlags } from "@/lib/algo-flags";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -108,6 +110,10 @@ export class SupabaseSignalsRepository implements SignalsRepository {
     void _watchedSymbols;
     void _portfolioSymbols;
     void _affinityOverride;
+    if (AlgoFlags.signalCollaborativeFilter) {
+      const cached = getSignalRecommendationsCache(null);
+      if (cached.rows.length) return cached;
+    }
     return emptyPersonalizedSignalRelevance();
   }
 }

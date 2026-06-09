@@ -6,12 +6,15 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { formatDurationBadge } from "@/features/feed/feed-display";
+import { PinchZoomImage } from "@/features/post/components/pinch-zoom-image";
 import { resolvePostDetailMedia, type PostDetailMedia } from "../post-detail-helpers";
 import type { PostDetail } from "../types";
 
 interface Props {
   post: PostDetail;
 }
+
+const LIGHTBOX_CLOSE_MS = 220;
 
 function ChevronLeft() {
   return (
@@ -40,22 +43,44 @@ function PlayIcon() {
 function GalleryBlock({ media }: { media: Extract<PostDetailMedia, { kind: "gallery" }> }) {
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const [lightboxClosing, setLightboxClosing] = useState(false);
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
 
   const closeLightbox = useCallback(() => {
-    setLightbox(false);
-    lightboxTriggerRef.current?.focus();
+    setLightboxClosing(true);
+    window.setTimeout(() => {
+      setLightbox(false);
+      setLightboxClosing(false);
+      lightboxTriggerRef.current?.focus();
+    }, LIGHTBOX_CLOSE_MS);
   }, []);
+
+  const openLightbox = useCallback((trigger: HTMLElement) => {
+    lightboxTriggerRef.current = trigger;
+    setLightboxClosing(false);
+    setLightbox(true);
+  }, []);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [lightbox]);
 
   useEffect(() => {
     if (!lightbox) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft" && index > 0) setIndex((i) => i - 1);
+      if (e.key === "ArrowRight" && index < media.items.length - 1) setIndex((i) => i + 1);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [lightbox, closeLightbox]);
+  }, [lightbox, closeLightbox, index, media.items.length]);
 
   const current = media.items[index];
   const hasMultiple = media.items.length > 1;
@@ -80,10 +105,8 @@ function GalleryBlock({ media }: { media: Extract<PostDetailMedia, { kind: "gall
             src={current.url}
             alt=""
             loading="eager"
-            onClick={(e) => {
-              lightboxTriggerRef.current = e.currentTarget;
-              setLightbox(true);
-            }}
+            className="pd-media-img--zoomable"
+            onClick={(e) => openLightbox(e.currentTarget)}
             onError={onError}
           />
 
@@ -129,11 +152,58 @@ function GalleryBlock({ media }: { media: Extract<PostDetailMedia, { kind: "gall
       </div>
 
       {lightbox && (
-        <div className="pd-lightbox" onClick={closeLightbox} role="dialog" aria-modal="true" aria-label="Görsel önizleme">
+        <div
+          className={`pd-lightbox${lightboxClosing ? " pd-lightbox--closing" : ""}`}
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Görsel önizleme"
+        >
           <button type="button" className="pd-lightbox-close" onClick={closeLightbox} aria-label="Kapat">
             ✕
           </button>
-          <img src={current.url} alt="" onClick={(e) => e.stopPropagation()} />
+
+          {hasMultiple && index > 0 && (
+            <button
+              type="button"
+              className="pd-lightbox-nav pd-lightbox-nav--prev"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex((i) => i - 1);
+              }}
+              aria-label="Önceki görsel"
+            >
+              <ChevronLeft />
+            </button>
+          )}
+
+          <PinchZoomImage
+            key={current.url}
+            src={current.url}
+            alt=""
+            className="pd-lightbox-img"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {hasMultiple && index < media.items.length - 1 && (
+            <button
+              type="button"
+              className="pd-lightbox-nav pd-lightbox-nav--next"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex((i) => i + 1);
+              }}
+              aria-label="Sonraki görsel"
+            >
+              <ChevronRight />
+            </button>
+          )}
+
+          {hasMultiple ? (
+            <span className="pd-lightbox-counter">
+              {index + 1} / {media.items.length}
+            </span>
+          ) : null}
         </div>
       )}
     </>

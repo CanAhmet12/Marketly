@@ -161,7 +161,7 @@ export function MarketsDenseTable({ assets, watchlisted, pendingSymbol = null, o
       >
         <table className="w-full min-w-[820px] max-w-full border-collapse text-left text-[13px]">
           <thead className={cn(vt.enabled && "mkt-vt-sticky-thead")}>
-            <tr className="border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--color-surface))] text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">
+            <tr className="border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--color-surface))] text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">
               <th className="px-[var(--sp-2)] py-[var(--sp-2)]">Takip</th>
               <th className="px-[var(--sp-2)] py-[var(--sp-2)]">Sembol</th>
               <th className="px-[var(--sp-2)] py-[var(--sp-2)]">Ad</th>

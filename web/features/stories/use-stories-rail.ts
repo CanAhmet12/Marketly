@@ -1,10 +1,11 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/features/auth/use-auth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useClientMounted } from "@/hooks/use-client-mounted";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
 
@@ -12,14 +13,15 @@ import { fetchStorySlides, markStoryViewed } from "./fetch-stories";
 import type { StorySlide } from "./types";
 
 export function useStoriesRail() {
-  const { user, isInitialized } = useAuth();
+  const mounted = useClientMounted();
+  const { user } = useAuth();
   const uid = user?.id ?? null;
   const qc = useQueryClient();
 
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
-  const enabled = isMockDataEnabled() || (isInitialized && isSupabaseConfigured());
+  const enabled = mounted && (isMockDataEnabled() || isSupabaseConfigured());
 
   const query = useQuery({
     queryKey: ["stories-rail", uid ?? "anon"] as const,
@@ -29,7 +31,34 @@ export function useStoriesRail() {
       return fetchStorySlides(client, uid);
     },
     staleTime: 60_000,
+    refetchInterval: enabled && !isMockDataEnabled() ? 120_000 : false,
   });
+
+  const realtimeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!enabled || isMockDataEnabled() || !isSupabaseConfigured()) return;
+
+    const client = getSupabaseBrowserClient();
+    const channel = client
+      .channel("web_stories_realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "stories" },
+        () => {
+          if (realtimeTimerRef.current) clearTimeout(realtimeTimerRef.current);
+          realtimeTimerRef.current = setTimeout(() => {
+            void query.refetch();
+          }, 400);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      if (realtimeTimerRef.current) clearTimeout(realtimeTimerRef.current);
+      void client.removeChannel(channel);
+    };
+  }, [enabled, query.refetch]);
 
   const slides = query.data ?? [];
 
@@ -63,7 +92,7 @@ export function useStoriesRail() {
   return {
     slides,
     visualItems,
-    loading: enabled && query.isPending,
+    loading: enabled && query.isLoading,
     viewerOpen,
     viewerIndex,
     openViewer,

@@ -20,12 +20,12 @@ function timelineDotBg(kind: SignalTimelineEvent["kind"]): string {
 export function SignalDetailThesisContextChips({ row }: { row: SignalsFeedRow }) {
   return (
     <div className="mt-[var(--sp-2)] flex flex-wrap gap-1.5">
-      <span className="rounded-md border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">
+      <span className="rounded-md border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">
         {thesisGradeLabel(row.thesis_grade)}
       </span>
-      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">{volatilityHintLabel(row.volatility_hint)}</span>
-      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">{sentimentAlignmentLabel(row.sentiment_alignment)}</span>
-      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[10px] font-semibold tabular-nums text-[var(--color-meta)]">{row.timeframe_category}</span>
+      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">{volatilityHintLabel(row.volatility_hint)}</span>
+      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">{sentimentAlignmentLabel(row.sentiment_alignment)}</span>
+      <span className="rounded-md border border-[var(--ms-border-hairline)] px-2 py-px text-[11px] font-semibold tabular-nums text-[var(--color-meta)]">{row.timeframe_category}</span>
     </div>
   );
 }
@@ -42,7 +42,7 @@ export function SignalDetailArchiveOutcomeStrip({ row }: { row: SignalsFeedRow }
         : "Pasif / süre sonu — arşiv özetine taşındı";
   return (
     <div className="rounded-[12px] border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--ms-card-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Arşiv özeti</p>
+      <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Arşiv özeti</p>
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">{signalStatusLabel(key)}</span>
         <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">{outcome}</span>
@@ -81,7 +81,7 @@ export function SignalDetailPerformanceIntel({ perf }: { perf: SignalDetailExten
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Performans</p>
       <div className="flex flex-wrap items-end gap-x-[var(--sp-4)] gap-y-1">
         <div>
-          <p className="text-[10px] font-semibold uppercase text-[var(--color-meta)]">Anlık P/L (önizleme)</p>
+          <p className="text-[11px] font-semibold uppercase text-[var(--color-meta)]">Anlık P/L (önizleme)</p>
           <p className={cn("text-[20px] font-bold tabular-nums tracking-tight", pnlCls)}>{pnl == null ? "—" : `${pnl > 0 ? "+" : ""}${pnl.toFixed(1)}%`}</p>
         </div>
         <div className="min-w-[120px] flex-1 text-[11px] font-medium text-[var(--color-text-secondary)]">
@@ -133,7 +133,7 @@ export function SignalDetailTimelineIntel({ events }: { events: SignalDetailExte
             <div className="min-w-0 flex-1 border-l-2 border-transparent ps-0">
               <p className="text-[12px] font-bold text-[var(--color-text)]">{ev.label}</p>
               {ev.detail ? <p className="mt-0.5 text-[11px] font-medium text-[var(--color-text-secondary)]">{ev.detail}</p> : null}
-              <p className="mt-0.5 text-[10px] font-semibold tabular-nums text-[var(--color-meta)]">{formatTimeAgo(ev.at)} · {new Date(ev.at).toLocaleString("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+              <p className="mt-0.5 text-[11px] font-semibold tabular-nums text-[var(--color-meta)]">{formatTimeAgo(ev.at)} · {new Date(ev.at).toLocaleString("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
             </div>
           </li>
         ))}
@@ -149,23 +149,23 @@ export function SignalDetailCreatorTrackIntel({ rec }: { rec: SignalDetailExtens
       <p className="mt-1 text-[11px] font-medium text-[var(--color-text-secondary)]">Katalogdaki kapananlar üzerinden özet — şeffaflık için canlıda RPC ile güncellenecek.</p>
       <div className="mt-[var(--sp-3)] grid grid-cols-2 gap-[var(--sp-2)] min-[420px]:grid-cols-3">
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Kazanma</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Kazanma</p>
           <p className="mt-0.5 text-[15px] font-bold tabular-nums text-[var(--color-text)]">{rec.winRatePct == null ? "—" : `%${rec.winRatePct}`}</p>
         </div>
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Son 20</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Son 20</p>
           <p className="mt-0.5 text-[15px] font-bold tabular-nums text-[var(--color-text)]">{last20Label}</p>
         </div>
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Ort. R/R</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Ort. R/R</p>
           <p className="mt-0.5 text-[15px] font-bold tabular-nums text-[var(--color-text)]">{rec.avgRiskReward == null ? "—" : rec.avgRiskReward.toFixed(2)}</p>
         </div>
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Aktif</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Aktif</p>
           <p className="mt-0.5 text-[15px] font-bold tabular-nums text-[var(--color-text)]">{rec.activeSignals}</p>
         </div>
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Kapanan</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Kapanan</p>
           <p className="mt-0.5 text-[13px] font-bold tabular-nums text-[var(--color-text)]">
             <span className="text-[var(--color-rise)]">{rec.closedGreen}</span>
             <span className="text-[var(--color-meta)]"> / </span>
@@ -173,7 +173,7 @@ export function SignalDetailCreatorTrackIntel({ rec }: { rec: SignalDetailExtens
           </p>
         </div>
         <div className="rounded-lg bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Seri TP</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Seri TP</p>
           <p className="mt-0.5 text-[15px] font-bold tabular-nums text-[var(--color-text)]">{rec.streakWins}</p>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function SignalDetailCreatorTrackIntel({ rec }: { rec: SignalDetailExtens
           Tutarlılık <span className="tabular-nums text-[var(--color-text)]">{rec.consistencyScore}</span>/100
         </p>
         {rec.specialtyStrengthLabel ? (
-          <span className="max-w-[min(100%,14rem)] truncate rounded-full border border-[var(--ms-border-hairline)] px-2 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">{rec.specialtyStrengthLabel}</span>
+          <span className="max-w-[min(100%,14rem)] truncate rounded-full border border-[var(--ms-border-hairline)] px-2 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">{rec.specialtyStrengthLabel}</span>
         ) : null}
       </div>
     </div>
@@ -199,15 +199,15 @@ function RelatedRowLink({ r, onNavigate }: { r: SignalsFeedRow; onNavigate?: () 
         className="flex flex-wrap items-center gap-2 rounded-lg px-[var(--sp-2)] py-1.5 text-[12px] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)]"
       >
         <span className="font-bold text-[var(--color-text)]">{r.symbol}</span>
-        <SignalDirectionPill direction={r.direction} className="!py-px text-[10px]" />
+        <SignalDirectionPill direction={r.direction} className="!py-px text-[11px]" />
         <span className="tabular-nums text-[var(--color-meta)]">{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
         {closed ? (
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1.5 py-px text-[10px] font-bold uppercase text-[var(--color-text-secondary)]">Arşiv</span>
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1.5 py-px text-[11px] font-bold uppercase text-[var(--color-text-secondary)]">Arşiv</span>
         ) : (
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-1.5 py-px text-[10px] font-bold uppercase text-[var(--color-primary-dark)]">Aktif</span>
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-1.5 py-px text-[11px] font-bold uppercase text-[var(--color-primary-dark)]">Aktif</span>
         )}
-        {r.result === "TP" ? <span className="text-[10px] font-bold text-[var(--color-rise)]">TP</span> : null}
-        {r.result === "SL" ? <span className="text-[10px] font-bold text-[var(--color-fall)]">SL</span> : null}
+        {r.result === "TP" ? <span className="text-[11px] font-bold text-[var(--color-rise)]">TP</span> : null}
+        {r.result === "SL" ? <span className="text-[11px] font-bold text-[var(--color-fall)]">SL</span> : null}
       </Link>
     </li>
   );
@@ -254,28 +254,28 @@ export function SignalDetailRelatedIntelSections({
 
       {related.historicalSameAsset.length ? (
         <div>
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Aynı varlık — geçmiş çağrılar</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Aynı varlık — geçmiş çağrılar</p>
           <ul className="m-0 mt-1 list-none space-y-0.5 p-0">{related.historicalSameAsset.map((r) => <RelatedRowLink key={r.id} r={r} onNavigate={onNavigate} />)}</ul>
         </div>
       ) : null}
 
       {related.creatorFollowUps.length ? (
         <div>
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Üretici — devam çağrıları</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Üretici — devam çağrıları</p>
           <ul className="m-0 mt-1 list-none space-y-0.5 p-0">{related.creatorFollowUps.map((r) => <RelatedRowLink key={r.id} r={r} onNavigate={onNavigate} />)}</ul>
         </div>
       ) : null}
 
       {related.archivedSameSymbol.length ? (
         <div>
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Arşiv — aynı sembol</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Arşiv — aynı sembol</p>
           <ul className="m-0 mt-1 list-none space-y-0.5 p-0">{related.archivedSameSymbol.map((r) => <RelatedRowLink key={r.id} r={r} onNavigate={onNavigate} />)}</ul>
         </div>
       ) : null}
 
       {similarOnly.length ? (
         <div>
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Yakın çağrılar (sembol)</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Yakın çağrılar (sembol)</p>
           <ul className="m-0 mt-1 list-none space-y-0.5 p-0">
             {similarOnly.map((r) => (
               <RelatedRowLink key={r.id} r={r} onNavigate={onNavigate} />
@@ -295,7 +295,7 @@ export function SignalDetailCreatorUpdatesIntel({ lines }: { lines: SignalDetail
       <ul className="m-0 mt-[var(--sp-2)] list-none space-y-[var(--sp-2)] p-0">
         {lines.map((ln, i) => (
           <li key={`${ln.at}-${i}`} className="border-b border-[color-mix(in_srgb,var(--ms-border-hairline)_80%,transparent)] pb-[var(--sp-2)] last:border-0 last:pb-0">
-            <p className="text-[10px] font-semibold tabular-nums text-[var(--color-meta)]">
+            <p className="text-[11px] font-semibold tabular-nums text-[var(--color-meta)]">
               {new Date(ln.at).toLocaleString("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>
             <p className="mt-0.5 text-[13px] font-medium leading-snug text-[var(--color-text-secondary)]">{ln.text}</p>

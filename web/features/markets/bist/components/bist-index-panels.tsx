@@ -77,7 +77,7 @@ function IndexPanel({ panel, isBist100 }: PanelProps) {
     <div className={cn("cc-asset-panel block", isBist100 ? "cc-asset-panel--btc" : "cc-asset-panel--eth")}>
       <div className="cc-asset-panel-header">
         <div className={cn("cc-asset-logo", isBist100 ? "cc-asset-logo--btc" : "cc-asset-logo--eth")}
-          style={{ fontSize: 9, fontWeight: 900 }}>
+          style={{ fontSize: 11, fontWeight: 700 }}>
           {isBist100 ? "B100" : "B30"}
         </div>
         <span className="cc-asset-title">

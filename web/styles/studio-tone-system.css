@@ -1,0 +1,240 @@
+/**
+ * Studio — Özelleştirilmiş bölge renk sistemi
+ * Referans: market-news-tone-system (ambient wash + chrome, abartısız)
+ * Bölgeler: overview · content · analytics · economy · live
+ */
+
+/* ─── Varsayılan (overview / creator teal) ───────────────────────────────── */
+.studio-shell {
+  --st-zone-1: #0d9488;
+  --st-zone-2: #0f766e;
+  --st-zone-3: #5eead4;
+  --st-zone-ambient: color-mix(in srgb, #0d9488 7%, transparent);
+  --st-zone-border: color-mix(in srgb, #0d9488 22%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #5eead4 14%, transparent);
+
+  --st-chart-views: var(--st-zone-1);
+  --st-chart-watch: #d4920a;
+  --st-chart-engagement: #7c5cfc;
+  --st-chart-follower: #4a90e8;
+
+  --st-kind-video: #3b82f6;
+  --st-kind-live: #dc2626;
+  --st-kind-signal: #0d9488;
+  --st-kind-post: #64748b;
+  --st-kind-short: #7c5cfc;
+}
+
+/* ─── Bölge kayıtları ────────────────────────────────────────────────────── */
+.studio-shell[data-studio-zone="overview"] {
+  --st-zone-1: #0d9488;
+  --st-zone-2: #0f766e;
+  --st-zone-3: #5eead4;
+  --st-zone-ambient: color-mix(in srgb, #0d9488 8%, transparent);
+  --st-zone-border: color-mix(in srgb, #0d9488 24%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #5eead4 16%, transparent);
+}
+
+/* İçerik kütüphanesi — indigo */
+.studio-shell[data-studio-zone="content"] {
+  --st-zone-1: #4f6bdb;
+  --st-zone-2: #3446a8;
+  --st-zone-3: #93a8f5;
+  --st-zone-ambient: color-mix(in srgb, #4f6bdb 9%, transparent);
+  --st-zone-border: color-mix(in srgb, #4f6bdb 26%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #93a8f5 18%, transparent);
+  --st-chart-views: var(--st-zone-1);
+}
+
+/* Analitik — veri camgöbeği */
+.studio-shell[data-studio-zone="analytics"] {
+  --st-zone-1: #0891b2;
+  --st-zone-2: #0e7490;
+  --st-zone-3: #67e8f9;
+  --st-zone-ambient: color-mix(in srgb, #0891b2 9%, transparent);
+  --st-zone-border: color-mix(in srgb, #0891b2 26%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #67e8f9 16%, transparent);
+  --st-chart-views: var(--st-zone-1);
+  --st-chart-follower: var(--st-zone-2);
+}
+
+/* Ekonomi — altın monetizasyon */
+.studio-shell[data-studio-zone="economy"] {
+  --st-zone-1: #d4920a;
+  --st-zone-2: #9a5f00;
+  --st-zone-3: #f5c85c;
+  --st-zone-ambient: color-mix(in srgb, #d4920a 9%, transparent);
+  --st-zone-border: color-mix(in srgb, #d4920a 28%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #f5c85c 18%, transparent);
+  --st-chart-views: var(--st-zone-1);
+  --st-chart-watch: var(--st-zone-2);
+  --st-amber: var(--st-zone-1);
+  --st-amber-bg: color-mix(in srgb, var(--st-zone-1) 8%, transparent);
+}
+
+/* Canlı — broadcast kırmızı */
+.studio-shell[data-studio-zone="live"] {
+  --st-zone-1: #dc2626;
+  --st-zone-2: #991b1b;
+  --st-zone-3: #fca5a5;
+  --st-zone-ambient: color-mix(in srgb, #dc2626 8%, transparent);
+  --st-zone-border: color-mix(in srgb, #dc2626 26%, var(--st-border-2));
+  --st-zone-glow: color-mix(in srgb, #fca5a5 16%, transparent);
+  --st-chart-views: var(--st-zone-1);
+}
+
+/* Accent zinciri — mevcut st-* sınıfları zone ile uyumlu kalsın */
+.studio-shell[data-studio-zone] {
+  --st-accent: var(--st-zone-1);
+  --st-accent-dim: color-mix(in srgb, var(--st-zone-1) 58%, transparent);
+  --st-accent-bg: color-mix(in srgb, var(--st-zone-1) 9%, transparent);
+}
+
+/* ─── Ambient wash (main canvas) ─────────────────────────────────────────── */
+.studio-main {
+  position: relative;
+  isolation: isolate;
+}
+
+.studio-shell[data-studio-zone] .studio-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    168deg,
+    var(--st-zone-ambient) 0%,
+    color-mix(in srgb, var(--st-zone-ambient) 40%, transparent) 38%,
+    transparent 72%
+  );
+}
+
+.studio-shell[data-studio-zone] .studio-page {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Chrome: masthead, sidebar, tablar ──────────────────────────────────── */
+.studio-shell[data-studio-zone] .studio-masthead {
+  border-bottom-color: var(--st-zone-border);
+}
+
+.studio-shell[data-studio-zone] .studio-brand-name {
+  color: color-mix(in srgb, var(--st-zone-2) 22%, var(--st-text));
+}
+
+.studio-shell[data-studio-zone] .studio-brand-icon--outline {
+  border-color: color-mix(in srgb, var(--st-zone-1) 35%, var(--st-border-2));
+  color: var(--st-zone-1);
+}
+
+.studio-shell[data-studio-zone] .studio-sidebar-link--active {
+  color: var(--st-zone-1);
+  background: color-mix(in srgb, var(--st-zone-1) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--st-zone-1);
+}
+
+.studio-shell[data-studio-zone] .studio-tab--active {
+  color: var(--st-text);
+  border-bottom-color: var(--st-zone-1);
+}
+
+.studio-shell[data-studio-zone] .st-tf-btn--active,
+.studio-shell[data-studio-zone] .st-filter-pill--active {
+  color: var(--st-zone-1);
+  border-color: color-mix(in srgb, var(--st-zone-1) 38%, transparent);
+  background: color-mix(in srgb, var(--st-zone-1) 9%, transparent);
+}
+
+.studio-shell[data-studio-zone] .st-block-title::before {
+  content: "";
+  width: 3px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--st-zone-1);
+  flex-shrink: 0;
+}
+
+.studio-shell[data-studio-zone] .st-block-link,
+.studio-shell[data-studio-zone] .st-tip-cta:hover {
+  color: var(--st-zone-1);
+}
+
+.studio-shell[data-studio-zone] .st-metric-change--up {
+  color: color-mix(in srgb, var(--st-zone-1) 72%, var(--st-up));
+}
+
+/* ─── Hero / özel yüzeyler ───────────────────────────────────────────────── */
+.studio-shell[data-studio-zone="economy"] .st-revenue-amount {
+  color: color-mix(in srgb, var(--st-zone-1) 55%, var(--st-text));
+}
+
+.studio-shell[data-studio-zone="live"] .st-live-title {
+  color: color-mix(in srgb, var(--st-zone-2) 18%, var(--st-text));
+}
+
+.studio-shell[data-studio-zone="live"] .studio-hbtn--live {
+  border-color: color-mix(in srgb, var(--st-zone-1) 42%, transparent);
+  color: color-mix(in srgb, var(--st-zone-1) 88%, var(--st-text));
+}
+
+.studio-shell[data-studio-zone] .st-hero-stat-val,
+.studio-shell[data-studio-zone] .st-aud-fill {
+  color: inherit;
+}
+
+.studio-shell[data-studio-zone] .st-aud-fill {
+  background: var(--st-zone-1);
+}
+
+.studio-shell[data-studio-zone] .st-aud-fill--violet {
+  background: var(--st-violet);
+}
+
+/* ─── İçerik türü badge tonları (token tabanlı) ──────────────────────────── */
+.st-content-kind-badge--video,
+.st-content-table-kind.st-content-kind-badge--video {
+  background: color-mix(in srgb, var(--st-kind-video) 78%, transparent);
+  color: #fff;
+}
+
+.st-content-kind-badge--live,
+.st-content-table-kind.st-content-kind-badge--live {
+  background: color-mix(in srgb, var(--st-kind-live) 78%, transparent);
+  color: #fff;
+}
+
+.st-content-kind-badge--signal,
+.st-content-table-kind.st-content-kind-badge--signal {
+  background: color-mix(in srgb, var(--st-kind-signal) 78%, transparent);
+  color: #fff;
+}
+
+.st-content-kind-badge--post,
+.st-content-table-kind.st-content-kind-badge--post {
+  background: color-mix(in srgb, var(--st-kind-post) 72%, transparent);
+  color: #fff;
+}
+
+.st-content-kind-badge--short,
+.st-content-table-kind.st-content-kind-badge--short {
+  background: color-mix(in srgb, var(--st-kind-short) 78%, transparent);
+  color: #fff;
+}
+
+.st-content-table-kind.st-content-kind-badge--video { background: color-mix(in srgb, var(--st-kind-video) 18%, transparent); color: var(--st-kind-video); }
+.st-content-table-kind.st-content-kind-badge--live { background: color-mix(in srgb, var(--st-kind-live) 18%, transparent); color: var(--st-kind-live); }
+.st-content-table-kind.st-content-kind-badge--signal { background: color-mix(in srgb, var(--st-kind-signal) 18%, transparent); color: var(--st-kind-signal); }
+.st-content-table-kind.st-content-kind-badge--post { background: color-mix(in srgb, var(--st-kind-post) 14%, transparent); color: var(--st-kind-post); }
+.st-content-table-kind.st-content-kind-badge--short { background: color-mix(in srgb, var(--st-kind-short) 18%, transparent); color: var(--st-kind-short); }
+
+/* ─── Grafik kartları — zone chart tokenları ─────────────────────────────── */
+.studio-shell[data-studio-zone] .st-analytics-chart-body,
+.studio-shell[data-studio-zone] .st-chart-wrap {
+  --st-area-chart-color: var(--st-chart-views);
+}
+
+.studio-shell[data-studio-zone] .st-chart-line {
+  filter: drop-shadow(0 0 8px var(--st-zone-glow));
+}

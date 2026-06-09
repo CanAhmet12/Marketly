@@ -2,101 +2,177 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
-import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
-import { formatCompactCount } from "@/lib/format-compact-count";
+import { StudioLiveHealthPanel } from "@/features/studio/components/studio-live-health-panel";
+import { StudioLiveObsDock } from "@/features/studio/components/studio-live-obs-dock";
+import { StudioLiveSchedulePanel } from "@/features/studio/components/studio-live-schedule-panel";
+import { StudioSubpageSkeleton } from "@/features/studio/components/studio-states";
+import { fetchStudioLiveCommand } from "@/features/studio/fetch-studio-live";
+import { scheduleToLiveCommand } from "@/features/studio/lib/studio-live-command";
+import {
+  buildLiveHealth,
+  buildLiveTips,
+  buildObsChecklist,
+  formatLiveDuration,
+} from "@/features/studio/lib/studio-live-insights";
 import { getStudioRepository } from "@/features/studio/repository";
+import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
+import { queryKeys } from "@/lib/query-keys";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isMockDataEnabled } from "@/mock/config";
+import { formatCompactCount } from "@/lib/format-compact-count";
+
+const SCENE_CARDS = [
+  { title: "Sinyal Odası", desc: "Aktif sinyallerinizi canlı yorumlayın", href: "/signals" },
+  { title: "Piyasa Analizi", desc: "Canlı piyasa hareketlerini takip edin", href: "/markets" },
+  { title: "Q&A Oturumu", desc: "Takipçilerle etkileşime geçin", href: "/studio/content" },
+] as const;
 
 export function StudioLiveClient() {
   const { user } = useAuth();
   const ownerId = useStudioOwnerId(user);
+  const mockOn = isMockDataEnabled();
+  const liveMode = !mockOn && isSupabaseConfigured();
 
-  const streams = useMemo(() => {
-    if (!ownerId) return [];
-    return getStudioRepository().getLiveSchedule(ownerId);
-  }, [ownerId]);
+  const liveQuery = useQuery({
+    queryKey: queryKeys.studioLive(ownerId),
+    queryFn: () => fetchStudioLiveCommand(getSupabaseBrowserClient(), ownerId!),
+    enabled: liveMode && Boolean(ownerId),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  const command = useMemo(() => {
+    if (!ownerId) return null;
+    if (liveMode) return liveQuery.data ?? null;
+    const schedule = getStudioRepository().getLiveSchedule(ownerId);
+    return scheduleToLiveCommand(schedule);
+  }, [ownerId, liveMode, liveQuery.data]);
+
+  if (!ownerId) {
+    return (
+      <EmptyState
+        title="Giriş gerekli"
+        description="Canlı yayın stüdyosu için oturum açın."
+        tone="social"
+        compact
+      />
+    );
+  }
+
+  if (liveMode && liveQuery.isLoading && !command) {
+    return <StudioSubpageSkeleton />;
+  }
+
+  if (liveMode && liveQuery.isError && !command) {
+    return (
+      <EmptyState
+        title="Canlı veri yüklenemedi"
+        description="Yayın oturumları alınamadı. Bağlantınızı kontrol edin."
+        actionLabel="Yenile"
+        onAction={() => void liveQuery.refetch()}
+        tone="social"
+        compact
+      />
+    );
+  }
+
+  if (!command) {
+    return <StudioSubpageSkeleton />;
+  }
+
+  const health = buildLiveHealth(command);
+  const tips = buildLiveTips(command);
+  const obsSteps = buildObsChecklist(command);
+  const active = command.activeSession;
+  const durationLabel = active ? formatLiveDuration(active.startedAt) : null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-      {/* Live Hero */}
+    <div className="st-dash-stack">
       <div className="st-live-hero">
         <div>
           <div className="st-live-status">
-            <div className="st-live-offline-dot" />
-            Şu an çevrimdışı
+            <div className={active ? "st-live-online-dot" : "st-live-offline-dot"} />
+            {active ? "Şu an yayında" : "Şu an çevrimdışı"}
           </div>
-          <div className="st-live-title">Canlı Yayın Stüdyosu</div>
-          <div className="st-live-sub">Piyasa analizi, sinyal yorumu ve canlı tartışma için yayın başlatın.</div>
+          <div className="st-live-title">
+            {active ? active.title : "Canlı Yayın Komuta Merkezi"}
+          </div>
+          <div className="st-live-sub">
+            {active
+              ? `${formatCompactCount(active.viewerCount)} izleyici · ${durationLabel}`
+              : "Piyasa analizi, sinyal yorumu ve canlı tartışma için yayın başlatın."}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link href="/live" className="studio-hbtn studio-hbtn--live" style={{ fontSize: 14, padding: "10px 20px" }}>
-            ● Yayın Başlat
-          </Link>
-          <Link href="/upload" className="studio-hbtn studio-hbtn--ghost">
-            📹 Video Yükle
+        <div className="st-live-hero-actions">
+          {active ? (
+            <Link href={active.href} className="studio-hbtn studio-hbtn--live st-live-hero-btn">
+              Yayını Yönet
+            </Link>
+          ) : (
+            <Link href="/upload" className="studio-hbtn studio-hbtn--live st-live-hero-btn">
+              Yayın Başlat
+            </Link>
+          )}
+          <Link href="/studio/scheduled" className="studio-hbtn studio-hbtn--ghost">
+            Program Düzenle
           </Link>
         </div>
       </div>
 
-      {/* Stream setup hints */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-        {[
-          { title: "Sinyal Odası", desc: "Aktif sinyallerinizi canlı yorumla" },
-          { title: "Piyasa Analizi", desc: "Canlı piyasa hareketlerini takip edin" },
-          { title: "Q&A Oturumu", desc: "Takipçilerle etkileşime geçin" },
-        ].map((c) => (
-          <div key={c.title} className="st-block" style={{ cursor: "pointer" }}>
-            <div style={{ padding: "18px 18px" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--st-text)", marginBottom: 4, letterSpacing: "0.02em" }}>{c.title}</div>
-              <div style={{ fontSize: 11, color: "var(--st-meta)" }}>{c.desc}</div>
-            </div>
-          </div>
+      <div className="st-live-command-grid">
+        <StudioLiveHealthPanel health={health} durationLabel={durationLabel} />
+        <StudioLiveObsDock steps={obsSteps} activeSession={active} />
+      </div>
+
+      <div className="st-live-scene-grid">
+        {SCENE_CARDS.map((c) => (
+          <Link key={c.title} href={c.href} className="st-live-scene-card">
+            <div className="st-live-scene-title">{c.title}</div>
+            <div className="st-live-scene-desc">{c.desc}</div>
+          </Link>
         ))}
       </div>
 
-      {/* Programlı Yayınlar */}
       <div className="st-block">
         <div className="st-block-header">
-          <div className="st-block-title">
-            Programlı Yayınlar
-          </div>
-          <Link href="/upload" className="st-block-link">+ Yeni Yayın</Link>
+          <div className="st-block-title">Hızlı İpuçları</div>
         </div>
-
-        {streams.length === 0 ? (
-          // ES-002: Zamanlanmış yayın yoksa net empty state
-          <div style={{ padding: "32px 18px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-            <div style={{ fontSize: 32 }}>📅</div>
-            <div style={{ fontSize: 14, fontWeight: 600 }}>Zamanlanmış yayın yok</div>
-            <div style={{ fontSize: 12, color: "var(--st-meta)", maxWidth: 260 }}>
-              Canlı yayın başlatmak veya zamanlamak için &quot;Yayın Başlat&quot; butonunu kullanın.
+        <div className="st-live-tips">
+          {tips.map((tip) => (
+            <div key={tip.id} className="st-tip-card">
+              <div className="st-tip-title">{tip.title}</div>
+              <p className="st-tip-body">{tip.body}</p>
+              <Link href={tip.href} className="st-tip-cta">
+                {tip.cta} →
+              </Link>
             </div>
-          </div>
-        ) : (
-          <div>
-            {streams.map((s) => (
-              <div key={s.id} className="st-list-item">
-                <div className="st-list-icon" style={{ fontSize: 9, letterSpacing: "0.08em", color: "var(--st-meta)", textTransform: "uppercase" }}>LIVE</div>
-                <div className="st-list-info">
-                  <div className="st-list-title">{s.title}</div>
-                  <div className="st-list-meta">
-                    {new Date(s.scheduledStart).toLocaleString("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-                <div className="st-list-actions">
-                  <span style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 800,
-                    background: "rgba(239,68,68,0.12)", color: "#f87171", letterSpacing: "0.05em" }}>
-                    CANLI
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
+      <div className="st-analytics-split-grid">
+        <StudioLiveSchedulePanel
+          title="Programlı Yayınlar"
+          items={command.scheduled}
+          emptyTitle="Zamanlanmış yayın yok"
+          emptyBody="Yayın tarihi seçerek takipçilerinize önceden duyuru gönderin."
+          actionHref="/studio/scheduled"
+          actionLabel="Zamanla"
+        />
+        <StudioLiveSchedulePanel
+          title="Son Oturumlar"
+          items={command.endedRecent}
+          emptyTitle="Geçmiş oturum yok"
+          emptyBody="Tamamlanan yayınlar burada listelenir."
+          actionHref="/live"
+          actionLabel="Keşfet"
+        />
+      </div>
     </div>
   );
 }

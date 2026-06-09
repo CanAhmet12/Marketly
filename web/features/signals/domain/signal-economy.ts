@@ -1,6 +1,7 @@
 import { hashToUnit } from "@/features/signals/domain/signal-meta";
 import type { ChannelSignal } from "@/features/channel/types";
-import type { SignalAccessTier } from "@/features/signals/repository/types";
+import type { SignalAccessTier, SignalsFeedRow } from "@/features/signals/repository/types";
+import { isMockDataEnabled } from "@/mock/config";
 
 export const SIGNAL_STRATEGY_PACKAGES = [
   "Swing strateji paketi",
@@ -57,6 +58,17 @@ export function isSignalEconomyLocked(access: SignalAccessTier, isSubscriber: bo
   if (isSubscriber) return false;
   if (access === "public") return false;
   return true;
+}
+
+/** E4B T-04: Canlı modda abonelik doğrulaması yok — premium kilit UI yanıltıcı */
+export function isSignalPremiumEconomyActive(): boolean {
+  return isMockDataEnabled();
+}
+
+/** Signal Detail yüzeyi — honest mode: live'da seviye/tez her zaman açık */
+export function signalDetailRowLocked(row: SignalsFeedRow, isSubscriber: boolean): boolean {
+  if (!isSignalPremiumEconomyActive()) return false;
+  return isSignalEconomyLocked(row.signal_access, isSubscriber);
 }
 
 export function signalAccessLabel(access: SignalAccessTier): string {

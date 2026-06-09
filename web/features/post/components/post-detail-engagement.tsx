@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { PostDetail } from "../types";
 
@@ -83,23 +83,41 @@ export function PostDetailEngagement({
   savePending,
   user,
 }: Props) {
+  const [commentPulse, setCommentPulse] = useState(false);
+
   const scrollToDiscussion = useCallback(() => {
     document.getElementById("yorumlar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
+
+  useEffect(() => {
+    if (post.comments <= 0) return;
+    const fromHash = typeof window !== "undefined" && window.location.hash === "#yorumlar";
+    setCommentPulse(true);
+    const ms = fromHash ? 3200 : 2200;
+    const t = window.setTimeout(() => setCommentPulse(false), ms);
+    return () => window.clearTimeout(t);
+  }, [post.id, post.comments]);
 
   const uploadQuoteNext = `/upload?quotePost=${encodeURIComponent(post.id)}&intent=quote_repost`;
   const loginQuoteHref = `/auth/login?next=${encodeURIComponent(uploadQuoteNext)}`;
 
   return (
-    <div className="pd-engagement">
+    <div className="pd-engagement-wrap">
+      <div className="pd-engagement">
       <div className="pd-stats">
         <span className="pd-stat">
           <strong>{post.likes.toLocaleString("tr-TR")}</strong> beğeni
         </span>
         <span className="pd-sep">·</span>
-        <span className="pd-stat">
-          <strong>{post.comments.toLocaleString("tr-TR")}</strong> yorum
-        </span>
+        {post.comments > 0 ? (
+          <button type="button" className="pd-stat pd-stat--link" onClick={scrollToDiscussion}>
+            <strong>{post.comments.toLocaleString("tr-TR")}</strong> yorum
+          </button>
+        ) : (
+          <span className="pd-stat">
+            <strong>0</strong> yorum
+          </span>
+        )}
         {(post.views_count ?? 0) > 0 && (
           <>
             <span className="pd-sep">·</span>
@@ -118,12 +136,20 @@ export function PostDetailEngagement({
           className={`pd-action-btn${isLiked ? " pd-action-btn--liked" : ""}`}
           aria-label={isLiked ? "Beğeniyi kaldır" : "Beğen"}
         >
-          <HeartIcon filled={isLiked} />
+          <span className="pd-action-btn__icon" aria-hidden>
+            <HeartIcon filled={isLiked} />
+          </span>
           Beğen
         </button>
 
-        <button type="button" onClick={scrollToDiscussion} className="pd-action-btn">
-          <ChatIcon />
+        <button
+          type="button"
+          onClick={scrollToDiscussion}
+          className={`pd-action-btn${commentPulse ? " pd-action-btn--pulse" : ""}`}
+        >
+          <span className="pd-action-btn__icon" aria-hidden>
+            <ChatIcon />
+          </span>
           Yorum
         </button>
 
@@ -134,19 +160,26 @@ export function PostDetailEngagement({
           className={`pd-action-btn${isSaved ? " pd-action-btn--saved" : ""}`}
           aria-label={isSaved ? "Kaydedilenlerden çıkar" : "Kaydet"}
         >
-          <BookmarkIcon filled={isSaved} />
+          <span className="pd-action-btn__icon" aria-hidden>
+            <BookmarkIcon filled={isSaved} />
+          </span>
           Kaydet
         </button>
 
         <button type="button" onClick={onShare} className="pd-action-btn">
-          <ShareIcon />
+          <span className="pd-action-btn__icon" aria-hidden>
+            <ShareIcon />
+          </span>
           Paylaş
         </button>
 
         <Link href={user ? uploadQuoteNext : loginQuoteHref} className="pd-action-btn pd-action-btn--accent">
-          <QuoteIcon />
+          <span className="pd-action-btn__icon" aria-hidden>
+            <QuoteIcon />
+          </span>
           Alıntı
         </Link>
+      </div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { PersonalizationContentFormat, PersonalizationEvent, PersonalizationEventKind } from "@/features/personalization/domain/personalization-types";
 import { getPersonalizationRepository } from "@/features/personalization/repository";
+import { AlgoFlags, logAlgoMetric } from "@/lib/algo-flags";
 
 function repo() {
   return getPersonalizationRepository();
@@ -63,6 +64,13 @@ export function trackSignalCopy(signalId: string, symbol: string, creatorId: str
     creatorId,
     contentFormat: "signal",
   });
+  if (AlgoFlags.algoMetricsLogging) {
+    logAlgoMetric({
+      flag: "signalTrendScore",
+      metric: "conversion",
+      meta: { signalId, symbol },
+    });
+  }
 }
 
 export function trackRoomOpen(roomId: string, surface?: string): void {
@@ -75,4 +83,16 @@ export function trackRecommendationClick(surface: string, fields?: { creatorId?:
     creatorId: fields?.creatorId,
     assetSymbol: fields?.assetSymbol,
   });
+  if (AlgoFlags.algoMetricsLogging) {
+    const exp =
+      surface.includes("discussion") ? "discussionRecommendations"
+      : surface.includes("signal") ? "signalCollaborativeFilter"
+      : surface.includes("discover") ? "discoverRanking"
+      : "homeServerRanking";
+    logAlgoMetric({
+      flag: exp,
+      metric: "click",
+      meta: { surface, ...fields },
+    });
+  }
 }

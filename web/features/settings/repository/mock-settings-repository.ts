@@ -11,10 +11,10 @@ import type {
 import type { SettingsRepository } from "./settings-repository";
 
 const LINKS = {
-  subscriptions: "/subscriptions",
-  close_friends: "/close-friends",
-  notifications: "/notifications",
-  messages: "/messages",
+  subscriptions: "/hub/subscriptions",
+  close_friends: "/hub/close-friends",
+  notifications: "/hub/notifications",
+  messages: "/hub/messages",
   discover: "/discover",
 } as const;
 
@@ -121,7 +121,7 @@ export class MockSettingsRepository implements SettingsRepository {
           "Oda ve premium sinyal görünürlüğü: kanal sekmeleri + üyelik planı.",
           "Öneri görünürlüğü: keşif ve ana akışta üretici önerileri için geri bildirim kullan.",
         ],
-        links: { upload: "/upload", subscriptions: LINKS.subscriptions, close_friends: LINKS.close_friends },
+        links: { upload: "/hub/upload", subscriptions: LINKS.subscriptions, close_friends: LINKS.close_friends },
       },
       links: { ...LINKS },
     };

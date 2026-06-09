@@ -2,46 +2,57 @@ import Image from "next/image";
 
 import type { HomeVisualStoryItem } from "./mock-data";
 
-export type StoryRailVariant = "home" | "discover";
+const ROOT = "hv-ref-stories";
+const ADD_STORY_ID = "__add_story__";
 
-function storyRailClass(variant: StoryRailVariant, part: string): string {
-  const root = variant === "discover" ? "dvr-stories" : "hv-ref-stories";
-  return part ? `${root}${part}` : root;
+function storyRailClass(part: string): string {
+  return part ? `${ROOT}${part}` : ROOT;
+}
+
+function isAddStoryItem(item: HomeVisualStoryItem): boolean {
+  return item.id === ADD_STORY_ID || item.id === "s1";
 }
 
 type Props = {
   items: HomeVisualStoryItem[];
   onStoryPress?: (item: HomeVisualStoryItem) => void;
   onAddStory?: () => void;
-  variant?: StoryRailVariant;
 };
 
-export function HomeVisualStoryRail({ items, onStoryPress, onAddStory, variant = "home" }: Props) {
-  const root = storyRailClass(variant, "");
-  const hit = storyRailClass(variant, "__hit");
-  const ring = storyRailClass(variant, "__ring");
-  const badge = storyRailClass(variant, "__badge");
-  const inner = storyRailClass(variant, "__inner");
-  const plusWrap = storyRailClass(variant, "__plus-wrap");
-  const plus = storyRailClass(variant, "__plus");
-  const label = storyRailClass(variant, "__label");
+export function HomeVisualStoryRail({ items, onStoryPress, onAddStory }: Props) {
+  const hit = storyRailClass("__hit");
+  const ring = storyRailClass("__ring");
+  const badge = storyRailClass("__badge");
+  const inner = storyRailClass("__inner");
+  const plusWrap = storyRailClass("__plus-wrap");
+  const plus = storyRailClass("__plus");
+  const label = storyRailClass("__label");
+  const liveDot = storyRailClass("__live-dot");
 
   return (
-    <div className={root} aria-label="Öne çıkanlar">
+    <div className={ROOT} aria-label="Öne çıkanlar">
       {items.map((s) => {
-        const isAdd = s.id === "__add_story__" || s.id === "s1" || !s.avatarUrl;
+        const isAdd = isAddStoryItem(s);
+        const isLive = s.variant === "live" && !isAdd;
         return (
           <button
             key={s.id}
             type="button"
             className={hit}
             data-viewed={s.isViewed ? "true" : undefined}
+            data-live={isLive ? "true" : undefined}
             onClick={() => {
               if (isAdd) onAddStory?.();
               else onStoryPress?.(s);
             }}
           >
-            <div className={ring} data-tone={s.ring} data-add={isAdd ? "true" : undefined}>
+            <div
+              className={ring}
+              data-tone={s.ring}
+              data-add={isAdd ? "true" : undefined}
+              data-variant={s.variant}
+            >
+              {isLive ? <span className={liveDot} aria-hidden /> : null}
               {s.variant === "live" ? (
                 <span className={badge} data-kind="live">
                   Canlı
@@ -63,7 +74,7 @@ export function HomeVisualStoryRail({ items, onStoryPress, onAddStory, variant =
                 )}
               </div>
             </div>
-            <div className={label}>{s.label}</div>
+            <div className={label}>{isAdd ? "Ekle" : s.label}</div>
           </button>
         );
       })}

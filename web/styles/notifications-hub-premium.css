@@ -1,0 +1,72 @@
+/**
+ * Bildirimler — Hub Premium uyarlama (inbox zone)
+ */
+
+.hp-canvas .notif-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas .notif-stream-tab[aria-selected="true"] {
+  background: var(--hp-zone-1);
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--hp-zone-1) 28%, transparent);
+}
+
+.hp-canvas .notif-batch-card,
+.hp-canvas .notif-single-card {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .notif-batch-head {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-2xs);
+  letter-spacing: 0.09em;
+  color: var(--hp-meta);
+  border-bottom-color: var(--hp-border-2);
+}
+
+.hp-canvas .notif-digest-link {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+}
+
+.hp-canvas .notif-digest-link:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-glass-border));
+}
+
+.hp-canvas .notif-nav-link {
+  border-color: var(--hp-border);
+  background: var(--hp-surface);
+}
+
+.hp-canvas .notif-nav-link:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 25%, var(--hp-border));
+  color: var(--hp-text);
+}
+
+.hp-canvas .notif-unread-row {
+  background: color-mix(in srgb, var(--hp-zone-1) 5%, transparent);
+}
+
+.hp-canvas .notif-unread-dot {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas .notif-unread-bar {
+  background: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas .notif-action-primary {
+  background: color-mix(in srgb, var(--hp-zone-1) 12%, var(--hp-surface));
+  color: color-mix(in srgb, var(--hp-zone-1) 75%, var(--hp-text));
+}
+
+.hp-canvas .notif-meta-count {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+}

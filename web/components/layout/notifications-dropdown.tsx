@@ -101,7 +101,7 @@ export function NotificationsDropdown() {
             <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2Z" strokeLinejoin="round" />
           </svg>
             {unreadCount > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_22%,var(--color-surface))] px-0.5 text-[9px] font-bold leading-none text-[var(--color-primary-dark)] ring-1 ring-[color-mix(in_srgb,var(--color-primary)_35%,transparent)]">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_22%,var(--color-surface))] px-0.5 text-[11px] font-bold leading-none text-[var(--color-primary-dark)] ring-1 ring-[color-mix(in_srgb,var(--color-primary)_35%,transparent)]">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           ) : null}
@@ -186,13 +186,13 @@ export function NotificationsDropdown() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">{getNotificationKindLabel(n.type as MockNotificationType)}</p>
-                              {item.starred ? <span className="text-[9px] font-bold text-[var(--color-primary-dark)]">Önemli</span> : null}
+                              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">{getNotificationKindLabel(n.type as MockNotificationType)}</p>
+                              {item.starred ? <span className="text-[11px] font-bold text-[var(--color-primary-dark)]">Önemli</span> : null}
                               {!read ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-primary)]" aria-hidden /> : null}
                             </div>
                             <p className="mt-0.5 line-clamp-2 text-[13px] font-semibold leading-snug text-[var(--color-text)]">{n.title}</p>
                             {item.relevance_line ? (
-                              <p className="mt-0.5 line-clamp-1 text-[10px] font-medium text-[var(--color-text-secondary)]">{item.relevance_line}</p>
+                              <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-[var(--color-text-secondary)]">{item.relevance_line}</p>
                             ) : null}
                             <p className="mt-0.5 text-[11px] font-medium tabular-nums text-[var(--color-muted)]">{formatSocialRelativeTime(n.created_at)}</p>
                           </div>

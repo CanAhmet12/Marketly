@@ -3,8 +3,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { cn } from "@/lib/cn";
 import { DISCOVER_HUB_PATH } from "@/features/discover/routes";
 import type { DiscoverViewModel } from "@/features/discover/visual-reference/discover-view-model-adapter";
+import { DiscoverErrorBanner } from "@/features/discover/visual-reference/discover-error-banner";
 import { MarketAtmosphereStack } from "@/features/discover/visual-reference/discover-market-strip";
 
 type Props = {
@@ -16,6 +18,7 @@ type Props = {
   feedError?: boolean;
   onFeedRetry?: () => void;
   liveDot?: boolean;
+  pageTone?: "live" | "pulse" | "videos" | "signals" | "creators";
 };
 
 export function DiscoverVerticalPageShell({
@@ -27,9 +30,16 @@ export function DiscoverVerticalPageShell({
   feedError = false,
   onFeedRetry,
   liveDot = false,
+  pageTone,
 }: Props) {
   return (
-    <div className="dvr-surface dvr-surface--vertical-page" aria-busy={feedLoading}>
+    <div
+      className={cn(
+        "dvr-surface dvr-surface--vertical-page",
+        pageTone && `dvr-surface--${pageTone}-page`,
+      )}
+      aria-busy={feedLoading}
+    >
       {feedLoading ? <span className="sr-only">{title} yükleniyor.</span> : null}
 
       <header className="dvr-top-chrome">
@@ -52,12 +62,11 @@ export function DiscoverVerticalPageShell({
       </header>
 
       {feedError && onFeedRetry ? (
-        <div className="dvr-error-banner" role="alert">
-          <p className="dvr-error-banner__text">Akış yüklenemedi. İçerik şu an görüntülenemiyor.</p>
-          <button type="button" className="dvr-error-banner__retry" onClick={onFeedRetry}>
-            Tekrar dene
-          </button>
-        </div>
+        <DiscoverErrorBanner
+          title="Akış yüklenemedi"
+          message="İçerik şu an görüntülenemiyor. Bağlantını kontrol edip tekrar dene."
+          onRetry={onFeedRetry}
+        />
       ) : feedError ? (
         <span className="sr-only">Veri yüklenemedi; içerik boş veya geçici olarak kullanılamıyor.</span>
       ) : null}

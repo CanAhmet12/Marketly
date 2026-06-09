@@ -1,0 +1,503 @@
+/**
+ * Piyasa haber detay — Premium Faz 2
+ */
+
+.mnd-page--premium {
+  --mnd-p-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  isolation: isolate;
+  padding-bottom: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.mnd-page--premium::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 240px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 4%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.mnd-page--premium > * {
+  position: relative;
+  z-index: 1;
+}
+
+.mnd-page--premium .mnd-topbar {
+  padding: clamp(0.85rem, 1.5vw, 1.1rem) 0 clamp(0.65rem, 1.2vw, 0.85rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+}
+
+.mnd-page--premium .mnd-back-link {
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Breadcrumb ─────────────────────────────────────────────────────────── */
+.mnd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  flex-wrap: wrap;
+  margin: 0.55rem 0 0.15rem;
+  font-size: 0.6875rem;
+  color: var(--color-meta);
+}
+
+.mnd-breadcrumb__link {
+  font-family: var(--font-bold);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.mnd-breadcrumb__link:hover {
+  color: var(--color-primary-dark);
+}
+
+.mnd-breadcrumb__sep {
+  color: color-mix(in srgb, var(--color-meta) 70%, transparent);
+}
+
+.mnd-breadcrumb__current {
+  min-width: 0;
+  flex: 1;
+  font-family: var(--font-bold);
+  color: var(--color-text);
+}
+
+/* ─── Context bar ────────────────────────────────────────────────────────── */
+.mnd-context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.68rem;
+  border-radius: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+}
+
+.mnd-context-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.mnd-context-bar__cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  font-family: var(--font-bold);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.mnd-context-bar__cat:hover {
+  color: var(--color-primary-dark);
+}
+
+.mnd-context-bar__dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+}
+
+.mnd-context-bar__dot--crypto { background: #f59e0b; }
+.mnd-context-bar__dot--macro { background: #60a5fa; }
+.mnd-context-bar__dot--earnings { background: #4ade80; }
+.mnd-context-bar__dot--flows { background: #a78bfa; }
+.mnd-context-bar__dot--local { background: #2dd4bf; }
+
+.mnd-context-bar__sentiment {
+  font-size: 0.625rem;
+  font-family: var(--font-bold);
+  padding: 0.14rem 0.42rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-border) 55%, transparent);
+  color: var(--color-text-secondary);
+}
+
+.mnd-context-bar__sentiment--positive {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 14%, transparent);
+}
+
+.mnd-context-bar__sentiment--negative {
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+
+.mnd-context-bar__symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.32rem;
+}
+
+.mnd-context-bar__sym {
+  font-size: 0.625rem;
+  font-family: var(--font-bold);
+  padding: 0.18rem 0.42rem;
+  border-radius: 0.35rem;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: color-mix(in srgb, var(--color-surface-muted) 80%, transparent);
+  transition:
+    color 0.14s var(--mnd-p-ease),
+    border-color 0.14s var(--mnd-p-ease);
+}
+
+.mnd-context-bar__sym:hover {
+  color: var(--color-primary-dark);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+}
+
+.mnd-page--premium .mnd-topbar-btn {
+  font-size: 0.6875rem;
+  border-radius: 0.5rem;
+  transition:
+    color 0.16s var(--mnd-p-ease),
+    background 0.16s var(--mnd-p-ease),
+    border-color 0.16s var(--mnd-p-ease);
+}
+
+.mnd-page--premium .mnd-topbar-btn:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary-light) 35%, var(--color-surface));
+}
+
+.mnd-page--premium .mnd-topbar-actions {
+  align-items: center;
+}
+
+.mnd-topbar-live {
+  margin-right: 0.15rem;
+}
+
+.mnd-share-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.6875rem;
+  font-family: var(--font-bold);
+  color: var(--color-primary-dark);
+}
+
+/* ─── Hero ───────────────────────────────────────────────────────────────── */
+.mnd-page--premium .mnd-hero {
+  margin-top: clamp(0.85rem, 1.6vw, 1.25rem);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  background: var(--color-surface);
+  box-shadow:
+    0 0 0 1px rgba(255 255 255 / 0.03),
+    0 12px 32px rgba(0 0 0 / 0.12);
+}
+
+.mnd-page--premium .mnd-hero-media {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  max-height: 380px;
+  overflow: hidden;
+  background: #0d0f17;
+}
+
+.mnd-hero-media::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 12;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.mnd-hero-media--tone-crypto::before { background: #f59e0b; }
+.mnd-hero-media--tone-macro::before { background: #60a5fa; }
+.mnd-hero-media--tone-earnings::before { background: #4ade80; }
+.mnd-hero-media--tone-flows::before { background: #a78bfa; }
+.mnd-hero-media--tone-local::before { background: #2dd4bf; }
+
+.mnd-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  z-index: 12;
+  opacity: 0.7;
+  pointer-events: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--mnd-hero-tone, #60a5fa) 50%, transparent), transparent 72%);
+}
+
+.mnd-hero--tone-crypto { --mnd-hero-tone: #f59e0b; }
+.mnd-hero--tone-macro { --mnd-hero-tone: #60a5fa; }
+.mnd-hero--tone-earnings { --mnd-hero-tone: #4ade80; }
+.mnd-hero--tone-flows { --mnd-hero-tone: #a78bfa; }
+.mnd-hero--tone-local { --mnd-hero-tone: #2dd4bf; }
+
+.mnd-hero-media__well {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(145deg, #12151f 0%, #0a0c12 100%);
+}
+
+.mnd-page--premium .mnd-hero-img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mnd-page--premium .mnd-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(0 0 0 / 0.08) 0%, rgba(0 0 0 / 0.55) 100%);
+}
+
+.mnd-hero-tone-wash {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--mnd-hero-tone, #60a5fa) 10%, transparent),
+    transparent 54%
+  );
+}
+
+.mnd-page--premium .mnd-hero-content {
+  padding: clamp(1rem, 2vw, 1.35rem) clamp(1rem, 2vw, 1.5rem) clamp(1.1rem, 2vw, 1.45rem);
+}
+
+.mnd-page--premium .mnd-hero-badges {
+  gap: 0.45rem;
+  margin-bottom: 0.72rem;
+}
+
+.mnd-page--premium .mnd-hero-badges .mn-p-badge-impact,
+.mnd-page--premium .mnd-hero-badges .mn-p-badge-cat,
+.mnd-page--premium .mnd-hero-badges .mn-p-badge-watch,
+.mnd-page--premium .mnd-hero-badges .mn-p-badge-portfolio {
+  text-shadow: none;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.mnd-page--premium .mnd-headline {
+  font-size: clamp(1.375rem, 2.2vw + 0.8rem, 2rem);
+  letter-spacing: -0.035em;
+  line-height: 1.18;
+}
+
+.mnd-page--premium .mnd-meta-row {
+  margin-top: 0.72rem;
+  font-size: 0.75rem;
+}
+
+.mnd-source-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  padding: 0.48rem 0.82rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-family: var(--font-bold);
+  text-decoration: none;
+  color: #fff;
+  background: var(--color-text);
+  transition: opacity 0.16s var(--mnd-p-ease);
+}
+
+.mnd-source-cta:hover {
+  opacity: 0.9;
+}
+
+.mnd-source-cta:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.mnd-source-cta__icon {
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+/* ─── Intel summary & body ───────────────────────────────────────────────── */
+.mnd-page--premium .mnd-intel-summary {
+  margin-top: clamp(1rem, 1.8vw, 1.35rem);
+  padding: 0.9rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary-dark) 20%, var(--color-border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary-light) 42%, var(--color-surface)) 0%,
+    var(--color-surface) 72%
+  );
+}
+
+.mnd-prose--lead {
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
+.mnd-fallback-note {
+  padding: 0.85rem 0;
+}
+
+/* ─── Rail tone accent ───────────────────────────────────────────────────── */
+.mnd-rail-block--tone {
+  border-left: 2px solid color-mix(in srgb, var(--mnd-rail-tone) 55%, transparent);
+}
+
+.mnd-rail-block--crypto { --mnd-rail-tone: #f59e0b; }
+.mnd-rail-block--macro { --mnd-rail-tone: #60a5fa; }
+.mnd-rail-block--earnings { --mnd-rail-tone: #4ade80; }
+.mnd-rail-block--flows { --mnd-rail-tone: #a78bfa; }
+.mnd-rail-block--local { --mnd-rail-tone: #2dd4bf; }
+
+/* ─── Related card premium ─────────────────────────────────────────────────── */
+.mnd-related-card--premium {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.62rem;
+  padding: 0.45rem;
+  border-radius: 0.55rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+  transition:
+    border-color 0.16s var(--mnd-p-ease),
+    background 0.16s var(--mnd-p-ease),
+    transform 0.16s var(--mnd-p-ease);
+}
+
+.mnd-related-card--premium:hover {
+  border-color: color-mix(in srgb, var(--mn-card-tone, var(--color-primary)) 28%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface-hover) 70%, transparent);
+  transform: translateY(-1px);
+}
+
+.mnd-related-card__media {
+  position: relative;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #0d0f17;
+}
+
+.mnd-related-card__media-inner {
+  position: absolute;
+  inset: 0;
+}
+
+.mnd-related-card__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.mnd-related-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.mnd-related-card__badges .mn-p-badge-impact,
+.mnd-related-card__badges .mn-p-badge-cat {
+  text-shadow: none;
+  font-size: 0.5rem;
+}
+
+.mnd-related-card__headline {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-family: var(--font-bold);
+  line-height: 1.35;
+  color: var(--color-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mnd-related-card__meta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-wrap: wrap;
+  font-size: 0.5625rem;
+  color: var(--color-meta);
+}
+
+/* ─── Detail skeleton ────────────────────────────────────────────────────── */
+.mnd-skeleton-page {
+  padding-bottom: 2.5rem;
+}
+
+.mnd-skeleton-hero {
+  margin-top: 1rem;
+  height: clamp(280px, 36vw, 380px);
+  border-radius: 0.75rem;
+}
+
+.mnd-skeleton-content {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .mnd-skeleton-content {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+.mnd-skeleton-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mnd-skeleton-line {
+  height: 0.85rem;
+  border-radius: 0.35rem;
+}
+
+.mnd-skeleton-rail {
+  height: 12rem;
+  border-radius: 0.65rem;
+}
+
+/* Light theme */
+html[data-theme="light"] .mnd-page--premium .mnd-topbar-btn {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .mnd-page--premium .mnd-topbar-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .mnd-page--premium .mnd-intel-summary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary-light) 55%, var(--color-surface)) 0%,
+    var(--color-surface) 72%
+  );
+}

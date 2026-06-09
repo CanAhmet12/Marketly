@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { CreatorsPageClient } from "@/features/creators/creators-page-client";
-import { CreatorsPageSkeleton } from "@/features/creators/components/creators-page-skeleton";
+import { CreatorsDirectoryClient } from "@/features/creators/creators-directory-client";
+import { CreatorsDirectorySkeleton } from "@/features/creators/components/creators-directory-skeleton";
 import { OG_SITE_DEFAULTS, siteCanonical } from "@/lib/seo/metadata-helpers";
 
 export const metadata: Metadata = {
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
 };
 
 function CreatorsFallback() {
-  return <CreatorsPageSkeleton />;
+  return <CreatorsDirectorySkeleton />;
 }
 
 export default function CreatorsPage() {
   return (
     <Suspense fallback={<CreatorsFallback />}>
-      <CreatorsPageClient />
+      <CreatorsDirectoryClient />
     </Suspense>
   );
 }

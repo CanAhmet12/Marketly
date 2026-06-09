@@ -1,83 +1,67 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { StudioSidebar } from "@/features/studio/components/studio-sidebar";
+import { resolveStudioZone } from "@/features/studio/lib/studio-zone";
 import { getStudioRepository } from "@/features/studio/repository";
 import { StudioSubnav } from "@/features/studio/studio-subnav";
 import { useAuth } from "@/features/auth/use-auth";
-import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
 
 export function StudioLayoutClient({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const zone = resolveStudioZone(pathname);
   const { user } = useAuth();
-  const ownerId = useStudioOwnerId(user);
-  const studio  = getStudioRepository();
-  const notice  = studio.getShellNotice();
+  const studio = getStudioRepository();
+  const notice = studio.getShellNotice();
+  const subtitle = studio.getShellSubtitle();
 
   const displayName = user?.email?.split("@")[0] ?? "Creator";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <div className="studio-shell" style={{ minHeight: "100vh" }}>
+    <div className="studio-shell" data-studio-zone={zone}>
 
-      {/* Header */}
-      <div className="studio-header">
-        <div className="studio-header-inner">
-
-          {/* Sol: Marka */}
+      <header className="studio-masthead">
+        <div className="studio-masthead-inner">
           <div className="studio-brand">
-            <div className="studio-brand-icon" style={{
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.15)",
-              color: "var(--st-text)",
-              fontFamily: "var(--font-mono, monospace)",
-              fontSize: 12,
-              letterSpacing: "0.08em",
-            }}>
-              STD
-            </div>
+            <div className="studio-brand-icon studio-brand-icon--outline">STD</div>
             <div className="studio-brand-text">
               <span className="studio-brand-label">Creator Workspace</span>
               <span className="studio-brand-name">Studio</span>
             </div>
           </div>
 
-          {/* Sağ: Aksiyonlar + Profil */}
+          <div className="studio-masthead-meta">
+            <span className="studio-masthead-sub">{subtitle}</span>
+          </div>
+
           <div className="studio-header-right">
             <Link href="/studio/live" className="studio-hbtn studio-hbtn--live">
               Canlı Yayın
             </Link>
-            <Link href="/studio/drafts" className="studio-hbtn studio-hbtn--accent">
+            <Link href="/upload" className="studio-hbtn studio-hbtn--accent">
               Yeni İçerik
             </Link>
-            <div className="studio-profile-mini">
-              <div className="studio-avatar" style={{
-                background: "transparent",
-                border: "1px solid rgba(255,255,255,0.12)",
-                color: "var(--st-text-2)",
-                fontSize: 10,
-                fontFamily: "var(--font-mono, monospace)",
-                letterSpacing: "0.04em",
-              }}>
-                {initials}
-              </div>
+            <Link href="/hub/profile" className="studio-profile-mini">
+              <div className="studio-avatar studio-avatar--outline">{initials}</div>
               <span className="studio-profile-name">{displayName}</span>
-            </div>
+            </Link>
           </div>
         </div>
 
-        {/* Notice */}
-        {notice && <div className="studio-notice">{notice}</div>}
-
-        {/* Subnav */}
+        {notice ? <div className="studio-notice">{notice}</div> : null}
         <StudioSubnav />
-      </div>
+      </header>
 
-      {/* İçerik */}
-      <div className="studio-page">
-        {children}
+      <div className="studio-body">
+        <StudioSidebar />
+        <main className="studio-main">
+          <div className="studio-page">{children}</div>
+        </main>
       </div>
-
     </div>
   );
 }

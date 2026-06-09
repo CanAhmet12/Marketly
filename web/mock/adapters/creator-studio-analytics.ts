@@ -1,3 +1,4 @@
+import { buildContentTypeBreakdown } from "@/features/studio/lib/studio-analytics-insights";
 import type { StudioAnalyticsBundle, StudioAudienceSegment, StudioMetricPoint, StudioTimeframe, AnalyticsSummary } from "@/features/studio/types";
 import { MOCK_POST_SOURCES } from "@/mock/fixtures/posts";
 import { MOCK_SIGNAL_ROWS } from "@/mock/fixtures/signals";
@@ -42,6 +43,7 @@ export function getStudioAnalyticsBundle(ownerId: string, timeframe: StudioTimef
       engagementSeries: z(len),
       followerSeries: z(len),
       audienceBreakdown: [],
+      contentTypeBreakdown: [],
       topVideos: [],
       topPosts: [],
       topAssets: [],
@@ -115,6 +117,14 @@ export function getStudioAnalyticsBundle(ownerId: string, timeframe: StudioTimef
     .sort((a, b) => b.engagement - a.engagement)
     .slice(0, 6);
 
+  const contentTypeBreakdown = buildContentTypeBreakdown(
+    [
+      ...posts.map((p) => ({ type: p.type, views: p.views_count })),
+      ...sigs.map((s) => ({ type: "signal", views: s.copies_count * 2 })),
+    ],
+    summary.signalCopyCount,
+  );
+
   return {
     summary,
     timeframe,
@@ -123,6 +133,7 @@ export function getStudioAnalyticsBundle(ownerId: string, timeframe: StudioTimef
     engagementSeries: series(ownerId, "es", len, summary.engagementScore / 50),
     followerSeries: series(ownerId, "fs", len, summary.followerCount / 5000),
     audienceBreakdown,
+    contentTypeBreakdown,
     topVideos,
     topPosts,
     topAssets,

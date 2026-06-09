@@ -42,6 +42,8 @@ export type NotificationCenterItem = {
   actor_href: string;
   actions: NotificationQuickAction[];
   batch_key: string | null;
+  /** Gruplu bildirim başlığı — "10 kişi beğendi" vb. */
+  group_label: string | null;
 };
 
 export type NotificationDigestCard = {

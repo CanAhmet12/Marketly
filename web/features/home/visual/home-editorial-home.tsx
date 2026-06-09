@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
 import {
   filterHomePosts,
@@ -13,53 +11,42 @@ import {
   normalizeHomeChipParam,
   type HomeFeedChipId,
 } from "@/features/feed/home-feed-filters";
-import { HomeGridPlaceholderCards } from "@/features/feed/home-feed-grid-placeholders";
 import { useFeedEngagement } from "@/features/engagement/use-feed-engagement";
 import { useHomeFeed } from "@/features/feed/use-home-feed";
 import type { HomeFeedFetchMode } from "@/features/feed/fetch-home-feed";
-import { buildEditorialMarketStripItems } from "@/features/home/editorial/build-market-strip-items";
+import type { MarketAssetView } from "@/features/markets/types";
 import { buildEditorialRailBundle } from "@/features/home/editorial/build-editorial-rail";
 import { HomeEditorialFeedSkeleton } from "@/features/home/visual/home-editorial-feed-skeleton";
 import { HomeEditorialFeedList } from "@/features/home/visual/home-editorial-feed-list";
-import { HomeStoriesSection } from "@/features/stories/home-stories-section";
-import { HomeVisualMarketStrip } from "@/features/home/visual/home-visual-market-strip";
+import { HomeFeedMast } from "@/features/home/visual/home-feed-mast";
+import { HomeFeedScrollTop } from "@/features/home/visual/home-feed-scroll-top";
+import { HomeFeedState } from "@/features/home/visual/home-feed-states";
+import { HomeFeedTodayStrip } from "@/features/home/visual/home-feed-today-strip";
+import { HomeRailStickyShell } from "@/features/home/visual/home-rail-sticky-shell";
 import { HomeVisualRightRail } from "@/features/home/visual/home-visual-right-rail";
 import { useHomeEditorialChips } from "@/features/home/hooks/use-home-editorial-chips";
+import {
+  persistHomeFeedChip,
+  useHomeFeedChipPersistence,
+} from "@/features/home/hooks/use-home-feed-chip-persistence";
+import { useHomeComposeShortcut } from "@/features/home/hooks/use-home-compose-shortcut";
+import { useHomeFeedTabShortcut } from "@/features/home/hooks/use-home-feed-tab-shortcut";
+import { useHomeRefreshShortcut } from "@/features/home/hooks/use-home-refresh-shortcut";
+import { HomeFeedKeyboardHints } from "@/features/home/visual/home-feed-keyboard-hints";
+import { useHomePullRefresh } from "@/features/home/hooks/use-home-pull-refresh";
+import { HomeFeedCreatorSuggestions } from "@/features/home/visual/home-feed-creator-suggestions";
+import { HomeFeedPullIndicator } from "@/features/home/visual/home-feed-pull-indicator";
 import { useRecommendedCreators } from "@/features/home/hooks/use-recommended-creators";
 import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
+import { useDiscussionRecommendations } from "@/features/social/hooks/use-discussion-recommendations";
+import { mapDiscussionPackToRailLinks } from "@/features/social/lib/map-discussion-pack-to-rail";
+import { useAffinitySync } from "@/features/personalization/hooks/use-affinity-sync";
+import { AlgoFlags } from "@/lib/algo-flags";
+import { useLiveRankContext } from "@/features/personalization/hooks/use-live-rank-context";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
 import { getPersonalizationRepository } from "@/features/personalization/repository";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
-
-function IconRefresh() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6M3 12a9 9 0 0 1 3 6.7M3 21v-6h6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconMore() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="5" cy="12" r="1.6" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.6" fill="currentColor" />
-      <circle cx="19" cy="12" r="1.6" fill="currentColor" />
-    </svg>
-  );
-}
-
-const TAB_LABELS: Record<HomeFeedChipId, string> = {
-  for_you: "Senin için",
-  following: "Takip",
-};
 
 const FEED_PANEL_ID = "home-feed-panel";
 
@@ -71,8 +58,12 @@ export function HomeEditorialHome() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chipParam = searchParams.get("chip");
+  useHomeFeedChipPersistence(chipParam, router);
   const snap = usePersonalizationSnapshot();
+  const { rev: liveRankRev } = useLiveRankContext(user?.id ?? null);
+  useAffinitySync(user?.id ?? null);
   const { creators: recommendedCreators } = useRecommendedCreators();
+  const { pack: discussionPack, rev: discussionRev } = useDiscussionRecommendations();
   const { chips: editorialChips } = useHomeEditorialChips();
   const { assets: liveMarketAssets } = useMarketAssetsLive();
 
@@ -97,7 +88,7 @@ export function HomeEditorialHome() {
 
   const chip: HomeFeedChipId = normalizeHomeChipParam(chipParam);
   const feedMode: HomeFeedFetchMode = chip;
-  const { posts, query } = useHomeFeed(feedMode);
+  const { posts, query, feedEnabled: homeFeedEnabled } = useHomeFeed(feedMode);
   const loginNext = chip === "following" ? "/?chip=following" : "/";
   const { handlers: engagement } = useFeedEngagement({ loginNext });
 
@@ -108,7 +99,8 @@ export function HomeEditorialHome() {
 
   const setChip = useCallback(
     (id: HomeFeedChipId) => {
-      postsRef.current?.scrollTo({ top: 0 });
+      persistHomeFeedChip(id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       if (id === "for_you") router.replace("/", { scroll: false });
       else router.replace(`/?chip=${id}`, { scroll: false });
     },
@@ -135,10 +127,29 @@ export function HomeEditorialHome() {
   const mockOn = isMockDataEnabled();
   const feedReady = mockOn || configured;
   const showSetupGrid = !mockOn && !configured;
+  useHomeComposeShortcut(router, feedReady);
+  const onFeedRefresh = useCallback(() => {
+    void query.refetch();
+  }, [query]);
 
-  const isLoading = (!isInitialized && !mockOn) || (feedReady && query.isPending && !query.data);
+  useHomeFeedTabShortcut(chip, setChip, feedReady);
+  useHomeRefreshShortcut(onFeedRefresh, feedReady, query.isFetching);
+
+  const pullRefresh = useHomePullRefresh({
+    onRefresh: onFeedRefresh,
+    isFetching: query.isFetching,
+    disabled: !feedReady || showSetupGrid,
+  });
+
+  const isLoading =
+    homeFeedEnabled &&
+    feedReady &&
+    posts.length === 0 &&
+    !query.isError &&
+    (query.isLoading || (query.isPending && query.fetchStatus === "fetching"));
   const isError = query.isError;
-  const isEmptyFeed = isInitialized && feedReady && query.isSuccess && posts.length === 0 && !query.isFetching;
+  const isEmptyFeed =
+    homeFeedEnabled && feedReady && query.isSuccess && posts.length === 0 && query.fetchStatus === "idle";
 
   const filtered = useMemo(() => filterHomePosts(posts, chip), [posts, chip]);
   const isFilterEmpty = !isLoading && posts.length > 0 && filtered.length === 0;
@@ -153,7 +164,7 @@ export function HomeEditorialHome() {
     void snap.recommendRev;
     void snap.adaptiveRev;
     return getPersonalizationRepository().rankHomeFeedForYou(filtered, user?.id ?? null);
-  }, [filtered, chip, user?.id, snap.affinity.meta.eventCount, snap.intel.confidenceLabel, snap.feedbackRev, snap.explorationRev, snap.watchRev, snap.recommendRev, snap.adaptiveRev]);
+  }, [filtered, chip, user?.id, liveRankRev, snap.affinity.meta.eventCount, snap.intel.confidenceLabel, snap.feedbackRev, snap.explorationRev, snap.watchRev, snap.recommendRev, snap.adaptiveRev]);
 
   const displayPosts = chip === "for_you" ? (forYouRanked ?? []) : filtered;
   const forYouHiddenAll = chip === "for_you" && filtered.length > 0 && displayPosts.length === 0;
@@ -170,14 +181,29 @@ export function HomeEditorialHome() {
 
   const followingLoginHref = `/auth/login?next=${encodeURIComponent("/?chip=following")}`;
 
-  const marketItems = useMemo(
-    () => buildEditorialMarketStripItems(mockOn ? undefined : liveMarketAssets),
-    [mockOn, liveMarketAssets],
-  );
-  const rail = useMemo(
-    () => buildEditorialRailBundle(snap.intel, recommendedCreators, editorialChips),
-    [snap.intel, recommendedCreators, editorialChips],
-  );
+  const rail = useMemo(() => {
+    const bundle = buildEditorialRailBundle(
+      snap.intel,
+      recommendedCreators,
+      { ...editorialChips, newsRows: mockOn ? [] : (editorialChips.newsRows ?? []) },
+      mockOn ? undefined : liveMarketAssets,
+    );
+    if (!mockOn && AlgoFlags.discussionRecommendations && discussionPack) {
+      const live = mapDiscussionPackToRailLinks(discussionPack);
+      if (live.length > 0) return { ...bundle, discussions: live };
+    }
+    return bundle;
+  }, [snap.intel, recommendedCreators, editorialChips, mockOn, liveMarketAssets, discussionPack, discussionRev]);
+
+  // Feed kartlarında live asset context için lookup map
+  const liveAssetMap = useMemo((): Map<string, MarketAssetView> | null => {
+    if (mockOn || !liveMarketAssets.length) return null;
+    const map = new Map<string, MarketAssetView>();
+    for (const a of liveMarketAssets) {
+      map.set(a.symbol.toUpperCase(), a);
+    }
+    return map;
+  }, [mockOn, liveMarketAssets]);
 
   return (
     <div className="hv-ref" aria-busy={isLoading}>
@@ -187,60 +213,18 @@ export function HomeEditorialHome() {
             <div className="hv-ref__feed-col">
               <div className="hv-ref__feed-inner">
                 <div className="hv-ref__stream">
-                  <div className="hv-ref__mast">
-                    <header className="hv-ref__top" aria-label="Akış">
-                      <span className="hv-ref__sr-only">Akış</span>
-                      <div className="hv-ref__mast-head">
-                        <div className="hv-ref__head-actions">
-                          <div className="hv-ref__tabs" role="tablist" aria-label="Akış sekmeleri">
-                            {HOME_FEED_CHIP_IDS.map((tabId) => (
-                              <button
-                                key={tabId}
-                                ref={(el) => {
-                                  tabRefs.current[tabId] = el ?? undefined;
-                                }}
-                                type="button"
-                                role="tab"
-                                id={`home-feed-tab-${tabId}`}
-                                aria-selected={chip === tabId}
-                                aria-controls={FEED_PANEL_ID}
-                                tabIndex={chip === tabId ? 0 : -1}
-                                className="hv-ref__tab"
-                                data-active={chip === tabId}
-                                onClick={() => setChip(tabId)}
-                                onKeyDown={(e) => onTabKeyDown(e, tabId)}
-                              >
-                                {TAB_LABELS[tabId]}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="hv-ref__toolbar">
-                            <button
-                              type="button"
-                              className="hv-ref__icon-btn"
-                              title="Yenile"
-                              aria-label="Yenile"
-                              disabled={query.isFetching}
-                              onClick={() => void query.refetch()}
-                            >
-                              <IconRefresh />
-                            </button>
-                            <button type="button" className="hv-ref__icon-btn" title="Ayarlar" aria-label="Ayarlar" onClick={() => router.push("/settings")}>
-                              <IconMore />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="hv-ref-strip-region">
-                        <div className="hv-ref__strip-wrap">
-                          <HomeVisualMarketStrip items={marketItems} />
-                        </div>
-                        <div className="hv-ref__stories-wrap">
-                          <HomeStoriesSection useStaticFallback={showSetupGrid} />
-                        </div>
-                      </div>
-                    </header>
-                  </div>
+                  <HomeFeedPullIndicator {...pullRefresh} />
+                  <HomeFeedKeyboardHints enabled={feedReady && !showSetupGrid} />
+                  <HomeFeedMast
+                    chip={chip}
+                    feedPanelId={FEED_PANEL_ID}
+                    tabRefs={tabRefs}
+                    isFetching={query.isFetching}
+                    showSetupGrid={showSetupGrid}
+                    onSetChip={setChip}
+                    onTabKeyDown={onTabKeyDown}
+                    onRefresh={onFeedRefresh}
+                  />
 
                   <div
                     ref={postsRef}
@@ -253,86 +237,49 @@ export function HomeEditorialHome() {
                     <span className="hv-ref__sr-only" aria-live="polite">
                       {loadAnnouncement}
                     </span>
-                    <div key={chip} className="motion-panel-crossfade">
-                    {showSetupGrid ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <HomeGridPlaceholderCards variant="no-config" />
-                      </div>
+                    <div key={chip} className="motion-feed-tab-enter">
+                    {/* Market summary bar — bugünün en hareketli assetleri */}
+                    {!isLoading && !showSetupGrid ? (
+                      <HomeFeedTodayStrip items={editorialChips.today} />
                     ) : null}
+                    {showSetupGrid ? <HomeFeedState variant="no-config" /> : null}
 
                     {feedReady && isError && !mockOn ? (
-                      <div className="max-w-[min(100%,36rem)] py-[var(--hv-s-6)]" role="alert">
-                        <p className="text-[0.984375rem] font-semibold text-[var(--hv-text)]">Akış yüklenemedi</p>
-                        <p className="mt-[var(--hv-s-2)] text-[var(--hv-text-3)]">
-                          {query.error instanceof Error ? query.error.message : "Bilinmeyen hata"}
-                        </p>
-                        <button
-                          type="button"
-                          className="mt-[var(--hv-s-4)] rounded-md border border-[var(--hv-sep)] px-4 py-2 text-[var(--hv-text-2)]"
-                          onClick={() => void query.refetch()}
-                        >
-                          Tekrar dene
-                        </button>
-                      </div>
+                      <HomeFeedState variant="error" onRetry={() => void query.refetch()} />
                     ) : null}
 
-                    {feedReady && isLoading ? <HomeEditorialFeedSkeleton inline count={4} /> : null}
+                    {feedReady && isLoading ? (
+                      <HomeEditorialFeedSkeleton
+                        inline
+                        count={4}
+                        showCreatorSuggest={chip === "following"}
+                      />
+                    ) : null}
 
                     {feedReady && !isLoading && isEmptyFeed && !mockOn ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <HomeGridPlaceholderCards variant="empty-feed" />
-                      </div>
+                      <HomeFeedState variant="empty" />
                     ) : null}
 
                     {feedReady && !isLoading && chip === "following" && !user && isInitialized ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <EmptyState
-                          title="Takip akışı için giriş yapın"
-                          description="Takip ettiğin üreticilerin gönderilerini görmek için hesabına giriş yap."
-                          actionLabel="Giriş yap"
-                          actionHref={followingLoginHref}
-                          tone="social"
-                          compact
-                        />
-                      </div>
+                      <HomeFeedState variant="following-login" loginHref={followingLoginHref} />
                     ) : null}
 
                     {feedReady && !isLoading && chip === "following" && user && posts.length === 0 ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <EmptyState
-                          title="Takip ettiğin üreticilerden henüz gönderi yok"
-                          description="Keşfetten ilginç creator'ları bul ve takip et."
-                          actionLabel="Keşfet"
-                          actionHref="/discover?tab=creators"
-                          tone="social"
-                          compact
+                      <>
+                        <HomeFeedState variant="following-empty" />
+                        <HomeFeedCreatorSuggestions
+                          creators={recommendedCreators}
+                          viewerId={user?.id ?? null}
                         />
-                      </div>
+                      </>
                     ) : null}
 
                     {feedReady && !isLoading && forYouHiddenAll ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <EmptyState
-                          title="Geri bildirim akışı filtreledi"
-                          description="Sessize alınan üreticiler veya gizlenen gönderiler nedeniyle liste boş olabilir."
-                          actionLabel="Ayarlar"
-                          actionHref="/settings"
-                          tone="neutral"
-                          compact
-                        />
-                      </div>
+                      <HomeFeedState variant="feedback-filtered" />
                     ) : null}
 
                     {feedReady && !isLoading && isFilterEmpty ? (
-                      <div className="py-[var(--hv-s-6)]">
-                        <EmptyState
-                          title="Bu sekmede içerik yok"
-                          description="Senin için sekmesine dönüp genel akışı görebilirsin."
-                          actionLabel="Senin İçin"
-                          actionHref="/?chip=for_you"
-                          compact
-                        />
-                      </div>
+                      <HomeFeedState variant="filtered" />
                     ) : null}
 
                     {feedReady && !isLoading && displayPosts.length > 0 ? (
@@ -342,6 +289,8 @@ export function HomeEditorialHome() {
                         hasNextPage={Boolean(query.hasNextPage)}
                         isFetchingNextPage={query.isFetchingNextPage}
                         onLoadMore={() => void query.fetchNextPage()}
+                        assetMap={liveAssetMap}
+                        tabKey={chip}
                       />
                     ) : null}
                     </div>
@@ -351,20 +300,23 @@ export function HomeEditorialHome() {
             </div>
           </div>
 
-          <aside className="hv-ref__rail-col hv-ref__rail-col--ambient" aria-label="Bağlam">
-            <div className="hv-ref__rail-bridge">
-              <HomeVisualRightRail
-                shortcuts={rail.shortcuts}
-                today={rail.today}
-                interests={rail.interests}
-                trending={rail.trending}
-                creators={rail.creators}
-                viewerId={user?.id ?? null}
-              />
-            </div>
-          </aside>
+          <HomeRailStickyShell>
+            <HomeVisualRightRail
+              shortcuts={rail.shortcuts}
+              today={rail.today}
+              interests={rail.interests}
+              signals={rail.signals}
+              discussions={rail.discussions}
+              creators={rail.creators}
+              categoryPreviews={rail.categoryPreviews}
+              newsItems={rail.newsItems}
+              liveAssets={mockOn ? [] : liveMarketAssets}
+              viewerId={user?.id ?? null}
+            />
+          </HomeRailStickyShell>
         </div>
       </div>
+      <HomeFeedScrollTop />
     </div>
   );
 }

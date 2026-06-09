@@ -1,113 +1,75 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
-import type { CreatorFilters } from "@/features/creators/creators-filters";
 import {
   CREATOR_ASSET_PRESETS,
-  CREATOR_FORMAT_OPTIONS,
   CREATOR_SORT_OPTIONS,
-  CREATOR_TIER_OPTIONS,
-  DEFAULT_CREATOR_FILTERS,
-  creatorFiltersActiveCount,
-} from "@/features/creators/creators-filters";
-import type { CreatorFacetCounts } from "@/features/creators/lib/compute-facet-counts";
+  CREATOR_SPECIALTY_PRESETS,
+} from "@/features/creators/lib/creators-directory-config";
+import type { CreatorsDirectoryParams } from "@/features/creators/hooks/use-creators-directory-params";
 import { cn } from "@/lib/cn";
 
 type Props = {
-  filters: CreatorFilters;
-  resultCount: number;
-  facetCounts: CreatorFacetCounts;
-  onChange: (next: CreatorFilters) => void;
-  onReset: () => void;
+  params: CreatorsDirectoryParams;
+  onChange: (patch: Partial<CreatorsDirectoryParams>) => void;
+  onClearFilters: () => void;
+  activeFilterCount: number;
 };
 
-function advancedActiveCount(filters: CreatorFilters): number {
-  let n = 0;
-  if (filters.asset) n++;
-  if (filters.tier !== "all") n++;
-  return n;
-}
-
-function Chip({
-  active,
-  disabled,
-  onClick,
-  children,
-  className,
-}: {
-  active: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={cn(
-        "creators-page__chip",
-        active && "creators-page__chip--active",
-        disabled && !active && "creators-page__chip--disabled",
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ChipCount({ n }: { n: number }) {
-  return <span className="creators-page__chip-count">{n}</span>;
-}
-
-export function CreatorsFilterBar({ filters, resultCount, facetCounts, onChange, onReset }: Props) {
-  const activeN = creatorFiltersActiveCount(filters);
-  const advN = advancedActiveCount(filters);
-  const [panelOpen, setPanelOpen] = useState(false);
+/** Kompakt filtre — tek satır, gereksiz metin yok */
+export function CreatorsFilterBar({ params, onChange, onClearFilters, activeFilterCount }: Props) {
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [draftQ, setDraftQ] = useState(params.q);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!panelOpen) return;
+    setDraftQ(params.q);
+  }, [params.q]);
+
+  useEffect(() => {
+    if (!filterOpen) return;
     const onDoc = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setPanelOpen(false);
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setFilterOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, [panelOpen]);
+  }, [filterOpen]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPanelOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  const commitSearch = useCallback(() => {
+    onChange({ q: draftQ.trim() });
+  }, [draftQ, onChange]);
+
+  const onSearchKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") commitSearch();
+    },
+    [commitSearch],
+  );
+
+  const hasFilters = activeFilterCount > 0;
 
   return (
-    <div className="creators-page__toolbar">
-      <div className="creators-page__toolbar-row">
-        <div className="creators-page__toolbar-search-wrap">
+    <div className="crt-v2-filter">
+      <div className="crt-v2-filter__row">
+        <label className="crt-v2-filter__search">
+          <span className="sr-only">Analist ara</span>
           <input
             type="search"
-            value={filters.q}
-            onChange={(e) => onChange({ ...filters, q: e.target.value })}
+            value={draftQ}
             placeholder="Ara…"
-            className="creators-page__search"
-            aria-label="Üretici ara"
-            autoComplete="off"
-            enterKeyHint="search"
+            className="crt-v2-filter__search-input"
+            onChange={(e) => setDraftQ(e.target.value)}
+            onBlur={commitSearch}
+            onKeyDown={onSearchKeyDown}
           />
-        </div>
+        </label>
 
         <select
-          value={filters.sort}
-          onChange={(e) => onChange({ ...filters, sort: e.target.value as CreatorFilters["sort"] })}
-          className="creators-page__sort"
-          aria-label="Sırala"
+          className="crt-v2-filter__sort"
+          value={params.sort}
+          aria-label="Sıralama"
+          onChange={(e) => onChange({ sort: e.target.value as CreatorsDirectoryParams["sort"] })}
         >
           {CREATOR_SORT_OPTIONS.map((o) => (
             <option key={o.id} value={o.id}>
@@ -116,118 +78,54 @@ export function CreatorsFilterBar({ filters, resultCount, facetCounts, onChange,
           ))}
         </select>
 
-        <Chip
-          active={filters.scope === "following"}
-          disabled={facetCounts.scopeFollowing === 0 && filters.scope !== "following"}
-          onClick={() => onChange({ ...filters, scope: filters.scope === "following" ? "all" : "following" })}
-          className="creators-page__chip--ghost"
-        >
-          Takip
-          <ChipCount n={facetCounts.scopeFollowing} />
-        </Chip>
-
-        <div className="creators-page__toolbar-panel-anchor" ref={panelRef}>
+        <div className="relative shrink-0" ref={panelRef}>
           <button
             type="button"
-            className={cn("creators-page__filter-btn", (panelOpen || advN > 0) && "creators-page__filter-btn--active")}
-            aria-expanded={panelOpen}
-            aria-haspopup="true"
-            onClick={() => setPanelOpen((v) => !v)}
+            className={cn("crt-v2-filter__filter-btn", filterOpen && "crt-v2-filter__filter-btn--open")}
+            aria-expanded={filterOpen}
+            onClick={() => setFilterOpen((v) => !v)}
           >
-            Filtre
-            {advN > 0 ? <span className="creators-page__filter-badge">{advN}</span> : null}
+            {hasFilters ? `Filtre · ${activeFilterCount}` : "Filtre"}
           </button>
-
-          {panelOpen ? (
-            <div className="creators-page__filter-panel" role="dialog" aria-label="Gelişmiş filtreler">
-              <div className="creators-page__filter-panel-section">
-                <span className="creators-page__filter-panel-label">Varlık</span>
-                <div className="creators-page__filter-panel-chips">
-                  {CREATOR_ASSET_PRESETS.map((asset) => {
-                    const n = facetCounts.asset[asset] ?? 0;
-                    const active = filters.asset === asset;
-                    const disabled = n === 0 && !active;
-                    return (
-                      <Chip
-                        key={asset}
-                        active={active}
-                        disabled={disabled}
-                        onClick={() => onChange({ ...filters, asset: active ? null : asset })}
-                      >
-                        {asset}
-                        <ChipCount n={n} />
-                      </Chip>
-                    );
-                  })}
-                </div>
+          {filterOpen ? (
+            <div className="crt-v2-filter__panel" role="dialog" aria-label="Filtreler">
+              <p className="crt-v2-filter__panel-label">Uzmanlık</p>
+              <div className="crt-v2-filter__chip-row">
+                {CREATOR_SPECIALTY_PRESETS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={cn("crt-v2-filter__chip", params.specialty === s.id && "crt-v2-filter__chip--active")}
+                    onClick={() => onChange({ specialty: params.specialty === s.id ? null : s.id })}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
-              <div className="creators-page__filter-panel-section">
-                <span className="creators-page__filter-panel-label">Tier</span>
-                <div className="creators-page__filter-panel-chips">
-                  {CREATOR_TIER_OPTIONS.filter((o) => o.id !== "all").map((o) => {
-                    const n = facetCounts.tier[o.id];
-                    const active = filters.tier === o.id;
-                    const disabled = n === 0 && !active;
-                    return (
-                      <Chip
-                        key={o.id}
-                        active={active}
-                        disabled={disabled}
-                        onClick={() => onChange({ ...filters, tier: active ? "all" : o.id })}
-                      >
-                        {o.label}
-                        <ChipCount n={n} />
-                      </Chip>
-                    );
-                  })}
-                </div>
-              </div>
-              {advN > 0 ? (
-                <button
-                  type="button"
-                  className="creators-page__filter-panel-clear"
-                  onClick={() => onChange({ ...filters, asset: null, tier: "all" })}
-                >
-                  Gelişmiş filtreleri temizle
-                </button>
-              ) : null}
             </div>
           ) : null}
         </div>
 
-        <span className="creators-page__toolbar-count">{resultCount}</span>
-
-        {activeN > 0 ? (
-          <button type="button" className="creators-page__toolbar-reset" onClick={onReset}>
-            Temizle
+        {hasFilters ? (
+          <button type="button" className="crt-v2-filter__reset" onClick={onClearFilters}>
+            Sıfırla
           </button>
         ) : null}
       </div>
 
-      <div className="creators-page__toolbar-tabs" role="tablist" aria-label="İçerik formatı">
-        {CREATOR_FORMAT_OPTIONS.map((o) => {
-          const n = facetCounts.format[o.id];
-          const active = filters.format === o.id;
-          const disabled = o.id !== "all" && n === 0 && !active;
-          return (
-            <button
-              key={o.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              disabled={disabled}
-              className={cn(
-                "creators-page__tab",
-                active && "creators-page__tab--active",
-                disabled && !active && "creators-page__tab--disabled",
-              )}
-              onClick={() => onChange({ ...filters, format: o.id })}
-            >
-              {o.label}
-              {o.id !== "all" && n > 0 ? <span className="creators-page__tab-count">{n}</span> : null}
-            </button>
-          );
-        })}
+      <div className="crt-v2-filter__asset-scroll" role="tablist" aria-label="Varlık filtresi">
+        {CREATOR_ASSET_PRESETS.map((asset) => (
+          <button
+            key={asset}
+            type="button"
+            role="tab"
+            aria-selected={params.asset === asset}
+            className={cn("crt-v2-filter__asset-chip", params.asset === asset && "crt-v2-filter__asset-chip--active")}
+            onClick={() => onChange({ asset: params.asset === asset ? null : asset })}
+          >
+            {asset}
+          </button>
+        ))}
       </div>
     </div>
   );

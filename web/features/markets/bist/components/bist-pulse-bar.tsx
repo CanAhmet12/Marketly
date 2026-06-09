@@ -65,7 +65,7 @@ function PiyasaDurumuGauge({ value, label }: { value: number; label: string }) {
           <div style={{ fontSize: 22, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
             {value}
           </div>
-          <div style={{ fontSize: 10, fontWeight: 700, color, marginTop: 1 }}>{bandLabel}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color, marginTop: 1 }}>{bandLabel}</div>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@ export function BistPulseBar({ pulse }: Props) {
       {/* BIST 100 */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontWeight: 900, fontSize: 8 }}>100</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontWeight: 700, fontSize: 11 }}>100</div>
           <span className="cc-pulse-label">BIST 100</span>
         </div>
         <span className="cc-pulse-value cc-pulse-value--btc">{fmtIndex(pulse.bist100.value)}</span>
@@ -121,7 +121,7 @@ export function BistPulseBar({ pulse }: Props) {
       {/* BIST 30 */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontWeight: 900, fontSize: 8 }}>30</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontWeight: 700, fontSize: 11 }}>30</div>
           <span className="cc-pulse-label">BIST 30</span>
         </div>
         <span className="cc-pulse-value">{fmtIndex(pulse.bist30.value)}</span>

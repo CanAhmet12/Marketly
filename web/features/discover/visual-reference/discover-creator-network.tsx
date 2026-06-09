@@ -61,7 +61,7 @@ function MarketBlockHead({
 }: {
   title: string;
   subtitle: string;
-  seeAllHref: string;
+  seeAllHref?: string;
   compact?: boolean;
 }) {
   return (
@@ -70,9 +70,14 @@ function MarketBlockHead({
         <h2 className={cn("dvr-mkt-block__title", compact && "dvr-mkt-block__title--chrome")}>{title}</h2>
         <p className={cn("dvr-mkt-block__subtitle", compact && "dvr-mkt-block__subtitle--chrome")}>{subtitle}</p>
       </div>
-      <Link href={seeAllHref} className={cn("dvr-mkt-block__see-all", compact && "dvr-mkt-block__see-all--chrome")}>
-        Tümünü gör
-      </Link>
+      {seeAllHref ? (
+        <Link href={seeAllHref} className={cn("dvr-mkt-block__see-all", compact && "dvr-mkt-block__see-all--chrome")}>
+          <span>Tümünü gör</span>
+          <span className="dvr-mkt-block__see-all-arrow" aria-hidden>
+            →
+          </span>
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -132,6 +137,7 @@ export function CreatorFaceRail({
   label = "Piyasayı Konuşanlar",
   subtitle = DEFAULT_FACE_SUB,
   seeAllHref = DISCOVER_VERTICAL_ROUTES.creators,
+  hideSeeAll = false,
   compact = false,
   creators = VR_CREATOR_ITEMS,
   activityRows = VR_CREATOR_ACTIVITY_FEED,
@@ -139,30 +145,34 @@ export function CreatorFaceRail({
   label?: string;
   subtitle?: string;
   seeAllHref?: string;
+  hideSeeAll?: boolean;
   /** Üst chrome — başlıksız kompakt people rail */
   compact?: boolean;
   creators?: VRCreatorItem[];
   activityRows?: VRCreatorActivityLine[];
 }) {
   const rows = compact ? activityRows : activityRows.slice(0, 8);
-  const avatarPx = compact ? 48 : 64;
+  const avatarPx = compact ? 52 : 64;
 
   return (
     <section
       className={cn("dvr-mkt-block dvr-mkt-block--face-rail", compact && "dvr-mkt-block--chrome")}
       aria-label={label}
     >
-      <div className={cn("dvr-mkt-block__shell", compact && "dvr-mkt-block__shell--chrome dvr-mkt-block__shell--rail-only")}>
-        {!compact ? (
-          <MarketBlockHead title={label} subtitle={subtitle} seeAllHref={seeAllHref} compact={false} />
-        ) : null}
+      <div className={cn("dvr-mkt-block__shell", compact && "dvr-mkt-block__shell--chrome")}>
+        <MarketBlockHead
+          title={label}
+          subtitle={subtitle}
+          seeAllHref={hideSeeAll ? undefined : seeAllHref}
+          compact={compact}
+        />
         <div className={cn("dvr-face-rail", compact && "dvr-face-rail--chrome")}>
           <div className={cn("dvr-face-rail__mask", compact && "dvr-face-rail__mask--chrome")}>
             <div
               className={cn(
                 "dvr-face-rail__track scrollbar-none",
                 "flex shrink-0 flex-nowrap overflow-x-auto pb-0.5",
-                compact ? "gap-3" : "gap-5",
+                compact ? "gap-3.5" : "gap-5",
                 "[-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
               )}
             >
@@ -247,10 +257,8 @@ export function TopicChipBoard({
       className={cn("dvr-mkt-block dvr-mkt-block--topic-board", compact && "dvr-mkt-block--chrome")}
       aria-label={label}
     >
-      <div className={cn("dvr-mkt-block__shell", compact && "dvr-mkt-block__shell--chrome dvr-mkt-block__shell--rail-only")}>
-        {!compact ? (
-          <MarketBlockHead title={label} subtitle={subtitle} seeAllHref={seeAllHref} compact={false} />
-        ) : null}
+      <div className={cn("dvr-mkt-block__shell", compact && "dvr-mkt-block__shell--chrome")}>
+        <MarketBlockHead title={label} subtitle={subtitle} seeAllHref={seeAllHref} compact={compact} />
         {compact ? (
           <div className="dvr-topic-rail-chrome">
             <div className="dvr-topic-rail-chrome__mask">

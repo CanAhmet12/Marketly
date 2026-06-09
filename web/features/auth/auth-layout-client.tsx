@@ -1,42 +1,88 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { getAuthRepository } from "@/features/auth/repository";
+import { AuthBrandPanel } from "./auth-brand-panel";
+import { resolveAuthScene } from "./auth-scenes";
+
+const PREMIUM_PATHS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/update-password",
+  "/auth/confirm-email",
+];
 
 export function AuthLayoutClient({ children }: { children: ReactNode }) {
-  const shell = getAuthRepository().getShellPresentation();
+  const pathname = usePathname() ?? "";
+  const isPremium = PREMIUM_PATHS.some((p) => pathname.startsWith(p));
+
+  if (!isPremium) {
+    return (
+      <div className="flex min-h-[100dvh] flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+        <header className="border-b border-[color-mix(in_srgb,var(--color-border)_90%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-[var(--sp-3)]">
+          <Link href="/" className="text-[15px] font-bold tracking-tight text-[var(--color-text)] hover:text-[var(--color-primary-dark)]">
+            ← Marketly
+          </Link>
+        </header>
+        <main className="flex flex-1 flex-col items-center justify-center px-[var(--sp-3)] py-[var(--sp-4)]">{children}</main>
+      </div>
+    );
+  }
+
+  const scene = resolveAuthScene(pathname);
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
-      <header className="border-b border-[color-mix(in_srgb,var(--color-border)_90%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-[var(--sp-3)] min-[480px]:px-[var(--sp-4)]">
-        <div className="mx-auto flex max-w-[960px] flex-col gap-2 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
-          <div className="min-w-0">
-            <Link href="/" className="text-[15px] font-bold tracking-tight text-[var(--color-text)] hover:text-[var(--color-primary-dark)]">
-              ← {shell.brand_line}
-            </Link>
-            <p className="mt-1 max-w-[28rem] text-[11px] font-medium leading-snug text-[var(--color-text-secondary)]">{shell.ethos_line}</p>
-          </div>
-          <nav className="flex flex-wrap gap-1" aria-label="Hızlı bağlantılar">
-            {shell.cross_links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="rounded-full border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[var(--color-surface-muted)] px-2.5 py-1 text-[10px] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+    <div
+      className="auth-split"
+      data-scene={scene.id}
+      style={
+        {
+          "--auth-accent": scene.accent,
+          "--auth-accent-2": scene.accent2,
+          "--auth-panel-bg": scene.panelBg,
+        } as React.CSSProperties
+      }
+    >
+      <div className="auth-split__bg" aria-hidden>
+        <div className="auth-split__grid" />
+        <div className="auth-split__glow auth-split__glow--1" />
+        <div className="auth-split__glow auth-split__glow--2" />
+        <div className="auth-split__grain" />
+      </div>
+
+      <header className="auth-split__topbar">
+        <Link href="/" className="auth-split__brand">
+          <span className="auth-split__brand-mark">
+            <img src="/logo.png" alt="" width={60} height={60} className="auth-split__logo" />
+            <span className="auth-split__brand-ring" aria-hidden />
+          </span>
+          <span className="auth-split__brand-text">
+            <span className="auth-split__brand-name">Marketly</span>
+            <span className="auth-split__brand-tag">Finans sosyal platformu</span>
+          </span>
+        </Link>
+        <Link href="/discover" className="auth-split__discover">
+          Keşfet →
+        </Link>
       </header>
-      <main className="flex flex-1 flex-col items-center justify-center px-[var(--sp-3)] py-[var(--sp-4)] min-[480px]:px-[var(--sp-4)] min-[480px]:py-[var(--sp-6)]">{children}</main>
-      {shell.foot_note ? (
-        <footer className="border-t border-[color-mix(in_srgb,var(--color-border)_88%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-2 text-center text-[10px] font-medium text-[var(--color-meta)] min-[480px]:px-[var(--sp-4)]">
-          {shell.foot_note}
-        </footer>
-      ) : null}
+
+      <div key={scene.id} className="auth-split__stage auth-scene-enter">
+        <aside className="auth-split__brand-col">
+          <AuthBrandPanel scene={scene} />
+        </aside>
+
+        <main className="auth-split__main">
+          <div className="auth-split__form-area">{children}</div>
+        </main>
+      </div>
+
+      <footer className="auth-split__footer">
+        <span>© Marketly</span>
+        <Link href="/discover">Misafir olarak gez</Link>
+      </footer>
     </div>
   );
 }

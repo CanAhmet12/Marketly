@@ -45,16 +45,16 @@ export function AssetDetailMediaRail({ items }: Props) {
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-[11px] font-bold text-[var(--color-meta)]">{m.kind}</div>
                 )}
-                <span className={cn("absolute left-1 top-1 rounded px-1 py-0.5 text-[10px] font-bold uppercase", kindPill(m.kind))}>{m.kind}</span>
+                <span className={cn("absolute left-1 top-1 rounded px-1 py-0.5 text-[11px] font-bold uppercase", kindPill(m.kind))}>{m.kind}</span>
                 {m.durationLabel ? (
-                  <span className="absolute bottom-1 right-1 rounded bg-black/55 px-1 py-0.5 text-[10px] font-bold text-white">{m.durationLabel}</span>
+                  <span className="absolute bottom-1 right-1 rounded bg-black/55 px-1 py-0.5 text-[11px] font-bold text-white">{m.durationLabel}</span>
                 ) : null}
               </div>
               <div className="p-[var(--sp-2)]">
                 <p className="line-clamp-2 text-[12px] font-bold leading-snug text-[var(--color-text)]">{m.title}</p>
                 <p className="mt-1 text-[11px] font-semibold text-[var(--color-meta)]">{m.creatorDisplay}</p>
-                {m.editorialIntent ? <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--color-primary-dark)]">{m.editorialIntent}</p> : null}
-                <p className="mt-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)]">{m.viewsLabel}</p>
+                {m.editorialIntent ? <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wide text-[var(--color-primary-dark)]">{m.editorialIntent}</p> : null}
+                <p className="mt-0.5 text-[11px] font-medium text-[var(--color-text-tertiary)]">{m.viewsLabel}</p>
               </div>
             </Link>
           ))}

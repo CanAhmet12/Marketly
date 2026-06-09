@@ -10,9 +10,20 @@ import {
   isSignalPost,
   isVideoLikePost,
 } from "@/features/feed/feed-display";
+import { HomeFeedPostMenu } from "@/features/home/visual/home-feed-post-menu";
+import {
+  MentionText,
+  PostQuotedEmbed,
+  PostSocialRepostBanner,
+  PostSocialRepostEmbed,
+} from "@/features/home/visual/post-card-blocks";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 import { authorAvatarSrc } from "../post-detail-helpers";
 import type { PostDetail } from "../types";
+
+import { PostDetailAssetChip } from "./post-detail-asset-chip";
+import { PostDetailThreadNav } from "./post-detail-thread-nav";
+import { PostDetailThreadSiblings } from "./post-detail-thread-siblings";
 
 interface Props {
   post: PostDetail;
@@ -56,19 +67,6 @@ function LinkPreviewBlock({ preview }: { preview: NonNullable<PostDetail["link_p
   );
 }
 
-function QuotedBlock({ quoted }: { quoted: NonNullable<PostDetail["quoted_post"]> }) {
-  const href = isVideoLikePost(quoted) ? `/watch/${quoted.id}` : `/post/${quoted.id}`;
-  return (
-    <Link href={href} className="pd-quoted-block">
-      <div className="pd-quoted-author">
-        {quoted.author_name}{" "}
-        <span className="pd-quoted-handle">{quoted.author_handle}</span>
-      </div>
-      <p className="pd-quoted-text">{quoted.content || gridCardTitle(quoted)}</p>
-    </Link>
-  );
-}
-
 export function PostDetailContent({ post }: Props) {
   const hasMedia =
     Boolean(post.image_url?.trim()) ||
@@ -81,14 +79,10 @@ export function PostDetailContent({ post }: Props) {
 
   return (
     <>
-      {post.reply_to_post_id && (
-        <div className="pd-reply-chain">
-          Yanıt zinciri —{" "}
-          <Link href={`/post/${post.reply_to_post_id}`} className="pd-reply-chain-link">
-            üst gönderiyi görüntüle
-          </Link>
-        </div>
-      )}
+      <PostDetailThreadNav post={post} />
+      <PostDetailThreadSiblings postId={post.id} />
+
+      {post.social_repost ? <PostSocialRepostBanner rep={post.social_repost} /> : null}
 
       <header className="pd-header">
         <Link href={`/channel/${post.user_id}`} className="pd-avatar-link">
@@ -125,25 +119,32 @@ export function PostDetailContent({ post }: Props) {
             )}
           </div>
 
-          {post.asset_tag && (
-            <Link href={`/markets/${encodeURIComponent(post.asset_tag)}`} className="pd-asset-chip">
-              #{post.asset_tag}
-            </Link>
-          )}
+          {post.asset_tag ? <PostDetailAssetChip assetTag={post.asset_tag} /> : null}
         </div>
+
+        <HomeFeedPostMenu post={post} className="pd-header-menu" />
       </header>
 
       {post.title && <h1 className="pd-title">{post.title}</h1>}
       {post.description && post.description !== post.content && (
         <p className="pd-description">{post.description}</p>
       )}
-      {post.content && <p className="pd-body-text">{post.content}</p>}
+      {post.content && (
+        <p className="pd-body-text">
+          <MentionText text={post.content} />
+        </p>
+      )}
 
       {hasLinkPreview && post.link_preview && <LinkPreviewBlock preview={post.link_preview} />}
       {quotedMissing && (
         <div className="pd-quoted-missing">Alıntılanan gönderi artık yok veya gizli.</div>
       )}
-      {post.quoted_post && <QuotedBlock quoted={post.quoted_post} />}
+      {post.social_repost ? <PostSocialRepostEmbed rep={post.social_repost} /> : null}
+      {post.quoted_post ? (
+        <div className="pd-quoted-wrap">
+          <PostQuotedEmbed quoted={post.quoted_post} />
+        </div>
+      ) : null}
     </>
   );
 }

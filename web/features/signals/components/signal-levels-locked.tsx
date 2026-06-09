@@ -22,7 +22,7 @@ export function SignalLevelsWithEconomyLock({ entryLabel, targetLabel, stopLabel
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[color-mix(in_srgb,var(--ms-card-surface)_88%,transparent)] px-[var(--sp-3)] py-[var(--sp-2)] text-center">
         <p className="text-[11px] font-semibold text-[var(--color-text)]">Seviyeler abonelikle açılır</p>
-        <p className="text-[10px] font-medium text-[var(--color-meta)]">Hedef, stop ve R/R üyelik akışında görünür.</p>
+        <p className="text-[11px] font-medium text-[var(--color-meta)]">Hedef, stop ve R/R üyelik akışında görünür.</p>
       </div>
     </div>
   );

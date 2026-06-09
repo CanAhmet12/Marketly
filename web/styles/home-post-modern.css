@@ -1,0 +1,354 @@
+/**
+ * Home gönderi — grid hizası (metin kolon 2, medya sol bleed)
+ */
+
+.hv-ref {
+  --hv-post-avatar: 3rem;
+  --hv-post-head-gap: 0.75rem;
+  --hv-post-flow-pad: calc(var(--hv-post-avatar) + var(--hv-post-head-gap));
+}
+
+.hv-ref-article--lead {
+  --hv-post-avatar: 3.25rem;
+}
+
+/* ── Kart: 2 kolon (avatar | içerik) ── */
+.hv-ref-article {
+  display: grid;
+  grid-template-columns: var(--hv-post-avatar) minmax(0, 1fr);
+  column-gap: var(--hv-post-head-gap);
+  align-items: start;
+}
+
+.hv-ref-article__lead-badge {
+  grid-column: 2;
+  align-self: start;
+}
+
+/* Header tam genişlik, kendi iç grid'i */
+.hv-ref-article__head {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--hv-post-avatar) minmax(0, 1fr) 2rem;
+  grid-template-areas: "avatar meta menu";
+  align-items: start;
+  column-gap: var(--hv-post-head-gap);
+}
+
+.hv-ref-article__avatar {
+  grid-area: avatar;
+  width: var(--hv-post-avatar);
+  height: var(--hv-post-avatar);
+  flex-shrink: 0;
+}
+
+.hv-ref-article__meta {
+  grid-area: meta;
+  align-self: start;
+  min-width: 0;
+}
+
+.hv-ref-article__menu {
+  grid-area: menu;
+  align-self: start;
+  justify-self: end;
+  margin-left: 0;
+}
+
+.hv-ref-article__name-row {
+  gap: 0.35rem 0.5rem;
+}
+
+.hv-ref-article__handle {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--hv-zone-post-handle);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hv-ref-article__handle-sep {
+  margin: 0 0.28rem;
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+.hv-ref-article__handle-views {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Akış: kolon 2, padding yok ── */
+.hv-ref-article__flow {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: 0;
+  margin-top: 0.15rem;
+}
+
+.hv-ref-article--lead .hv-ref-article__head {
+  margin-top: 0;
+}
+
+.hv-ref-article__asset-chip {
+  display: none !important;
+}
+
+/* ── Piyasa şeridi ── */
+.hv-ref-article__market-strip {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.55rem;
+  width: 100%;
+  margin: 0 0 var(--hv-s-2);
+  padding: 0.3rem 0;
+  text-decoration: none;
+  color: inherit;
+  border: none;
+  transition: opacity 0.16s ease;
+}
+
+.hv-ref-article__market-strip--static {
+  grid-template-columns: auto 1fr auto;
+  margin-bottom: var(--hv-s-2);
+}
+
+.hv-ref-article__market-strip-symbol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.hv-ref-article__market-strip-dot {
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 999px;
+  background: var(--hv-zone-post-engage);
+  flex-shrink: 0;
+}
+
+.hv-ref-article__market-strip-dot[data-trend="up"] {
+  background: var(--color-rise);
+}
+
+.hv-ref-article__market-strip-dot[data-trend="down"] {
+  background: var(--color-fall);
+}
+
+.hv-ref-article__market-strip-sym {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--hv-zone-post-title);
+  white-space: nowrap;
+}
+
+.hv-ref-article__market-strip-cat {
+  font-size: 0.55rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--hv-zone-post-handle);
+}
+
+.hv-ref-article__market-strip-quote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.hv-ref-article__market-strip-spark {
+  flex-shrink: 0;
+  opacity: 0.68;
+}
+
+.hv-ref-article__market-strip-spark--up {
+  color: color-mix(in srgb, var(--color-rise) 75%, var(--hv-text-3) 25%);
+}
+
+.hv-ref-article__market-strip-spark--down {
+  color: color-mix(in srgb, var(--color-fall) 75%, var(--hv-text-3) 25%);
+}
+
+.hv-ref-article__market-strip-price {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.74rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--hv-zone-post-body);
+  white-space: nowrap;
+}
+
+.hv-ref-article__market-strip-chg {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.71rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hv-ref-article__market-strip--up .hv-ref-article__market-strip-chg {
+  color: var(--color-rise);
+}
+
+.hv-ref-article__market-strip--down .hv-ref-article__market-strip-chg {
+  color: var(--color-fall);
+}
+
+.hv-ref-article__market-strip-label {
+  font-size: 0.67rem;
+  font-weight: 500;
+  color: var(--hv-zone-post-handle);
+}
+
+.hv-ref-article__market-strip-chevron {
+  font-size: 0.7rem;
+  color: var(--hv-zone-post-handle);
+  opacity: 0.5;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html:not([data-theme="light"]) .hv-ref-article__market-strip:hover {
+    opacity: 0.86;
+  }
+
+  html[data-theme="light"] .hv-ref .hv-ref-article__market-strip:hover {
+    opacity: 1;
+    background: var(--hv-zone-post-hover);
+  }
+}
+
+/* ── Metin ritmi ── */
+.hv-ref-article__flow .hv-ref-article__repost-banner {
+  margin: 0 0 var(--hv-s-2);
+}
+
+.hv-ref-article__flow .hv-ref-article__title {
+  margin: 0 0 var(--hv-s-2);
+  max-width: none;
+  line-height: 1.36;
+  letter-spacing: -0.02em;
+}
+
+.hv-ref-article--lead .hv-ref-article__flow .hv-ref-article__title {
+  margin-bottom: var(--hv-s-3);
+}
+
+.hv-ref-article__flow .hv-ref-article__body-wrap {
+  margin-top: 0;
+}
+
+.hv-ref-article__flow .hv-ref-article__link-preview,
+.hv-ref-article__flow .hv-ref-article__quote,
+.hv-ref-article__flow .hv-ref-article__repost-embed {
+  margin-top: var(--hv-s-3);
+}
+
+.hv-ref-article__flow .hv-ref-article__chips {
+  margin-top: var(--hv-s-3);
+}
+
+.hv-ref-article__flow .hv-ref-article__comment-teaser {
+  margin-top: var(--hv-s-4);
+}
+
+/* ── Medya: metin kolonu ile aynı sol eksen (bleed yok) ── */
+.hv-ref-article__flow .hv-ref-article__media-wrap {
+  margin-top: var(--hv-s-3);
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
+}
+
+.hv-ref-article__flow .hv-ref-article__media-wrap .hv-ref-article__media {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.hv-ref-article__flow .hv-ref-article__media-wrap .hv-ref-article__media--grid {
+  width: 100%;
+}
+
+.hv-ref-article__flow .hv-ref-article__media-wrap .hv-ref-article__media--single {
+  max-width: min(100%, 36rem);
+}
+
+.hv-ref-article__flow .hv-ref-article__media-wrap .hv-ref-article__media-img {
+  border-radius: 0.4rem;
+  object-position: left center;
+}
+
+/* ── Etkileşim ── */
+.hv-ref-article__flow .hv-ref-article__engage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem 1.25rem;
+  margin-top: var(--hv-s-4);
+  padding-top: 0.6rem;
+  border-top: 1px solid color-mix(in srgb, var(--hv-zone-feed-border) 48%, transparent);
+}
+
+.hv-ref-article__engage-btn,
+.hv-ref-article__engage-stat {
+  gap: 0.28rem;
+  min-height: 1.7rem;
+  padding: 0.1rem 0;
+}
+
+.hv-ref-article__engage-btn strong,
+.hv-ref-article__engage-stat strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+}
+
+.hv-ref-article__engage-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.hv-ref-article__tier {
+  font-size: 0.56rem;
+  padding: 0.08rem 0.34rem;
+}
+
+@media (max-width: 640px) {
+  .hv-ref {
+    --hv-post-head-gap: 0.65rem;
+  }
+
+  .hv-ref-article__market-strip-cat,
+  .hv-ref-article__market-strip-spark {
+    display: none;
+  }
+
+  .hv-ref-article__flow .hv-ref-article__engage {
+    gap: 0.1rem 0.9rem;
+  }
+
+  .hv-ref-article__engage-label {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .hv-ref-article__handle-views {
+    display: none;
+  }
+}

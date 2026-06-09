@@ -46,8 +46,10 @@ export function CreatorDirectoryCard({ creator, variant = "default" }: Props) {
         <div className={cn("creators-card__top", compact && "creators-card__top--compact")}>
           <div className="creators-card__avatar-wrap">
             <SafeAvatar
-              src={creator.avatarUrl ?? ""}
-              alt=""
+              src={creator.avatarUrl}
+              alt={creator.displayName}
+              fallbackId={creator.id}
+              fallbackName={creator.displayName}
               size={featured ? 56 : compact ? 40 : 48}
               className={cn("creators-card__avatar", creator.isLive && "creators-card__avatar--live")}
             />

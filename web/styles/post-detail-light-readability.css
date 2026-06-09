@@ -1,0 +1,99 @@
+/**
+ * Post detail — açık mod okunabilirlik
+ * Import: post-detail-divider-sync sonrası (en son detail katmanı)
+ */
+
+html[data-theme="light"] .pd-canvas {
+  --pd-text: #0f0f14;
+  --pd-text-2: #35353f;
+  --pd-meta: #52525c;
+
+  --pd-zone-thread-title: #52525c;
+  --pd-zone-thread-link: #45454f;
+  --pd-zone-topbar-label: #52525c;
+  --pd-zone-topbar-icon: #52525c;
+  --pd-zone-author-handle: #52525c;
+  --pd-zone-description: #45454f;
+  --pd-zone-engage-stat: #52525c;
+  --pd-zone-engage-action: #45454f;
+  --pd-zone-discussion-head: #52525c;
+  --pd-zone-comment-meta: #52525c;
+  --pd-zone-side-title: #52525c;
+  --pd-zone-side-body: #45454f;
+  --pd-zone-composer-placeholder: #6e6e78;
+}
+
+html[data-theme="light"] .pd-canvas .pd-body-text {
+  color: var(--pd-zone-body);
+}
+
+html[data-theme="light"] .pd-canvas .pd-description {
+  color: var(--pd-zone-description);
+}
+
+html[data-theme="light"] .pd-canvas .pd-handle-row {
+  color: var(--pd-zone-author-handle);
+}
+
+html[data-theme="light"] .pd-canvas .pd-stats {
+  color: var(--pd-zone-engage-stat);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn {
+  color: var(--pd-zone-engage-action);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-action {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-link-preview-site {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-link-preview-desc,
+html[data-theme="light"] .pd-canvas .pd-quoted-text {
+  color: var(--pd-text-2);
+}
+
+html[data-theme="light"] .pd-canvas .pd-quoted-handle {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-reply-banner {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-composer-hint,
+html[data-theme="light"] .pd-canvas .pd-login-hint {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-asset-chip-pct {
+  opacity: 1;
+}
+
+html[data-theme="light"] .pd-canvas .hv-ref-article__repost-banner {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed-handle,
+html[data-theme="light"] .pd-canvas .hv-ref-article__quote-handle {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed-snippet,
+html[data-theme="light"] .pd-canvas .hv-ref-article__quote-text {
+  color: var(--pd-text-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .pd-canvas .pd-link-preview:hover {
+    opacity: 1;
+    background: var(--pd-surface-hover);
+  }
+
+  html[data-theme="light"] .pd-canvas .pd-quoted-block:hover {
+    opacity: 1;
+  }
+}

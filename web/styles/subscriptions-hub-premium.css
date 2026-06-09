@@ -1,0 +1,55 @@
+/**
+ * Abonelikler — Hub Premium uyarlama (connect zone)
+ */
+
+.hp-canvas .sub-hub-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas .sub-hub-page .social-hub-pill {
+  border-color: var(--hp-border);
+  background: var(--hp-surface);
+}
+
+.hp-canvas .sub-hub-page .social-hub-pill:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
+}
+
+.hp-canvas .sub-hub-page .social-hub-card {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .sub-hub-page .social-hub-card:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-glass-border));
+}
+
+.hp-canvas .sub-hub-active {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: var(--hp-shadow-block);
+}
+
+.hp-canvas .sub-hub-intel {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
+    var(--hp-surface) 100%
+  );
+}
+
+.hp-canvas .sub-hub-empty {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-border);
+}
+
+.hp-canvas .sub-hub-rail-title {
+  font-family: var(--font-bold);
+}

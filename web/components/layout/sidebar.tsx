@@ -200,26 +200,6 @@ function IconPeople({ className }: { className?: string }) {
   );
 }
 
-function IconStudio({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <rect x="2" y="3" width="20" height="14" rx="2" />
-      <path d="M8 21h8M12 17v4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconShop({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-    </svg>
-  );
-}
-
 function IconStar({ className }: { className?: string }) {
   return (
     <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
@@ -252,14 +232,6 @@ function IconCalendar({ className }: { className?: string }) {
     <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M16 3v4M8 3v4M3 11h18" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconBookmark({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3-6 3V5a1 1 0 0 1 1-1Z" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -306,11 +278,21 @@ const discoverNav: NavItem[] = [
 ];
 
 /**
- * CREATOR TOOLS (auth required)
+ * Piyasa araçları — global (herkes)
  */
-const creatorNav: NavItem[] = [
-  { href: "/studio", label: "Studio", icon: IconStudio },
-  { href: "/signals", label: "Sinyal Pazarı", icon: IconShop },
+const marketGlobalNav: NavItem[] = [
+  { href: "/market-news", label: "Piyasa Haberleri", icon: IconNews },
+  { href: "/economic-calendar", label: "Ekonomik Takvim", icon: IconCalendar },
+];
+
+/**
+ * Piyasa araçları — oturum açık değilken (hub'a taşınmadan önce)
+ */
+const marketGuestNav: NavItem[] = [
+  { href: "/watchlist", label: "Takip Listem", icon: IconStar },
+  { href: "/portfolio", label: "Portföy", icon: IconWallet },
+  { href: "/price-alerts", label: "Fiyat Alarmları", icon: IconBell },
+  ...marketGlobalNav,
 ];
 
 /**
@@ -322,24 +304,6 @@ const marketCategoryNav: NavItem[] = [
   { href: "/markets/category/forex", label: "Forex", icon: IconChart },
   { href: "/markets/category/commodities", label: "Emtia", icon: IconChart },
   { href: "/markets/category/nasdaq", label: "NASDAQ", icon: IconChart },
-];
-
-/**
- * Piyasa araçları — liste / portföy / haber / takvim
- */
-const marketUtilityNav: NavItem[] = [
-  { href: "/watchlist", label: "Takip Listem", icon: IconStar },
-  { href: "/portfolio", label: "Portföy", icon: IconWallet },
-  { href: "/price-alerts", label: "Fiyat Alarmları", icon: IconBell },
-  { href: "/market-news", label: "Piyasa Haberleri", icon: IconNews },
-  { href: "/economic-calendar", label: "Ekonomik Takvim", icon: IconCalendar },
-];
-
-/**
- * Kişisel — oturum açıkken
- */
-const personalNav: NavItem[] = [
-  { href: "/saved", label: "Kaydedilenler", icon: IconBookmark },
 ];
 
 // ─── SIDEBAR COMPONENT ────────────────────────────────────────────────────────
@@ -373,10 +337,10 @@ export function Sidebar({ onNavigate }: Props) {
         : defaultDiscoverTab();
 
   const [discoverOpen, setDiscoverOpen] = useState(true);
-  const [creatorOpen, setCreatorOpen] = useState(false);
   const [marketsNavOpen, setMarketsNavOpen] = useState(true);
   const [marketOpen, setMarketOpen] = useState(false);
-  const [personalOpen, setPersonalOpen] = useState(true);
+
+  const marketUtilityNav = user ? marketGlobalNav : marketGuestNav;
 
   const rowClass = (active: boolean) =>
     cn(
@@ -487,32 +451,6 @@ export function Sidebar({ onNavigate }: Props) {
         </>
       )}
 
-      {user && (
-        <>
-          <div className="my-[var(--sp-3)] h-px max-w-[calc(100%-var(--sp-2))] bg-[color-mix(in_srgb,var(--color-text)_5.5%,transparent)]" />
-          {sectionHeader("Üretici Araçları", creatorOpen, () => setCreatorOpen(!creatorOpen))}
-          {creatorOpen && (
-            <>
-              {creatorNav.map((item) => {
-                const active = linkActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch
-                    onClick={onNavigate}
-                    className={cn(rowClass(active), "pl-[var(--sp-4)]")}
-                  >
-                    {renderIcon(item.icon, active)}
-                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </>
-          )}
-        </>
-      )}
-
       <div className="my-[var(--sp-3)] h-px max-w-[calc(100%-var(--sp-2))] bg-[color-mix(in_srgb,var(--color-text)_5.5%,transparent)]" />
       {sectionHeader("Piyasalar", marketsNavOpen, () => setMarketsNavOpen(!marketsNavOpen))}
       {marketsNavOpen && (
@@ -555,31 +493,6 @@ export function Sidebar({ onNavigate }: Props) {
         </>
       )}
 
-      {user && (
-        <>
-          <div className="my-[var(--sp-3)] h-px max-w-[calc(100%-var(--sp-2))] bg-[color-mix(in_srgb,var(--color-text)_5.5%,transparent)]" />
-          {sectionHeader("Kişisel", personalOpen, () => setPersonalOpen(!personalOpen))}
-          {personalOpen && (
-            <>
-              {personalNav.map((item) => {
-                const active = linkActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch
-                    onClick={onNavigate}
-                    className={cn(rowClass(active), "pl-[var(--sp-4)]")}
-                  >
-                    {renderIcon(item.icon, active)}
-                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </>
-          )}
-        </>
-      )}
     </nav>
   );
 }

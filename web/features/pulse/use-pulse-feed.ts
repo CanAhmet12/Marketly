@@ -6,7 +6,8 @@ import { isPulsePost } from "@/features/feed/feed-display";
 import { useDiscoverFeed } from "@/features/feed/use-discover-feed";
 
 export function usePulseFeedQueue(currentId: string) {
-  const { posts, query } = useDiscoverFeed();
+  // "pulse" tab ile sırala — yüksek novelty gamma, pulse format öne
+  const { posts, query } = useDiscoverFeed("pulse");
 
   const pulsePosts = useMemo(() => posts.filter(isPulsePost), [posts]);
 

@@ -8,11 +8,11 @@ import { OG_SITE_DEFAULTS, siteCanonical } from "@/lib/seo/metadata-helpers";
 export const metadata: Metadata = {
   ...siteCanonical("/portfolio"),
   title: "Portföy — Marketly",
-  description: "Kağıt portföy, P&L ve pozisyon dağılımı.",
+  description: "Canlı ve kağıt portföy, P&L, dağılım, risk ve portföy sinyalleri.",
   openGraph: {
     ...OG_SITE_DEFAULTS,
     title: "Portföy — Marketly",
-    description: "Kağıt portföy, P&L ve pozisyon dağılımı.",
+    description: "Canlı ve kağıt portföy, P&L, dağılım, risk ve portföy sinyalleri.",
   },
 };
 

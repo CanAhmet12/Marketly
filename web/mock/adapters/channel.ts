@@ -2,7 +2,8 @@ import type { ChannelPost, ChannelProfile, FollowState } from "@/features/channe
 
 import { getMockSignalsForCreator } from "../adapters/signals-source";
 import { MOCK_POST_SOURCES } from "../fixtures/posts";
-import { MOCK_PROFILE_BY_ID, pickCanonicalProfileId } from "../fixtures/profiles";
+import { MOCK_PROFILES, MOCK_PROFILE_BY_ID, pickCanonicalProfileId } from "../fixtures/profiles";
+import type { ChannelFollowListKind, ChannelFollowUser } from "@/features/channel/fetch-channel-follow-list";
 import { getMockCreatedPosts, getMockCreatedSignals } from "./upload-store";
 
 export function mockChannelProfile(channelUserId: string): ChannelProfile | null {
@@ -48,6 +49,20 @@ export function mockChannelSignals(channelUserId: string) {
   const existingIds = new Set(base.map((s) => s.id));
   const newOnes = created.filter((s) => !existingIds.has(s.id));
   return [...newOnes, ...base];
+}
+
+export function mockChannelFollowList(channelUserId: string, kind: ChannelFollowListKind): ChannelFollowUser[] {
+  const canonical = pickCanonicalProfileId(channelUserId);
+  const pool = MOCK_PROFILES.filter((p) => p.id !== canonical && p.id !== channelUserId);
+  const take = kind === "followers" ? 8 : 5;
+  return pool.slice(0, take).map((p) => ({
+    id: p.id,
+    username: p.username,
+    full_name: p.full_name,
+    avatar_url: p.avatar_url,
+    verified: p.verified,
+    tier: p.tier,
+  }));
 }
 
 export function mockFollowState(channelUserId: string): FollowState {

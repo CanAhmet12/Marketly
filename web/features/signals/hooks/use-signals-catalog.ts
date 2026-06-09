@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { useAuth } from "@/features/auth/use-auth";
 import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
+import { useSignalRecommendations } from "@/features/signals/hooks/use-signal-recommendations";
+import { getSignalRecommendationsCache } from "@/features/signals/signal-recommendations-cache";
 import { fetchAnalystLeaderboardFromRpc } from "@/features/signals/fetch-signals-rpc";
 import { computeSignalsHero } from "@/features/signals/lib/compute-signals-hero";
 import {
@@ -14,20 +17,25 @@ import { buildLiveSignalsMarketplaceRails } from "@/features/signals/lib/build-l
 import { buildSignalsMarketplaceRails } from "@/features/signals/lib/signals-marketplace-build";
 import { getSignalsRepository } from "@/features/signals/repository";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
+import { useClientMounted } from "@/hooks/use-client-mounted";
 import { queryKeys } from "@/lib/query-keys";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
 
 export function useSignalsCatalog() {
+  const { user } = useAuth();
+  const mounted = useClientMounted();
   const mockOn = isMockDataEnabled();
-  const supabaseOn = !mockOn && isSupabaseConfigured();
+  const supabaseOn = mounted && !mockOn && isSupabaseConfigured();
   const pSnap = usePersonalizationSnapshot();
   const repo = useMemo(() => getSignalsRepository(), []);
+  const userId = user?.id ?? null;
+  const { rev: recRev } = useSignalRecommendations();
 
   const feedQuery = useQuery({
-    queryKey: queryKeys.signalsFeed(),
-    queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient()),
+    queryKey: [...queryKeys.signalsFeed(), userId ?? "anon"] as const,
+    queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient(), 120, userId),
     enabled: supabaseOn,
     staleTime: 60_000,
   });
@@ -40,7 +48,7 @@ export function useSignalsCatalog() {
   });
 
   const rows = mockOn ? repo.getFeedRows() : (feedQuery.data ?? []);
-  const isLoading = supabaseOn && feedQuery.isLoading;
+  const isLoading = supabaseOn && feedQuery.isFetching && rows.length === 0;
   const isError = supabaseOn && feedQuery.isError;
 
   const hero = useMemo(() => computeSignalsHero(rows), [rows]);
@@ -59,8 +67,10 @@ export function useSignalsCatalog() {
       const affinity = pSnap.affinity;
       return buildSignalsMarketplaceRails(rows, affinity);
     }
-    return buildLiveSignalsMarketplaceRails(rows);
-  }, [rows, mockOn, pSnap.affinity]);
+    void recRev;
+    const recs = getSignalRecommendationsCache(userId);
+    return buildLiveSignalsMarketplaceRails(rows, recs);
+  }, [rows, mockOn, pSnap.affinity, recRev, userId]);
 
   const query = feedQuery;
 

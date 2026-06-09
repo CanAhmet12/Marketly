@@ -9,6 +9,7 @@ import type { SignalDetailExtension } from "@/features/signals/lib/signal-detail
 import type { SignalThreadPack } from "@/features/signals/community/types";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import { thesisGradeLabel } from "@/features/signals/components/unified-signal-primitives";
+import { filterHonestTimelineEvents, SIGNAL_METRIC_LABELS } from "@/features/signals/lib/signal-detail-narrative";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 
 type Props = {
@@ -27,10 +28,20 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
     : row.rationale ?? "Tez henüz eklenmedi.";
 
   const pnl = intel?.performance.currentPnlPct;
-  const timeline = intel?.timeline.slice(-3).reverse() ?? [];
+  const timeline = filterHonestTimelineEvents(intel?.timeline ?? [])
+    .slice(-3)
+    .reverse();
 
   return (
     <div className="sdm-primary">
+      <section className="sdm-panel-block sdm-thesis-block">
+        <div className="sdm-thesis-block__head">
+          <h3 className="sdm-panel-block__title">Neden bu çağrı?</h3>
+          <span className="sdm-thesis-block__grade">{thesisGradeLabel(row.thesis_grade)}</span>
+        </div>
+        <p className="sdm-thesis-body">{thesisBody}</p>
+      </section>
+
       <section className="sdm-visual-card" aria-label="Fiyat grafiği">
         <div className="sdm-visual-card__top">
           {!locked && pnl != null ? (
@@ -46,7 +57,9 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
               </span>
             </div>
           ) : (
-            <span className="sdm-visual-card__hint">Güven %{row.confidence}</span>
+            <span className="sdm-visual-card__hint">
+              {SIGNAL_METRIC_LABELS.signalConfidence} %{row.confidence}
+            </span>
           )}
         </div>
         <div className="sdm-visual-card__chart">
@@ -58,17 +71,9 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
         <SignalDetailArchiveOutcomeStrip row={row} />
       </div>
 
-      <section className="sdm-panel-block sdm-thesis-block">
-        <div className="sdm-thesis-block__head">
-          <h3 className="sdm-panel-block__title">Neden bu çağrı?</h3>
-          <span className="sdm-thesis-block__grade">{thesisGradeLabel(row.thesis_grade)}</span>
-        </div>
-        <p className="sdm-thesis-body">{thesisBody}</p>
-      </section>
-
       {timeline.length > 0 ? (
         <section className="sdm-panel-block">
-          <h3 className="sdm-panel-block__title">Son gelişmeler</h3>
+          <h3 className="sdm-panel-block__title">Doğrulanan gelişmeler</h3>
           <ol className="sdm-timeline-mini">
             {timeline.map((ev, i) => (
               <li key={`${ev.kind}-${ev.at}-${i}`} className="sdm-timeline-mini__item">

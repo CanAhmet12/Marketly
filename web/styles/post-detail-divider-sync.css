@@ -1,0 +1,16 @@
+/**
+ * Post detail — çizgi hizası
+ */
+
+html[data-theme="light"] .pd-canvas .pd-thread-nav,
+html[data-theme="light"] .pd-canvas .pd-thread-siblings {
+  border-bottom: 1px solid var(--pd-divider-faint);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__link:hover {
+  background: color-mix(in srgb, #1a1a20 2%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-module-accent {
+  display: none;
+}

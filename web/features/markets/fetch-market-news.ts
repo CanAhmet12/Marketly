@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   MarketNewsIntelligenceItem,
+  MarketNewsLiveFields,
   MarketNewsroomBundle,
 } from "@/features/markets/types/news-calendar-intelligence";
 import { emptyMarketNewsroomBundle } from "@/features/markets/types/news-calendar-intelligence";
@@ -19,11 +20,7 @@ export type MarketNewsDbRow = {
   sentiment: string | null;
 };
 
-export type MarketNewsLiveItem = MarketNewsIntelligenceItem & {
-  imageUrl: string | null;
-  sourceUrl: string;
-  summary: string | null;
-};
+export type MarketNewsLiveItem = MarketNewsIntelligenceItem & MarketNewsLiveFields;
 
 function minutesSince(iso: string): number {
   const t = new Date(iso).getTime();
@@ -57,6 +54,158 @@ function primarySymbol(row: MarketNewsDbRow): string {
   return "MARKET";
 }
 
+function inferSectorImpact(category: MarketNewsIntelligenceItem["newsCategory"]): string {
+  switch (category) {
+    case "crypto":
+      return "Kripto";
+    case "local":
+      return "Türkiye";
+    case "earnings":
+      return "Şirketler";
+    case "flows":
+      return "Emtia & sermaye akışı";
+    case "macro":
+      return "Makro";
+    default:
+      return "Piyasa";
+  }
+}
+
+function inferHistoricalEcho(
+  category: MarketNewsIntelligenceItem["newsCategory"],
+  sentiment: string,
+): string {
+  const s = sentiment.toLowerCase();
+  if (!s || s === "neutral") return "—";
+  const positive = s.includes("positive") || s.includes("bullish");
+  const negative = s.includes("negative") || s.includes("bearish");
+  if (!positive && !negative) return "—";
+
+  const echoes: Record<MarketNewsIntelligenceItem["newsCategory"], [string, string]> = {
+    crypto: [
+      "Benzer kripto başlıklarında: ilk saat yüksek volatilite",
+      "Geçmiş örneklerde: haber sonrası kısa squeeze",
+    ],
+    local: [
+      "Benzer yerel başlıklarda: kur kanalı genişlemesi",
+      "Geçmiş seanslarda: endeks beta hızlı yansıdı",
+    ],
+    earnings: [
+      "Benzer bilanço haberlerinde: sektör eşleri gecikmeli tepki",
+      "Geçmiş örneklerde: sürpriz sonrası mean-reversion",
+    ],
+    flows: [
+      "Benzer ETF akış haberlerinde: emtia korelasyonu güçlendi",
+      "Geçmiş baskılarda: sermaye rotasyonu 24s içinde netleşti",
+    ],
+    macro: [
+      "Benzer makro başlıklarda: tahvil eğrisi önce hareket etti",
+      "Geçmiş örneklerde: risk varlıkları 60dk içinde yön buldu",
+    ],
+  };
+
+  const pair = echoes[category];
+  return positive ? pair[0] : pair[1];
+}
+
+function inferMacroThemes(
+  category: MarketNewsIntelligenceItem["newsCategory"],
+): readonly string[] {
+  switch (category) {
+    case "crypto":
+      return ["Kripto regulasyonu", "Risk iştahı"];
+    case "local":
+      return ["Kur", "Yerel endeks"];
+    case "earnings":
+      return ["Kurumsal kazanç", "Sektör beta"];
+    case "flows":
+      return ["ETF akışları", "Emtia"];
+    case "macro":
+      return ["Para politikası", "Enflasyon"];
+    default:
+      return [];
+  }
+}
+
+function enrichLiveIntelFields(
+  row: MarketNewsDbRow,
+  category: MarketNewsIntelligenceItem["newsCategory"],
+  affected: readonly string[],
+  watchSet: ReadonlySet<string>,
+): Pick<
+  MarketNewsIntelligenceItem,
+  | "sectorImpact"
+  | "volatilityExpectation"
+  | "signalActivityLabel"
+  | "marketReaction"
+  | "momentumShift"
+  | "relatedMacroThemes"
+  | "chainReactionHint"
+> {
+  const sentiment = (row.sentiment ?? "").toLowerCase();
+  const title = row.title.toLowerCase();
+  const watchHit = affected.some((s) => watchSet.has(s));
+
+  let marketReaction = "—";
+  let momentumShift = "—";
+  if (sentiment.includes("positive") || sentiment.includes("bullish")) {
+    marketReaction = "Pozitif haber akışı — risk iştahı desteklenebilir";
+    momentumShift = "Kısa vadeli momentum pozitif";
+  } else if (sentiment.includes("negative") || sentiment.includes("bearish")) {
+    marketReaction = "Negatif haber akışı — risk-off baskısı oluşabilir";
+    momentumShift = "Kısa vadeli momentum negatif";
+  } else if (sentiment.includes("neutral")) {
+    marketReaction = "Nötr sentiment — sınırlı yön baskısı";
+    momentumShift = "Momentum nötr";
+  }
+
+  const volatilityExpectation =
+    category === "crypto" || title.includes("fed") || title.includes("faiz")
+      ? "Yüksek"
+      : category === "local"
+        ? "Orta-yüksek"
+        : "Orta";
+
+  const signalActivityLabel = watchHit
+    ? "İzleme listendeki semboller bu haberle kesişiyor"
+    : affected.length > 2
+      ? `${affected.length} sembol bu haberle ilişkilendirildi`
+      : affected.length > 1
+        ? "Çoklu sembol etkisi — korelasyon riski izlenmeli"
+        : "—";
+
+  const chainReactionHint =
+    category === "crypto"
+      ? "Kripto hareketi risk varlıklarına spillover potansiyeli"
+      : category === "local"
+        ? "Kur/endeks etkisi yerel beta üzerinden yayılabilir"
+        : category === "macro"
+          ? "Makro başlık tahvil–hisse korelasyonunu etkileyebilir"
+          : category === "earnings"
+            ? "Bilanço sürprizi sektör eşlerine yansıyabilir"
+            : category === "flows"
+              ? "Sermaye akışı benzer varlık sınıflarına taşınabilir"
+              : "—";
+
+  const relatedMacroThemes = inferMacroThemes(category);
+  const sectorImpact = inferSectorImpact(category);
+
+  return {
+    sectorImpact,
+    volatilityExpectation,
+    signalActivityLabel,
+    marketReaction,
+    momentumShift,
+    relatedMacroThemes,
+    chainReactionHint: isIntelPlaceholder(chainReactionHint) ? "—" : chainReactionHint,
+  };
+}
+
+function isIntelPlaceholder(value: string): boolean {
+  const t = value.trim();
+  return t.length === 0 || t === "—" || t === "-";
+}
+
 function mapRowToIntel(
   row: MarketNewsDbRow,
   watched: readonly string[],
@@ -67,6 +216,8 @@ function mapRowToIntel(
   const affected = aff.length > 0 ? aff : [sym];
   const watchSet = new Set(watched.map((s) => s.toUpperCase()));
   const portSet = new Set(portfolio.map((s) => s.toUpperCase()));
+  const category = inferCategory(row);
+  const enriched = enrichLiveIntelFields(row, category, affected, watchSet);
 
   return {
     id: row.id,
@@ -76,22 +227,18 @@ function mapRowToIntel(
     minutesAgo: minutesSince(row.published_at),
     impactTier: inferImpact(row),
     affectedSymbols: affected,
-    sectorImpact: "—",
-    volatilityExpectation: "—",
-    signalActivityLabel: "—",
     creatorCommentary: [],
     discussionSnippet: row.description?.trim() || "—",
-    marketReaction: "—",
-    momentumShift: "—",
-    relatedMacroThemes: [],
-    chainReactionHint: "—",
-    historicalEcho: "—",
+    historicalEcho: inferHistoricalEcho(category, row.sentiment ?? ""),
     hitsWatchlist: affected.some((s) => watchSet.has(s)),
     hitsPortfolio: affected.some((s) => portSet.has(s)),
-    newsCategory: inferCategory(row),
+    newsCategory: category,
     imageUrl: row.image_url,
     sourceUrl: row.url,
     summary: row.description,
+    publishedAt: row.published_at,
+    sentimentLabel: row.sentiment?.trim() || null,
+    ...enriched,
   };
 }
 

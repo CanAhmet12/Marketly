@@ -1,0 +1,71 @@
+/**
+ * Mesajlar — Hub Premium uyarlama (inbox zone, gömülü layout)
+ */
+
+.hp-canvas--embedded-inbox {
+  width: 100%;
+  min-width: 0;
+}
+
+.hp-canvas--embedded-inbox > .msg-canvas {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  --msg-border: var(--hp-border);
+  --msg-border-strong: var(--hp-border-2);
+  --msg-divider: var(--hp-border-2);
+  --msg-fill: var(--hp-surface);
+  --msg-fill-hover: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
+  --msg-fill-active: color-mix(in srgb, var(--hp-zone-1) 8%, var(--hp-surface));
+}
+
+.hp-canvas--embedded-inbox .msg-canvas.msg-shell {
+  border-top-color: var(--hp-zone-border);
+  border-radius: var(--hp-radius-block);
+  overflow: hidden;
+  border: 1px solid var(--hp-glass-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas--embedded-inbox .msg-sidebar-kicker {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--hp-type-2xs);
+  font-family: var(--font-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-inbox .msg-sidebar-title {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-lg);
+  letter-spacing: var(--hp-track-tight);
+}
+
+.hp-canvas--embedded-inbox .msg-stream-btn--on {
+  background: var(--hp-zone-1);
+  color: #fff;
+  border-color: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-inbox .msg-conv-btn--active {
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, var(--hp-surface));
+  border-color: color-mix(in srgb, var(--hp-zone-1) 25%, var(--hp-border));
+}
+
+.hp-canvas--embedded-inbox .msg-bubble--mine {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-inbox .msg-unread-badge {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-inbox .msg-send-btn {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-inbox .msg-send-btn:hover {
+  filter: brightness(1.05);
+}

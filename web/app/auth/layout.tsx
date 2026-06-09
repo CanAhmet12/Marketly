@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 
 import { AuthLayoutClient } from "@/features/auth/auth-layout-client";
 
+import "../../styles/auth-premium.css";
+
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };

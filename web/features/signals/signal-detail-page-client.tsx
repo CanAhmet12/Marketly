@@ -8,11 +8,12 @@ import { SignalDetailContextColumn } from "@/features/signals/components/signal-
 import { SignalDetailHeroBand } from "@/features/signals/components/signal-detail-hero-band";
 import { SignalDetailPrimaryColumn } from "@/features/signals/components/signal-detail-primary-column";
 import { SignalsFeedSkeleton } from "@/features/signals/components/signals-feed-skeleton";
-import { signalRowLocked } from "@/features/signals/components/signal-economy-ui";
+import { signalDetailRowLocked } from "@/features/signals/domain/signal-economy";
 import { formatSignalPrice } from "@/features/signals/components/unified-signal-primitives";
 import { useMockSignalSubscriber } from "@/features/signals/hooks/use-mock-signal-subscriber";
 import { useSignalsCatalog } from "@/features/signals/hooks/use-signals-catalog";
 import { deriveSignalDetailExtension } from "@/features/signals/lib/signal-detail-extension";
+import { buildSignalDetailVerdict } from "@/features/signals/lib/signal-detail-narrative";
 import { getSignalsRepository } from "@/features/signals/repository";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 type Props = { signalId: string };
@@ -31,6 +32,11 @@ export function SignalDetailPageClient({ signalId }: Props) {
   const similar = useMemo(() => (row ? findSimilar(rows, row) : []), [rows, row]);
 
   const intel = useMemo(() => (row ? deriveSignalDetailExtension(row, rows) : null), [row, rows]);
+
+  const verdict = useMemo(
+    () => (row ? buildSignalDetailVerdict(row, rows, intel?.creatorRecord) : null),
+    [row, rows, intel?.creatorRecord],
+  );
 
   const threadPack = useMemo(() => {
     if (!row) return null;
@@ -60,7 +66,7 @@ export function SignalDetailPageClient({ signalId }: Props) {
     );
   }
 
-  const locked = signalRowLocked(row, isSubscriber);
+  const locked = signalDetailRowLocked(row, isSubscriber);
   const entry = row.entryZoneLabel ?? formatSignalPrice(row.entry_price);
   const target = formatSignalPrice(row.target_price);
   const stop = formatSignalPrice(row.stop_loss);
@@ -79,19 +85,22 @@ export function SignalDetailPageClient({ signalId }: Props) {
       </header>
 
       <div className="sdp-panel">
-        <SignalDetailHeroBand
-          row={row}
-          locked={locked}
-          entryLabel={entry}
-          targetLabel={target}
-          stopLabel={stop}
-          rrLabel={row.riskRewardLabel}
-          onClose={() => {}}
-        />
+        {verdict ? (
+          <SignalDetailHeroBand
+            row={row}
+            locked={locked}
+            entryLabel={entry}
+            targetLabel={target}
+            stopLabel={stop}
+            rrLabel={row.riskRewardLabel}
+            verdict={verdict}
+            onClose={() => {}}
+          />
+        ) : null}
 
         <div className="sdm-body-grid sdp-body-grid">
           <SignalDetailPrimaryColumn row={row} locked={locked} intel={intel} threadPack={threadPack} onClose={() => {}} />
-          <SignalDetailContextColumn row={row} similar={similar} intel={intel} onClose={() => {}} />
+          <SignalDetailContextColumn row={row} catalog={rows} similar={similar} intel={intel} onClose={() => {}} />
         </div>
       </div>
     </article>

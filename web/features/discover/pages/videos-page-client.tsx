@@ -6,7 +6,8 @@ import { VideosFullPageContent } from "@/features/discover/visual-reference/disc
 import { VideosListSkeleton } from "@/features/discover/visual-reference/videos-list-skeleton";
 
 export function VideosPageClient() {
-  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel();
+  // TikTok Stage 2: "videos" tab — explorationGamma 0.48, format bias video 1.14×
+  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel("videos");
 
   return (
     <DiscoverVerticalPageShell
@@ -16,6 +17,7 @@ export function VideosPageClient() {
       feedLoading={feedLoading}
       feedError={feedError}
       onFeedRetry={refetchFeed}
+      pageTone="videos"
     >
       {feedLoading ? <VideosListSkeleton inline /> : <VideosFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import { AUTH_REGISTER_SCENE } from "@/features/auth/auth-scenes";
 import { getAuthRepository } from "@/features/auth/repository";
 import { useAuth } from "@/features/auth/use-auth";
+import { navigateAfterAuth } from "@/lib/auth/post-login-nav";
 import { safeInternalNextPath } from "@/lib/auth/safe-next-path";
 
 export function RegisterForm() {
@@ -32,34 +34,34 @@ export function RegisterForm() {
       setInfo(null);
       const { ok, needsEmailConfirmation } = await signUp(displayName, email, password);
       if (ok && needsEmailConfirmation) {
-        setInfo("Kayıt alındı. Hesabını etkinleştirmek için e-postandaki bağlantıya tıkla.");
+        router.replace(`/auth/confirm-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        return;
       } else if (ok) {
         setInfo("Hesabın hazır. Yönlendiriliyorsun.");
-        const explicitNext = searchParams.get("next");
-        const target = explicitNext ? safeInternalNextPath(explicitNext) : "/onboarding";
-        router.replace(target);
-        router.refresh();
+        navigateAfterAuth(searchParams.get("next"), "/onboarding/setup");
       }
     },
     [signUp, displayName, email, password, clearError, router, searchParams],
   );
 
   return (
-    <div className="w-full max-w-[400px]">
+    <div className="auth-form-panel">
       {configError ? (
-        <div role="alert" className="mb-3 rounded-[12px] border border-amber-200/90 bg-amber-50 px-3 py-2.5 text-[13px] font-medium text-amber-950">
+        <div role="alert" className="auth-form-alert auth-form-alert--warn">
           {configError}
         </div>
       ) : null}
-      <div className="rounded-[14px] border border-[color-mix(in_srgb,var(--color-border)_90%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-[var(--sp-4)] shadow-[var(--shadow-card)] min-[480px]:px-[var(--sp-4)]">
-        <h1 className="text-[20px] font-bold tracking-tight text-[var(--color-text)]">{form.title}</h1>
-        <p className="mt-1 text-[13px] font-medium leading-snug text-[var(--color-text-secondary)]">{form.subtitle}</p>
 
-        <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-3">
-          <div>
-            <label htmlFor="name" className="mb-1 block text-[12px] font-bold text-[var(--color-text)]">
-              Görünen ad
-            </label>
+      <header className="auth-form-panel__head">
+        <span className="auth-form-panel__kicker">{AUTH_REGISTER_SCENE.kicker}</span>
+        <h2 className="auth-form-panel__title">{form.title}</h2>
+        <p className="auth-form-panel__subtitle">{form.subtitle}</p>
+      </header>
+
+      <form onSubmit={onSubmit} className="auth-form-panel__form">
+        <div className="auth-form-panel__fields">
+          <div className="auth-form-field">
+            <label htmlFor="name">Görünen ad</label>
             <input
               id="name"
               name="name"
@@ -67,15 +69,12 @@ export function RegisterForm() {
               autoComplete="name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[14px] font-medium text-[var(--color-text)] outline-none ring-[var(--color-primary-dark)] transition-shadow focus:ring-2"
               placeholder="Ad Soyad"
               disabled={isSubmitting}
             />
           </div>
-          <div>
-            <label htmlFor="email" className="mb-1 block text-[12px] font-bold text-[var(--color-text)]">
-              E-posta
-            </label>
+          <div className="auth-form-field">
+            <label htmlFor="email">E-posta</label>
             <input
               id="email"
               name="email"
@@ -83,15 +82,12 @@ export function RegisterForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[14px] font-medium text-[var(--color-text)] outline-none ring-[var(--color-primary-dark)] transition-shadow focus:ring-2"
               placeholder="ornek@email.com"
               disabled={isSubmitting}
             />
           </div>
-          <div>
-            <label htmlFor="password" className="mb-1 block text-[12px] font-bold text-[var(--color-text)]">
-              Şifre
-            </label>
+          <div className="auth-form-field">
+            <label htmlFor="password">Şifre</label>
             <input
               id="password"
               name="password"
@@ -99,42 +95,37 @@ export function RegisterForm() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[14px] font-medium text-[var(--color-text)] outline-none ring-[var(--color-primary-dark)] transition-shadow focus:ring-2"
               placeholder="En az 8 karakter"
               disabled={isSubmitting}
             />
           </div>
+        </div>
 
-          {error ? (
-            <div role="alert" aria-live="assertive" className="rounded-[10px] bg-red-50 px-3 py-2 text-[13px] font-medium text-red-900">
-              {error}
-            </div>
-          ) : null}
-          {info ? (
-            <div role="status" aria-live="polite" className="rounded-[10px] bg-emerald-50/90 px-3 py-2 text-[13px] font-medium text-emerald-950">
-              {info}
-            </div>
-          ) : null}
+        {error ? (
+          <div role="alert" aria-live="assertive" className="auth-form-alert auth-form-alert--error">
+            {error}
+          </div>
+        ) : null}
+        {info ? (
+          <div role="status" aria-live="polite" className="auth-form-alert auth-form-alert--ok">
+            {info}
+          </div>
+        ) : null}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            className="mt-1 flex h-10 items-center justify-center rounded-[10px] bg-[var(--color-text)] text-[13px] font-bold text-[var(--color-surface)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
-          >
+        <div className="auth-form-panel__actions">
+          <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="auth-form-submit">
             {isSubmitting ? "Kaydediliyor…" : form.primary_cta}
           </button>
-        </form>
 
-        {form.secondary_hint ? <p className="mt-3 text-center text-[11px] font-medium text-[var(--color-meta)]">{form.secondary_hint}</p> : null}
+          <div className="auth-form-links">
+            <span>
+              Zaten hesabın var mı? <Link href={`/auth/login${nextQ}`}>Giriş yap</Link>
+            </span>
+          </div>
+        </div>
+      </form>
 
-        <p className="mt-5 text-center text-[13px] font-medium text-[var(--color-text-secondary)]">
-          Zaten hesabın var mı?{" "}
-          <Link href={`/auth/login${nextQ}`} className="font-bold text-[var(--color-text)] hover:underline">
-            Giriş yap
-          </Link>
-        </p>
-      </div>
+      {form.secondary_hint ? <p className="auth-form-hint">{form.secondary_hint}</p> : null}
     </div>
   );
 }

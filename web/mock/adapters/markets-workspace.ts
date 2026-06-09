@@ -251,6 +251,8 @@ export function getMockMarketNews(): MarketNewsRow[] {
       minutesAgo: 12,
       impactTier: 3,
       affectedSymbols: ["XU100", "USDTRY", "BTC"],
+      sourceUrl: "https://www.reuters.com/markets/us/fed-rate-decision-mock",
+      sentiment: "negative",
     },
     {
       id: "nw-f2",
@@ -279,6 +281,8 @@ export function getMockMarketNews(): MarketNewsRow[] {
       minutesAgo: 28,
       impactTier: 2,
       affectedSymbols: ["BTC", "ETH", "SOL"],
+      sourceUrl: "https://www.coindesk.com/markets/btc-etf-inflows-mock",
+      sentiment: "positive",
     },
     {
       id: "nw-2",

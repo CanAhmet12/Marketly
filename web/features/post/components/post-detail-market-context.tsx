@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 
 import { getSignalsRepository } from "@/features/signals/repository";
 import { signalLifecycleLabel } from "@/features/signals/domain/signal-meta";
@@ -25,7 +25,9 @@ export function PostDetailMarketContext({ assetTag }: Props) {
   }, [clean]);
 
   return (
-    <div className="pd-side-block">
+    <div className="pd-side-module pd-side-module--market" style={{ "--pd-side-accent": "var(--pd-accent)" } as CSSProperties}>
+      <span className="pd-side-module-accent" aria-hidden />
+      <div className="pd-side-module-inner">
       <h3 className="pd-side-title">Piyasa bağlamı</h3>
       <div className="pd-market-row">
         <div className="pd-market-icon">{clean.slice(0, 2)}</div>
@@ -58,6 +60,7 @@ export function PostDetailMarketContext({ assetTag }: Props) {
         <Link href={`/signals?asset=${encodeURIComponent(clean)}`} className="pd-market-pill">
           Sinyaller →
         </Link>
+      </div>
       </div>
     </div>
   );

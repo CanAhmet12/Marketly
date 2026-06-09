@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 
 import { OG_SITE_DEFAULTS } from "@/lib/seo/metadata-helpers";
 import { getSiteUrl } from "@/lib/supabase/env";
@@ -6,6 +7,14 @@ import { getSiteUrl } from "@/lib/supabase/env";
 import { Providers } from "./providers";
 
 import "./globals.css";
+
+/** Mobil marka ile uyumlu — editorial fintech tipografi */
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+});
 
 const siteUrl = getSiteUrl();
 
@@ -35,8 +44,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" data-theme="light" className="min-h-dvh" suppressHydrationWarning>
-      <body className="min-h-dvh font-sans antialiased">
+    <html lang="tr" data-theme="light" className={`${inter.variable} min-h-dvh`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-dvh font-sans antialiased`}>
         {/* Inline: next/script chunk’ına bağlı kalmadan tema (ChunkLoadError / stale hash riskini azaltır) */}
         <script
           id="marketly-theme-init"

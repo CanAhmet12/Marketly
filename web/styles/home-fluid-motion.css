@@ -1,0 +1,318 @@
+/**
+ * Home — akışkanlık & canlılık (bölüm bölüm)
+ *
+ * Araştırma özeti:
+ * - Scroll-driven view() — viewport girişinde fade/slide (Chrome 115+, progressive enhancement)
+ * - Mikro-etkileşim 100–250ms, giriş 300–420ms — ease-out / expo eğrileri
+ * - Sadece transform + opacity — compositor thread, 60fps
+ * - prefers-reduced-motion — hareket kapatılır, renk geçişleri kalır
+ *
+ * @see https://developer.chrome.com/docs/css-ui/scroll-driven-animations
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hv-ref {
+    --hv-fluid-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --hv-fluid-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --hv-fluid-micro: 160ms;
+    --hv-fluid-ui: 240ms;
+    --hv-fluid-section: 420ms;
+  }
+
+  /* ── 1. Mast — sekme çizgisi akışı + buton basıncı ── */
+  .hv-ref .hv-ref__tab::after {
+    transition:
+      opacity var(--hv-fluid-ui) var(--hv-fluid-ease),
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease),
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  .hv-ref .hv-ref__tab[data-active="true"]::after {
+    box-shadow: 0 2px 14px color-mix(in srgb, var(--hv-zone-tab-line) 32%, transparent);
+  }
+
+  .hv-ref .hv-ref__tab {
+    transition: color var(--hv-fluid-ui) var(--hv-fluid-ease-out);
+  }
+
+  .hv-ref .hv-ref__icon-btn {
+    transition:
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      background-color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-micro) var(--hv-fluid-ease-out);
+  }
+
+  .hv-ref .hv-ref__icon-btn:active {
+    transform: scale(0.94);
+  }
+
+  .hv-ref .hv-ref__mast {
+    transition:
+      background-color var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      border-color var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease-out);
+  }
+
+  /* ── 2. Piyasa ticker — hover kaldırma + fiyat canlanması ── */
+  .hv-ref .hv-ref-strip__item {
+    transition:
+      background-color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-strip__item:hover .hv-ref-strip__price {
+      color: var(--hv-zone-strip-price);
+    }
+
+    .hv-ref .hv-ref-strip__item:hover .hv-ref-strip__chg[data-sign="up"] {
+      filter: brightness(1.08);
+    }
+
+    .hv-ref .hv-ref-strip__item:hover .hv-ref-strip__chg[data-sign="down"] {
+      filter: brightness(1.06);
+    }
+  }
+
+  .hv-ref .hv-ref-strip__price,
+  .hv-ref .hv-ref-strip__chg {
+    transition:
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  .hv-ref .hv-ref-strip-region {
+    animation: hv-fluid-section-in var(--hv-fluid-section) var(--hv-fluid-ease) backwards;
+  }
+
+  /* ── 3. Hikâyeler — hover büyüme + canlı nabız ── */
+  .hv-ref .hv-ref-stories__hit {
+    transition: transform var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-stories__hit:hover {
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    .hv-ref .hv-ref-stories__hit:hover .hv-ref-stories__ring {
+      filter: brightness(1.06);
+    }
+  }
+
+  .hv-ref .hv-ref-stories__ring {
+    transition:
+      filter var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease-out);
+  }
+
+  .hv-ref .hv-ref__stories-wrap {
+    animation: hv-fluid-section-in var(--hv-fluid-section) var(--hv-fluid-ease) 70ms backwards;
+  }
+
+  /* ── 4. Bugün şeridi — chip hover ── */
+  .hv-ref .hv-ref-feed-today__chip {
+    transition:
+      transform var(--hv-fluid-micro) var(--hv-fluid-ease),
+      opacity var(--hv-fluid-micro) ease-out,
+      background-color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-feed-today__chip:hover {
+      opacity: 1;
+    }
+  }
+
+  /* ── 5. Akış gönderileri — scroll-driven view + hover ── */
+  @keyframes hv-fluid-view-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes hv-fluid-section-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .hv-ref .hv-ref-article.motion-entrance,
+    .hv-ref .hv-ref-article.motion-feed-tab-stagger {
+      animation: none;
+      animation-delay: unset;
+    }
+
+    .hv-ref .hv-ref-article {
+      animation: hv-fluid-view-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 38%;
+    }
+  }
+
+  .hv-ref .hv-ref-article {
+    transition:
+      background-color var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+
+  .hv-ref .hv-ref-article__engage-btn,
+  .hv-ref .hv-ref-article__engage-stat {
+    transition:
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-micro) var(--hv-fluid-ease),
+      opacity var(--hv-fluid-micro) ease-out;
+  }
+
+  .hv-ref .hv-ref-article__engage-btn:active {
+    transform: scale(0.96);
+  }
+
+  .hv-ref .hv-ref-article__read-more {
+    transition:
+      opacity var(--hv-fluid-micro) ease-out,
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-micro) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-article__read-more:hover {
+      transform: translateX(2px);
+    }
+  }
+
+  .hv-ref .hv-ref-article__comment-teaser {
+    transition:
+      background-color var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      border-color var(--hv-fluid-ui) var(--hv-fluid-ease-out),
+      color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-article__comment-teaser:hover {
+      transform: translateX(3px);
+    }
+  }
+
+  .hv-ref .hv-ref__posts {
+    animation: hv-fluid-section-in var(--hv-fluid-section) var(--hv-fluid-ease) 120ms backwards;
+  }
+
+  /* ── 6. Keşfet nudge / durum panelleri ── */
+  .hv-ref .hv-ref-feed-nudge,
+  .hv-ref .hv-ref-feed-state,
+  .hv-ref .hv-ref-creator-suggest {
+    transition:
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease),
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+
+  .hv-ref .hv-ref-feed-nudge__btn {
+    transition:
+      transform var(--hv-fluid-micro) var(--hv-fluid-ease),
+      opacity var(--hv-fluid-micro) ease-out,
+      border-color var(--hv-fluid-micro) var(--hv-fluid-ease-out),
+      background-color var(--hv-fluid-micro) var(--hv-fluid-ease-out);
+  }
+
+  .hv-ref .hv-ref-feed-nudge__btn:active {
+    transform: scale(0.97);
+  }
+
+  /* ── 7. Sağ rail — kart kaldırma ── */
+  .hv-ref .hv-ref-rail__card {
+    transition:
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease),
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease),
+      border-color var(--hv-fluid-ui) var(--hv-fluid-ease-out);
+  }
+
+
+  .hv-ref .hv-ref-rail__sc-row,
+  .hv-ref .hv-ref-rail__market-row,
+  .hv-ref .hv-ref-rail__signal-row {
+    transition: background-color var(--hv-fluid-micro) var(--hv-fluid-ease-out);
+  }
+
+  /* ── 8. Scroll-top — giriş + hover ── */
+  .hv-ref .hv-ref-scroll-top {
+    transition:
+      transform var(--hv-fluid-ui) var(--hv-fluid-ease),
+      opacity var(--hv-fluid-micro) ease-out,
+      box-shadow var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-ref-scroll-top:hover {
+      transform: translateY(-3px);
+    }
+  }
+
+  .hv-ref .hv-ref-scroll-top:active {
+    transform: scale(0.94);
+  }
+
+  /* ── 9. Discover bantları — scroll view ── */
+  @supports (animation-timeline: view()) {
+    .hv-ref .hv-discover-band {
+      animation: hv-fluid-view-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+  }
+
+  .hv-ref .hv-discover-band::before {
+    transition: opacity var(--hv-fluid-ui) var(--hv-fluid-ease-out), width var(--hv-fluid-ui) var(--hv-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hv-ref .hv-discover-band:hover::before {
+      opacity: 1;
+      width: 3rem;
+    }
+  }
+
+  /* ── 10. Sekme geçişi — akışkan stagger ── */
+  .hv-ref .motion-feed-tab-stagger {
+    animation-name: hv-fluid-tab-stagger;
+    animation-duration: 380ms;
+    animation-timing-function: var(--hv-fluid-ease);
+  }
+
+  @keyframes hv-fluid-tab-stagger {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Reduced motion: sadece anlık renk, hareket yok */
+@media (prefers-reduced-motion: reduce) {
+  .hv-ref .hv-ref-article,
+  .hv-ref .hv-ref-strip-region,
+  .hv-ref .hv-ref__stories-wrap,
+  .hv-ref .hv-ref__posts,
+  .hv-ref .hv-discover-band {
+    animation: none !important;
+  }
+}

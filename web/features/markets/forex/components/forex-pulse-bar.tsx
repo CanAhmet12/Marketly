@@ -79,7 +79,7 @@ export function ForexPulseBar({ pulse }: Props) {
       {/* EUR/USD */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 9, fontWeight: 900 }}>€/$</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>€/$</div>
           <span className="cc-pulse-label">EUR/USD</span>
         </div>
         <span className="cc-pulse-value cc-pulse-value--btc">{fmtRate(pulse.eurusd.rate, "EUR/USD")}</span>
@@ -94,7 +94,7 @@ export function ForexPulseBar({ pulse }: Props) {
       {/* GBP/USD */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 9, fontWeight: 900 }}>£/$</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>£/$</div>
           <span className="cc-pulse-label">GBP/USD</span>
         </div>
         <span className="cc-pulse-value">{fmtRate(pulse.gbpusd.rate, "GBP/USD")}</span>

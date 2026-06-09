@@ -1,0 +1,551 @@
+/**
+ * Studio — Premium tipografi + yerleşim sistemi
+ * Tüm /studio/* bölümleri: hiyerarşi, ritim, okunabilirlik
+ */
+
+/* ─── Tipografi & ritim tokenları ─────────────────────────────────────────── */
+.studio-shell {
+  --font-bold: var(--font-sans);
+  --st-type-base: 14px;
+  --st-type-lead: 15px;
+  --st-type-sm: 12px;
+  --st-type-xs: 11px;
+  --st-type-2xs: 10px;
+  --st-type-eyebrow: 10px;
+  --st-type-page-title: 22px;
+  --st-type-hero-title: 26px;
+  --st-type-display: 32px;
+  --st-type-metric: 24px;
+  --st-lh-tight: 1.15;
+  --st-lh-snug: 1.35;
+  --st-lh-body: 1.5;
+  --st-lh-relaxed: 1.55;
+  --st-track-tight: -0.025em;
+  --st-track-display: -0.035em;
+  --st-track-caps: 0.1em;
+  --st-page-max: 1320px;
+  --st-space-page-y: 24px;
+  --st-space-page-x: 20px;
+  --st-space-section: 24px;
+  --st-space-block: 18px;
+  font-family: var(--font-sans);
+  font-size: var(--st-type-base);
+  line-height: var(--st-lh-body);
+  letter-spacing: -0.011em;
+  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+}
+
+@media (min-width: 1024px) {
+  .studio-shell {
+    --st-space-page-x: 32px;
+    --st-space-page-y: 28px;
+    --st-type-page-title: 24px;
+    --st-type-hero-title: 28px;
+    --st-type-display: 36px;
+    --st-type-metric: 26px;
+  }
+}
+
+/* ─── Sayfa kabuğu & dikey ritim ─────────────────────────────────────────── */
+.studio-page {
+  padding: var(--st-space-page-y) var(--st-space-page-x);
+  max-width: var(--st-page-max);
+  margin-inline: auto;
+  width: 100%;
+  gap: var(--st-space-section);
+}
+
+.st-dash-stack {
+  gap: var(--st-space-section);
+}
+
+.st-dash-row { gap: 18px; }
+
+/* ─── Masthead & sidebar ─────────────────────────────────────────────────── */
+.studio-masthead-inner,
+.studio-header-inner {
+  padding: 14px var(--st-space-page-x);
+  min-height: 56px;
+}
+
+.studio-masthead-sub {
+  font-size: var(--st-type-xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: var(--st-lh-snug);
+}
+
+.studio-brand-label {
+  font-size: var(--st-type-2xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-caps);
+}
+
+.studio-brand-name {
+  font-size: 17px;
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-tight);
+  line-height: var(--st-lh-tight);
+}
+
+.studio-brand-icon {
+  font-size: 11px;
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.studio-profile-name {
+  font-size: var(--st-type-sm);
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+.studio-hbtn {
+  font-size: var(--st-type-xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 7px 13px;
+}
+
+.studio-tab {
+  font-size: var(--st-type-sm);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  padding: 12px 14px;
+  letter-spacing: 0.01em;
+}
+
+.studio-sidebar {
+  width: 232px;
+  padding: 18px 0 22px;
+}
+
+.studio-sidebar-group-label {
+  font-size: var(--st-type-2xs);
+  letter-spacing: var(--st-track-caps);
+  padding: 0 12px 8px;
+}
+
+.studio-sidebar-link {
+  font-size: var(--st-type-sm);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  line-height: var(--st-lh-snug);
+  padding: 9px 12px;
+  border-radius: 8px;
+}
+
+.studio-sidebar-upload {
+  font-size: var(--st-type-xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  margin: 8px 12px 0;
+}
+
+/* ─── Sayfa başlığı (tüm alt bölümler) ───────────────────────────────────── */
+.st-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--st-border-2);
+}
+
+.st-page-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.st-page-eyebrow {
+  margin: 0;
+  font-size: var(--st-type-eyebrow);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-caps);
+  text-transform: uppercase;
+  color: var(--st-meta);
+  line-height: 1;
+}
+
+.st-page-title {
+  margin: 0;
+  font-size: var(--st-type-page-title);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-tight);
+  color: var(--st-text);
+  line-height: var(--st-lh-tight);
+}
+
+.st-page-desc {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--st-type-sm);
+  color: var(--st-text-2);
+  line-height: var(--st-lh-relaxed);
+}
+
+.st-page-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* Eski toolbar → page head uyumu */
+.st-page-toolbar {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--st-border-2);
+}
+
+.st-page-toolbar-meta {
+  font-size: var(--st-type-page-title);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-tight);
+  color: var(--st-text);
+  line-height: var(--st-lh-tight);
+}
+
+/* ─── Hero & gelir başlıkları ─────────────────────────────────────────────── */
+.st-hero {
+  padding: 4px 0 22px;
+  gap: 22px;
+}
+
+.st-hero-name {
+  font-size: var(--st-type-hero-title);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-display);
+  line-height: var(--st-lh-tight);
+}
+
+.st-hero-tag,
+.st-revenue-tag {
+  font-size: var(--st-type-eyebrow);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-caps);
+}
+
+.st-hero-stat-val,
+.st-metric-value,
+.st-economy-hero-stat-val {
+  font-size: var(--st-type-metric);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-display);
+  line-height: var(--st-lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.st-hero-stat-label,
+.st-metric-label,
+.st-economy-hero-stat-label {
+  font-size: var(--st-type-2xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  line-height: 1.2;
+}
+
+.st-revenue-amount {
+  font-size: clamp(30px, 4.2vw, var(--st-type-display));
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-display);
+}
+
+.st-revenue-sub {
+  font-size: var(--st-type-lead);
+  line-height: var(--st-lh-relaxed);
+}
+
+.st-live-hero,
+.st-revenue-hero {
+  padding: 4px 0 22px;
+}
+
+.st-live-title {
+  font-size: var(--st-type-hero-title);
+  letter-spacing: var(--st-track-tight);
+  line-height: var(--st-lh-tight);
+}
+
+.st-live-sub {
+  font-size: var(--st-type-lead);
+  line-height: var(--st-lh-relaxed);
+  margin-top: 6px;
+}
+
+/* ─── Bloklar & bölüm başlıkları ─────────────────────────────────────────── */
+.st-block {
+  padding-top: var(--st-space-block);
+}
+
+.st-block-header {
+  padding: 0 0 12px;
+  align-items: baseline;
+}
+
+.st-block-title {
+  font-size: var(--st-type-xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  gap: 8px;
+}
+
+.st-block-link {
+  font-size: var(--st-type-2xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.st-block-body,
+.st-chart-wrap,
+.st-content-toolbar-row,
+.st-donut-row,
+.st-aud-rows,
+.st-analytics-chart-body {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.st-block--flush .st-content-toolbar-row,
+.st-block--flush .st-content-filters {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ─── Metrik şeridi ─────────────────────────────────────────────────────── */
+.st-metric {
+  padding: 18px 16px;
+  gap: 6px;
+}
+
+.st-metric-change {
+  font-size: var(--st-type-xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+/* ─── Grafik & filtre kontrolleri ───────────────────────────────────────── */
+.st-tf-btn,
+.st-filter-pill,
+.st-content-view-btn {
+  font-size: var(--st-type-2xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+}
+
+.st-content-toolbar-meta {
+  font-size: var(--st-type-sm);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  color: var(--st-text);
+}
+
+.st-content-search,
+.st-content-select,
+.st-field-input {
+  font-size: var(--st-type-sm);
+  line-height: var(--st-lh-snug);
+}
+
+.st-content-search {
+  min-width: 200px;
+  padding: 8px 12px;
+}
+
+/* ─── Tablo & liste ─────────────────────────────────────────────────────── */
+.st-content-th {
+  font-size: var(--st-type-2xs);
+  letter-spacing: 0.09em;
+  padding: 11px 12px;
+}
+
+.st-content-td {
+  font-size: var(--st-type-sm);
+  padding: 12px;
+  line-height: var(--st-lh-snug);
+}
+
+.st-content-table-title,
+.st-list-title,
+.st-analytics-top-title,
+.st-content-row-title {
+  font-size: var(--st-type-lead);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  line-height: var(--st-lh-snug);
+}
+
+.st-content-table-sub,
+.st-list-meta,
+.st-content-row-meta,
+.st-analytics-top-meta {
+  font-size: var(--st-type-2xs);
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.st-list-preview,
+.st-feed-body,
+.st-tip-body,
+.st-live-obs-lead {
+  font-size: var(--st-type-sm);
+  line-height: var(--st-lh-relaxed);
+}
+
+.st-list-item {
+  padding: 14px 0;
+  gap: 14px;
+}
+
+.st-content-row,
+.st-analytics-top-row,
+.st-feed-item {
+  padding: 12px 0;
+}
+
+/* ─── Analitik başlık ───────────────────────────────────────────────────── */
+.st-analytics-header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--st-border-2);
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.st-analytics-page-title {
+  margin: 0;
+  font-size: var(--st-type-page-title);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--st-track-tight);
+  line-height: var(--st-lh-tight);
+  color: var(--st-text);
+}
+
+.st-analytics-crumb {
+  font-size: var(--st-type-2xs);
+  letter-spacing: 0.05em;
+}
+
+/* ─── Rozet & chip ──────────────────────────────────────────────────────── */
+.st-badge,
+.st-content-kind-badge,
+.st-live-badge {
+  font-size: var(--st-type-2xs);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ─── İpuçları & feed ───────────────────────────────────────────────────── */
+.st-feed-title,
+.st-tip-title {
+  font-size: var(--st-type-sm);
+  line-height: var(--st-lh-snug);
+}
+
+.st-tip-cta {
+  font-size: var(--st-type-2xs);
+  letter-spacing: 0.04em;
+}
+
+.st-hint,
+.st-write-gate-notice__text {
+  font-size: var(--st-type-sm);
+  line-height: var(--st-lh-relaxed);
+}
+
+.st-economy-headline {
+  font-size: 18px;
+  letter-spacing: var(--st-track-tight);
+}
+
+.st-economy-sub,
+.st-economy-subline {
+  font-size: var(--st-type-sm);
+  line-height: var(--st-lh-relaxed);
+}
+
+.st-legend-label,
+.st-legend-val,
+.st-aud-label {
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+/* ─── Düzenleme formu ───────────────────────────────────────────────────── */
+.st-edit-title {
+  font-size: 21px;
+  letter-spacing: var(--st-track-tight);
+  line-height: var(--st-lh-tight);
+}
+
+.st-edit-eyebrow {
+  font-size: var(--st-type-eyebrow);
+  letter-spacing: var(--st-track-caps);
+}
+
+.st-field-label {
+  font-size: var(--st-type-xs);
+  letter-spacing: 0.02em;
+}
+
+/* ─── font-weight normalizasyonu (canvas legacy) ──────────────────────────── */
+.studio-shell :is(
+  .studio-brand-icon,
+  .studio-avatar,
+  .st-hero-avatar,
+  .st-hero-name,
+  .st-hero-stat-val,
+  .st-metric-value,
+  .st-metric-label,
+  .st-metric-change,
+  .st-badge,
+  .st-block-title,
+  .st-block-link,
+  .st-revenue-amount,
+  .st-legend-label,
+  .st-legend-val,
+  .st-aud-label,
+  .st-aud-pct,
+  .st-live-status,
+  .st-qa-link,
+  .st-content-row-title,
+  .st-content-row-views,
+  .st-list-action
+) {
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+.studio-subnav-inner {
+  padding-inline: var(--st-space-page-x);
+}
+
+.st-content-empty {
+  padding: 28px 0;
+  text-align: center;
+  font-size: var(--st-type-sm);
+  color: var(--st-meta);
+  line-height: var(--st-lh-relaxed);
+}

@@ -1,0 +1,134 @@
+/**
+ * Hub Premium — tipografi & ritim (Portföy pf-type-* ile hizalı)
+ */
+
+.hp-canvas {
+  --font-bold: var(--font-sans);
+  --hp-font-display: var(--font-sans);
+  --hp-font-label: var(--font-sans);
+  --hp-font-mono: var(--font-mono, ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace);
+
+  --hp-type-2xs: 10px;
+  --hp-type-xs: 11px;
+  --hp-type-sm: 12px;
+  --hp-type-base: 14px;
+  --hp-type-md: 15px;
+  --hp-type-lg: 17px;
+  --hp-type-xl: 20px;
+  --hp-type-hero: clamp(22px, 2.8vw, 28px);
+  --hp-type-stat: clamp(22px, 2.4vw, 26px);
+  --hp-type-stat-hero: clamp(26px, 3vw, 32px);
+
+  --hp-lh-tight: 1.08;
+  --hp-lh-snug: 1.32;
+  --hp-lh-body: 1.52;
+  --hp-track-tight: -0.035em;
+  --hp-track-display: -0.04em;
+  --hp-track-caps: 0.11em;
+  --hp-track-mono: 0.01em;
+
+  font-family: var(--hp-font-label);
+  font-size: var(--hp-type-base);
+  line-height: var(--hp-lh-body);
+  letter-spacing: -0.012em;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+@media (min-width: 1024px) {
+  .hp-canvas {
+    --hp-type-stat: 26px;
+    --hp-type-stat-hero: 32px;
+  }
+}
+
+.hp-kicker {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--hp-track-caps);
+  line-height: var(--hp-lh-tight);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-title {
+  font-family: var(--hp-font-display);
+  font-size: var(--hp-type-hero);
+  font-weight: 700;
+  letter-spacing: var(--hp-track-display);
+  line-height: var(--hp-lh-tight);
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-subtitle {
+  font-size: var(--hp-type-sm);
+  font-weight: 600;
+  line-height: var(--hp-lh-snug);
+  color: var(--hp-text-2);
+  max-width: 52ch;
+}
+
+.hp-block-title {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-xs);
+  font-weight: 700;
+  letter-spacing: var(--hp-track-caps);
+  line-height: var(--hp-lh-tight);
+  text-transform: uppercase;
+  color: var(--hp-text-2);
+}
+
+.hp-stat-label {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--hp-track-caps);
+  line-height: var(--hp-lh-tight);
+  text-transform: uppercase;
+  color: var(--hp-meta);
+}
+
+.hp-stat-value {
+  font-family: var(--hp-font-mono);
+  font-size: var(--hp-type-stat);
+  font-weight: 600;
+  letter-spacing: var(--hp-track-mono);
+  line-height: var(--hp-lh-tight);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--hp-text);
+}
+
+.hp-stat-value--accent {
+  font-size: var(--hp-type-stat-hero);
+  font-weight: 700;
+  letter-spacing: var(--hp-track-tight);
+  background: linear-gradient(
+    135deg,
+    var(--hp-zone-1) 0%,
+    var(--hp-zone-3) 55%,
+    color-mix(in srgb, var(--hp-zone-1) 80%, #fff) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-data-mono {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.hp-text-up {
+  color: color-mix(in srgb, var(--hp-up) 92%, #fff);
+}
+
+.hp-text-down {
+  color: color-mix(in srgb, var(--hp-down) 92%, #fff);
+}

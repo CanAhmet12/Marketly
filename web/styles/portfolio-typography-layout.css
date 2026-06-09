@@ -1,0 +1,346 @@
+/**
+ * Portföy — premium tipografi + ritim sistemi
+ * Display (sans bold) · Label (sans) · Data (mono tabular)
+ */
+
+.pf-canvas {
+  --font-bold: var(--font-sans);
+  --pf-font-display: var(--font-sans);
+  --pf-font-label: var(--font-sans);
+  --pf-font-mono: var(--font-mono, ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace);
+
+  /* Tip ölçeği */
+  --pf-type-2xs: 10px;
+  --pf-type-xs: 11px;
+  --pf-type-sm: 12px;
+  --pf-type-base: 14px;
+  --pf-type-md: 15px;
+  --pf-type-lg: 17px;
+  --pf-type-xl: 20px;
+  --pf-type-hero: clamp(22px, 2.8vw, 28px);
+  --pf-type-stat: clamp(22px, 2.4vw, 26px);
+  --pf-type-stat-hero: clamp(26px, 3vw, 32px);
+
+  /* Ritim */
+  --pf-lh-tight: 1.08;
+  --pf-lh-snug: 1.32;
+  --pf-lh-body: 1.52;
+  --pf-track-tight: -0.035em;
+  --pf-track-display: -0.04em;
+  --pf-track-caps: 0.11em;
+  --pf-track-mono: 0.01em;
+
+  --pf-space-page-y: 20px;
+  --pf-space-section: 20px;
+  --pf-space-block-pad: 16px;
+  --pf-space-inline: 18px;
+
+  font-family: var(--pf-font-label);
+  font-size: var(--pf-type-base);
+  line-height: var(--pf-lh-body);
+  letter-spacing: -0.012em;
+  font-feature-settings: "kern" 1, "liga" 1;
+  font-variant-numeric: normal;
+}
+
+@media (min-width: 1024px) {
+  .pf-canvas {
+    --pf-type-stat: 26px;
+    --pf-type-stat-hero: 32px;
+    --pf-space-section: 22px;
+    --pf-space-block-pad: 18px;
+    --pf-space-inline: 20px;
+  }
+}
+
+/* ─── Chrome & başlık ─────────────────────────────────────────────────────── */
+.pf-header-tag {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-caps);
+  line-height: var(--pf-lh-tight);
+}
+
+.pf-header-title {
+  font-family: var(--pf-font-display);
+  font-size: var(--pf-type-hero);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-display);
+  line-height: var(--pf-lh-tight);
+}
+
+.pf-header-btn {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Hero metrikler ──────────────────────────────────────────────────────── */
+.pf-stat-label {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-caps);
+  line-height: var(--pf-lh-tight);
+}
+
+.pf-stat-value {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-stat);
+  font-weight: 600;
+  letter-spacing: var(--pf-track-mono);
+  line-height: var(--pf-lh-tight);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.pf-stat-value--accent {
+  font-size: var(--pf-type-stat-hero);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-tight);
+}
+
+.pf-stat-change {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-stat-sub {
+  font-family: var(--pf-font-label);
+  font-size: var(--pf-type-xs);
+  font-weight: 600;
+}
+
+/* ─── Blok başlıkları ─────────────────────────────────────────────────────── */
+.pf-block-title {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-xs);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-caps);
+  line-height: var(--pf-lh-tight);
+}
+
+.pf-block-link,
+.pf-chart-badge,
+.pf-chart-caption {
+  font-family: var(--font-bold);
+  font-weight: 700;
+}
+
+.pf-chart-badge { font-size: var(--pf-type-2xs); letter-spacing: 0.06em; }
+.pf-chart-caption { font-size: var(--pf-type-xs); font-weight: 600; line-height: var(--pf-lh-snug); }
+.pf-block-link { font-size: var(--pf-type-xs); }
+
+/* ─── Tablo & pozisyonlar ─────────────────────────────────────────────────── */
+.pf-holdings-table {
+  font-size: var(--pf-type-sm);
+}
+
+.pf-holdings-table th {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-2xs);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+}
+
+.pf-holding-name {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-base);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.pf-holding-fullname {
+  font-size: var(--pf-type-xs);
+  font-weight: 500;
+  line-height: var(--pf-lh-snug);
+}
+
+.pf-cat-badge {
+  font-family: var(--font-bold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pf-weight-pct,
+.pf-pnl-val,
+.pf-price-val {
+  font-family: var(--pf-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-weight-pct { font-size: var(--pf-type-sm); font-weight: 600; }
+.pf-pnl-val { font-size: var(--pf-type-sm); font-weight: 600; }
+.pf-price-val { font-size: var(--pf-type-sm); font-weight: 600; }
+
+/* ─── Donut & strateji ────────────────────────────────────────────────────── */
+.pf-donut-center-label {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.pf-donut-center-value {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-md);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-mono);
+}
+
+.pf-legend-label {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-sm);
+  font-weight: 700;
+}
+
+.pf-legend-pct {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-strat-label {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-sm);
+  font-weight: 700;
+}
+
+.pf-strat-pct {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Risk & sinyaller ────────────────────────────────────────────────────── */
+.pf-risk-score {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--pf-track-tight);
+}
+
+.pf-risk-label,
+.pf-risk-item-label,
+.pf-risk-item-value {
+  font-size: var(--pf-type-xs);
+}
+
+.pf-risk-item-label { font-weight: 600; }
+.pf-risk-item-value { font-family: var(--font-bold); font-weight: 700; }
+
+.pf-sector-label,
+.pf-sector-pct,
+.pf-corr-pair {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-xs);
+  font-weight: 700;
+}
+
+.pf-corr-note,
+.pf-corr-title,
+.pf-empty-hint {
+  font-size: var(--pf-type-xs);
+}
+
+.pf-analyst-name,
+.pf-signal-sym {
+  font-family: var(--font-bold);
+  font-weight: 700;
+}
+
+.pf-signal-reason { font-size: var(--pf-type-sm); font-weight: 600; }
+.pf-signal-meta { font-size: var(--pf-type-xs); }
+.pf-signal-dir {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-xs);
+  font-weight: 700;
+}
+
+/* ─── Intel & paylaşım ────────────────────────────────────────────────────── */
+.pf-intel-zone__eyebrow,
+.pf-share-card__tag {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-caps);
+}
+
+.pf-intel-zone__headline {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-sm);
+  font-weight: 700;
+  line-height: var(--pf-lh-snug);
+}
+
+.pf-intel-chip__kind {
+  font-family: var(--font-bold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.pf-intel-chip__label {
+  font-family: var(--font-bold);
+  font-size: var(--pf-type-xs);
+  font-weight: 700;
+}
+
+.pf-intel-chip__meta {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-2xs);
+  font-weight: 600;
+}
+
+.pf-share-card__value {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-xl);
+  font-weight: 700;
+  letter-spacing: var(--pf-track-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-share-card__pnl {
+  font-family: var(--pf-font-mono);
+  font-size: var(--pf-type-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-share-card__holdings li span:first-child {
+  font-family: var(--font-bold);
+  font-weight: 700;
+}
+
+.pf-share-card__holdings li span:last-child {
+  font-family: var(--pf-font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Yerleşim ────────────────────────────────────────────────────────────── */
+.pf-main,
+.pf-left,
+.pf-sidebar-inner {
+  gap: var(--pf-space-section);
+}
+
+.pf-block-header {
+  padding-left: var(--pf-space-inline);
+  padding-right: var(--pf-space-inline);
+}
+
+.pf-chart-wrap,
+.pf-strategy-rows,
+.pf-risk-body,
+.pf-donut-wrap {
+  padding-left: var(--pf-space-inline);
+  padding-right: var(--pf-space-inline);
+}

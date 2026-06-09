@@ -13,14 +13,14 @@
   --cc-gold-bg:          rgba(249, 115, 22, 0.07);
 
   /* Pozitif — evrensel yesil */
-  --cc-teal:             #22c55e;
-  --cc-teal-muted:       rgba(34, 197, 94, 0.55);
-  --cc-teal-bg:          rgba(34, 197, 94, 0.07);
+  --cc-teal:             var(--color-rise);
+  --cc-teal-muted:       var(--color-rise-muted);
+  --cc-teal-bg:          var(--color-rise-bg);
 
   /* Negatif — evrensel kirmizi */
-  --cc-rose:             #ef4444;
-  --cc-rose-muted:       rgba(239, 68, 68, 0.55);
-  --cc-rose-bg:          rgba(239, 68, 68, 0.07);
+  --cc-rose:             var(--color-fall);
+  --cc-rose-muted:       var(--color-fall-muted);
+  --cc-rose-bg:          var(--color-fall-bg);
 
   /* Petrol ikincil — koyu turuncu */
   --cc-violet:           #ea580c;
@@ -224,7 +224,7 @@
 }
 
 .cm-trend-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -248,7 +248,7 @@
    ================================ */
 
 .cm-unit-badge {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   padding: 1px 5px;
   border-radius: 3px;

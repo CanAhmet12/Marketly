@@ -59,7 +59,7 @@ export function MarketsFilterControl({ segment, lens, onSegment, onLens, segment
   return (
     <div className="sticky top-0 z-20 -mx-[var(--sp-3)] min-[900px]:-mx-0">
       <div className="markets-glass-25 min-h-[132px] rounded-2xl px-[var(--sp-3)] py-[var(--sp-3)]">
-        <p className="mb-[var(--sp-2)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-meta)]">Pazar</p>
+        <p className="mb-[var(--sp-2)] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-meta)]">Pazar</p>
         <div className="flex flex-wrap gap-x-[var(--sp-1)] gap-y-[var(--sp-2)]" role="tablist" aria-label="Pazar segmenti">
           {SEGMENTS.map((s) => {
             const on = segment === s.id;
@@ -94,7 +94,7 @@ export function MarketsFilterControl({ segment, lens, onSegment, onLens, segment
           <p className="mt-[var(--sp-3)] text-[12px] font-medium leading-snug text-[var(--color-text-secondary)]">{segmentHint}</p>
         ) : null}
 
-        <p className="mb-[var(--sp-2)] mt-[var(--sp-4)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-meta)]">Liste</p>
+        <p className="mb-[var(--sp-2)] mt-[var(--sp-4)] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-meta)]">Liste</p>
         <div className="ms-scrollbar-thin ms-rail-scroll flex gap-[var(--sp-2)] overflow-x-auto pb-px" role="toolbar" aria-label="Liste filtresi">
           {LENSES.map((l) => {
             const on = lens === l.id;

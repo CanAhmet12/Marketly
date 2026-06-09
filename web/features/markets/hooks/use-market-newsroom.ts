@@ -11,6 +11,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
 
+/** Canlı liste — 90s polling */
+const NEWS_ROOM_POLL_MS = 90_000;
+
 export function useMarketNewsroom() {
   const mockOn = isMockDataEnabled();
   const liveMode = !mockOn && isSupabaseConfigured();
@@ -35,7 +38,10 @@ export function useMarketNewsroom() {
       return fetchMarketNewsroomBundle(getSupabaseBrowserClient(), watchedArr, portfolio);
     },
     enabled: liveMode && hydrated,
-    staleTime: 120_000,
+    staleTime: 60_000,
+    refetchInterval: NEWS_ROOM_POLL_MS,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
 
   const bundle = mockOn ? mockBundle : (liveQuery.data ?? null);
@@ -46,6 +52,7 @@ export function useMarketNewsroom() {
     liveMode,
     hydrated,
     isLoading: mockOn ? !hydrated : liveQuery.isLoading,
+    isRefetching: liveMode && liveQuery.isFetching && !liveQuery.isLoading,
     isEmpty: !mockOn && hydrated && !liveQuery.isLoading && (bundle?.items.length ?? 0) === 0,
   };
 }

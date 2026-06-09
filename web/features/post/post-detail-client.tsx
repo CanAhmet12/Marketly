@@ -16,7 +16,7 @@ import type { DiscussionReactionKind, ThesisStance } from "@/features/social/rep
 import { fetchPostComments, insertPostComment } from "./fetch-post-comments";
 import { fetchPostDetail } from "./fetch-post-detail";
 import { PostDetailSkeleton } from "./post-detail-skeleton";
-import { buildCommentForest, EMPTY_COMMENTS, resolvePostDetailMedia, sharePostDetail } from "./post-detail-helpers";
+import { buildCommentForest, EMPTY_COMMENTS, resolvePostDetailMedia } from "./post-detail-helpers";
 import { usePostDetailRealtime } from "./use-post-detail-realtime";
 import { mockPostDetail } from "@/mock/adapters/post";
 import { isMockDataEnabled } from "@/mock/config";
@@ -29,8 +29,10 @@ import { PostDetailMediaHero } from "./components/post-detail-media-hero";
 import { PostDetailContent } from "./components/post-detail-content";
 import { PostDetailEngagement } from "./components/post-detail-engagement";
 import { PostDetailDiscussion } from "./components/post-detail-discussion";
+import { PostDetailShareSheet } from "./components/post-detail-share-sheet";
 import { PostDetailSidebar } from "./components/post-detail-sidebar";
 import type { DiscussionIntent } from "./types";
+import { usePostDetailHashScroll } from "./use-post-detail-hash-scroll";
 
 type Props = { postId: string };
 
@@ -54,6 +56,7 @@ export function PostDetailClient({ postId }: Props) {
   const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
   const [composerIntent, setComposerIntent] = useState<DiscussionIntent | null>(null);
   const [copyHint, setCopyHint] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const postUrl = typeof window !== "undefined" ? `${window.location.origin}/post/${postId}` : `/post/${postId}`;
   const loginHref = `/auth/login?next=${encodeURIComponent(`/post/${postId}`)}`;
@@ -80,6 +83,8 @@ export function PostDetailClient({ postId }: Props) {
 
   const comments = useMemo(() => commentsQuery.data ?? EMPTY_COMMENTS, [commentsQuery.data]);
   const forest = useMemo(() => buildCommentForest(comments), [comments]);
+
+  usePostDetailHashScroll(Boolean(post), Boolean(user));
 
   const reactionsQuery = useQuery({
     queryKey: queryKeys.postDiscussionReactions(postId, viewerKey),
@@ -289,8 +294,8 @@ export function PostDetailClient({ postId }: Props) {
 
   const onShare = useCallback(() => {
     if (!post) return;
-    void sharePostDetail(post, postUrl);
-  }, [post, postUrl]);
+    setShareOpen(true);
+  }, [post]);
 
   const onCopyLink = useCallback(async () => {
     try {
@@ -387,10 +392,15 @@ export function PostDetailClient({ postId }: Props) {
     <div className="pd-canvas ms-page-wrapper--no-top">
       <div className="pd-shell">
         <header className="pd-topbar">
-          <button type="button" onClick={onBack} className="pd-back-btn" aria-label="Geri">
-            <BackIcon />
-            Geri
-          </button>
+          <div className="pd-topbar-start">
+            <button type="button" onClick={onBack} className="pd-back-btn" aria-label="Geri">
+              <BackIcon />
+              Geri
+            </button>
+            <Link href="/" className="pd-feed-link">
+              Ana akış
+            </Link>
+          </div>
           <div className="pd-topbar-actions">
             {copyHint && <span className="pd-copy-toast">Bağlantı kopyalandı</span>}
             <button type="button" onClick={() => void onCopyLink()} className="pd-topbar-icon-btn" aria-label="Bağlantıyı kopyala">
@@ -470,6 +480,13 @@ export function PostDetailClient({ postId }: Props) {
           <PostDetailSidebar post={post} postId={postId} viewerId={uid} />
         </div>
       </div>
+
+      <PostDetailShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        post={post}
+        url={postUrl}
+      />
     </div>
   );
 }

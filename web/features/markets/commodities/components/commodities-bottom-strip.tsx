@@ -62,7 +62,7 @@ export function CommoditiesBottomStrip({ strip }: Props) {
               <div className="cc-cal-icon" aria-hidden>{CAL_ICONS[item.type] ?? "📌"}</div>
               <div className="cc-cal-info">
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#f97316" }}>{item.date}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316" }}>{item.date}</span>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: IMPACT_DOT[item.impact], flexShrink: 0 }} aria-hidden />
                 </div>
                 <span className="cc-cal-title">{item.title}</span>

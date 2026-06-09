@@ -1,8 +1,14 @@
 import { getPersonalizationRepository } from "@/features/personalization/repository";
 import { getSubscriptionRepository } from "@/features/subscriptions/repository";
+import {
+  computeNotificationGroups,
+  legacyPriorityScore,
+  personalPriorityScore,
+} from "@/features/notifications/domain/notification-priority";
 import type { NotificationItem } from "@/features/social/repository";
 import { isSameCalendarDay } from "@/features/social/lib/social-format";
 import type { MockNotificationType } from "@/features/social/types";
+import { AlgoFlags } from "@/lib/algo-flags";
 import { isMockDataEnabled } from "@/mock/config";
 
 import type {
@@ -68,13 +74,6 @@ function streamsForRow(row: NotificationItem): NotificationInboxStreamId[] {
   };
   for (const s of map[t] ?? ["following"]) out.add(s);
   return [...out];
-}
-
-function priorityScore(row: NotificationItem, imp: "critical" | "high" | "normal"): number {
-  const ageMs = Date.now() - new Date(row.created_at).getTime();
-  const recency = Math.max(0, 100 - Math.floor(ageMs / 3_600_000));
-  const bump = imp === "critical" ? 40 : imp === "high" ? 22 : 0;
-  return bump + recency;
 }
 
 function relevanceLine(row: NotificationItem, viewerId: string | null): string | null {
@@ -254,7 +253,7 @@ const NAV: NotificationSurfaceLink[] = [
   { href: "/signals", label: "Sinyaller" },
   { href: "/markets", label: "Piyasalar" },
   { href: "/live", label: "Canlı" },
-  { href: "/messages", label: "Mesaj" },
+  { href: "/hub/messages", label: "Mesaj" },
   { href: "/subscriptions", label: "Abonelikler" },
   { href: "/close-friends", label: "Daireler" },
   { href: "/search", label: "Arama" },
@@ -274,6 +273,9 @@ export function assembleNotificationCenter(input: {
   const intel = p.getInterestIntelligence();
 
   const filtered = input.rows.filter((r) => !muted.has(r.actor_id));
+  const affinity = p.getAffinityContext();
+  const usePersonal = AlgoFlags.notificationPrioritization;
+  const groupMeta = usePersonal ? computeNotificationGroups(filtered) : new Map();
 
   const fatigueNote =
     adapt.fatigueIndex > 0.55
@@ -284,17 +286,22 @@ export function assembleNotificationCenter(input: {
 
   const items: NotificationCenterItem[] = filtered.map((row) => {
     const imp = rowImportance(row);
+    const grp = groupMeta.get(row.id);
+    const presetBatch = (row as NotificationItem & { batch_key?: string | null }).batch_key ?? null;
     return {
       id: row.id,
       row,
       starred: input.isStarred(row.id),
       streams: streamsForRow(row),
-      priority: priorityScore(row, imp),
+      priority: usePersonal
+        ? personalPriorityScore(row, imp, affinity)
+        : legacyPriorityScore(row, imp),
       importance: imp,
       relevance_line: relevanceLine(row, input.viewerId),
       actor_href: `/channel/${encodeURIComponent(row.actor_id)}`,
       actions: buildActions(row),
-      batch_key: (row as NotificationItem & { batch_key?: string | null }).batch_key ?? null,
+      batch_key: grp?.batch_key ?? presetBatch,
+      group_label: grp?.group_label ?? null,
     };
   });
 

@@ -1,0 +1,195 @@
+/**
+ * Channel / Profile — sekme tabanlı bölge renk sistemi
+ * Referans: studio-tone-system (ambient wash + chrome, abartısız)
+ * Bölgeler: profile · community · signals · media · live
+ */
+
+/* ─── Varsayılan (profil / creator teal) ─────────────────────────────────── */
+.ch-canvas {
+  --ch-zone-1: #0d9488;
+  --ch-zone-2: #0f766e;
+  --ch-zone-3: #5eead4;
+  --ch-zone-ambient: color-mix(in srgb, #0d9488 7%, transparent);
+  --ch-zone-border: color-mix(in srgb, #0d9488 22%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #5eead4 14%, transparent);
+}
+
+.ch-canvas[data-channel-zone="profile"] {
+  --ch-zone-1: #0d9488;
+  --ch-zone-2: #0f766e;
+  --ch-zone-3: #5eead4;
+  --ch-zone-ambient: color-mix(in srgb, #0d9488 8%, transparent);
+  --ch-zone-border: color-mix(in srgb, #0d9488 24%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #5eead4 16%, transparent);
+}
+
+/* Topluluk — sıcak amber */
+.ch-canvas[data-channel-zone="community"] {
+  --ch-zone-1: #d97706;
+  --ch-zone-2: #b45309;
+  --ch-zone-3: #fbbf24;
+  --ch-zone-ambient: color-mix(in srgb, #d97706 9%, transparent);
+  --ch-zone-border: color-mix(in srgb, #d97706 26%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #fbbf24 16%, transparent);
+}
+
+/* Sinyaller — emerald */
+.ch-canvas[data-channel-zone="signals"] {
+  --ch-zone-1: #059669;
+  --ch-zone-2: #047857;
+  --ch-zone-3: #6ee7b7;
+  --ch-zone-ambient: color-mix(in srgb, #059669 9%, transparent);
+  --ch-zone-border: color-mix(in srgb, #059669 26%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #6ee7b7 16%, transparent);
+}
+
+/* Medya — indigo */
+.ch-canvas[data-channel-zone="media"] {
+  --ch-zone-1: #4f6bdb;
+  --ch-zone-2: #3446a8;
+  --ch-zone-3: #93a8f5;
+  --ch-zone-ambient: color-mix(in srgb, #4f6bdb 9%, transparent);
+  --ch-zone-border: color-mix(in srgb, #4f6bdb 26%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #93a8f5 18%, transparent);
+}
+
+/* Canlı — broadcast kırmızı */
+.ch-canvas[data-channel-zone="live"] {
+  --ch-zone-1: #dc2626;
+  --ch-zone-2: #991b1b;
+  --ch-zone-3: #fca5a5;
+  --ch-zone-ambient: color-mix(in srgb, #dc2626 8%, transparent);
+  --ch-zone-border: color-mix(in srgb, #dc2626 26%, var(--ch-border-2));
+  --ch-zone-glow: color-mix(in srgb, #fca5a5 16%, transparent);
+}
+
+/* Accent zinciri */
+.ch-canvas[data-channel-zone] {
+  --ch-accent: var(--ch-zone-1);
+}
+
+/* ─── Ambient wash (tab içerik alanı) ───────────────────────────────────── */
+.ch-canvas[data-channel-zone] .ch-content-area {
+  position: relative;
+  isolation: isolate;
+}
+
+.ch-canvas[data-channel-zone] .ch-content-area::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    168deg,
+    var(--ch-zone-ambient) 0%,
+    color-mix(in srgb, var(--ch-zone-ambient) 40%, transparent) 38%,
+    transparent 72%
+  );
+}
+
+.ch-canvas[data-channel-zone] .ch-content-area > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Chrome: kapak, sekmeler, bölüm başlıkları ─────────────────────────── */
+.ch-canvas[data-channel-zone] .ch-cover-gradient {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ch-zone-2) 18%, #060810) 0%,
+    color-mix(in srgb, var(--ch-zone-1) 10%, #0c0f1a) 50%,
+    #050608 100%
+  );
+}
+
+.ch-canvas[data-channel-zone] .ch-tabs {
+  border-bottom-color: var(--ch-zone-border);
+}
+
+.ch-canvas[data-channel-zone] .ch-tab--active {
+  color: var(--ch-text);
+  border-bottom-color: var(--ch-zone-1);
+}
+
+.ch-canvas[data-channel-zone] .ch-tab--active .ch-tab-count {
+  color: var(--ch-zone-1);
+  border-color: color-mix(in srgb, var(--ch-zone-1) 32%, var(--ch-border-2));
+  background: color-mix(in srgb, var(--ch-zone-1) 8%, transparent);
+}
+
+.ch-canvas[data-channel-zone] .ch-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ch-canvas[data-channel-zone] .ch-section-title::before {
+  content: "";
+  width: 3px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ch-zone-1);
+  flex-shrink: 0;
+}
+
+.ch-canvas[data-channel-zone] .ch-section-more:hover {
+  color: var(--ch-zone-1);
+}
+
+.ch-canvas[data-channel-zone] .ch-stat--clickable:focus-visible {
+  outline-color: color-mix(in srgb, var(--ch-zone-1) 45%, transparent);
+}
+
+.ch-canvas[data-channel-zone] .ch-spec {
+  border-color: color-mix(in srgb, var(--ch-zone-1) 28%, var(--ch-border));
+  color: color-mix(in srgb, var(--ch-zone-2) 35%, var(--ch-meta));
+}
+
+.ch-canvas[data-channel-zone] .ch-btn--subscribe {
+  border-color: color-mix(in srgb, var(--ch-zone-1) 35%, transparent);
+  color: var(--ch-zone-1);
+}
+
+.ch-canvas[data-channel-zone] .ch-btn--subscribe:hover {
+  background: color-mix(in srgb, var(--ch-zone-1) 8%, transparent);
+}
+
+.ch-canvas[data-channel-zone] .ch-post-card-cta,
+.ch-canvas[data-channel-zone] .ch-post-card-tag,
+.ch-canvas[data-channel-zone] .ch-about-link,
+.ch-canvas[data-channel-zone] .ch-signal-link,
+.ch-canvas[data-channel-zone] .ch-error-link {
+  color: var(--ch-zone-1);
+}
+
+.ch-canvas[data-channel-zone] .ch-post-card-tag {
+  background: color-mix(in srgb, var(--ch-zone-1) 12%, transparent);
+}
+
+.ch-canvas[data-channel-zone] .ch-room-pill:hover {
+  border-color: color-mix(in srgb, var(--ch-zone-1) 35%, var(--ch-border));
+  color: var(--ch-text);
+}
+
+.ch-canvas[data-channel-zone] .ch-signal-banner-title {
+  color: color-mix(in srgb, var(--ch-zone-2) 20%, var(--ch-text));
+}
+
+/* ─── Bölgeye özel yüzeyler ─────────────────────────────────────────────── */
+.ch-canvas[data-channel-zone="live"] .ch-name {
+  color: color-mix(in srgb, var(--ch-zone-2) 12%, var(--ch-text));
+}
+
+.ch-canvas[data-channel-zone="signals"] .ch-reputation-title,
+.ch-canvas[data-channel-zone="signals"] .ch-thread-blurb-title {
+  color: color-mix(in srgb, var(--ch-zone-1) 55%, var(--ch-meta));
+}
+
+.ch-canvas[data-channel-zone="community"] .ch-post-item:hover {
+  background: color-mix(in srgb, var(--ch-zone-1) 5%, var(--ch-hover));
+}
+
+.ch-canvas[data-channel-zone="media"] .ch-playlist-row:hover {
+  background: color-mix(in srgb, var(--ch-zone-1) 6%, var(--ch-hover));
+}

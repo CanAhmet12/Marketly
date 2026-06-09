@@ -6,6 +6,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
+import { HubButton } from "@/features/hub/components/hub-button";
+import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
+import { HubPageHeader } from "@/features/hub/components/hub-page-header";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { InterestProfileStrip } from "@/features/personalization/components/interest-profile-strip";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
 import { useSettingsHubLive } from "@/features/settings/hooks/use-settings-hub-live";
@@ -191,26 +196,65 @@ export function SettingsPageClient() {
   const displayName = user?.displayName || user?.username || user?.email?.split("@")[0] || "";
   const initials    = displayName.slice(0, 2).toUpperCase() || "CR";
 
+  const loginNext = pathname?.startsWith("/hub") ? pathname : "/hub/settings";
+
+  const pageHeader = (
+    <HubPageHeader
+      kicker={hubPremiumKicker("tools", "Ayarlar")}
+      title="Ayarlar"
+      subtitle={user ? hub.subline : "Hesap, tercihler ve kişiselleştirme yönetimi"}
+      actions={
+        user && mockOn ? (
+          <HubButton type="button" onClick={() => { resetMock(); bump(); }}>
+            Demo sıfırla
+          </HubButton>
+        ) : undefined
+      }
+    />
+  );
+
+  const heroStrip =
+    user ? (
+      <HubHeroStrip
+        stats={[
+          {
+            label: "Kişiselleştirme",
+            value: hub.personalization.confidence_line,
+          },
+          {
+            label: "Hesap",
+            value: hub.account_overview.trust_line,
+          },
+        ]}
+      />
+    ) : null;
+
   /* ── loading / unauth ──────────────────────── */
 
   if (!isInitialized) {
-    return <SettingsPageSkeleton />;
+    return (
+      <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-settings" header={pageHeader}>
+        <SettingsPageSkeleton />
+      </HubPageShell>
+    );
   }
 
   if (!user) {
     return (
-      <div className="sg-shell ms-page-wrapper--no-top min-w-0">
-        <div className="ms-container-wide pt-10">
-          <EmptyState
-            title="Oturum gerekli"
-            description="Hesap kontrolü ve kişiselleştirme yönetimi için giriş yap."
-            actionLabel="Oturum aç"
-            actionHref={`/auth/login?next=${encodeURIComponent(pathname || "/settings")}`}
-            tone="social"
-            compact
-          />
+      <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-settings" header={pageHeader} hero={heroStrip}>
+        <div className="sg-shell ms-page-wrapper--no-top min-w-0">
+          <div className="ms-container-wide pt-10">
+            <EmptyState
+              title="Oturum gerekli"
+              description="Hesap kontrolü ve kişiselleştirme yönetimi için giriş yap."
+              actionLabel="Oturum aç"
+              actionHref={`/auth/login?next=${encodeURIComponent(loginNext)}`}
+              tone="social"
+              compact
+            />
+          </div>
         </div>
-      </div>
+      </HubPageShell>
     );
   }
 
@@ -568,7 +612,7 @@ export function SettingsPageClient() {
                     <Link href={hub.creator.links.close_friends} className="sg-creator-link" style={{ color: "var(--sg-text-2)" }}>Özel Daireler</Link>
                   </div>
                 </div>
-                <Link href="/studio" className="sg-btn sg-btn--outline">Studio'ya Git →</Link>
+                <Link href="/hub/studio" className="sg-btn sg-btn--outline">Studio'ya Git →</Link>
               </>
             ) : (
               <div className="sg-info">Creator özellikleri hesabınızda henüz etkin değil.</div>
@@ -612,23 +656,17 @@ export function SettingsPageClient() {
   /* ── render ─────────────────────────────────── */
 
   return (
+    <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-settings" header={pageHeader} hero={heroStrip}>
     <div className="sg-shell ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
       <div className="ms-container-wide">
         <div className="sg-page">
 
-          {/* Header */}
-          <div className="sg-header">
+          {/* Legacy header slot — hp header kullanılıyor; sg-header gizli */}
+          <div className="sg-header" aria-hidden>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
               <div>
                 <div className="sg-header-title">Ayarlar</div>
                 <div className="sg-header-sub">{hub.headline}</div>
-              </div>
-              <div className="sg-header-actions">
-                {mockOn && (
-                  <button type="button" className="sg-reset-btn" onClick={() => { resetMock(); bump(); }}>
-                    Demo sıfırla
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -669,5 +707,6 @@ export function SettingsPageClient() {
         </div>
       </div>
     </div>
+    </HubPageShell>
   );
 }

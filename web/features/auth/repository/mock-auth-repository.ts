@@ -15,16 +15,16 @@ const SHELL: AuthShellPresentation = {
 
 const FORMS: Record<AuthSurfaceId, AuthFormPresentation> = {
   login: {
-    title: "Oturum",
-    subtitle: "İzleme listeniz, sinyaller ve odalar kaldığınız yerden devam eder.",
-    primary_cta: "Devam et",
-    secondary_hint: "İki faktörlü doğrulama yakında.",
+    title: "Giriş yap",
+    subtitle: "Watchlist, sinyaller ve akışın kaldığın yerden devam eder.",
+    primary_cta: "Giriş yap",
+    secondary_hint: null,
   },
   register: {
-    title: "Piyasa profili oluştur",
-    subtitle: "Kayıt sonrası kısa rehber ile öneri motoru sizi tanır.",
-    primary_cta: "Hesabı aç",
-    secondary_hint: "E-posta onayı canlı ortamda gerekebilir.",
+    title: "Hesap oluştur",
+    subtitle: "Kayıt sonrası kısa kurulumla For You akışın kişiselleşir.",
+    primary_cta: "Hesap oluştur",
+    secondary_hint: "Mock modunda e-posta onayı atlanır.",
   },
   forgot: {
     title: "Erişim sıfırlama",

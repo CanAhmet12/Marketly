@@ -7,8 +7,9 @@ import { SignalDetailContextColumn } from "@/features/signals/components/signal-
 import { SignalDetailHeroBand } from "@/features/signals/components/signal-detail-hero-band";
 import { SignalDetailPrimaryColumn } from "@/features/signals/components/signal-detail-primary-column";
 import { useSignalDetailModalChrome } from "@/features/signals/hooks/use-signal-detail-modal-chrome";
-import { signalRowLocked } from "@/features/signals/components/signal-economy-ui";
+import { signalDetailRowLocked } from "@/features/signals/domain/signal-economy";
 import { deriveSignalDetailExtension } from "@/features/signals/lib/signal-detail-extension";
+import { buildSignalDetailVerdict } from "@/features/signals/lib/signal-detail-narrative";
 import { formatSignalPrice } from "@/features/signals/components/unified-signal-primitives";
 import { useMockSignalSubscriber } from "@/features/signals/hooks/use-mock-signal-subscriber";
 import { getSignalsRepository } from "@/features/signals/repository";
@@ -49,6 +50,11 @@ export function SignalDetailModal({ open, row, similar, catalog, onClose }: Prop
 
   const intel = useMemo(() => (row ? deriveSignalDetailExtension(row, catalogForIntel) : null), [row, catalogForIntel]);
 
+  const verdict = useMemo(
+    () => (row ? buildSignalDetailVerdict(row, catalogForIntel, intel?.creatorRecord) : null),
+    [row, catalogForIntel, intel?.creatorRecord],
+  );
+
   const threadPack = useMemo(() => {
     if (!row) return null;
     return getSignalsRepository().getSignalThreadPack(row.id);
@@ -56,7 +62,7 @@ export function SignalDetailModal({ open, row, similar, catalog, onClose }: Prop
 
   if (!mounted || !open || !row) return null;
 
-  const locked = signalRowLocked(row, isSubscriber);
+  const locked = signalDetailRowLocked(row, isSubscriber);
   const entry = row.entryZoneLabel ?? formatSignalPrice(row.entry_price);
   const target = formatSignalPrice(row.target_price);
   const stop = formatSignalPrice(row.stop_loss);
@@ -73,19 +79,22 @@ export function SignalDetailModal({ open, row, similar, catalog, onClose }: Prop
         </button>
 
         <div className="sdm-scroll">
-          <SignalDetailHeroBand
-            row={row}
-            locked={locked}
-            entryLabel={entry}
-            targetLabel={target}
-            stopLabel={stop}
-            rrLabel={row.riskRewardLabel}
-            onClose={onClose}
-          />
+          {verdict ? (
+            <SignalDetailHeroBand
+              row={row}
+              locked={locked}
+              entryLabel={entry}
+              targetLabel={target}
+              stopLabel={stop}
+              rrLabel={row.riskRewardLabel}
+              verdict={verdict}
+              onClose={onClose}
+            />
+          ) : null}
 
           <div className="sdm-body-grid">
             <SignalDetailPrimaryColumn row={row} locked={locked} intel={intel} threadPack={threadPack} onClose={onClose} />
-            <SignalDetailContextColumn row={row} similar={similar} intel={intel} onClose={onClose} />
+            <SignalDetailContextColumn row={row} catalog={catalogForIntel} similar={similar} intel={intel} onClose={onClose} />
           </div>
         </div>
       </div>

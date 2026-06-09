@@ -1,0 +1,145 @@
+/**
+ * Post detail — akışkanlık & canlılık (home ile aynı disiplin)
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .pd-canvas {
+    --pd-fluid-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --pd-fluid-micro: 160ms;
+    --pd-fluid-ui: 240ms;
+  }
+
+  /* Topbar */
+  .pd-canvas .pd-topbar {
+    transition:
+      background-color var(--pd-fluid-ui) var(--pd-fluid-ease),
+      border-color var(--pd-fluid-ui) var(--pd-fluid-ease),
+      box-shadow var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-topbar-icon-btn,
+  .pd-canvas .pd-back-btn,
+  .pd-canvas .pd-feed-link {
+    transition:
+      color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      background-color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      transform var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-topbar-icon-btn:active,
+  .pd-canvas .pd-back-btn:active {
+    transform: scale(0.94);
+  }
+
+  /* Thread */
+  .pd-canvas .pd-thread-nav,
+  .pd-canvas .pd-thread-siblings {
+    transition:
+      transform var(--pd-fluid-ui) var(--pd-fluid-ease),
+      box-shadow var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-thread-siblings__link {
+    transition:
+      background-color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      transform var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .pd-canvas .pd-thread-siblings__link:hover {
+      transform: translateX(3px);
+    }
+  }
+
+  /* Etkileşim çubuğu */
+  .pd-engagement-wrap {
+    transition:
+      background-color var(--pd-fluid-ui) var(--pd-fluid-ease),
+      border-color var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-action-btn {
+    transition:
+      color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      background-color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      transform var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-action-btn:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .pd-canvas .pd-stat--link {
+    transition: color var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  /* Yorumlar — scroll-driven */
+  @keyframes pd-fluid-view-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .pd-canvas .pd-comment {
+      animation: pd-fluid-view-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+  }
+
+  .pd-canvas .pd-comment {
+    transition: border-color var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-comment-action {
+    transition:
+      color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      background-color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      transform var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-comment-action:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .pd-canvas .pd-submit-btn {
+    transition:
+      background-color var(--pd-fluid-micro) var(--pd-fluid-ease),
+      transform var(--pd-fluid-micro) var(--pd-fluid-ease);
+  }
+
+  .pd-canvas .pd-submit-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Sidebar */
+  .pd-canvas .pd-side-module,
+  .pd-canvas .pd-network-link {
+    transition:
+      background-color var(--pd-fluid-ui) var(--pd-fluid-ease),
+      border-color var(--pd-fluid-ui) var(--pd-fluid-ease),
+      transform var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .pd-canvas .pd-network-link:hover {
+      transform: translateX(3px);
+    }
+  }
+
+  .pd-canvas .pd-side-module--author {
+    transition: box-shadow var(--pd-fluid-ui) var(--pd-fluid-ease);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-canvas .pd-comment {
+    animation: none !important;
+  }
+}

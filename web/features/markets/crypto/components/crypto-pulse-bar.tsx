@@ -86,7 +86,7 @@ function FearGreedGauge({ value }: { value: number }) {
         </svg>
         <div>
           <span className={cn("cc-fg-value", fgClass)}>{value}</span>
-          <div className={cn("cc-fg-band", fgClass)} style={{ fontSize: 10 }}>{label}</div>
+          <div className={cn("cc-fg-band", fgClass)} style={{ fontSize: 11 }}>{label}</div>
         </div>
       </div>
     </div>

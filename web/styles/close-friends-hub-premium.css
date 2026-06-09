@@ -1,0 +1,61 @@
+/**
+ * Yakın Arkadaşlar — Hub Premium uyarlama (connect zone)
+ */
+
+.hp-canvas .cf-hub-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas .cf-hub-page .social-hub-pill {
+  border-color: var(--hp-border);
+  background: var(--hp-surface);
+}
+
+.hp-canvas .cf-hub-page .social-hub-pill:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
+}
+
+.hp-canvas .cf-hub-page .social-hub-pill--accent {
+  background: var(--hp-zone-1);
+  border-color: transparent;
+  color: #fff;
+}
+
+.hp-canvas .cf-hub-page .social-hub-card {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .cf-hub-page .social-hub-card:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-glass-border));
+}
+
+.hp-canvas .cf-hub-hint {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
+    var(--hp-surface) 100%
+  );
+}
+
+.hp-canvas .cf-hub-trusted {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+}
+
+.hp-canvas .cf-hub-feed {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+}
+
+.hp-canvas .cf-hub-empty {
+  border-radius: var(--hp-radius-block);
+}

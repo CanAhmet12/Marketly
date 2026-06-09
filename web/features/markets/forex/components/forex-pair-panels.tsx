@@ -63,12 +63,12 @@ function PairPanel({ panel, isMain }: PanelProps) {
     <div className={cn("cc-asset-panel block", isMain ? "cc-asset-panel--btc" : "cc-asset-panel--eth")}>
       <div className="cc-asset-panel-header">
         <div className={cn("cc-asset-logo", isMain ? "cc-asset-logo--btc" : "cc-asset-logo--eth")}
-          style={{ fontSize: 9, fontWeight: 900 }}>
+          style={{ fontSize: 11, fontWeight: 700 }}>
           {iconLabel}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span className="cc-asset-title">{panel.pair}</span>
-          <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>
+          <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>
             Bid {fmtRate(panel.bid, panel.pair)} · Ask {fmtRate(panel.ask, panel.pair)} · Spread {panel.spread.toFixed(1)} pip
           </span>
         </div>

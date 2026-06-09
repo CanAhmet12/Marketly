@@ -1,12 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { AuthContext, type AuthContextValue } from "@/features/auth/auth-context";
 import { buildSignUpMetadata, loadUserProfile } from "@/features/auth/profile";
+import { fetchOnboardingProfileState } from "@/features/onboarding/fetch-onboarding-profile";
+import {
+  LS_ONBOARDING_DONE,
+  LS_ONBOARDING_DRAFT,
+  readOnboardingDoneLocal,
+  markOnboardingDoneLocal,
+} from "@/features/onboarding/lib/onboarding-storage";
 import { validateDisplayName, validateEmail, validatePassword } from "@/features/auth/validation";
+import { AUTH_SESSION_BOOT_RETRIES, AUTH_SESSION_BOOT_TIMEOUT_MS } from "@/lib/auth/config";
+import { withTimeout } from "@/lib/async/with-timeout";
+import { clearSupabaseAuthStorage } from "@/lib/supabase/clear-auth-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseEnvIssues, isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseEnvIssues, getSiteUrl, isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AuthUser, Profile } from "@/lib/supabase/types";
 import { getMockAppViewerProfile, getMockAppViewerUser } from "@/mock/authentication";
 import { isMockDataEnabled } from "@/mock/config";
@@ -34,13 +44,43 @@ function mapAuthError(message: string, mode: "signIn" | "signUp" | "reset" | "up
   return "Şifre güncellenemedi. Lütfen tekrar deneyin.";
 }
 
+/** Mock kullanıcı yalnızca Supabase yapılandırılmamışsa — gerçek oturumla karışmaz */
+function shouldUseMockViewer(): boolean {
+  return isMockDataEnabled() && !isSupabaseConfigured();
+}
+
+async function readSessionWithRetry(client: ReturnType<typeof getSupabaseBrowserClient>): Promise<Session | null> {
+  for (let attempt = 0; attempt <= AUTH_SESSION_BOOT_RETRIES; attempt += 1) {
+    try {
+      const { data } = await withTimeout(
+        client.auth.getSession(),
+        AUTH_SESSION_BOOT_TIMEOUT_MS,
+        "auth-session-timeout",
+      );
+      return data.session ?? null;
+    } catch {
+      if (attempt < AUTH_SESSION_BOOT_RETRIES) {
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+      }
+    }
+  }
+  try {
+    const { data } = await client.auth.getSession();
+    return data.session ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [onboardingComplete, setOnboardingComplete] = useState(() => readOnboardingDoneLocal());
   const [isInitialized, setInitialized] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const profileLoadGen = useRef(0);
 
   const configError = useMemo(
     () => (!isSupabaseConfigured() ? getSupabaseEnvIssues().join(" ") : null),
@@ -48,6 +88,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const clearError = useCallback(() => setError(null), []);
+
+  const markOnboardingComplete = useCallback(() => {
+    markOnboardingDoneLocal();
+    setOnboardingComplete(true);
+  }, []);
+
+  const syncOnboardingState = useCallback(async (client: ReturnType<typeof getSupabaseBrowserClient>, userId: string) => {
+    if (readOnboardingDoneLocal()) {
+      setOnboardingComplete(true);
+      return;
+    }
+    const state = await fetchOnboardingProfileState(client, userId);
+    setOnboardingComplete(state.completed);
+  }, []);
 
   const refreshProfile = useCallback(async () => {
     if (!isSupabaseConfigured()) return;
@@ -57,89 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!s?.user) return;
     const email = s.user.email ?? "";
     const { profile: p, displayUser } = await loadUserProfile(client, s.user.id, email, s.user);
+    await syncOnboardingState(client, s.user.id).catch(() => undefined);
+    setSession(s);
     setProfile(p);
     setUser(displayUser);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const mockOn = isMockDataEnabled();
-
-    const applyMockViewer = () => {
-      setUser(getMockAppViewerUser());
-      setProfile(getMockAppViewerProfile());
-      setSession(null);
-    };
-    const clearSessionIdentity = () => {
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-    };
-
-    if (!isSupabaseConfigured()) {
-      void Promise.resolve().then(() => {
-        if (cancelled) return;
-        if (mockOn) applyMockViewer();
-        else clearSessionIdentity();
-        setInitialized(true);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const client = getSupabaseBrowserClient();
-
-    void client.auth.getSession().then(async ({ data: { session: initial } }) => {
-      if (cancelled) return;
-      setSession(initial);
-      if (initial?.user) {
-        const email = initial.user.email ?? "";
-        const { profile: p, displayUser } = await loadUserProfile(
-          client,
-          initial.user.id,
-          email,
-          initial.user,
-        );
-        if (cancelled) return;
-        setProfile(p);
-        setUser(displayUser);
-      } else if (mockOn) {
-        applyMockViewer();
-      } else {
-        clearSessionIdentity();
-      }
-      if (!cancelled) setInitialized(true);
-    });
-
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange(async (_event, nextSession) => {
-      if (cancelled) return;
-      setSession(nextSession);
-      if (nextSession?.user) {
-        const email = nextSession.user.email ?? "";
-        const { profile: p, displayUser } = await loadUserProfile(
-          client,
-          nextSession.user.id,
-          email,
-          nextSession.user,
-        );
-        if (cancelled) return;
-        setProfile(p);
-        setUser(displayUser);
-      } else if (mockOn) {
-        applyMockViewer();
-      } else {
-        clearSessionIdentity();
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
+  }, [syncOnboardingState]);
 
   const signIn = useCallback(async (emailRaw: string, password: string): Promise<boolean> => {
     setError(null);
@@ -160,11 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError("Şifre boş olamaz.");
       return false;
     }
-    const pwCheck = validatePassword(password);
-    if (!pwCheck.valid) {
-      setError(pwCheck.message);
-      return false;
-    }
 
     setSubmitting(true);
     try {
@@ -180,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session?.user) {
         const em = data.user.email ?? email.toLowerCase();
         const { profile: p, displayUser } = await loadUserProfile(client, data.user.id, em, data.user);
+        await syncOnboardingState(client, data.user.id).catch(() => undefined);
         setSession(data.session);
         setProfile(p);
         setUser(displayUser);
@@ -191,7 +163,122 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setSubmitting(false);
     }
-  }, []);
+  }, [syncOnboardingState]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const mockViewer = shouldUseMockViewer();
+
+    const applyMockViewer = () => {
+      setUser(getMockAppViewerUser());
+      setProfile(getMockAppViewerProfile());
+      setSession(null);
+    };
+    const clearSessionIdentity = () => {
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+    };
+
+    if (!isSupabaseConfigured()) {
+      void Promise.resolve().then(() => {
+        if (cancelled) return;
+        if (mockViewer) applyMockViewer();
+        else clearSessionIdentity();
+        setInitialized(true);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const client = getSupabaseBrowserClient();
+
+    const finishBoot = () => {
+      if (!cancelled) setInitialized(true);
+    };
+
+    const applySessionUser = async (nextSession: Session) => {
+      const gen = ++profileLoadGen.current;
+      const email = nextSession.user.email ?? "";
+      const userId = nextSession.user.id;
+
+      setUser({
+        id: userId,
+        email,
+        displayName: email.split("@")[0] || "Kullanıcı",
+      });
+
+      try {
+        const { profile: p, displayUser } = await withTimeout(
+          loadUserProfile(client, userId, email, nextSession.user),
+          10_000,
+          "profile-load-timeout",
+        );
+        await syncOnboardingState(client, userId).catch(() => undefined);
+        if (cancelled || gen !== profileLoadGen.current) return;
+        setProfile(p);
+        if (displayUser) setUser(displayUser);
+      } catch {
+        if (cancelled || gen !== profileLoadGen.current) return;
+      }
+    };
+
+    void readSessionWithRetry(client)
+      .then((initial) => {
+        if (cancelled) return;
+        setSession(initial);
+        finishBoot();
+        if (initial?.user) {
+          void applySessionUser(initial);
+        } else if (mockViewer) {
+          applyMockViewer();
+        } else {
+          clearSessionIdentity();
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        finishBoot();
+        void readSessionWithRetry(client).then((fallback) => {
+          if (cancelled) return;
+          setSession(fallback);
+          if (fallback?.user) {
+            void applySessionUser(fallback);
+          } else if (mockViewer) {
+            applyMockViewer();
+          } else {
+            clearSessionIdentity();
+          }
+        });
+      });
+
+    const {
+      data: { subscription },
+    } = client.auth.onAuthStateChange(async (event, nextSession) => {
+      if (cancelled) return;
+      setSession(nextSession);
+      if (nextSession?.user) {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+          void applySessionUser(nextSession);
+        }
+        return;
+      }
+      if (event === "SIGNED_OUT") {
+        if (mockViewer) {
+          applyMockViewer();
+        } else {
+          clearSessionIdentity();
+          setOnboardingComplete(readOnboardingDoneLocal());
+        }
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [syncOnboardingState]);
 
   const signUp = useCallback(
     async (
@@ -227,6 +314,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cleanEmail = email.toLowerCase();
         const meta = buildSignUpMetadata(displayName, cleanEmail);
 
+        const origin =
+          typeof window !== "undefined"
+            ? getSiteUrl() || window.location.origin
+            : getSiteUrl();
         const { data, error: authError } = await client.auth.signUp({
           email: cleanEmail,
           password,
@@ -235,6 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               full_name: meta.full_name,
               username: meta.username,
             },
+            emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/onboarding/setup")}`,
           },
         });
 
@@ -248,6 +340,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.session && data.user) {
           const em = data.user.email ?? cleanEmail;
           const { profile: p, displayUser } = await loadUserProfile(client, data.user.id, em, data.user);
+          await syncOnboardingState(client, data.user.id).catch(() => undefined);
           setSession(data.session);
           setProfile(p);
           setUser(displayUser);
@@ -261,14 +354,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSubmitting(false);
       }
     },
-    [],
+    [syncOnboardingState],
   );
 
   const signOut = useCallback(async () => {
-    const mockOn = isMockDataEnabled();
+    const mockViewer = shouldUseMockViewer();
     if (!isSupabaseConfigured()) {
       setError(null);
-      if (mockOn) {
+      if (mockViewer) {
         setUser(getMockAppViewerUser());
         setProfile(getMockAppViewerProfile());
         setSession(null);
@@ -281,10 +374,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const client = getSupabaseBrowserClient();
     await client.auth.signOut();
+    clearSupabaseAuthStorage();
+    try {
+      localStorage.removeItem(LS_ONBOARDING_DONE);
+      localStorage.removeItem(LS_ONBOARDING_DRAFT);
+    } catch {
+      /* ignore */
+    }
     setUser(null);
     setProfile(null);
     setSession(null);
+    setOnboardingComplete(false);
     setError(null);
+    if (typeof window !== "undefined") {
+      window.location.assign("/");
+    }
   }, []);
 
   const resetPasswordForEmail = useCallback(async (emailRaw: string): Promise<boolean> => {
@@ -301,9 +405,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSubmitting(true);
     try {
       const client = getSupabaseBrowserClient();
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const origin =
+        typeof window !== "undefined" ? getSiteUrl() || window.location.origin : getSiteUrl();
       const { error: authError } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/auth/update-password`,
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`,
       });
       if (authError) {
         setError(mapAuthError(authError.message, "reset"));
@@ -351,6 +456,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       profile,
       session,
+      onboardingComplete,
       isInitialized,
       isSubmitting,
       error,
@@ -362,11 +468,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       clearError,
       refreshProfile,
+      markOnboardingComplete,
     }),
     [
       user,
       profile,
       session,
+      onboardingComplete,
       isInitialized,
       isSubmitting,
       error,
@@ -378,6 +486,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       clearError,
       refreshProfile,
+      markOnboardingComplete,
     ],
   );
 

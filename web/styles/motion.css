@@ -305,6 +305,39 @@
   }
 }
 
+.motion-feed-tab-enter {
+  animation: motion-feed-tab-enter var(--motion-duration-crossfade) var(--motion-ease-out, ease-out) backwards;
+}
+
+@keyframes motion-feed-tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-feed-tab-stagger {
+  animation-name: motion-feed-tab-stagger;
+  animation-duration: var(--motion-duration-entrance);
+  animation-timing-function: var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+  animation-fill-mode: backwards;
+}
+
+@keyframes motion-feed-tab-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* P7-004 — piyasalar fiyat flash */
 .mkt-price-flash--rise {
   animation: mkt-price-flash-rise var(--motion-duration-price-flash) ease-out;
@@ -368,6 +401,10 @@
   .motion-sheet-enter-bottom,
   .motion-backdrop-enter,
   .motion-panel-crossfade,
+  .motion-feed-tab-enter,
+  .motion-feed-tab-stagger,
+  .pd-action-btn--pulse,
+  .hv-ref-kbd-hint,
   .mkt-price-flash--rise,
   .mkt-price-flash--fall {
     animation: none;

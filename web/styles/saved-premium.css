@@ -1,0 +1,57 @@
+/**
+ * Kaydedilenler — Hub Premium uyarlama (connect zone)
+ */
+
+.hp-canvas .sv-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+  background: transparent;
+}
+
+.hp-canvas .sv-count {
+  border-color: var(--hp-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 6%, var(--hp-surface)) 0%,
+    var(--hp-surface) 100%
+  );
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-canvas .sv-intel {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .sv-intel-label {
+  font-family: var(--font-bold);
+  letter-spacing: 0.09em;
+}
+
+.hp-canvas .sv-intel-chip {
+  border-color: var(--hp-border);
+}
+
+.hp-canvas .sv-row {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 2%, transparent);
+}
+
+.hp-canvas .sv-row-link:hover {
+  background: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
+}
+
+.hp-canvas .sv-tag {
+  color: var(--hp-zone-1);
+  background: color-mix(in srgb, var(--hp-zone-1) 10%, transparent);
+}
+
+.hp-canvas .sv-skeleton {
+  border-radius: var(--hp-radius-block);
+  border: 1px solid var(--hp-glass-border);
+}

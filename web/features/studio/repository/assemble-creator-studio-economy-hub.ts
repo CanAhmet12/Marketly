@@ -24,7 +24,7 @@ const NAV_CROSS = [
   { href: "/live", label: "Odalar" },
   { href: "/discover", label: "Keşfet" },
   { href: "/notifications", label: "Bildirimler" },
-  { href: "/messages", label: "Mesajlar" },
+  { href: "/hub/messages", label: "Mesajlar" },
 ] as const;
 
 function accessModeFromLabel(label: string): StudioEconomySignalControl["access_mode"] {

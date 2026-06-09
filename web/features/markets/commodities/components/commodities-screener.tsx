@@ -76,7 +76,7 @@ export function CommoditiesScreener({ screener }: Props) {
     const active = sortKey === k;
     return (
       <th onClick={() => handleSort(k)} style={{ cursor: "pointer", userSelect: "none", textAlign: "right",
-        padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
+        padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
         borderBottom: "1px solid var(--cc-border-subtle)", whiteSpace: "nowrap", color: active ? "#f97316" : undefined }}>
         {label}{active ? (sortDir === 1 ? " ↑" : " ↓") : ""}
       </th>
@@ -101,22 +101,22 @@ export function CommoditiesScreener({ screener }: Props) {
         <table className="cc-screener-table" aria-label="Emtia listesi" style={{ minWidth: 780 }}>
           <thead className={cn("cc-screener-thead", vt.enabled && "mkt-vt-sticky-thead")}>
             <tr>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)",
                 cursor: "pointer", color: sortKey === "rank" ? "#f97316" : undefined }}
                 onClick={() => handleSort("rank")}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Emtia</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Fiyat</th>
-              <th style={{ textAlign: "center", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "center", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Birim</th>
               <SortTh label="Gun %" k="changeDay" />
               <SortTh label="Hafta %" k="changeWeek" />
               <SortTh label="Ay %" k="changeMonth" />
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Hacim</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
             </tr>
           </thead>

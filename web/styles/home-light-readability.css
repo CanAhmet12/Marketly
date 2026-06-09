@@ -1,0 +1,95 @@
+/**
+ * Home feed — açık mod okunabilirlik (gönderi kartları + embed)
+ * Import: home-post-modern sonrası (en son home katmanı)
+ */
+
+html[data-theme="light"] .hv-ref {
+  --hv-text: #0f0f14;
+  --hv-text-2: #35353f;
+  --hv-text-3: #52525c;
+
+  --hv-zone-post-handle: #52525c;
+  --hv-zone-post-body: #35353f;
+  --hv-zone-post-engage: #52525c;
+  --hv-zone-post-engage-count: #2a2a32;
+  --hv-zone-post-chip: #45454f;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__body {
+  color: var(--hv-zone-post-body);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__handle {
+  color: var(--hv-zone-post-handle);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage {
+  color: var(--hv-zone-post-engage);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage strong {
+  color: var(--hv-zone-post-engage-count);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__chip {
+  color: var(--hv-zone-post-chip);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-banner,
+html[data-theme="light"] .hv-ref .hv-ref-article__link-preview-site,
+html[data-theme="light"] .hv-ref .hv-ref-article__quote-handle,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed-handle,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed-label {
+  color: var(--hv-zone-post-handle);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__link-preview-desc,
+html[data-theme="light"] .hv-ref .hv-ref-article__quote-text,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed-snippet {
+  color: var(--hv-zone-post-body);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__comment-teaser {
+  color: var(--hv-zone-post-engage);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__comment-teaser strong {
+  color: var(--hv-zone-post-engage-count);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage-label {
+  opacity: 1;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__market-strip-spark {
+  opacity: 0.92;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__market-strip-chevron {
+  opacity: 0.78;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__comment-teaser-arrow {
+  opacity: 0.88;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__handle-sep {
+  opacity: 0.58;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-article__market-strip:hover {
+    opacity: 1;
+  }
+
+  html[data-theme="light"] .hv-ref .hv-ref-article__link-preview:hover,
+  html[data-theme="light"] .hv-ref .hv-ref-article__quote:hover,
+  html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed:hover {
+    opacity: 1;
+  }
+
+  html[data-theme="light"] .hv-ref .hv-ref-article__engage-btn:hover {
+    opacity: 1;
+    color: var(--hv-text);
+  }
+}

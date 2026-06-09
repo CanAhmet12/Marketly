@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { getPersonalizationRepository } from "@/features/personalization/repository";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
 import type { RecommendationChip } from "@/features/personalization/domain/recommendation-network-bundle";
+import { useSignalRecommendations } from "@/features/signals/hooks/use-signal-recommendations";
+import { AlgoFlags } from "@/lib/algo-flags";
 import { isMockDataEnabled } from "@/mock/config";
 import { cn } from "@/lib/cn";
 
@@ -30,20 +32,24 @@ export function RecommendationNetworkRails({
   maxAmbientItems,
 }: Props) {
   const mockOn = isMockDataEnabled();
+  const cfOn = AlgoFlags.signalCollaborativeFilter;
+  const active = mockOn || cfOn;
+  const { rev: cfRev } = useSignalRecommendations();
   const snap = usePersonalizationSnapshot();
   const railLogged = useRef<string>("");
 
   const bundle = useMemo(() => {
-    if (!mockOn) return null;
+    if (!active) return null;
     void snap.affinity.meta.eventCount;
     void snap.feedbackRev;
     void snap.explorationRev;
     void snap.watchRev;
     void snap.recommendRev;
     void snap.adaptiveRev;
+    void cfRev;
     return getPersonalizationRepository().getRecommendationNetworkBundle(viewerId, { excludeCreatorId });
   }, [
-    mockOn,
+    active,
     viewerId,
     excludeCreatorId,
     snap.affinity.meta.eventCount,
@@ -52,10 +58,11 @@ export function RecommendationNetworkRails({
     snap.watchRev,
     snap.recommendRev,
     snap.adaptiveRev,
+    cfRev,
   ]);
 
   useEffect(() => {
-    if (!mockOn || !bundle) return;
+    if (!active || !bundle) return;
     const hasAny =
       bundle.creator_follow.length +
         bundle.rising_creators.length +
@@ -75,9 +82,9 @@ export function RecommendationNetworkRails({
       type: "recommendation_rail_view",
       surface: "network_rails",
     });
-  }, [mockOn, bundle, viewerId, excludeCreatorId]);
+  }, [active, bundle, viewerId, excludeCreatorId]);
 
-  if (!mockOn || !bundle) return null;
+  if (!active || !bundle) return null;
 
   const ambientCap = maxAmbientItems ?? (ambient ? 6 : 8);
 

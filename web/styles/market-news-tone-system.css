@@ -1,0 +1,388 @@
+/**
+ * Piyasa Haberleri — Özelleştirilmiş kategori renk sistemi
+ * Liste + detay: ambient wash, chrome, badge pill, section, rail
+ * Kurallar: abartısız ton, overlay metinde siyah cam yok
+ */
+
+/* ─── Ton kayıt defteri ──────────────────────────────────────────────────── */
+.mn-page--premium,
+.mnd-page--premium {
+  --mn-tone-1: var(--color-primary);
+  --mn-tone-2: var(--color-primary-dark);
+  --mn-tone-3: var(--color-primary-light);
+  --mn-tone-ambient: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  --mn-tone-border: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+/* Kripto — altın editoryal */
+.mn-page--ambient-crypto,
+.mnd-page--tone-crypto,
+.mn-card--tone-crypto,
+.mn-premium-section--crypto {
+  --mn-tone-1: #d4920a;
+  --mn-tone-2: #9a5f00;
+  --mn-tone-3: #f5c85c;
+  --mn-tone-ambient: color-mix(in srgb, #d4920a 10%, transparent);
+  --mn-tone-border: color-mix(in srgb, #d4920a 28%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, #f5c85c 22%, transparent);
+  --mn-card-tone: #d4920a;
+  --mn-card-tone-2: #9a5f00;
+}
+
+/* Makro — çelik mavi */
+.mn-page--ambient-macro,
+.mnd-page--tone-macro,
+.mn-card--tone-macro,
+.mn-premium-section--macro {
+  --mn-tone-1: #4a90e8;
+  --mn-tone-2: #1e5cb8;
+  --mn-tone-3: #8abcf5;
+  --mn-tone-ambient: color-mix(in srgb, #4a90e8 10%, transparent);
+  --mn-tone-border: color-mix(in srgb, #4a90e8 26%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, #8abcf5 20%, transparent);
+  --mn-card-tone: #4a90e8;
+  --mn-card-tone-2: #1e5cb8;
+}
+
+/* Şirketler — kâr yeşili */
+.mn-page--ambient-earnings,
+.mnd-page--tone-earnings,
+.mn-card--tone-earnings,
+.mn-premium-section--earnings {
+  --mn-tone-1: #22a06b;
+  --mn-tone-2: #0f7049;
+  --mn-tone-3: #5fd49a;
+  --mn-tone-ambient: color-mix(in srgb, #22a06b 9%, transparent);
+  --mn-tone-border: color-mix(in srgb, #22a06b 26%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, #5fd49a 18%, transparent);
+  --mn-card-tone: #22a06b;
+  --mn-card-tone-2: #0f7049;
+}
+
+/* Emtia & akış — sermaye moru */
+.mn-page--ambient-flows,
+.mnd-page--tone-flows,
+.mn-card--tone-flows,
+.mn-premium-section--flows {
+  --mn-tone-1: #7c5cfc;
+  --mn-tone-2: #5535b8;
+  --mn-tone-3: #b79bff;
+  --mn-tone-ambient: color-mix(in srgb, #7c5cfc 10%, transparent);
+  --mn-tone-border: color-mix(in srgb, #7c5cfc 26%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, #b79bff 20%, transparent);
+  --mn-card-tone: #7c5cfc;
+  --mn-card-tone-2: #5535b8;
+}
+
+/* Türkiye — turkuaz */
+.mn-page--ambient-local,
+.mnd-page--tone-local,
+.mn-card--tone-local,
+.mn-premium-section--local {
+  --mn-tone-1: #14a89a;
+  --mn-tone-2: #0a7068;
+  --mn-tone-3: #4dd4c8;
+  --mn-tone-ambient: color-mix(in srgb, #14a89a 9%, transparent);
+  --mn-tone-border: color-mix(in srgb, #14a89a 26%, var(--color-border));
+  --mn-tone-glow: color-mix(in srgb, #4dd4c8 18%, transparent);
+  --mn-card-tone: #14a89a;
+  --mn-card-tone-2: #0a7068;
+}
+
+/* ─── Liste: ambient sayfa wash ──────────────────────────────────────────── */
+.mn-page--premium[class*="--ambient-"]::before {
+  background: linear-gradient(
+    180deg,
+    var(--mn-tone-ambient) 0%,
+    color-mix(in srgb, var(--mn-tone-ambient) 35%, transparent) 42%,
+    transparent 100%
+  );
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-premium-header {
+  border-bottom-color: var(--mn-tone-border);
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-premium-header__title {
+  color: color-mix(in srgb, var(--mn-tone-2) 18%, var(--mn-p-text));
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-personal-band {
+  border-color: var(--mn-tone-border);
+  background: linear-gradient(
+    132deg,
+    color-mix(in srgb, var(--mn-tone-1) 14%, var(--mn-p-surface)) 0%,
+    color-mix(in srgb, var(--mn-p-surface) 96%, transparent) 68%
+  );
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-personal-band__label {
+  color: var(--mn-tone-2);
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-personal-band__stat strong,
+.mn-page--premium[class*="--ambient-"] .mn-personal-band__cta {
+  color: var(--mn-tone-2);
+}
+
+/* Tab aktif — özelleştirilmiş ton */
+.mn-premium-tab--crypto.is-active { color: #d4920a; border-bottom-color: #d4920a; }
+.mn-premium-tab--macro.is-active { color: #4a90e8; border-bottom-color: #1e5cb8; }
+.mn-premium-tab--earnings.is-active { color: #22a06b; border-bottom-color: #0f7049; }
+.mn-premium-tab--flows.is-active { color: #9b7dff; border-bottom-color: #7c5cfc; }
+.mn-premium-tab--local.is-active { color: #14a89a; border-bottom-color: #0a7068; }
+
+.mn-premium-tab__tone--crypto { background: linear-gradient(180deg, #f5c85c, #d4920a); }
+.mn-premium-tab__tone--macro { background: linear-gradient(180deg, #8abcf5, #4a90e8); }
+.mn-premium-tab__tone--earnings { background: linear-gradient(180deg, #5fd49a, #22a06b); }
+.mn-premium-tab__tone--flows { background: linear-gradient(180deg, #b79bff, #7c5cfc); }
+.mn-premium-tab__tone--local { background: linear-gradient(180deg, #4dd4c8, #14a89a); }
+
+.mn-premium-tab.is-active .mn-premium-tab__tone {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--mn-tone-glow);
+}
+
+/* Section başlık — gradient accent */
+.mn-premium-section__accent--crypto {
+  background: linear-gradient(180deg, #f5c85c 0%, #d4920a 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, #d4920a 32%, transparent);
+}
+.mn-premium-section__accent--macro {
+  background: linear-gradient(180deg, #8abcf5 0%, #1e5cb8 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, #4a90e8 28%, transparent);
+}
+.mn-premium-section__accent--earnings {
+  background: linear-gradient(180deg, #5fd49a 0%, #0f7049 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, #22a06b 26%, transparent);
+}
+.mn-premium-section__accent--flows {
+  background: linear-gradient(180deg, #b79bff 0%, #5535b8 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, #7c5cfc 28%, transparent);
+}
+.mn-premium-section__accent--local {
+  background: linear-gradient(180deg, #4dd4c8 0%, #0a7068 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, #14a89a 26%, transparent);
+}
+
+.mn-premium-section--crypto .mn-premium-section__link { color: #9a5f00; }
+.mn-premium-section--macro .mn-premium-section__link { color: #1e5cb8; }
+.mn-premium-section--earnings .mn-premium-section__link { color: #0f7049; }
+.mn-premium-section--flows .mn-premium-section__link { color: #5535b8; }
+.mn-premium-section--local .mn-premium-section__link { color: #0a7068; }
+
+.mn-premium-section[class*="--"] .mn-premium-section__header {
+  border-bottom-color: color-mix(in srgb, var(--mn-tone-1) 18%, var(--mn-p-border));
+}
+
+.mn-premium-section[class*="--"] .mn-premium-section__count {
+  color: var(--mn-tone-2);
+  background: color-mix(in srgb, var(--mn-tone-1) 12%, transparent);
+}
+
+/* Senin için rail */
+.mn-personalized-rail__title {
+  position: relative;
+  padding-left: 0.62rem;
+}
+
+.mn-personalized-rail__title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.12rem;
+  bottom: 0.12rem;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary-dark));
+}
+
+.mn-page--premium[class*="--ambient-"] .mn-personalized-rail__title::before {
+  background: linear-gradient(180deg, var(--mn-tone-3), var(--mn-tone-2));
+}
+
+/* Kart media well — özelleştirilmiş arka plan */
+.mn-card-media__well--crypto { background: linear-gradient(145deg, #1c1608 0%, #0d0f17 100%); }
+.mn-card-media__well--macro { background: linear-gradient(145deg, #0b1528 0%, #0d0f17 100%); }
+.mn-card-media__well--earnings { background: linear-gradient(145deg, #081a12 0%, #0d0f17 100%); }
+.mn-card-media__well--flows { background: linear-gradient(145deg, #120e22 0%, #0d0f17 100%); }
+.mn-card-media__well--local { background: linear-gradient(145deg, #081816 0%, #0d0f17 100%); }
+
+/* Overlay badge — kategori metin tonu */
+.mn-p-badge-cat--crypto { color: color-mix(in srgb, #f5c85c 84%, #fff); }
+.mn-p-badge-cat--macro { color: color-mix(in srgb, #8abcf5 86%, #fff); }
+.mn-p-badge-cat--earnings { color: color-mix(in srgb, #5fd49a 86%, #fff); }
+.mn-p-badge-cat--flows { color: color-mix(in srgb, #b79bff 86%, #fff); }
+.mn-p-badge-cat--local { color: color-mix(in srgb, #4dd4c8 86%, #fff); }
+
+/* ─── Detay: ambient + chrome ────────────────────────────────────────────── */
+.mnd-page--premium[class*="--tone-"]::before {
+  background: linear-gradient(
+    180deg,
+    var(--mn-tone-ambient) 0%,
+    color-mix(in srgb, var(--mn-tone-ambient) 40%, transparent) 48%,
+    transparent 100%
+  );
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-topbar {
+  border-bottom-color: var(--mn-tone-border);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-breadcrumb__link:hover {
+  color: var(--mn-tone-2);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-breadcrumb__current {
+  color: color-mix(in srgb, var(--mn-tone-2) 42%, var(--color-text));
+}
+
+/* Context bar — kategori tonu */
+.mnd-context-bar--crypto { --mnd-ctx-tone: #d4920a; --mnd-ctx-tone-2: #9a5f00; }
+.mnd-context-bar--macro { --mnd-ctx-tone: #4a90e8; --mnd-ctx-tone-2: #1e5cb8; }
+.mnd-context-bar--earnings { --mnd-ctx-tone: #22a06b; --mnd-ctx-tone-2: #0f7049; }
+.mnd-context-bar--flows { --mnd-ctx-tone: #7c5cfc; --mnd-ctx-tone-2: #5535b8; }
+.mnd-context-bar--local { --mnd-ctx-tone: #14a89a; --mnd-ctx-tone-2: #0a7068; }
+
+.mnd-context-bar[class*="--"] {
+  border-color: color-mix(in srgb, var(--mnd-ctx-tone) 24%, var(--color-border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mnd-ctx-tone) 9%, var(--color-surface)) 0%,
+    var(--color-surface) 78%
+  );
+}
+
+.mnd-context-bar[class*="--"] .mnd-context-bar__cat:hover {
+  color: var(--mnd-ctx-tone-2);
+}
+
+.mnd-context-bar[class*="--"] .mnd-context-bar__dot--crypto { background: linear-gradient(180deg, #f5c85c, #d4920a); }
+.mnd-context-bar[class*="--"] .mnd-context-bar__dot--macro { background: linear-gradient(180deg, #8abcf5, #4a90e8); }
+.mnd-context-bar[class*="--"] .mnd-context-bar__dot--earnings { background: linear-gradient(180deg, #5fd49a, #22a06b); }
+.mnd-context-bar[class*="--"] .mnd-context-bar__dot--flows { background: linear-gradient(180deg, #b79bff, #7c5cfc); }
+.mnd-context-bar[class*="--"] .mnd-context-bar__dot--local { background: linear-gradient(180deg, #4dd4c8, #14a89a); }
+
+.mnd-context-bar[class*="--"] .mnd-context-bar__sym:hover {
+  color: var(--mnd-ctx-tone-2);
+  border-color: color-mix(in srgb, var(--mnd-ctx-tone) 32%, var(--color-border));
+  background: color-mix(in srgb, var(--mnd-ctx-tone) 8%, var(--color-surface-muted));
+}
+
+/* Hero — ton çerçeve + wash */
+.mnd-page--tone-crypto { --mnd-hero-tone: #d4920a; }
+.mnd-page--tone-macro { --mnd-hero-tone: #4a90e8; }
+.mnd-page--tone-earnings { --mnd-hero-tone: #22a06b; }
+.mnd-page--tone-flows { --mnd-hero-tone: #7c5cfc; }
+.mnd-page--tone-local { --mnd-hero-tone: #14a89a; }
+
+.mnd-page--premium[class*="--tone-"] .mnd-hero {
+  border-color: color-mix(in srgb, var(--mn-tone-1) 22%, var(--color-border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--mn-tone-glow) 40%, transparent),
+    0 12px 32px color-mix(in srgb, var(--mn-tone-1) 8%, rgba(0 0 0 / 0.14));
+}
+
+.mnd-hero-media--tone-crypto::before { background: linear-gradient(180deg, #f5c85c, #9a5f00); }
+.mnd-hero-media--tone-macro::before { background: linear-gradient(180deg, #8abcf5, #1e5cb8); }
+.mnd-hero-media--tone-earnings::before { background: linear-gradient(180deg, #5fd49a, #0f7049); }
+.mnd-hero-media--tone-flows::before { background: linear-gradient(180deg, #b79bff, #5535b8); }
+.mnd-hero-media--tone-local::before { background: linear-gradient(180deg, #4dd4c8, #0a7068); }
+
+/* Detay hero badge pill — açık yüzey */
+.mnd-page--premium[class*="--tone-"] .mnd-hero-badges .mn-p-badge-cat {
+  text-shadow: none;
+  color: var(--mn-tone-2);
+  border-color: color-mix(in srgb, var(--mn-tone-1) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--mn-tone-1) 12%, var(--color-surface));
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-meta-sector {
+  color: var(--mn-tone-2);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-source-cta {
+  background: linear-gradient(135deg, var(--mn-tone-1) 0%, var(--mn-tone-2) 100%);
+  color: #fff;
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-source-cta:focus-visible {
+  outline-color: var(--mn-tone-2);
+}
+
+/* Intel özeti */
+.mnd-page--premium[class*="--tone-"] .mnd-intel-summary {
+  border-color: color-mix(in srgb, var(--mn-tone-1) 22%, var(--color-border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mn-tone-1) 11%, var(--color-surface)) 0%,
+    var(--color-surface) 74%
+  );
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-intel-label {
+  color: var(--mn-tone-2);
+}
+
+/* Rail + chip + CTA */
+.mnd-rail-block--crypto { --mnd-rail-tone: #d4920a; }
+.mnd-rail-block--macro { --mnd-rail-tone: #4a90e8; }
+.mnd-rail-block--earnings { --mnd-rail-tone: #22a06b; }
+.mnd-rail-block--flows { --mnd-rail-tone: #7c5cfc; }
+.mnd-rail-block--local { --mnd-rail-tone: #14a89a; }
+
+.mnd-page--premium[class*="--tone-"] .mnd-rail-block--tone {
+  border-left-color: color-mix(in srgb, var(--mnd-rail-tone) 62%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--mnd-rail-tone) 7%, var(--color-surface)) 0%,
+    var(--color-surface) 28%
+  );
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-sym-pill:hover {
+  color: var(--mn-tone-2);
+  border-color: color-mix(in srgb, var(--mn-tone-1) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--mn-tone-1) 9%, var(--color-surface-muted));
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-rail-cta--primary {
+  color: var(--mn-tone-2);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-rail-cta--primary:hover {
+  color: var(--mn-tone-1);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-theme-chip {
+  color: var(--mn-tone-2);
+  border-color: color-mix(in srgb, var(--mn-tone-1) 26%, var(--color-border));
+  background: color-mix(in srgb, var(--mn-tone-1) 9%, var(--color-surface));
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-inline-cta {
+  color: var(--mn-tone-2);
+}
+
+.mnd-page--premium[class*="--tone-"] .mnd-share-note {
+  color: var(--mn-tone-2);
+}
+
+/* ─── Light theme ────────────────────────────────────────────────────────── */
+html[data-theme="light"] .mn-page--premium[class*="--ambient-"] .mn-premium-header__title {
+  color: color-mix(in srgb, var(--mn-tone-2) 28%, var(--color-text));
+}
+
+html[data-theme="light"] .mnd-page--premium[class*="--tone-"] .mnd-breadcrumb__current {
+  color: color-mix(in srgb, var(--mn-tone-2) 55%, var(--color-text));
+}
+
+html[data-theme="light"] .mnd-page--premium[class*="--tone-"] .mnd-hero-badges .mn-p-badge-cat {
+  color: var(--mn-tone-2);
+  background: color-mix(in srgb, var(--mn-tone-1) 10%, var(--color-surface));
+}
+
+html[data-theme="light"] .mn-premium-section[class*="--"] .mn-premium-section__count {
+  background: color-mix(in srgb, var(--mn-tone-1) 9%, var(--color-surface-muted));
+}

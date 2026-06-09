@@ -1,0 +1,57 @@
+/**
+ * Hub Premium — sidebar bölge renkleri → sayfa accent
+ */
+
+.hp-canvas[data-hub-zone="profile"] {
+  --hp-zone-1: #6366f1;
+  --hp-zone-2: #4f46e5;
+  --hp-zone-3: #a5b4fc;
+  --hp-zone-ambient: color-mix(in srgb, #6366f1 9%, transparent);
+  --hp-zone-border: color-mix(in srgb, #6366f1 24%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, #a5b4fc 18%, transparent);
+  --hp-chart-primary: #6366f1;
+}
+
+.hp-canvas[data-hub-zone="finance"] {
+  --hp-zone-1: #059669;
+  --hp-zone-2: #047857;
+  --hp-zone-3: #6ee7b7;
+  --hp-zone-ambient: color-mix(in srgb, #059669 9%, transparent);
+  --hp-zone-border: color-mix(in srgb, #059669 26%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, #6ee7b7 18%, transparent);
+  --hp-chart-primary: #0f9d75;
+}
+
+.hp-canvas[data-hub-zone="connect"] {
+  --hp-zone-1: #4f6bdb;
+  --hp-zone-2: #3446a8;
+  --hp-zone-3: #93a8f5;
+  --hp-zone-ambient: color-mix(in srgb, #4f6bdb 9%, transparent);
+  --hp-zone-border: color-mix(in srgb, #4f6bdb 24%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, #93a8f5 16%, transparent);
+  --hp-chart-primary: #4f6bdb;
+}
+
+.hp-canvas[data-hub-zone="inbox"] {
+  --hp-zone-1: #2563eb;
+  --hp-zone-2: #1d4ed8;
+  --hp-zone-3: #93c5fd;
+  --hp-zone-ambient: color-mix(in srgb, #2563eb 9%, transparent);
+  --hp-zone-border: color-mix(in srgb, #2563eb 24%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, #93c5fd 16%, transparent);
+  --hp-chart-primary: #2563eb;
+}
+
+.hp-canvas[data-hub-zone="tools"] {
+  --hp-zone-1: #7c6adb;
+  --hp-zone-2: #5b4bb4;
+  --hp-zone-3: #c4b5fd;
+  --hp-zone-ambient: color-mix(in srgb, #7c6adb 8%, transparent);
+  --hp-zone-border: color-mix(in srgb, #7c6adb 22%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, #c4b5fd 16%, transparent);
+  --hp-chart-primary: #7c6adb;
+}
+
+.hp-canvas[data-hub-zone] {
+  --hp-accent: var(--hp-zone-1);
+}

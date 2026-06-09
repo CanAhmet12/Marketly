@@ -79,6 +79,12 @@ export type MarketNewsRow = {
   impactTier?: 1 | 2 | 3;
   affectedSymbols?: readonly string[];
   volatilityHint?: string;
+  /** Mock live parity — detay sayfası */
+  sourceUrl?: string;
+  summary?: string;
+  imageUrl?: string | null;
+  publishedAt?: string;
+  sentiment?: string | null;
 };
 
 export type PortfolioStripRow = { label: string; value: string; hint?: string };

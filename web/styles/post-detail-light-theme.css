@@ -4,7 +4,7 @@
  */
 
 html[data-theme="light"] .pd-canvas {
-  --pd-surface-soft: var(--color-card-plate);
+  --pd-surface-soft: transparent;
   --pd-bg-elevated: var(--color-surface);
   --pd-accent-soft: var(--color-primary-light);
   --pd-accent-glow: color-mix(in srgb, var(--color-primary) 22%, transparent);
@@ -20,6 +20,26 @@ html[data-theme="light"] .pd-canvas .pd-asset-chip {
 
 html[data-theme="light"] .pd-canvas .pd-asset-chip:hover {
   background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-asset-chip--up {
+  background: var(--color-rise-bg);
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .pd-canvas .pd-asset-chip--down {
+  background: var(--color-fall-bg);
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .pd-feed-link {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .pd-feed-link:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
 }
 
 html[data-theme="light"] .pd-canvas .pd-badge--verified {
@@ -139,4 +159,93 @@ html[data-theme="light"] .pd-canvas .pd-lightbox-close {
 
 html[data-theme="light"] .pd-canvas .pd-submit-btn:hover:not(:disabled) {
   background: var(--color-primary-hover);
+}
+
+html[data-theme="light"] .pd-canvas .pd-section-count {
+  color: var(--color-text-secondary);
+  background: var(--color-card-plate);
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-badge--elite,
+html[data-theme="light"] .pd-canvas .pd-side-tier--elite {
+  color: #a16207;
+  background: color-mix(in srgb, #f59e0b 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-badge--pro,
+html[data-theme="light"] .pd-canvas .pd-side-tier--pro {
+  color: #0f766e;
+  background: color-mix(in srgb, #14b8a6 12%, #ffffff 88%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-badge--creator {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-tag--stance {
+  color: #15803d;
+  border-color: color-mix(in srgb, #22c55e 28%, transparent);
+  background: color-mix(in srgb, #22c55e 8%, #ffffff 92%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-action--liked {
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-action--liked:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-fall) 10%, transparent);
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-nav,
+html[data-theme="light"] .pd-canvas .pd-thread-siblings {
+  background: var(--color-card-plate);
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__edge {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .pd-engagement-wrap {
+  background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-related-asset {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-timeline-tag--active {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-timeline-tag--trending {
+  color: #a16207;
+  background: color-mix(in srgb, #f59e0b 12%, #ffffff 88%);
+  border-color: color-mix(in srgb, #f59e0b 22%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-network-link {
+  background: var(--color-card-plate);
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-network-link:hover {
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  color: var(--color-primary-dark);
+}
+
+@media (min-width: 1024px) {
+  html[data-theme="light"] .pd-sidebar-col > .pd-side-module--author {
+    background: var(--color-card-plate);
+  }
 }

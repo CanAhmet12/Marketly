@@ -1,0 +1,307 @@
+/**
+ * Post detail — premium bölüm paleti (açık tema)
+ * Home `home-premium-palette.css` ile aynı editorial fintech dili.
+ */
+
+html[data-theme="light"] .pd-canvas {
+  --pd-bg: #f6f5f2;
+  --pd-bg-elevated: #faf9f6;
+  --pd-surface-soft: #fdfcfa;
+  --pd-surface-hover: color-mix(in srgb, #1a1a20 3.5%, #f6f5f2 96.5%);
+  --pd-divider: color-mix(in srgb, #1a1a20 7%, transparent);
+  --pd-divider-faint: color-mix(in srgb, #1a1a20 5%, transparent);
+  --pd-text: #0f0f14;
+  --pd-text-2: #35353f;
+  --pd-meta: #52525c;
+  --pd-accent: #087a5c;
+  --pd-accent-soft: color-mix(in srgb, #0a9a72 9%, #ffffff 91%);
+  --pd-accent-glow: color-mix(in srgb, #0a9a72 22%, transparent);
+  --pd-up: #0a6b4e;
+  --pd-down: #b42318;
+  --pd-border-focus: color-mix(in srgb, #0a9a72 42%, transparent);
+
+  /* ── Topbar ── */
+  --pd-zone-topbar-bg: color-mix(in srgb, #fdfcf9 94%, #e6e3dc 6%);
+  --pd-zone-topbar-border: color-mix(in srgb, #1a1a20 5.5%, transparent);
+  --pd-zone-topbar-icon: #7a7a84;
+  --pd-zone-topbar-icon-hover: #2e2e36;
+  --pd-zone-topbar-label: #52525c;
+
+  /* ── Thread nav / siblings ── */
+  --pd-zone-thread-bg: transparent;
+  --pd-zone-thread-border: color-mix(in srgb, #1a1a20 7%, transparent);
+  --pd-zone-thread-title: #8a8578;
+  --pd-zone-thread-link: #52525c;
+  --pd-zone-thread-current: #101014;
+  --pd-zone-thread-edge-bg: transparent;
+
+  /* ── Yazar / hero ── */
+  --pd-zone-author-name: #101014;
+  --pd-zone-author-handle: #52525c;
+  --pd-zone-title: #0c0c11;
+  --pd-zone-body: #35353f;
+  --pd-zone-description: #45454f;
+
+  /* ── Rozetler ── */
+  --pd-zone-badge-verified-text: #15803d;
+  --pd-zone-badge-verified-bg: color-mix(in srgb, #22c55e 10%, #ffffff 90%);
+  --pd-zone-badge-elite-text: #9a7612;
+  --pd-zone-badge-elite-bg: color-mix(in srgb, #c9a227 11%, #ffffff 89%);
+  --pd-zone-badge-pro-text: #1d4ed8;
+  --pd-zone-badge-pro-bg: color-mix(in srgb, #3b82f6 9%, #ffffff 91%);
+  --pd-zone-type-signal-text: #9a7612;
+  --pd-zone-type-signal-bg: color-mix(in srgb, #f59e0b 10%, #ffffff 90%);
+  --pd-zone-type-live-text: #b42318;
+  --pd-zone-type-live-bg: color-mix(in srgb, #ef4444 9%, #ffffff 91%);
+  --pd-zone-type-pulse-text: #087a5c;
+  --pd-zone-type-pulse-bg: color-mix(in srgb, #0a9a72 9%, #ffffff 91%);
+
+  /* ── Etkileşim çubuğu ── */
+  --pd-zone-engage-bg: color-mix(in srgb, #fdfcf9 92%, #e6e3dc 8%);
+  --pd-zone-engage-stat: #52525c;
+  --pd-zone-engage-count: #2a2a32;
+  --pd-zone-engage-action: #45454f;
+  --pd-zone-engage-liked: #b42318;
+  --pd-zone-engage-saved: #087a5c;
+  --pd-zone-toast-text: #087a5c;
+
+  /* ── Tartışma / yorum ── */
+  --pd-zone-discussion-head: #52525c;
+  --pd-zone-comment-author: #101014;
+  --pd-zone-comment-body: #40404a;
+  --pd-zone-comment-meta: #52525c;
+  --pd-zone-comment-pin: #087a5c;
+  --pd-zone-comment-stance-text: #0a6b4e;
+  --pd-zone-comment-stance-bg: color-mix(in srgb, #0a6b4e 7%, #ffffff 93%);
+  --pd-zone-comment-stance-border: color-mix(in srgb, #0a6b4e 22%, transparent);
+  --pd-zone-composer-placeholder: #9494a0;
+  --pd-zone-submit-bg: #087a5c;
+  --pd-zone-submit-hover: #0a6b4e;
+
+  /* ── Sidebar ── */
+  --pd-zone-side-title: #52525c;
+  --pd-zone-side-name: #141418;
+  --pd-zone-side-body: #45454d;
+  --pd-zone-side-module-bg: transparent;
+  --pd-zone-side-accent: #0a9a72;
+  --pd-zone-network-bg: transparent;
+  --pd-zone-network-hover: color-mix(in srgb, #0a9a72 7%, #ffffff 93%);
+}
+
+/* Topbar */
+html[data-theme="light"] .pd-canvas .pd-topbar {
+  background: var(--pd-zone-topbar-bg);
+  border-bottom-color: var(--pd-zone-topbar-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, #1a1a20 4%, transparent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-topbar-icon-btn {
+  color: var(--pd-zone-topbar-icon);
+}
+
+html[data-theme="light"] .pd-canvas .pd-topbar-icon-btn:hover {
+  color: var(--pd-zone-topbar-icon-hover);
+}
+
+html[data-theme="light"] .pd-canvas .pd-topbar-label {
+  color: var(--pd-zone-topbar-label);
+}
+
+html[data-theme="light"] .pd-canvas .pd-back-btn,
+html[data-theme="light"] .pd-feed-link {
+  color: var(--pd-zone-thread-link);
+}
+
+html[data-theme="light"] .pd-canvas .pd-back-btn:hover,
+html[data-theme="light"] .pd-feed-link:hover {
+  color: var(--pd-zone-thread-current);
+}
+
+/* Thread */
+html[data-theme="light"] .pd-canvas .pd-thread-nav,
+html[data-theme="light"] .pd-canvas .pd-thread-siblings {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__title {
+  color: var(--pd-zone-thread-title);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-nav__current,
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__label {
+  color: var(--pd-zone-thread-current);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-nav__link {
+  color: var(--pd-zone-thread-link);
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__edge {
+  background: var(--pd-zone-thread-edge-bg);
+  border-color: var(--pd-zone-thread-border);
+  color: var(--pd-zone-thread-link);
+}
+
+/* Hero metin */
+html[data-theme="light"] .pd-canvas .pd-author-name {
+  color: var(--pd-zone-author-name);
+}
+
+html[data-theme="light"] .pd-canvas .pd-handle-row {
+  color: var(--pd-zone-author-handle);
+}
+
+html[data-theme="light"] .pd-canvas .pd-title {
+  color: var(--pd-zone-title);
+}
+
+html[data-theme="light"] .pd-canvas .pd-body-text {
+  color: var(--pd-zone-body);
+}
+
+html[data-theme="light"] .pd-canvas .pd-description {
+  color: var(--pd-zone-description);
+}
+
+/* Rozetler — home ile uyumlu metalik */
+html[data-theme="light"] .pd-canvas .pd-badge--verified {
+  color: var(--pd-zone-badge-verified-text);
+  background: var(--pd-zone-badge-verified-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-badge--elite,
+html[data-theme="light"] .pd-canvas .pd-comment-badge--elite,
+html[data-theme="light"] .pd-canvas .pd-side-tier--elite {
+  color: var(--pd-zone-badge-elite-text);
+  background: var(--pd-zone-badge-elite-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-badge--pro,
+html[data-theme="light"] .pd-canvas .pd-comment-badge--pro,
+html[data-theme="light"] .pd-canvas .pd-side-tier--pro {
+  color: var(--pd-zone-badge-pro-text);
+  background: var(--pd-zone-badge-pro-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--signal {
+  color: var(--pd-zone-type-signal-text);
+  background: var(--pd-zone-type-signal-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--live {
+  color: var(--pd-zone-type-live-text);
+  background: var(--pd-zone-type-live-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-badge--pulse {
+  color: var(--pd-zone-type-pulse-text);
+  background: var(--pd-zone-type-pulse-bg);
+}
+
+/* Etkileşim */
+html[data-theme="light"] .pd-engagement-wrap {
+  background: var(--pd-zone-engage-bg);
+  border-bottom-color: var(--pd-zone-topbar-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-stats {
+  color: var(--pd-zone-engage-stat);
+}
+
+html[data-theme="light"] .pd-canvas .pd-stat strong {
+  color: var(--pd-zone-engage-count);
+}
+
+html[data-theme="light"] .pd-canvas .pd-action-btn {
+  color: var(--pd-zone-engage-action);
+}
+
+html[data-theme="light"] .pd-canvas .pd-copy-toast {
+  color: var(--pd-zone-toast-text);
+}
+
+/* Tartışma */
+html[data-theme="light"] .pd-canvas .pd-section-title {
+  color: var(--pd-zone-discussion-head);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-author {
+  color: var(--pd-zone-comment-author);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-text {
+  color: var(--pd-zone-comment-body);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-handle,
+html[data-theme="light"] .pd-canvas .pd-comment-time {
+  color: var(--pd-zone-comment-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-pin {
+  color: var(--pd-zone-comment-pin);
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-tag--stance,
+html[data-theme="light"] .pd-canvas .pd-stance-btn--agree {
+  color: var(--pd-zone-comment-stance-text);
+  background: var(--pd-zone-comment-stance-bg);
+  border-color: var(--pd-zone-comment-stance-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-textarea::placeholder {
+  color: var(--pd-zone-composer-placeholder);
+}
+
+html[data-theme="light"] .pd-canvas .pd-submit-btn {
+  background: var(--pd-zone-submit-bg);
+}
+
+html[data-theme="light"] .pd-canvas .pd-submit-btn:hover:not(:disabled) {
+  background: var(--pd-zone-submit-hover);
+}
+
+/* Sidebar */
+html[data-theme="light"] .pd-canvas .pd-side-title {
+  color: var(--pd-zone-side-title);
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-author-name {
+  color: var(--pd-zone-side-name);
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-bio,
+html[data-theme="light"] .pd-canvas .pd-side-stat-label {
+  color: var(--pd-zone-side-body);
+}
+
+@media (min-width: 1024px) {
+  html[data-theme="light"] .pd-sidebar-col > .pd-side-module--author {
+    background: var(--pd-zone-side-module-bg);
+    border-bottom-color: var(--pd-zone-thread-border);
+  }
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-module-accent {
+  background: var(--pd-zone-side-accent);
+}
+
+html[data-theme="light"] .pd-canvas .pd-network-link {
+  background: var(--pd-zone-network-bg);
+  border-color: var(--pd-zone-thread-border);
+}
+
+html[data-theme="light"] .pd-canvas .pd-network-link:hover {
+  background: var(--pd-zone-network-hover);
+  border-color: color-mix(in srgb, #0a9a72 18%, transparent);
+  color: var(--pd-accent);
+}
+
+/* Ana sütun ayırıcı */
+@media (min-width: 1024px) {
+  html[data-theme="light"] .pd-main-col {
+    border-right-color: var(--pd-zone-thread-border);
+  }
+}

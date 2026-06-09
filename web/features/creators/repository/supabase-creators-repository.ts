@@ -1,15 +1,14 @@
+import { fetchCreatorsDirectory } from "@/features/creators/fetch-creators-directory";
 import type { CreatorDirectoryPayload } from "@/features/creators/types";
-import { CREATOR_ASSET_PRESETS } from "@/features/creators/creators-filters";
-import type { CreatorsRepository } from "@/features/creators/repository/creators-repository";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-/** Prod: `useCreatorsDirectory` → `fetchCreatorsDirectory` (get_creators_directory RPC). */
-export class SupabaseCreatorsRepository implements CreatorsRepository {
-  getDirectoryPayload(_viewerId: string | null): CreatorDirectoryPayload {
-    return {
-      creators: [],
-      featuredIds: [],
-      liveNowIds: [],
-      assetPresets: CREATOR_ASSET_PRESETS,
-    };
+export class SupabaseCreatorsRepository {
+  async getDirectory(userId: string | null): Promise<CreatorDirectoryPayload> {
+    const client = getSupabaseBrowserClient();
+    return fetchCreatorsDirectory(client, userId);
   }
 }
+
+export type CreatorsRepository = {
+  getDirectory(userId: string | null): Promise<CreatorDirectoryPayload>;
+};

@@ -1,0 +1,374 @@
+/**
+ * Sağ rail V8 — bölüm bazlı profesyonel polish
+ * Sıcak/rozet kaldırıldı; veri odaklı vurgular
+ */
+
+.hv-ref-rail--v8 {
+  --rail-pro-gap: 0.72rem;
+  --rail-pro-row-pad: 0.52rem 0.38rem;
+}
+
+/* ── Bölüm genel ─────────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__block {
+  padding: 0.95rem 0 1.05rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__block-head {
+  margin-bottom: 0.62rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__block-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rail-pro-gap);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__section-sub {
+  margin-top: 0.12rem;
+  opacity: 0.92;
+}
+
+/* Hızlı filtreler — daha sakin chip */
+.hv-ref-rail--v8 .hv-ref-rail__quick-strip {
+  padding-bottom: 0.85rem;
+  gap: 0.35rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__quick-chip {
+  padding: 0.36rem 0.72rem;
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--hv-pill-color) 4%, transparent);
+  border-color: color-mix(in srgb, var(--hv-pill-color) 14%, transparent);
+}
+
+/* Piyasa havası — editorial özet */
+.hv-ref-rail--v8 .hv-ref-rail__mood--live {
+  padding: 0.65rem 0 0.8rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__mood-bar {
+  height: 0.28rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--hv-text) 5%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__mood-pill {
+  padding: 0.18rem 0.48rem;
+  border-radius: 0.35rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__mood-legend {
+  gap: 0.42rem 0.65rem;
+  margin-top: 0.45rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__mood-detail {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--hv-text-3);
+}
+
+/* ── Piyasa satırları ───────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__market-row {
+  padding: var(--rail-pro-row-pad);
+  border-radius: 0.42rem;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v8 .hv-ref-rail__market-row:hover {
+    background: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 5%, transparent);
+    border-color: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 12%, transparent);
+  }
+}
+
+/* Sembol ikonları — rank numarası yerine */
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sym-icon-size, 1.65rem);
+  height: var(--sym-icon-size, 1.65rem);
+  border-radius: 0.38rem;
+  background: var(--sym-icon-bg);
+  color: var(--sym-icon-fg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sym-icon-fg) 12%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon-glyph {
+  font-family: var(--font-sans);
+  font-size: calc(var(--sym-icon-size, 1.65rem) * 0.42);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon-glyph--sm {
+  font-size: calc(var(--sym-icon-size, 1.65rem) * 0.34);
+  letter-spacing: -0.02em;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon-svg {
+  display: block;
+  opacity: 0.92;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon--cat {
+  background: var(--sym-icon-bg);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon--topic {
+  --sym-icon-bg: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  --sym-icon-fg: var(--color-primary);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__sym-icon--hash {
+  border-radius: 0.35rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__market-sym-row,
+.hv-ref-rail--v8 .hv-ref-rail__signal-top,
+.hv-ref-rail--v8 .hv-ref-rail__watch-row,
+.hv-ref-rail--v8 .hv-ref-rail__discuss-link {
+  gap: 0.42rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__market-rank,
+.hv-ref-rail--v8 .hv-ref-rail__signal-rank,
+.hv-ref-rail--v8 .hv-ref-rail__discuss-rank {
+  display: none;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__market-sigs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.32rem;
+  border-radius: 0.28rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--hv-text-3);
+  background: color-mix(in srgb, var(--hv-text) 5%, transparent);
+}
+
+/* Eski sıcak rozetleri gizle */
+.hv-ref-rail--v8 .hv-ref-rail__market-hot,
+.hv-ref-rail--v8 .hv-ref-rail__signal-hot {
+  display: none !important;
+}
+
+/* ── Sinyaller ───────────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__signal-row {
+  border-radius: 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--hv-text) 6%, transparent);
+  background: color-mix(in srgb, var(--hv-text) 2%, transparent);
+  overflow: hidden;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-link {
+  padding: 0.55rem 0.5rem 0.6rem;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-row[data-high-conf] {
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-dir {
+  padding: 0.14rem 0.38rem;
+  border-radius: 0.28rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-dir--buy {
+  color: var(--color-rise);
+  background: color-mix(in srgb, var(--color-rise) 12%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-dir--sell {
+  color: var(--color-fall);
+  background: color-mix(in srgb, var(--color-fall) 12%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-dir--hold {
+  color: var(--hv-text-3);
+  background: color-mix(in srgb, var(--hv-text) 6%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-tf {
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--hv-text-3);
+  background: color-mix(in srgb, var(--hv-text) 5%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__signal-conf-track {
+  height: 4px;
+}
+
+/* ── Haberler ────────────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__news-featured {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--hv-line-faint) 50%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-featured-media {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-breaking {
+  display: none;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-fresh {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.48rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.14rem 0.42rem;
+  border-radius: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-rise);
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--color-rise) 18%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-fresh-dot {
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: var(--color-rise);
+  flex-shrink: 0;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-compact {
+  padding: 0.42rem 0.35rem;
+  border-radius: 0.38rem;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v8 .hv-ref-rail__news-compact:hover {
+    background: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 4%, transparent);
+    border-color: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 10%, transparent);
+  }
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__news-cat {
+  text-transform: none;
+  letter-spacing: -0.01em;
+  padding: 0.12rem 0.38rem;
+  border-radius: 0.28rem;
+}
+
+/* ── İzleme listesi ──────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__watch-row {
+  padding: var(--rail-pro-row-pad);
+  border-radius: 0.38rem;
+  border: 1px solid transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v8 .hv-ref-rail__watch-row:hover {
+    background: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 5%, transparent);
+    border-color: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 10%, transparent);
+  }
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__watchlist-suggest-chip {
+  padding: 0.28rem 0.55rem;
+  border-radius: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--hv-suggest-color) 18%, transparent);
+  background: color-mix(in srgb, var(--hv-suggest-color) 5%, transparent);
+}
+
+/* ── Tartışmalar ─────────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__discuss-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__discuss-link {
+  padding: 0.42rem 0.35rem;
+  border-radius: 0.38rem;
+  align-items: center;
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__discuss-bar-track {
+  height: 3px;
+  margin-top: 0.35rem;
+}
+
+/* ── Creator ─────────────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__creator--flow {
+  padding: 0.48rem 0.35rem;
+  border-radius: 0.42rem;
+  border: 1px solid transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v8 .hv-ref-rail__creator--flow:hover {
+    background: color-mix(in srgb, var(--hv-text) 4%, transparent);
+    border-color: color-mix(in srgb, var(--hv-text) 8%, transparent);
+  }
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__creator-tier {
+  padding: 0.1rem 0.32rem;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: color-mix(in srgb, var(--color-primary) 75%, var(--hv-text) 25%);
+}
+
+/* ── İlgi alanları ───────────────────────────────────────────── */
+.hv-ref-rail--v8 .hv-ref-rail__interest-chip {
+  padding: 0.34rem 0.62rem;
+  border-radius: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--hv-text) 8%, transparent);
+  background: color-mix(in srgb, var(--hv-text) 3%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__interest-chip[data-strength="high"] {
+  border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+/* Canlı etiket — daha sakin */
+.hv-ref-rail--v8 .hv-ref-rail__live-tag {
+  padding: 0.12rem 0.38rem;
+  border-radius: 0.28rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-rise);
+  background: color-mix(in srgb, var(--color-rise) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rise) 16%, transparent);
+}
+
+.hv-ref-rail--v8 .hv-ref-rail__live-dot {
+  animation: none;
+  box-shadow: none;
+}
+
+/* İzleme satırı — ikon + veri hizası */
+.hv-ref-rail--v8 .hv-ref-rail__watch-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  align-items: center;
+}

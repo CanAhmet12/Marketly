@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/use-auth";
 
 /**
- * Mobil “Profil” sekmesi ile aynı ürün dili: oturumluysa kendi kanalına,
- * değilse girişe yönlendirir. Paylaşılabilir URL’ler `/channel/[id]` olarak kalır.
+ * Mobil “Profil” sekmesi — oturumluysa kişisel yönetim merkezi (/hub),
+ * değilse girişe yönlendirir. Herkese açık kanal `/channel/[id]` olarak kalır.
  */
 export function ProfileEntryClient() {
   const { user, isInitialized } = useAuth();
@@ -16,10 +16,10 @@ export function ProfileEntryClient() {
   useEffect(() => {
     if (!isInitialized) return;
     if (user?.id) {
-      router.replace(`/channel/${user.id}`);
+      router.replace("/hub/profile");
       return;
     }
-    router.replace(`/auth/login?next=${encodeURIComponent("/profile")}`);
+    router.replace(`/auth/login?next=${encodeURIComponent("/hub/profile")}`);
   }, [isInitialized, user?.id, router]);
 
   return null;

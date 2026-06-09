@@ -6,6 +6,8 @@ type Props = {
   value: number;
   size?: number;
   direction?: string;
+  /** L2 — varsayılan: tez gücü */
+  centerLabel?: string;
 };
 
 function directionStroke(direction?: string): string | null {
@@ -17,7 +19,7 @@ function directionStroke(direction?: string): string | null {
 }
 
 /** Tek kaynak güven halkası — feed + modal. */
-export function SignalConfidenceRing({ value, size = 64, direction }: Props) {
+export function SignalConfidenceRing({ value, size = 64, direction, centerLabel = "tez gücü" }: Props) {
   const uid = useId().replace(/:/g, "");
   const gradId = `sig-conf-${uid}`;
   const clamped = Math.max(0, Math.min(100, value));
@@ -88,7 +90,7 @@ export function SignalConfidenceRing({ value, size = 64, direction }: Props) {
         fontSize={labelSize}
         fontWeight="650"
       >
-        güven
+        {centerLabel}
       </text>
     </svg>
   );

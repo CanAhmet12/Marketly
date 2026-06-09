@@ -1,15 +1,22 @@
 "use client";
 
 import { Suspense, useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import { Sidebar, SidebarBrand, SidebarToggleIcon } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { useChromeScrollVisibility } from "@/hooks/use-chrome-scroll-visibility";
 import { MockModeBadge } from "@/mock/mock-mode-badge";
 import { MutationToastHost } from "@/components/ui/mutation-toast-host";
+import { ScrollDownHint } from "@/components/layout/scroll-down-hint";
 import { cn } from "@/lib/cn";
 
 const SIDEBAR_COLLAPSED_KEY = "marketly-web-sidebar-collapsed";
+
+/** Kanalım — kendi shell'i; global sidebar / topbar yok */
+function isHubImmersive(pathname: string): boolean {
+  return pathname === "/hub" || pathname.startsWith("/hub/");
+}
 
 type Props = {
   children: ReactNode;
@@ -20,6 +27,8 @@ function SidebarFallback() {
 }
 
 export function AppShell({ children }: Props) {
+  const pathname = usePathname() ?? "";
+  const hubImmersive = isHubImmersive(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const chromeVisible = useChromeScrollVisibility();
@@ -55,14 +64,28 @@ export function AppShell({ children }: Props) {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--app-md-main-gutter",
-      sidebarCollapsed ? "var(--sidebar-rail-width)" : "var(--sidebar-width)",
+      hubImmersive ? "0px" : sidebarCollapsed ? "var(--sidebar-rail-width)" : "var(--sidebar-width)",
     );
-  }, [sidebarCollapsed]);
+  }, [sidebarCollapsed, hubImmersive]);
 
   const shellStyle = {
     ...(chromeVisible ? {} : { "--chrome-top-offset": "0px" }),
-    "--app-md-main-gutter": sidebarCollapsed ? "var(--sidebar-rail-width)" : "var(--sidebar-width)",
+    "--app-md-main-gutter": hubImmersive
+      ? "0px"
+      : sidebarCollapsed
+        ? "var(--sidebar-rail-width)"
+        : "var(--sidebar-width)",
   } as CSSProperties;
+
+  if (hubImmersive) {
+    return (
+      <div className="min-h-dvh bg-[var(--color-bg)] text-[var(--color-text)]" style={shellStyle}>
+        {children}
+        <MockModeBadge />
+        <MutationToastHost />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -144,6 +167,7 @@ export function AppShell({ children }: Props) {
 
       <MockModeBadge />
       <MutationToastHost />
+      <ScrollDownHint />
     </div>
   );
 }

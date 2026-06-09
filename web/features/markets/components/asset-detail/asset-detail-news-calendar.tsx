@@ -40,10 +40,10 @@ export function AssetDetailNewsCalendar({ bundle }: Props) {
             >
               <div className="ad-news-meta">
                 <span className="ad-news-source">{item.source}</span>
-                <span style={{ color: "rgba(255,255,255,0.12)", fontSize: 10 }}>·</span>
+                <span style={{ color: "rgba(255,255,255,0.12)", fontSize: 11 }}>·</span>
                 <span className="ad-news-time">{item.minutesAgo}dk önce</span>
                 {item.impact === 3 && (
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "rgba(239,68,68,0.10)", color: "var(--ad-down)" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "rgba(239,68,68,0.10)", color: "var(--ad-down)" }}>
                     Yüksek Etki
                   </span>
                 )}

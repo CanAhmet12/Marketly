@@ -1,0 +1,296 @@
+/**
+ * Sağ rail V9 — modern sinyal kartları (öne çıkan + kompakt liste)
+ */
+
+.hv-ref-rail--v9 .hv-ref-rail__signals-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* Öne çıkan sinyal */
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured {
+  position: relative;
+  display: block;
+  padding: 0.72rem 0.65rem 0.68rem;
+  border-radius: 0.52rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, var(--hv-text) 8%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--hv-text) 3%, transparent),
+    color-mix(in srgb, var(--color-primary) 4%, transparent)
+  );
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured[data-dir="buy"] {
+  border-color: color-mix(in srgb, var(--color-rise) 22%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-rise) 5%, transparent),
+    color-mix(in srgb, var(--hv-text) 2%, transparent)
+  );
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured[data-dir="sell"] {
+  border-color: color-mix(in srgb, var(--color-fall) 22%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-fall) 5%, transparent),
+    color-mix(in srgb, var(--hv-text) 2%, transparent)
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v9 .hv-ref-rail__sig-featured:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+    transform: translateY(-1px);
+  }
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-accent {
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--color-primary);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured[data-dir="buy"] .hv-ref-rail__sig-featured-accent {
+  background: var(--color-rise);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured[data-dir="sell"] .hv-ref-rail__sig-featured-accent {
+  background: var(--color-fall);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding-left: 0.35rem;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-ident {
+  flex: 1;
+  min-width: 0;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-sym-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-sym {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--hv-text);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-name {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--hv-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-spark {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-entry {
+  margin: 0.45rem 0 0 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--hv-text-2);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-featured-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+  padding-left: 0.35rem;
+}
+
+/* Yön pill — unified primitive override */
+.hv-ref-rail--v9 .hv-ref-rail__sig-pill {
+  font-size: 0.625rem !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 0.3rem !important;
+  padding: 0.14rem 0.38rem !important;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-pill--sm {
+  font-size: 0.58rem !important;
+  padding: 0.1rem 0.32rem !important;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-tf {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--hv-text-3);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--hv-text) 5%, transparent);
+}
+
+/* Güven ölçer */
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf {
+  flex: 1;
+  min-width: 0;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf--compact {
+  width: 4.2rem;
+  flex-shrink: 0;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.22rem;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--hv-text-3);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf-val {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--hv-text-2);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf-track {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hv-text) 7%, transparent);
+  overflow: hidden;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-conf-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary) 45%, transparent),
+    var(--color-primary)
+  );
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--hv-text-3);
+  white-space: nowrap;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-stat[data-accent="up"] {
+  color: var(--color-rise);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-stat[data-accent="down"] {
+  color: var(--color-fall);
+}
+
+/* Kompakt liste */
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.4rem;
+  border-radius: 0.42rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hv-ref-rail--v9 .hv-ref-rail__sig-compact-link:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact[data-dir="buy"] .hv-ref-rail__sig-compact-link:hover {
+  background: color-mix(in srgb, var(--color-rise) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-rise) 12%, transparent);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact[data-dir="sell"] .hv-ref-rail__sig-compact-link:hover {
+  background: color-mix(in srgb, var(--color-fall) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-fall) 12%, transparent);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-main {
+  min-width: 0;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-sym {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--hv-text);
+}
+
+.hv-ref-rail--v9 .hv-ref-rail__sig-compact-detail {
+  display: block;
+  margin-top: 0.08rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--hv-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Eski sinyal satırlarını gizle */
+.hv-ref-rail--v9 .hv-ref-rail__signal-list--embedded {
+  display: none;
+}

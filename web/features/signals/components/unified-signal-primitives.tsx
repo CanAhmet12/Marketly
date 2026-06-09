@@ -143,12 +143,12 @@ export function SignalAnalystTrustBlock({
             {analyst.display}
           </Link>
           {analyst.verified ? (
-            <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-[var(--sp-2)] py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+            <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-[var(--sp-2)] py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
               Onaylı
             </span>
           ) : null}
           {tier ? (
-            <span className="rounded-md border border-[var(--ms-border-hairline)] px-[var(--sp-2)] py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">
+            <span className="rounded-md border border-[var(--ms-border-hairline)] px-[var(--sp-2)] py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">
               {tier}
             </span>
           ) : null}
@@ -168,7 +168,7 @@ export function SignalAnalystTrustBlock({
             {analyst.specialties.slice(0, 4).map((s) => (
               <span
                 key={s}
-                className="max-w-full truncate rounded-full border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]"
+                className="max-w-full truncate rounded-full border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]"
               >
                 {s}
               </span>

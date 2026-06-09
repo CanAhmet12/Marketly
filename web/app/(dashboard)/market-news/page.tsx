@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { MarketNewsroomPageClient } from "@/features/markets/market-newsroom-page-client";
-import { IntelWorkspaceSkeleton } from "@/features/markets/components/markets-states";
+import { MarketNewsPageSkeleton } from "@/features/markets/components/markets-states";
 import { OG_SITE_DEFAULTS, siteCanonical } from "@/lib/seo/metadata-helpers";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function MarketNewsPage() {
   return (
-    <Suspense fallback={<IntelWorkspaceSkeleton rows={5} />}>
+    <Suspense fallback={<MarketNewsPageSkeleton />}>
       <MarketNewsroomPageClient />
     </Suspense>
   );

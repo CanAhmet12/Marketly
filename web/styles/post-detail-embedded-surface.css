@@ -1,0 +1,108 @@
+/**
+ * Post detail — gömülü yüzey (kart plakası yok)
+ */
+
+html[data-theme="light"] .pd-canvas {
+  --pd-surface-soft: transparent;
+  --pd-bg-elevated: var(--pd-bg);
+  --pd-zone-thread-bg: transparent;
+  --pd-zone-side-module-bg: transparent;
+  --pd-zone-network-bg: transparent;
+}
+
+html[data-theme="light"] .pd-canvas .pd-topbar {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--pd-bg) 94%, transparent);
+}
+
+html[data-theme="light"] .pd-engagement-wrap {
+  background: color-mix(in srgb, var(--pd-bg) 94%, transparent);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-nav,
+html[data-theme="light"] .pd-canvas .pd-thread-siblings {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid var(--pd-divider-faint);
+  padding-inline: 0;
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__link {
+  border-radius: 0;
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+html[data-theme="light"] .pd-canvas .pd-thread-siblings__edge {
+  background: transparent;
+  border: 1px solid var(--pd-divider-faint);
+  border-radius: 0;
+}
+
+html[data-theme="light"] .pd-canvas .hv-ref-article__quote,
+html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed,
+html[data-theme="light"] .pd-canvas .hv-ref-article__link-preview {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  padding-left: 0;
+}
+
+html[data-theme="light"] .pd-canvas .pd-media-shell {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+html[data-theme="light"] .pd-canvas .pd-media-shell img {
+  border-radius: 0.35rem;
+}
+
+html[data-theme="light"] .pd-canvas .pd-section-count {
+  background: transparent;
+  border: 1px solid var(--pd-divider-faint);
+  border-radius: 0;
+}
+
+html[data-theme="light"] .pd-canvas .pd-comment-tag {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--pd-divider-faint);
+}
+
+html[data-theme="light"] .pd-canvas .pd-network-link {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--pd-divider-faint);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .pd-canvas .pd-network-link:hover {
+    background: color-mix(in srgb, #1a1a20 2%, transparent);
+    box-shadow: none;
+  }
+}
+
+html[data-theme="light"] .pd-canvas .pd-side-module,
+html[data-theme="light"] .pd-canvas .pd-side-block {
+  background: transparent;
+  border-bottom-color: var(--pd-divider-faint);
+}
+
+@media (min-width: 1024px) {
+  html[data-theme="light"] .pd-sidebar-col > .pd-side-module--author {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--pd-divider-faint);
+  }
+}
+
+html[data-theme="light"] .pd-main-col {
+  border-right-color: var(--pd-divider-faint);
+}

@@ -1,3 +1,4 @@
+import type { PersonalizedSignalRelevance } from "@/features/signals/repository/types";
 import type { SignalsFeedRow, SignalsMarketplaceRail } from "@/features/signals/repository/types";
 import { signalCreatorQualityScore, signalMarketplaceTrendScore } from "@/features/signals/lib/signals-ranking";
 
@@ -15,11 +16,29 @@ function dedupeByAnalyst(rows: SignalsFeedRow[]): SignalsFeedRow[] {
 }
 
 /** Mock thread-pack olmadan gerçek feed verisiyle marketplace rayları */
-export function buildLiveSignalsMarketplaceRails(rows: SignalsFeedRow[]): SignalsMarketplaceRail[] {
+export function buildLiveSignalsMarketplaceRails(
+  rows: SignalsFeedRow[],
+  recommendations?: PersonalizedSignalRelevance | null,
+): SignalsMarketplaceRail[] {
   if (!rows.length) return [];
 
   const active = rows.filter((r) => r.is_active);
   const rails: SignalsMarketplaceRail[] = [];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+
+  if (recommendations?.rows.length) {
+    const recRows = recommendations.rows
+      .map((rec) => byId.get(rec.id))
+      .filter((r): r is SignalsFeedRow => Boolean(r));
+    if (recRows.length) {
+      rails.push({
+        id: "for_you_signals",
+        title: "Senin için öneriler",
+        subtitle: recommendations.headline,
+        rows: cap(recRows, 10),
+      });
+    }
+  }
 
   const trending = cap(
     [...active].sort((a, b) => signalMarketplaceTrendScore(b) - signalMarketplaceTrendScore(a)),

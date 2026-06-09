@@ -1,0 +1,99 @@
+/**
+ * Home — çizgi hizası (tek divider, sol aksan yok, kayma giderildi)
+ */
+
+html[data-theme="light"] .hv-ref {
+  --hv-zone-post-divider: var(--hv-zone-feed-border);
+  --hv-zone-strip-border: var(--hv-zone-feed-border);
+}
+
+/* Üst bölüm: mast altı tek çizgi; strip negatif margin yok */
+html[data-theme="light"] .hv-ref .hv-ref-strip-region {
+  margin-inline: 0;
+  padding-inline: 0;
+  border-top: none;
+  border-bottom: none;
+}
+
+/* Akış: üstte tek ayırıcı; bugün şeridi çizgisiz */
+html[data-theme="light"] .hv-ref .hv-ref__posts {
+  border-top: 1px solid var(--hv-zone-feed-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-feed-today {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* Gönderiler: tutarlı yatay çizgi */
+html[data-theme="light"] .hv-ref .hv-ref-article + .hv-ref-article,
+html[data-theme="light"] .hv-ref .hv-ref-feed-nudge + .hv-ref-article,
+html[data-theme="light"] .hv-ref .hv-ref-feed-state + .hv-ref-article,
+html[data-theme="light"] .hv-ref .hv-ref-creator-suggest + .hv-ref-article {
+  border-top: 1px solid var(--hv-zone-feed-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article + .hv-ref-feed-nudge,
+html[data-theme="light"] .hv-ref .hv-ref-article + .hv-ref-feed-state,
+html[data-theme="light"] .hv-ref .hv-ref-article + .hv-ref-creator-suggest {
+  border-top: 1px solid var(--hv-zone-feed-border);
+}
+
+/* Sol aksan / çift çizgi kaldır — içerik hizası sabit */
+html[data-theme="light"] .hv-ref .hv-ref-article--lead,
+html[data-theme="light"] .hv-ref .hv-ref-article--cat-tinted {
+  border: none;
+  border-left: none;
+  padding-left: 0;
+  margin-left: 0;
+  box-shadow: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article--lead::before {
+  display: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__link-preview,
+html[data-theme="light"] .hv-ref .hv-ref-article__quote,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed {
+  border: none;
+  border-left: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__comment-teaser {
+  border: none;
+  border-bottom: none;
+}
+
+/* Rail başlık sol çizgisi — içerikle aynı eksen */
+html[data-theme="light"] .hv-ref .hv-ref-rail__card .hv-ref-rail__h {
+  padding-left: 0;
+  border-left: none;
+}
+
+/* Durum blokları: tek üst çizgi */
+html[data-theme="light"] .hv-ref .hv-ref-feed-state,
+html[data-theme="light"] .hv-ref .hv-ref-feed-nudge,
+html[data-theme="light"] .hv-ref .hv-ref-creator-suggest {
+  border-bottom: none;
+}
+
+/* Discover: üst çizgi tekrarı yok */
+html[data-theme="light"] .hv-ref .discover-live-cinema,
+html[data-theme="light"] .hv-ref .discover-pulse-tile,
+html[data-theme="light"] .hv-ref .discover-sig-strip,
+html[data-theme="light"] .hv-ref .discover-video-editorial .ms-home-cinematic-post__below,
+html[data-theme="light"] .hv-ref .ms-home-native-surf {
+  border-top: none;
+  border-bottom: 1px solid var(--hv-zone-feed-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band::before {
+  display: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-flow > .hv-discover-band {
+  border-top: none;
+}

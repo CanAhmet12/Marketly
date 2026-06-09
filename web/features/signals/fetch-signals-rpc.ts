@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { AnalystLeaderboardRow, AnalystLeaderboardSection } from "@/features/signals/intelligence/types";
+import { parseRpcRows } from "@/lib/supabase/parse-rpc-rows";
 
 type LeaderboardRpcRow = {
   id: string;
@@ -12,6 +13,11 @@ type LeaderboardRpcRow = {
   follower_count: number | null;
   signal_count: number | null;
   tier?: string | null;
+  composite_score?: number | null;
+  recent_win_rate?: number | null;
+  latest_gain_pct?: number | null;
+  rising_velocity?: number | null;
+  follower_tier?: string | null;
 };
 
 function mapRpcToLbRow(row: LeaderboardRpcRow, rank: number): AnalystLeaderboardRow {
@@ -23,8 +29,14 @@ function mapRpcToLbRow(row: LeaderboardRpcRow, rank: number): AnalystLeaderboard
     avatarUrl: row.avatar_url ?? null,
     verified: Boolean(row.verified),
     primaryMetricLabel: "İsabet",
-    primaryMetricValue: `${Math.round(row.signal_accuracy ?? 0)}%`,
-    secondaryHint: `${row.signal_count ?? 0} sinyal · ${row.follower_count ?? 0} takipçi`,
+    primaryMetricValue: `${Math.round(row.recent_win_rate ?? row.signal_accuracy ?? 0)}%`,
+    secondaryHint: [
+      row.latest_gain_pct != null ? `Son kazanç %${row.latest_gain_pct}` : null,
+      `${row.signal_count ?? 0} sinyal`,
+      row.follower_tier ? `${row.follower_tier} tier` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
     badges: row.verified ? ["community_trusted"] : [],
     href: `/channel/${row.id}`,
   };
@@ -41,7 +53,7 @@ export async function fetchAnalystLeaderboardFromRpc(
       console.warn("[signals] get_leaderboard_analysts", error.message);
       return [];
     }
-    const rows = (Array.isArray(data) ? data : []) as LeaderboardRpcRow[];
+    const rows = parseRpcRows<LeaderboardRpcRow>(data);
     if (!rows.length) return [];
     return [
       {

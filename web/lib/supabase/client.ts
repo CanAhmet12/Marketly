@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { clientLog } from "@/lib/observability/logger";
 import { getSupabasePublicEnv } from "./env";
@@ -12,8 +13,8 @@ function supabaseBrowserEnvFingerprint(): string {
 }
 
 /**
- * Tarayıcıda kullanılacak Supabase istemcisi.
- * Yalnızca Client Component veya tarayıcı etkinliklerinde çağırın.
+ * Tarayıcı Supabase istemcisi — @supabase/ssr varsayılan cookie deposu.
+ * Özel cookie handler kullanılmaz (çift encode / oturum silme riski).
  */
 export function createSupabaseBrowserClient(): SupabaseClient {
   const { url, anonKey } = getSupabasePublicEnv();
@@ -24,22 +25,13 @@ export function createSupabaseBrowserClient(): SupabaseClient {
     }
   }
 
-  return createClient(url, anonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  });
+  return createBrowserClient(url, anonKey);
 }
 
-/**
- * Tekil tarayıcı örneği (singleton).
- */
 export function getSupabaseBrowserClient(): SupabaseClient {
   if (typeof window === "undefined") {
     throw new Error(
-      "getSupabaseBrowserClient yalnızca tarayıcıda kullanılmalıdır. Sunucu bileşenlerinde kullanmayın.",
+      "getSupabaseBrowserClient yalnızca tarayıcıda kullanılmalıdır. Sunucu bileşenlerinde getSupabaseServerClient kullanın.",
     );
   }
   const fp = supabaseBrowserEnvFingerprint();

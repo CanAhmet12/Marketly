@@ -5,6 +5,10 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
+import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
+import { HubPageHeader } from "@/features/hub/components/hub-page-header";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { SubscriptionsPageSkeleton } from "@/features/social/components/social-states";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
 import { useSubscriptionsHub } from "@/features/subscriptions/hooks/use-subscriptions-hub";
@@ -136,30 +140,53 @@ export function SubscriptionsHubClient() {
 
   const emptyHub = payload.data_mode === "live_sparse" && payload.catalog.length === 0;
 
+  const pageHeader = (
+    <HubPageHeader
+      kicker={hubPremiumKicker("connect", "Üyelikler")}
+      title={payload.headline}
+      subtitle={payload.subline}
+    />
+  );
+
+  const heroStrip = (
+    <HubHeroStrip
+      stats={[
+        {
+          label: "Aktif üyelik",
+          value: payload.active_memberships.length,
+          valueAccent: payload.active_memberships.length > 0,
+        },
+        {
+          label: "Strateji profili",
+          value: payload.strategy_profile_label,
+        },
+      ]}
+    />
+  );
+
   if (!isInitialized || hubLoading) {
-    return <SubscriptionsPageSkeleton />;
+    return (
+      <HubPageShell zone="connect" className="sub-hub-page" header={pageHeader}>
+        <SubscriptionsPageSkeleton />
+      </HubPageShell>
+    );
   }
 
   return (
-    <div className="ms-page-wrapper ms-container-standard pb-10 pt-6">
-      <header className="max-w-3xl">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Creator economy</p>
-        <h1 className="mt-1 text-[22px] font-bold leading-tight tracking-tight text-[var(--color-text)]">{payload.headline}</h1>
-        <p className="mt-2 text-[13px] font-medium leading-relaxed text-[var(--color-text-secondary)]">{payload.subline}</p>
-        <p className="mt-2 text-[12px] font-medium text-[var(--color-meta)]">{payload.affinity_line}</p>
-        <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
-          <span className="rounded-full border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2.5 py-1 text-[var(--color-text-secondary)]">
-            Strateji profili: {payload.strategy_profile_label}
+    <HubPageShell zone="connect" className="sub-hub-page" header={pageHeader} hero={heroStrip}>
+      <p className="text-[12px] font-medium text-[var(--color-meta)]">{payload.affinity_line}</p>
+      <div className="flex flex-wrap gap-2 text-[11px] font-semibold">
+        <span className="rounded-full border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-2.5 py-1 text-[var(--color-text-secondary)]">
+          Strateji profili: {payload.strategy_profile_label}
+        </span>
+        {payload.cold_start ? (
+          <span className="rounded-full border border-[color-mix(in_srgb,var(--color-primary)_25%,var(--ms-border-hairline))] px-2.5 py-1 text-[var(--color-primary-dark)]">
+            Soğuk başlangıç — etkileşimle kişiselleşir
           </span>
-          {payload.cold_start ? (
-            <span className="rounded-full border border-[color-mix(in_srgb,var(--color-primary)_25%,var(--ms-border-hairline))] px-2.5 py-1 text-[var(--color-primary-dark)]">
-              Soğuk başlangıç — etkileşimle kişiselleşir
-            </span>
-          ) : null}
-        </div>
-      </header>
+        ) : null}
+      </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <Link
           href={payload.nav.signals}
           className="social-hub-pill rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text)] transition hover:bg-[var(--color-surface-hover)]"
@@ -185,7 +212,7 @@ export function SubscriptionsHubClient() {
           Piyasalar
         </Link>
         <Link
-          href="/close-friends"
+          href="/hub/close-friends"
           className="social-hub-pill rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text)] transition hover:bg-[var(--color-surface-hover)]"
         >
           Özel daireler
@@ -193,8 +220,8 @@ export function SubscriptionsHubClient() {
       </div>
 
       {payload.active_memberships.length > 0 ? (
-        <section className="mt-8 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-          <h2 className="text-[13px] font-bold text-[var(--color-text)]">Aktif üyeliklerin</h2>
+        <section className="sub-hub-active rounded-[var(--radius-lg)] border p-4">
+          <h2 className="sub-hub-rail-title text-[13px] text-[var(--color-text)]">Aktif üyeliklerin</h2>
           <ul className="mt-3 divide-y divide-[var(--ms-border-hairline)]">
             {payload.active_memberships.map((m) => (
               <li key={m.creator_id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0">
@@ -218,12 +245,12 @@ export function SubscriptionsHubClient() {
           </ul>
         </section>
       ) : (
-        <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-4 py-3 text-[12px] font-medium text-[var(--color-text-secondary)]">
+        <div className="sub-hub-empty rounded-[var(--radius-lg)] border border-dashed bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-4 py-3 text-[12px] font-medium text-[var(--color-text-secondary)]">
           Henüz aktif üyeliğin yok. Aşağıdaki önerilerden bir üreticinin planına girerek kilitleri görebilirsin.
         </div>
       )}
 
-      <section className="mt-8 rounded-[var(--radius-lg)] border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--color-surface))] p-4">
+      <section className="sub-hub-intel rounded-[var(--radius-lg)] border p-4">
         <h2 className="text-[12px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Platform özeti</h2>
         <ul className="mt-2 space-y-1.5 text-[12px] font-medium leading-snug text-[var(--color-text-secondary)]">
           <li>{payload.platform_intel.premium_circulation_label}</li>
@@ -251,7 +278,7 @@ export function SubscriptionsHubClient() {
           <Rail title="Yüksek isabet profili" cards={payload.rails.high_conviction} />
 
           <section className="mt-10">
-            <h2 className="text-[14px] font-bold text-[var(--color-text)]">Tüm üretici üyelikleri</h2>
+            <h2 className="sub-hub-rail-title text-[14px] text-[var(--color-text)]">Tüm üretici üyelikleri</h2>
             <p className="mt-1 text-[11px] font-medium text-[var(--color-meta)]">Kompakt kartlar — taşma yok, yatay kaydırma yok</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {payload.catalog.map((c) => (
@@ -261,6 +288,6 @@ export function SubscriptionsHubClient() {
           </section>
         </>
       )}
-    </div>
+    </HubPageShell>
   );
 }

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
-import { HomeVisualStoryRail, type StoryRailVariant } from "@/features/home/visual/home-visual-story-rail";
+import { HomeVisualStoryRail } from "@/features/home/visual/home-visual-story-rail";
 import type { HomeVisualStoryItem } from "@/features/home/visual/mock-data";
 import { StoryUploadModal } from "@/features/stories/story-upload-modal";
 import { StoryViewerOverlay } from "@/features/stories/story-viewer-overlay";
@@ -18,13 +18,14 @@ import { isMockDataEnabled } from "@/mock/config";
 
 import { HOME_VISUAL_STORIES } from "@/features/home/visual/mock-data";
 
+const ROOT = "hv-ref-stories";
+
 type Props = {
   /** Supabase yok + mock kapalı — statik placeholder şerit */
   useStaticFallback?: boolean;
-  variant?: StoryRailVariant;
 };
 
-export function HomeStoriesSection({ useStaticFallback = false, variant = "home" }: Props) {
+export function HomeStoriesSection({ useStaticFallback = false }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -87,19 +88,18 @@ export function HomeStoriesSection({ useStaticFallback = false, variant = "home"
   }, [router, user]);
 
   if (loading && slides.length === 0 && !useStaticFallback) {
-    const root = variant === "discover" ? "dvr-stories" : "hv-ref-stories";
-    return (
-      <div className={`${root} ${root}--loading`} aria-hidden>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className={`${root}__hit ${root}__hit--skeleton`} />
-        ))}
-      </div>
-    );
+    return <StorySkeletonRow />;
   }
+
+  const showGhost = !loading && !isMockDataEnabled() && slides.length === 0 && !useStaticFallback;
 
   return (
     <>
-      <HomeVisualStoryRail items={visualItems} onStoryPress={onStoryPress} onAddStory={onAddStory} variant={variant} />
+      {showGhost ? (
+        <GhostStoryRow onAddStory={onAddStory} />
+      ) : (
+        <HomeVisualStoryRail items={visualItems} onStoryPress={onStoryPress} onAddStory={onAddStory} />
+      )}
       <StoryViewerOverlay
         slides={displaySlides}
         startIndex={activeViewerIndex}
@@ -113,5 +113,48 @@ export function HomeStoriesSection({ useStaticFallback = false, variant = "home"
         onUploaded={() => void refetch()}
       />
     </>
+  );
+}
+
+function StorySkeletonSlot() {
+  return (
+    <div className={`${ROOT}__hit ${ROOT}__hit--skeleton`} aria-hidden>
+      <div className={`${ROOT}__ring`}>
+        <div className={`${ROOT}__inner`} />
+      </div>
+      <div className={`${ROOT}__label`}>&nbsp;</div>
+    </div>
+  );
+}
+
+function StorySkeletonRow({ count = 6 }: { count?: number }) {
+  return (
+    <div className={`${ROOT} ${ROOT}--loading`} aria-hidden>
+      {Array.from({ length: count }).map((_, i) => (
+        <StorySkeletonSlot key={i} />
+      ))}
+    </div>
+  );
+}
+
+function GhostStoryRow({ onAddStory }: { onAddStory?: () => void }) {
+  return (
+    <div className={ROOT} aria-label="Öne çıkanlar">
+      <button type="button" className={`${ROOT}__hit`} onClick={onAddStory}>
+        <div className={`${ROOT}__ring`} data-tone="slate" data-add="true">
+          <div className={`${ROOT}__inner`}>
+            <span className={`${ROOT}__plus-wrap`}>
+              <span className={`${ROOT}__plus`} aria-hidden>
+                +
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className={`${ROOT}__label`}>Ekle</div>
+      </button>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <StorySkeletonSlot key={i} />
+      ))}
+    </div>
   );
 }

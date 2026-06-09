@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { AuthFormSkeleton } from "@/features/auth/components/auth-states";
+import { RedirectIfAuthenticated } from "@/features/auth/redirect-if-authenticated";
 import { OG_SITE_DEFAULTS, siteCanonical } from "@/lib/seo/metadata-helpers";
 
 import { RegisterForm } from "./register-form";
@@ -21,7 +22,9 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <RegisterForm />
+      <RedirectIfAuthenticated fallbackHref="/onboarding/setup">
+        <RegisterForm />
+      </RedirectIfAuthenticated>
     </Suspense>
   );
 }

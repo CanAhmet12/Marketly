@@ -14,7 +14,8 @@ export type HomeVisualStoryItem = {
   label: string;
   avatarUrl: string;
   variant: "live" | "new" | "default";
-  ring: "teal" | "amber" | "slate";
+  /** Piyasa kategorisi renk sistemi ile uyumlu ring tonu */
+  ring: "teal" | "amber" | "slate" | "crypto" | "blue" | "violet" | "orange";
   /** İzlenmiş hikâye — ring soluk */
   isViewed?: boolean;
 };
@@ -49,12 +50,12 @@ export const HOME_VISUAL_MARKETS: HomeVisualMarketItem[] = [
 
 export const HOME_VISUAL_STORIES: HomeVisualStoryItem[] = [
   { id: "s1", label: "Hikaye Ekle", avatarUrl: "", variant: "default", ring: "slate" },
-  { id: "s2", label: "XU100", avatarUrl: "https://picsum.photos/seed/hv-story-xu/96/96", variant: "live", ring: "teal" },
-  { id: "s3", label: "Makro", avatarUrl: "https://picsum.photos/seed/hv-story-macro/96/96", variant: "new", ring: "amber" },
+  { id: "s2", label: "XU100", avatarUrl: "https://picsum.photos/seed/hv-story-xu/96/96", variant: "live", ring: "blue" },
+  { id: "s3", label: "Makro", avatarUrl: "https://picsum.photos/seed/hv-story-macro/96/96", variant: "new", ring: "violet" },
   { id: "s4", label: "Ayşe", avatarUrl: "https://i.pravatar.cc/150?img=12", variant: "default", ring: "teal" },
-  { id: "s5", label: "Kripto", avatarUrl: "https://picsum.photos/seed/hv-story-crypto/96/96", variant: "default", ring: "slate" },
-  { id: "s6", label: "Canlı", avatarUrl: "https://i.pravatar.cc/150?img=33", variant: "live", ring: "amber" },
-  { id: "s7", label: "Bülten", avatarUrl: "https://picsum.photos/seed/hv-story-news/96/96", variant: "new", ring: "teal" },
+  { id: "s5", label: "Kripto", avatarUrl: "https://picsum.photos/seed/hv-story-crypto/96/96", variant: "default", ring: "crypto" },
+  { id: "s6", label: "Canlı", avatarUrl: "https://i.pravatar.cc/150?img=33", variant: "live", ring: "orange" },
+  { id: "s7", label: "Bülten", avatarUrl: "https://picsum.photos/seed/hv-story-news/96/96", variant: "new", ring: "blue" },
 ];
 
 export const HOME_VISUAL_POSTS: HomeVisualPost[] = [
@@ -118,6 +119,18 @@ export type HomeVisualRailLink = {
   label: string;
   meta?: string;
   accent?: "up" | "down" | "neutral";
+  /** Sembol / sinyal satırı linki */
+  href?: string;
+  /** Kompakt fiyat gösterimi */
+  price?: string;
+  /** Mini sparkline serisi */
+  sparkline?: number[];
+  sparkTrend?: "up" | "down" | "flat";
+  /** Sinyal yönü */
+  signalDirection?: "BUY" | "SELL" | "HOLD";
+  /** Sinyal güven 1–5 */
+  confidence?: number;
+  timeframe?: string;
   /** Önerilen creator satırı — takip / profil */
   creatorUserId?: string;
   /** İkinci satır (Bugün vb.) */
@@ -133,6 +146,19 @@ export type HomeVisualRailLink = {
   trendDeltaAccent?: "up" | "down" | "neutral";
   /** Bugün satırı — küçük trend ikonu */
   tone?: "up" | "down" | "flat";
+  /** Creator card — zenginleştirilmiş alanlar */
+  followerCount?: number;
+  expertise?: string;
+  verified?: boolean;
+  isOnline?: boolean;
+  /** Market satırı — tam ad (Bitcoin, Türk Hava Yolları…) */
+  assetName?: string;
+  /** Hacim etiketi */
+  volumeLabel?: string;
+  /** Aktif sinyal sayısı */
+  signalCount?: number;
+  /** Yüksek güven / trend — öne çıkan rozet */
+  isHot?: boolean;
 };
 
 export const HOME_VISUAL_RAIL: {

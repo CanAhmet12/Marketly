@@ -1,8 +1,8 @@
+import { buildSignalThreadPackFromRow } from "@/features/signals/lib/build-signal-thread-pack";
 import { signalCreatorQualityScore, signalMarketplaceTrendScore } from "@/features/signals/lib/signals-ranking";
 import type { AffinityContext } from "@/features/personalization/domain/personalization-types";
 import { personalizedTrendScore } from "@/features/personalization/domain/personalization-engine";
 import type { SignalsFeedRow, SignalsMarketplaceRail } from "@/features/signals/repository/types";
-import { buildMockSignalThreadPack } from "@/mock/adapters/signal-thread-pack";
 
 const cap = (rows: SignalsFeedRow[], n: number) => rows.slice(0, n);
 
@@ -32,7 +32,7 @@ const nonPublic = (r: SignalsFeedRow) => r.signal_access !== "public";
 export function buildSignalsMarketplaceRails(rows: SignalsFeedRow[], affinity: AffinityContext | null = null): SignalsMarketplaceRail[] {
   if (!rows.length) return [];
 
-  const enriched = rows.map((row) => ({ row, pack: buildMockSignalThreadPack(row) }));
+  const enriched = rows.map((row) => ({ row, pack: buildSignalThreadPackFromRow(row) }));
   const threadHeat = (x: (typeof enriched)[number]) =>
     x.pack.entries.length * 2 + x.pack.replyCount + x.pack.reactions.tracking;
   const debateScore = (x: (typeof enriched)[number]) =>

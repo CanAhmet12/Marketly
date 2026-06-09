@@ -5,10 +5,24 @@ import { HOME_VISUAL_STORIES } from "@/features/home/visual/mock-data";
 const LIVE_LABELS = new Set(["Fed canlı not", "XU100 açılış", "VIOP straddle"]);
 const NEW_WHEN_UNVIEWED = true;
 
+/** Label içeriğinden piyasa kategorisi ring tonunu çıkar */
 function ringForSlide(slide: StorySlide, index: number): HomeVisualStoryItem["ring"] {
-  if (index % 3 === 0) return "teal";
-  if (index % 3 === 1) return "amber";
-  return "slate";
+  const lbl = slide.label.toLowerCase();
+  // Kripto keyword'ları
+  if (/btc|eth|sol|xrp|kripto|crypto|bitcoin|ethereum/.test(lbl)) return "crypto";
+  // Hisse / endeks keyword'ları
+  if (/xu100|bist|hisse|nasdaq|spx|dow|s&p|s&p|nvda|aapl|msft/.test(lbl)) return "blue";
+  // Döviz keyword'ları
+  if (/döviz|forex|usd|eur|gbp|jpy|try|dolar|euro/.test(lbl)) return "teal";
+  // Emtia keyword'ları
+  if (/altın|gold|petrol|oil|gümüş|silver|emtia|commodity/.test(lbl)) return "orange";
+  // Makro / genel finans keyword'ları
+  if (/makro|macro|fed|ecb|tcmb|faiz|enflasyon|cpi|gdp|inflation/.test(lbl)) return "violet";
+  // Canlı yayın
+  if (/canlı|live|stream/.test(lbl)) return "orange";
+  // Index fallback
+  const cycle: HomeVisualStoryItem["ring"][] = ["teal", "amber", "slate", "crypto", "blue"];
+  return cycle[index % cycle.length];
 }
 
 function variantForSlide(slide: StorySlide): HomeVisualStoryItem["variant"] {
@@ -25,19 +39,40 @@ export const ADD_STORY_VISUAL_ITEM: HomeVisualStoryItem = {
   ring: "slate",
 };
 
+/** Şerit: kullanıcı başına tek halka; viewer içinde tüm slaytlar */
 export function mapStorySlidesToVisualItems(slides: StorySlide[]): HomeVisualStoryItem[] {
-  const mapped = slides.map((s, i) => ({
-    id: s.id,
-    label: s.label,
-    avatarUrl: s.profileImage,
-    variant: variantForSlide(s),
-    ring: ringForSlide(s, i),
-    isViewed: s.isViewed,
-  }));
+  const byUser = new Map<string, StorySlide[]>();
+  for (const s of slides) {
+    const bucket = byUser.get(s.userId) ?? [];
+    bucket.push(s);
+    byUser.set(s.userId, bucket);
+  }
+
+  const mapped: HomeVisualStoryItem[] = [];
+  let i = 0;
+  for (const [userId, userSlides] of byUser) {
+    const rep = userSlides[0]!;
+    const allViewed = userSlides.every((s) => s.isViewed);
+    const hasUnviewed = userSlides.some((s) => !s.isViewed);
+    mapped.push({
+      id: `story-user-${userId}`,
+      label: rep.label,
+      avatarUrl: rep.profileImage,
+      variant: hasUnviewed ? variantForSlide(rep) : "default",
+      ring: ringForSlide(rep, i),
+      isViewed: allViewed,
+    });
+    i += 1;
+  }
   return [ADD_STORY_VISUAL_ITEM, ...mapped];
 }
 
 export function storyIndexFromVisualId(visualId: string, slides: StorySlide[]): number {
+  if (visualId.startsWith("story-user-")) {
+    const userId = visualId.slice("story-user-".length);
+    const idx = slides.findIndex((s) => s.userId === userId);
+    return idx >= 0 ? idx : 0;
+  }
   const idx = slides.findIndex((s) => s.id === visualId);
   return idx >= 0 ? idx : 0;
 }

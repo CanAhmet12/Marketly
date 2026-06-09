@@ -1,0 +1,288 @@
+/**
+ * Sağ rail — profesyonel editorial tipografi (Inter + tabular rakamlar)
+ * Bloomberg / Robinhood tarzı: sentence-case başlık, net hiyerarşi
+ */
+
+.hv-ref-rail--v7 {
+  --rail-type-xs: 0.75rem;
+  --rail-type-sm: 0.8125rem;
+  --rail-type-md: 0.875rem;
+  --rail-type-lg: 0.9375rem;
+  --rail-type-xl: 1rem;
+  --rail-type-2xl: 1.0625rem;
+  font-family: var(--font-sans);
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Eski uppercase / monospace kurallarını geçersiz kıl */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__h,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__card .hv-ref-rail__h {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-lg);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.28;
+  text-transform: none;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__section-sub {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--hv-text-2);
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__action-link {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Hızlı filtreler */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__quick-chip {
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Canlı — sentence case */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__live-tag {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* Piyasa havası */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__mood-label {
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__mood-score {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__mood-pill {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__mood-legend-item,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__mood-detail {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+/* Finansal veri — tabular nums, Inter semibold */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-sym,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-sym,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-sym {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-md);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-price,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-pct,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-price,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-pct,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-rank,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-conf-val,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__discuss-delta {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-price,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-price {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-pct,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-pct {
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-name,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-name {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-xs);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-vol,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-sigs {
+  font-size: var(--rail-type-xs);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-fresh {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Sinyaller */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-dir {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-tf,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-conf-label {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-entry,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-meta {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-analyst {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+}
+
+/* Haberler — okunabilir editorial */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-featured-title {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-lg);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.38;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-title {
+  font-size: var(--rail-type-md);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.42;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-featured-meta,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-meta,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-source {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-cat,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-symbol,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-breaking,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-featured-cat,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-featured-sym {
+  font-family: var(--font-sans);
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-sentiment {
+  font-weight: 600;
+}
+
+/* Creator */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__creator-name {
+  font-size: var(--rail-type-md);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__creator-handle,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__creator-sub {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__creator-tier,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__creator-expertise {
+  font-size: var(--rail-type-xs);
+  font-weight: 600;
+}
+
+/* Tartışma + ilgi */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__discuss-tag {
+  font-size: var(--rail-type-md);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__discuss-views,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__discuss-rank {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__interest-chip {
+  font-size: var(--rail-type-sm);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__interest-chip-meta {
+  font-size: var(--rail-type-xs);
+  font-weight: 500;
+}
+
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watchlist-empty-text,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__watchlist-suggest-chip {
+  font-size: var(--rail-type-sm);
+  font-weight: 500;
+}
+
+/* Açık tema — kontrast */
+html[data-theme="light"] .hv-ref .hv-ref-rail--v7 .hv-ref-rail__section-sub,
+html[data-theme="light"] .hv-ref .hv-ref-rail--v7 .hv-ref-rail__market-name,
+html[data-theme="light"] .hv-ref .hv-ref-rail--v7 .hv-ref-rail__watch-name,
+html[data-theme="light"] .hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-entry {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail--v7 .hv-ref-rail__h {
+  color: var(--color-text);
+}
+
+/* Eski monospace yığınını Inter tabular ile değiştir */
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-symbol,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__news-featured-sym,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__signal-entry,
+.hv-ref .hv-ref-rail--v7 .hv-ref-rail__cat-sign {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Kart içi uppercase başlık kalıntısı */
+.hv-ref .hv-ref-rail--v7.hv-ref-rail--rich .hv-ref-rail__card .hv-ref-rail__h {
+  text-transform: none;
+  letter-spacing: -0.025em;
+  font-size: var(--rail-type-lg);
+}

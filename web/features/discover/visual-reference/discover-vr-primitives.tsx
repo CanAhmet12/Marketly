@@ -5,7 +5,7 @@ import { useCallback, useRef, type ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-export type RailAccent = "live" | "teal" | "signal" | "default";
+export type RailAccent = "live" | "teal" | "signal" | "peak" | "default";
 
 export function HScroll({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -49,46 +49,52 @@ export function HScroll({ children, className }: { children: ReactNode; classNam
   );
 }
 
+function railLabelClass(accent: RailAccent) {
+  return cn(
+    "dvr-rail-label",
+    accent === "live" && "dvr-rail-label--live",
+    accent === "teal" && "dvr-rail-label--teal",
+    accent === "signal" && "dvr-rail-label--signal",
+    accent === "peak" && "dvr-rail-label--peak",
+  );
+}
+
+export function RailSeeAll({ href, label = "Tümünü gör" }: { href: string; label?: string }) {
+  return (
+    <Link href={href} className="dvr-rail-see-all">
+      <span>{label}</span>
+      <span className="dvr-rail-see-all__arrow" aria-hidden>
+        →
+      </span>
+    </Link>
+  );
+}
+
 export function RailHeader({
   seriesKicker,
   label,
   seeAllHref,
   seeAllLabel,
   accent = "default",
+  className,
 }: {
   seriesKicker?: string;
   label: string;
   seeAllHref?: string;
   seeAllLabel?: string;
   accent?: RailAccent;
+  className?: string;
 }) {
   return (
-    <div className="dvr-rail-header">
+    <div className={cn("dvr-rail-header", className)} data-rail-accent={accent}>
       <div className="dvr-rail-header__left">
         {seriesKicker ? <span className="dvr-rail-series">{seriesKicker}</span> : null}
-        <span
-          className={cn(
-            "dvr-rail-label",
-            accent === "live" && "dvr-rail-label--live",
-            accent === "teal" && "dvr-rail-label--teal",
-            accent === "signal" && "dvr-rail-label--signal",
-          )}
-        >
-          {accent === "live" ? (
-            <span
-              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-red-400"
-              style={{ animation: "dvr-live-dot-pulse 1.2s ease-in-out infinite" }}
-              aria-hidden
-            />
-          ) : null}
+        <h2 className={railLabelClass(accent)}>
+          {accent === "live" ? <span className="dvr-rail-live-dot" aria-hidden /> : null}
           {label}
-        </span>
+        </h2>
       </div>
-      {seeAllHref ? (
-        <Link href={seeAllHref} className="dvr-rail-see-all">
-          {seeAllLabel ?? "Tümünü gör"}
-        </Link>
-      ) : null}
+      {seeAllHref ? <RailSeeAll href={seeAllHref} label={seeAllLabel} /> : null}
     </div>
   );
 }
@@ -99,6 +105,7 @@ export function Rail({
   seeAllHref,
   seeAllLabel,
   accent = "default",
+  className,
   children,
 }: {
   seriesKicker?: string;
@@ -106,10 +113,11 @@ export function Rail({
   seeAllHref?: string;
   seeAllLabel?: string;
   accent?: RailAccent;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="dvr-rail-section" aria-label={label}>
+    <section className={cn("dvr-rail-section", className)} aria-label={label} data-rail-accent={accent}>
       <RailHeader
         seriesKicker={seriesKicker}
         label={label}

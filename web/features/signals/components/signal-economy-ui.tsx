@@ -11,22 +11,22 @@ export function SignalEconomyChipsRow({ row, dense, className }: { row: SignalsF
   return (
     <div className={cn("flex flex-wrap gap-1", dense ? "gap-1" : "gap-1.5", className)}>
       {row.signal_access !== "public" ? (
-        <span className="max-w-full truncate rounded-md border border-[color-mix(in_srgb,var(--color-primary)_28%,var(--ms-border-hairline))] bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] px-1.5 py-px text-[10px] font-semibold text-[var(--color-primary-dark)]">
+        <span className="max-w-full truncate rounded-md border border-[color-mix(in_srgb,var(--color-primary)_28%,var(--ms-border-hairline))] bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-primary-dark)]">
           {signalAccessLabel(row.signal_access)}
         </span>
       ) : null}
       {row.analyst.tier && row.analyst.tier !== "free" ? (
-        <span className="rounded-md border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+        <span className="rounded-md border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_4%,transparent)] px-1.5 py-px text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
           {row.analyst.tier}
         </span>
       ) : null}
       {row.analyst.verified ? (
-        <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1.5 py-px text-[10px] font-semibold text-[var(--color-meta)]">
+        <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-meta)]">
           Profesyonel
         </span>
       ) : null}
       {row.signal_package_label ? (
-        <span className="max-w-[min(100%,12rem)] truncate rounded-md border border-[var(--ms-border-hairline)] px-1.5 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">{row.signal_package_label}</span>
+        <span className="max-w-[min(100%,12rem)] truncate rounded-md border border-[var(--ms-border-hairline)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">{row.signal_package_label}</span>
       ) : null}
     </div>
   );

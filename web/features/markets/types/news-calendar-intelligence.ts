@@ -1,5 +1,16 @@
 /** Piyasa haberleri — haber odası (MarketsRepository) */
 
+/** Live/mock detay sayfası ek alanları */
+export type MarketNewsLiveFields = {
+  imageUrl: string | null;
+  sourceUrl: string;
+  summary: string | null;
+  publishedAt: string;
+  sentimentLabel: string | null;
+};
+
+export type MarketNewsDetailItem = MarketNewsIntelligenceItem & Partial<MarketNewsLiveFields>;
+
 export type MarketNewsIntelligenceItem = {
   id: string;
   symbol: string;

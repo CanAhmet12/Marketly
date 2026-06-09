@@ -70,7 +70,7 @@ export function ForexBottomStrip({ strip }: Props) {
               <div className="cc-cal-icon" aria-hidden>{COUNTRY_FLAG[item.country] ?? "🌐"}</div>
               <div className="cc-cal-info">
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--cc-meta)" }}>{item.time}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--cc-meta)" }}>{item.time}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#8b5cf6" }}>{item.bank}</span>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: IMPACT_DOT[item.impact], flexShrink: 0 }} aria-hidden />
                 </div>
@@ -91,7 +91,7 @@ export function ForexBottomStrip({ strip }: Props) {
             <div key={item.symbol} className="fc-commodity-row">
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <span className="fc-commodity-symbol">{item.symbol}</span>
-                {item.unit && <span style={{ fontSize: 9, color: "var(--cc-meta)" }}>{item.unit}</span>}
+                {item.unit && <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{item.unit}</span>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 1 }}>
                 <span className="fc-commodity-price">{fmtPrice(item.price)}</span>

@@ -1,0 +1,314 @@
+/**
+ * Üreticiler dizini — Oturum 1 premium shell (warm editorial fintech)
+ */
+
+.crt-canvas {
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: calc(100dvh - var(--chrome-top-offset, 3.5rem));
+}
+
+.crt-directory {
+  padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+}
+
+.crt-directory .creators-page__title {
+  font-size: var(--type-page);
+  line-height: var(--type-page--leading);
+  font-weight: var(--type-page--weight);
+  letter-spacing: var(--type-page--tracking, -0.028em);
+}
+
+.crt-directory .creators-page__desc {
+  font-size: var(--type-meta);
+  line-height: var(--type-meta--leading);
+  color: var(--color-text-secondary);
+}
+
+/* —— Boş / hata durumları —— */
+.creators-directory-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-6) var(--sp-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-card);
+  background: color-mix(in srgb, var(--color-card-plate) 92%, var(--color-primary-light) 8%);
+  box-shadow: var(--shadow-card);
+}
+
+.creators-directory-section--featured .creators-directory-state,
+.creators-directory-section--directory .creators-directory-state {
+  width: 100%;
+}
+
+.creators-directory-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface) 90%);
+  color: var(--color-primary-dark);
+}
+
+.creators-directory-state__title {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--type-content-title);
+  line-height: var(--type-content-title--leading);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: var(--type-content-title--tracking, -0.024em);
+  color: var(--color-text);
+}
+
+.creators-directory-state__desc {
+  margin: var(--sp-2) 0 0;
+  max-width: 26rem;
+  font-size: var(--type-meta);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.creators-directory-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.creators-directory-state__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.125rem;
+  padding: 0 var(--sp-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--type-chip);
+  font-weight: var(--type-chip--weight);
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.creators-directory-state__btn:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: var(--color-surface-hover);
+}
+
+.creators-directory-state__btn--primary {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 11%, var(--color-card-plate) 89%);
+  color: var(--color-primary-dark);
+}
+
+.creators-directory-state__btn--primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-card-plate) 84%);
+}
+
+/* —— Bölüm slotları —— */
+.creators-directory-section + .creators-directory-section {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid color-mix(in srgb, var(--color-divider) 70%, transparent);
+}
+
+.creators-directory-section--live .creators-directory-state {
+  padding: var(--sp-4);
+}
+
+/* —— Skeleton —— */
+.creators-directory-sk {
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-surface-muted) 80%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface-hover) 60%, transparent) 50%,
+    color-mix(in srgb, var(--color-surface-muted) 80%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: crt-directory-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes crt-directory-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.creators-directory-sk--back {
+  width: 4.5rem;
+  height: 0.75rem;
+  margin-bottom: var(--sp-2);
+}
+
+.creators-directory-sk--title {
+  width: 7rem;
+  height: 1.35rem;
+}
+
+.creators-directory-sk--desc {
+  width: min(18rem, 70%);
+  height: 0.75rem;
+  margin-top: var(--sp-2);
+}
+
+.creators-directory-sk--search {
+  flex: 1 1 120px;
+  height: 30px;
+  min-width: 0;
+}
+
+.creators-directory-sk--sort {
+  width: 6.5rem;
+  height: 30px;
+}
+
+.creators-directory-sk--filter {
+  width: 4.25rem;
+  height: 30px;
+}
+
+.creators-directory-sk--tab {
+  width: 4.5rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.creators-directory-sk-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.creators-directory-sk--label {
+  height: 0.75rem;
+}
+
+.creators-directory-sk--sub {
+  width: 12rem;
+  height: 0.65rem;
+}
+
+.creators-directory-sk-grid {
+  display: grid;
+  gap: var(--sp-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .creators-directory-sk-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .creators-directory-sk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.creators-directory-sk--card {
+  min-height: 9.5rem;
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creators-directory-sk {
+    animation: none;
+  }
+}
+
+/* —— Keşfet hub önizlemesi (dvr içinde) —— */
+.creators-hub-preview__featured-track {
+  display: flex;
+  gap: var(--sp-3);
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.creators-hub-preview__featured-item {
+  flex: 0 0 min(300px, 86vw);
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.creators-hub-preview__directory-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.creators-hub-preview__intro-skeleton {
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-3);
+  background: color-mix(in srgb, var(--dvr-border) 40%, transparent);
+}
+
+.creators-hub-preview__row-skeleton {
+  height: 6rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--dvr-border) 35%, transparent);
+}
+
+.dvr-tab-stream.creators-hub-preview .creators-directory-state {
+  background: color-mix(in srgb, var(--dvr-card-plate, var(--color-card-plate)) 94%, transparent);
+  border-color: var(--dvr-border, var(--color-border));
+  box-shadow: none;
+}
+
+.dvr-tab-stream.creators-hub-preview .creators-card {
+  background: var(--dvr-card-plate, var(--color-card-plate));
+  border-color: var(--dvr-border, var(--color-border));
+}
+
+/* —— Dizin sayfalama alt bilgisi —— */
+.creators-directory-load-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) 0 var(--sp-2);
+  text-align: center;
+}
+
+.creators-directory-load-footer__meta {
+  margin: 0;
+  font-size: var(--type-meta);
+  color: var(--color-text-secondary);
+}
+
+.creators-directory-load-footer__btn {
+  min-height: 2.125rem;
+  padding: 0 var(--sp-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-card-plate) 90%);
+  font-size: var(--type-chip);
+  font-weight: var(--type-chip--weight);
+  color: var(--color-primary-dark);
+  cursor: pointer;
+}
+
+.creators-directory-load-footer__btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-card-plate) 84%);
+}
+
+.creators-directory-load-footer__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.creators-directory-load-footer__end {
+  margin: 0;
+  font-size: var(--type-meta);
+  color: var(--color-meta);
+}

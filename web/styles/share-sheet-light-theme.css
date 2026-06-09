@@ -1,0 +1,21 @@
+html[data-theme="light"] .ml-share-sheet {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .ml-share-action--primary {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+html[data-theme="light"] .ml-share-action--primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 14%, #ffffff 86%);
+}
+
+html[data-theme="light"] .ml-share-toast {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}

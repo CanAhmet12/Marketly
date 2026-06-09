@@ -1,0 +1,155 @@
+/**
+ * Portföy — bölge renk sistemi
+ * Referans: studio-tone-system, channel-tone-system
+ * Modlar: live (emerald) · paper (altın demo)
+ */
+
+/* ─── Varsayılan — canlı portföy ─────────────────────────────────────────── */
+.pf-canvas {
+  --pf-zone-1: #0f9d75;
+  --pf-zone-2: #0d7a5c;
+  --pf-zone-3: #5eead4;
+  --pf-zone-ambient: color-mix(in srgb, #0f9d75 7%, transparent);
+  --pf-zone-border: color-mix(in srgb, #0f9d75 22%, var(--pf-border-2));
+  --pf-zone-glow: color-mix(in srgb, #5eead4 14%, transparent);
+  --pf-chart-primary: var(--pf-zone-1);
+}
+
+.pf-canvas[data-portfolio-mode="live"] {
+  --pf-zone-1: #10b981;
+  --pf-zone-2: #047857;
+  --pf-zone-3: #6ee7b7;
+  --pf-zone-ambient: color-mix(in srgb, #10b981 9%, transparent);
+  --pf-zone-border: color-mix(in srgb, #10b981 26%, var(--pf-border-2));
+  --pf-zone-glow: color-mix(in srgb, #6ee7b7 18%, transparent);
+  --pf-chart-primary: #0f9d75;
+}
+
+/* Kağıt portföy — altın demo */
+.pf-canvas[data-portfolio-mode="paper"] {
+  --pf-zone-1: #e8a317;
+  --pf-zone-2: #9a5f00;
+  --pf-zone-3: #fde68a;
+  --pf-zone-ambient: color-mix(in srgb, #e8a317 10%, transparent);
+  --pf-zone-border: color-mix(in srgb, #e8a317 28%, var(--pf-border-2));
+  --pf-zone-glow: color-mix(in srgb, #fde68a 20%, transparent);
+  --pf-chart-primary: #d4920a;
+}
+
+.pf-canvas[data-portfolio-mode] {
+  --pf-accent: var(--pf-zone-1);
+}
+
+/* ─── Blok bölgesi — stripe & badge ──────────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-block[data-pf-block-zone="performance"] .pf-block-stripe {
+  background: var(--pf-zone-performance, #0f9d75);
+}
+
+.pf-canvas[data-portfolio-mode="paper"] .pf-block[data-pf-block-zone="performance"] .pf-block-stripe {
+  background: var(--pf-zone-1);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block[data-pf-block-zone="holdings"] .pf-block-stripe {
+  background: var(--pf-zone-holdings, #0891b2);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block[data-pf-block-zone="allocation"] .pf-block-stripe {
+  background: var(--pf-zone-allocation, #7c3aed);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block[data-pf-block-zone="risk"] .pf-block-stripe,
+.pf-canvas[data-portfolio-mode] .pf-block-stripe--risk-low {
+  background: #22c55e;
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block-stripe--risk-mid {
+  background: #f97316;
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block-stripe--risk-high {
+  background: #ef4444;
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block[data-pf-block-zone="signals"] .pf-block-stripe {
+  background: #059669;
+}
+
+/* ─── Ambient wash (ana içerik) ─────────────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-main-area {
+  position: relative;
+  isolation: isolate;
+}
+
+.pf-canvas[data-portfolio-mode] .pf-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    168deg,
+    var(--pf-zone-ambient) 0%,
+    color-mix(in srgb, var(--pf-zone-ambient) 35%, transparent) 42%,
+    transparent 78%
+  );
+}
+
+.pf-canvas[data-portfolio-mode] .pf-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Chrome: header, hero, primary btn ──────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-header {
+  border-bottom-color: var(--pf-zone-border);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-header-btn--primary {
+  color: var(--pf-zone-1);
+  border-color: color-mix(in srgb, var(--pf-zone-1) 35%, var(--pf-border));
+  background: color-mix(in srgb, var(--pf-zone-1) 8%, transparent);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-header-btn--primary:hover {
+  background: color-mix(in srgb, var(--pf-zone-1) 14%, transparent);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-hero {
+  border-color: var(--pf-zone-border);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-chart-badge--live {
+  color: var(--pf-zone-1);
+  border-color: color-mix(in srgb, var(--pf-zone-1) 35%, transparent);
+  background: color-mix(in srgb, var(--pf-zone-1) 7%, transparent);
+}
+
+.pf-canvas[data-portfolio-mode="paper"] .pf-chart-badge--demo {
+  color: var(--pf-zone-1);
+  border-color: color-mix(in srgb, var(--pf-zone-1) 35%, transparent);
+  background: color-mix(in srgb, var(--pf-zone-1) 8%, transparent);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block-link {
+  color: color-mix(in srgb, var(--pf-zone-1) 65%, transparent);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-block-link:hover {
+  color: var(--pf-zone-1);
+}
+
+/* ─── Risk tonları (inline style yok) ────────────────────────────────────── */
+.pf-risk-tone--low,
+.pf-stat-value.pf-risk-tone--low {
+  color: #22c55e;
+}
+
+.pf-risk-tone--mid,
+.pf-stat-value.pf-risk-tone--mid {
+  color: #f97316;
+}
+
+.pf-risk-tone--high,
+.pf-stat-value.pf-risk-tone--high {
+  color: #ef4444;
+}

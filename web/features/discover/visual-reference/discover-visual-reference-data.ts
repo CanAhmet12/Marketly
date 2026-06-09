@@ -96,6 +96,8 @@ export type VRVideoItem = {
   episodeLabel?: string;
 };
 
+export type VRSignalStatus = "in_entry" | "toward_target" | "near_stop" | "watching";
+
 export type VRSignalItem = {
   id: string;
   symbol: string;
@@ -113,6 +115,16 @@ export type VRSignalItem = {
   rr: string;
   age: string;
   href: string;
+  /** Anlık spot fiyat */
+  spotPrice: string;
+  /** Günlük/saatlik değişim */
+  changePct: string;
+  changePositive: boolean;
+  /** Sinyal durumu — giriş bandı, hedef yakını vb. */
+  signalStatus: VRSignalStatus;
+  signalStatusLabel: string;
+  /** Stop ↔ hedef arasında fiyat konumu (0–100) */
+  pricePosition: number;
 };
 
 export type VRMiniSignal = {
@@ -133,6 +145,7 @@ export type VRMarketTicker = {
   change: string;
   positive: boolean;
   href: string;
+  category?: import("@/features/markets/types").MarketAssetCategory | null;
 };
 
 export type VRCreatorItem = {
@@ -509,6 +522,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "2.8x",
     age: "14dk",
     href: vrSignalHref(0),
+    spotPrice: "₺357.20",
+    changePct: "+2.4%",
+    changePositive: true,
+    signalStatus: "in_entry",
+    signalStatusLabel: "Giriş bandında",
+    pricePosition: 42,
   },
   {
     id: "sig-2",
@@ -527,6 +546,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "2.2x",
     age: "32dk",
     href: vrSignalHref(1),
+    spotPrice: "$97.420",
+    changePct: "-1.8%",
+    changePositive: false,
+    signalStatus: "toward_target",
+    signalStatusLabel: "Hedefe yaklaşıyor",
+    pricePosition: 68,
   },
   {
     id: "sig-3",
@@ -545,6 +570,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "3.1x",
     age: "1sa",
     href: vrSignalHref(2),
+    spotPrice: "₺131.40",
+    changePct: "+1.8%",
+    changePositive: true,
+    signalStatus: "in_entry",
+    signalStatusLabel: "Giriş bandında",
+    pricePosition: 38,
   },
   {
     id: "sig-4",
@@ -563,6 +594,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "1.8x",
     age: "3sa",
     href: vrSignalHref(3),
+    spotPrice: "$2.398",
+    changePct: "+0.8%",
+    changePositive: true,
+    signalStatus: "watching",
+    signalStatusLabel: "Nötr — izleme",
+    pricePosition: 52,
   },
   {
     id: "sig-5",
@@ -581,6 +618,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "2.1x",
     age: "2sa",
     href: vrSignalHref(4),
+    spotPrice: "$3.862",
+    changePct: "+3.2%",
+    changePositive: true,
+    signalStatus: "in_entry",
+    signalStatusLabel: "Giriş bandında",
+    pricePosition: 45,
   },
   {
     id: "sig-6",
@@ -599,6 +642,12 @@ export const VR_SIGNAL_ITEMS: VRSignalItem[] = [
     rr: "3.3x",
     age: "45dk",
     href: vrSignalHref(5),
+    spotPrice: "₺33.82",
+    changePct: "-0.6%",
+    changePositive: false,
+    signalStatus: "near_stop",
+    signalStatusLabel: "Stop yakınında",
+    pricePosition: 22,
   },
 ];
 

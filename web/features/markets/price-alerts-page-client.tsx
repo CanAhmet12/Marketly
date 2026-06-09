@@ -3,64 +3,91 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/states";
+import { HubButtonLink } from "@/features/hub/components/hub-button";
+import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
+import { HubPageHeader } from "@/features/hub/components/hub-page-header";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { useAuth } from "@/features/auth/use-auth";
 import { usePriceAlertsPage } from "@/features/markets/hooks/use-price-alerts-page";
 import { formatSocialRelativeTime } from "@/features/social/lib/social-format";
+
+const LOGIN_NEXT = "/hub/price-alerts";
 
 export function PriceAlertsPageClient() {
   const { user, isInitialized } = useAuth();
   const { grouped, totalCount, ready, loading, error, remove, refetch } = usePriceAlertsPage();
 
+  const pageHeader = (
+    <HubPageHeader
+      kicker={hubPremiumKicker("finance", "Uyarılar")}
+      title="Fiyat Alarmları"
+      subtitle="Varlık sayfalarından eklediğiniz alarmlar burada toplanır. Bildirim tercihleri Ayarlar → Bildirimler bölümünden yönetilir."
+      actions={
+        <HubButtonLink href="/markets" variant="primary">
+          Piyasalara Git
+        </HubButtonLink>
+      }
+    />
+  );
+
   if (!isInitialized || !ready || loading) {
     return (
-      <div className="pa-page">
+      <HubPageShell zone="finance" className="pa-page" header={pageHeader}>
         <div className="pa-skeleton" aria-hidden />
-      </div>
+      </HubPageShell>
     );
   }
 
   if (!user) {
     return (
-      <EmptyState
-        title="Giriş gerekli"
-        description="Fiyat alarmlarını yönetmek için oturum açın."
-        actionLabel="Giriş yap"
-        actionHref="/auth/login"
-        tone="market"
-        compact
-      />
+      <HubPageShell zone="finance" className="pa-page" header={pageHeader} mainClassName="py-16">
+        <EmptyState
+          title="Giriş gerekli"
+          description="Fiyat alarmlarını yönetmek için oturum açın."
+          actionLabel="Giriş yap"
+          actionHref={`/auth/login?next=${encodeURIComponent(LOGIN_NEXT)}`}
+          tone="market"
+          compact
+        />
+      </HubPageShell>
     );
   }
 
   if (error) {
     return (
-      <EmptyState
-        title="Alarmlar yüklenemedi"
-        description={error}
-        actionLabel="Tekrar dene"
-        onAction={() => void refetch()}
-        tone="market"
-        compact
-      />
+      <HubPageShell zone="finance" className="pa-page" header={pageHeader} mainClassName="py-16">
+        <EmptyState
+          title="Alarmlar yüklenemedi"
+          description={error}
+          actionLabel="Tekrar dene"
+          onAction={() => void refetch()}
+          tone="market"
+          compact
+        />
+      </HubPageShell>
     );
   }
 
   return (
-    <div className="pa-page">
-      <header className="pa-header">
-        <div>
-          <p className="pa-kicker">Piyasa uyarıları</p>
-          <h1 className="pa-title">Fiyat alarmları</h1>
-          <p className="pa-sub">
-            Varlık sayfalarından eklediğiniz alarmlar burada toplanır. Bildirim tercihleri Ayarlar → Bildirimler bölümünden yönetilir.
-          </p>
-        </div>
-        <div className="pa-stat">
-          <span className="pa-stat-val">{totalCount}</span>
-          <span className="pa-stat-label">aktif alarm</span>
-        </div>
-      </header>
-
+    <HubPageShell
+      zone="finance"
+      className="pa-page"
+      header={pageHeader}
+      hero={
+        <HubHeroStrip
+          stats={[
+            {
+              label: "Aktif Alarm",
+              value: totalCount,
+              change: grouped.length > 0 ? `${grouped.length} sembol` : "Henüz yok",
+              changeTone: "neutral",
+              valueAccent: true,
+            },
+          ]}
+        />
+      }
+    >
       {grouped.length === 0 ? (
         <EmptyState
           title="Henüz alarm yok"
@@ -102,6 +129,6 @@ export function PriceAlertsPageClient() {
           ))}
         </div>
       )}
-    </div>
+    </HubPageShell>
   );
 }

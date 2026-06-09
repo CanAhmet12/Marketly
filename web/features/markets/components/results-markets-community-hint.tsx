@@ -27,7 +27,7 @@ export function ResultsMarketsCommunityHint({ marketSymbols }: Props) {
 
   return (
     <div className="mb-4 rounded-[var(--radius-lg)] border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Tartışma ağı</p>
+      <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Tartışma ağı</p>
       {debates.length ? (
         <ul className="mt-1 space-y-1">
           {debates.map((d) => (

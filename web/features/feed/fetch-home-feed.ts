@@ -3,9 +3,39 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { HomeFeedMode } from "@/features/home/repository/types";
 import { friendlyPostgrestMessage } from "@/lib/supabase/postgrest-error";
 
+import { readPostComments, readPostLikes } from "./post-count-fields";
 import type { FeedPageResult, FeedPost } from "./types";
 
 const PAGE_SIZE = 10;
+
+const POST_FEED_SELECT = `
+          id, user_id, content, asset_tag, image_url, type, video_url, thumbnail_url, title,
+          likes, comments, likes_count, comments_count, views_count, created_at,
+          media_urls, mentioned_users, link_preview, quoted_post_id, reply_to_post_id,
+          profiles!posts_user_id_fkey (
+            id,
+            username,
+            full_name,
+            avatar_url,
+            tier
+          ),
+          post_likes!left (
+            user_id
+          )
+        `;
+
+const POST_QUOTED_SELECT = `
+            id, user_id, content, asset_tag, image_url, type, thumbnail_url, title,
+            likes, comments, likes_count, comments_count, views_count, created_at,
+            media_urls, link_preview,
+            profiles!posts_user_id_fkey (
+              id,
+              username,
+              full_name,
+              avatar_url,
+              tier
+            )
+          `;
 
 export type HomeFeedFetchMode = HomeFeedMode;
 
@@ -23,38 +53,22 @@ function pickProfile(p: { profiles?: unknown }): ProfileJoin | null {
   return raw as ProfileJoin;
 }
 
-function mapQuotedRow(qp: {
-  id: string;
-  user_id: string;
-  content: string;
-  asset_tag?: string | null;
-  image_url?: string | null;
-  type?: string | null;
-  thumbnail_url?: string | null;
-  title?: string | null;
-  likes?: number;
-  comments?: number;
-  views_count?: number | null;
-  created_at: string;
-  media_urls?: unknown;
-  link_preview?: unknown;
-  profiles?: unknown;
-}): FeedPost {
+function mapQuotedRow(qp: Record<string, unknown>): FeedPost {
   const prof = pickProfile({ profiles: qp.profiles });
   return {
-    id: qp.id,
-    user_id: qp.user_id,
-    content: qp.content,
-    asset_tag: qp.asset_tag ?? null,
-    image_url: qp.image_url ?? null,
-    type: qp.type ?? null,
+    id: String(qp.id),
+    user_id: String(qp.user_id),
+    content: String(qp.content ?? ""),
+    asset_tag: qp.asset_tag != null ? String(qp.asset_tag) : null,
+    image_url: qp.image_url != null ? String(qp.image_url) : null,
+    type: qp.type != null ? String(qp.type) : null,
     video_url: null,
-    thumbnail_url: qp.thumbnail_url ?? null,
-    title: qp.title ?? null,
-    likes: qp.likes ?? 0,
-    comments: qp.comments ?? 0,
-    views_count: qp.views_count ?? null,
-    created_at: qp.created_at,
+    thumbnail_url: qp.thumbnail_url != null ? String(qp.thumbnail_url) : null,
+    title: qp.title != null ? String(qp.title) : null,
+    likes: readPostLikes(qp),
+    comments: readPostComments(qp),
+    views_count: typeof qp.views_count === "number" ? qp.views_count : null,
+    created_at: String(qp.created_at ?? ""),
     author_name: prof?.full_name ?? "Kullanıcı",
     author_handle: `@${prof?.username ?? "user"}`,
     author_avatar: prof?.avatar_url ?? null,
@@ -70,65 +84,51 @@ function mapQuotedRow(qp: {
 }
 
 function mapMainRow(
-  row: {
-    id: string;
-    user_id: string;
-    content: string;
-    asset_tag?: string | null;
-    image_url?: string | null;
-    type?: string | null;
-    video_url?: string | null;
-    thumbnail_url?: string | null;
-    title?: string | null;
-    likes?: number;
-    comments?: number;
-    views_count?: number | null;
-    created_at: string;
-    media_urls?: unknown;
-    mentioned_users?: string[] | null;
-    link_preview?: unknown;
-    quoted_post_id?: string | null;
-    profiles?: unknown;
-    post_likes?: { user_id: string } | { user_id: string }[] | null;
-  },
+  row: Record<string, unknown>,
   userId: string | null,
   quotedMap: Record<string, FeedPost>,
   savedSet: Set<string> | null,
 ): FeedPost {
   const prof = pickProfile({ profiles: row.profiles });
+  const postLikes = row.post_likes as { user_id: string } | { user_id: string }[] | null | undefined;
+  const quotedId = row.quoted_post_id != null ? String(row.quoted_post_id) : null;
   return {
-    id: row.id,
-    user_id: row.user_id,
-    content: row.content,
-    asset_tag: row.asset_tag ?? null,
-    image_url: row.image_url ?? null,
-    type: row.type ?? null,
-    video_url: row.video_url ?? null,
-    thumbnail_url: row.thumbnail_url ?? null,
-    title: row.title ?? null,
-    likes: row.likes ?? 0,
-    comments: row.comments ?? 0,
-    views_count: row.views_count ?? null,
-    created_at: row.created_at,
+    id: String(row.id),
+    user_id: String(row.user_id),
+    content: String(row.content ?? ""),
+    asset_tag: row.asset_tag != null ? String(row.asset_tag) : null,
+    image_url: row.image_url != null ? String(row.image_url) : null,
+    type: row.type != null ? String(row.type) : null,
+    video_url: row.video_url != null ? String(row.video_url) : null,
+    thumbnail_url: row.thumbnail_url != null ? String(row.thumbnail_url) : null,
+    title: row.title != null ? String(row.title) : null,
+    likes: readPostLikes(row),
+    comments: readPostComments(row),
+    views_count: typeof row.views_count === "number" ? row.views_count : null,
+    created_at: String(row.created_at ?? ""),
     author_name: prof?.full_name ?? "Kullanıcı",
     author_handle: `@${prof?.username ?? "user"}`,
     author_avatar: prof?.avatar_url ?? null,
     author_tier: prof?.tier ?? "free",
     is_liked: userId
       ? Boolean(
-          Array.isArray(row.post_likes)
-            ? row.post_likes.some((l) => l.user_id === userId)
-            : row.post_likes && (row.post_likes as { user_id: string }).user_id === userId,
+          Array.isArray(postLikes)
+            ? postLikes.some((l) => l.user_id === userId)
+            : postLikes && postLikes.user_id === userId,
         )
       : false,
-    is_saved: Boolean(userId && savedSet?.has(row.id)),
+    is_saved: Boolean(userId && savedSet?.has(String(row.id))),
     media_urls: (row.media_urls as FeedPost["media_urls"]) ?? null,
-    mentioned_users: row.mentioned_users ?? null,
+    mentioned_users: (row.mentioned_users as string[] | null) ?? null,
     link_preview: (row.link_preview as FeedPost["link_preview"]) ?? null,
-    quoted_post_id: row.quoted_post_id ?? null,
-    quoted_post:
-      row.quoted_post_id && quotedMap[row.quoted_post_id] ? quotedMap[row.quoted_post_id] : null,
+    quoted_post_id: quotedId,
+    quoted_post: quotedId && quotedMap[quotedId] ? quotedMap[quotedId] : null,
   };
+}
+
+/** Ana akışta yanıt gönderilerini gösterme — thread kökleri kalır */
+function applyFeedStreamFilters<T extends { is: (col: string, val: null) => T }>(q: T): T {
+  return q.is("reply_to_post_id", null);
 }
 
 /**
@@ -158,26 +158,8 @@ export async function fetchHomeFeedPage(
     }
   }
 
-  let q = client
-    .from("posts")
-    .select(
-      `
-          id, user_id, content, asset_tag, image_url, type, video_url, thumbnail_url, title, likes, comments, views_count, created_at,
-          media_urls, mentioned_users, link_preview, quoted_post_id,
-          profiles!posts_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar_url,
-            tier
-          ),
-          post_likes!left (
-            user_id
-          )
-        `,
-    )
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  let q = client.from("posts").select(POST_FEED_SELECT);
+  q = applyFeedStreamFilters(q);
 
   if (followingIds) {
     q = q.in("user_id", followingIds);
@@ -187,7 +169,39 @@ export async function fetchHomeFeedPage(
     q = q.or("type.is.null,type.not.in.(video,short,live,signal)");
   }
 
-  const { data, error } = await q;
+  if (mode === "for_you") {
+    q = q
+      .order("likes", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false });
+  } else {
+    q = q.order("created_at", { ascending: false });
+  }
+
+  q = q.range(from, to);
+
+  let result = await q;
+  let data = result.data as Record<string, unknown>[] | null;
+  let error = result.error;
+
+  if (error?.message?.includes("reply_to_post_id")) {
+    const fallbackSelect = POST_FEED_SELECT.replace(/\s*reply_to_post_id,?\s*/g, "\n          ");
+    let fallbackQ = client.from("posts").select(fallbackSelect);
+    if (followingIds) fallbackQ = fallbackQ.in("user_id", followingIds);
+    if (mode === "for_you" || mode === "following") {
+      fallbackQ = fallbackQ.or("type.is.null,type.not.in.(video,short,live,signal)");
+    }
+    if (mode === "for_you") {
+      fallbackQ = fallbackQ
+        .order("likes", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+    } else {
+      fallbackQ = fallbackQ.order("created_at", { ascending: false });
+    }
+    fallbackQ = fallbackQ.range(from, to);
+    const retry = await fallbackQ;
+    data = (retry.data ?? null) as Record<string, unknown>[] | null;
+    error = retry.error;
+  }
   if (error) {
     throw new Error(friendlyPostgrestMessage(error));
   }
@@ -214,40 +228,27 @@ export async function fetchHomeFeedPage(
   }
 
   const quotedIds = data
-    .filter((p: { quoted_post_id?: string | null }) => p.quoted_post_id)
-    .map((p: { quoted_post_id: string }) => p.quoted_post_id);
+    .map((p) => (p.quoted_post_id != null ? String(p.quoted_post_id) : null))
+    .filter((id): id is string => Boolean(id));
 
   let quotedMap: Record<string, FeedPost> = {};
   if (quotedIds.length > 0) {
     const { data: quotedPosts, error: qErr } = await client
       .from("posts")
-      .select(
-        `
-            id, user_id, content, asset_tag, image_url, type, thumbnail_url, title, likes, comments, views_count, created_at, media_urls, link_preview,
-            profiles!posts_user_id_fkey (
-              id,
-              username,
-              full_name,
-              avatar_url,
-              tier
-            )
-          `,
-      )
+      .select(POST_QUOTED_SELECT)
       .in("id", quotedIds);
 
     if (!qErr && quotedPosts?.length) {
       quotedMap = Object.fromEntries(
         quotedPosts.map((qp) => {
-          const r = qp as Parameters<typeof mapQuotedRow>[0];
-          return [r.id, mapQuotedRow(r)];
+          const r = qp as Record<string, unknown>;
+          return [String(r.id), mapQuotedRow(r)];
         }),
       );
     }
   }
 
-  const posts = data.map((row) =>
-    mapMainRow(row as Parameters<typeof mapMainRow>[0], userId, quotedMap, savedSet),
-  );
+  const posts = data.map((row) => mapMainRow(row, userId, quotedMap, savedSet));
   return {
     posts,
     hasMore: data.length === PAGE_SIZE,
@@ -267,22 +268,7 @@ export async function fetchDiscoverFeedPage(
 
   const { data, error } = await client
     .from("posts")
-    .select(
-      `
-          id, user_id, content, asset_tag, image_url, type, video_url, thumbnail_url, title, likes, comments, views_count, created_at,
-          media_urls, mentioned_users, link_preview, quoted_post_id,
-          profiles!posts_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar_url,
-            tier
-          ),
-          post_likes!left (
-            user_id
-          )
-        `,
-    )
+    .select(POST_FEED_SELECT)
     .order("likes", { ascending: false })
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -320,33 +306,20 @@ export async function fetchDiscoverFeedPage(
   if (quotedIds.length > 0) {
     const { data: quotedPosts, error: qErr } = await client
       .from("posts")
-      .select(
-        `
-            id, user_id, content, asset_tag, image_url, type, thumbnail_url, title, likes, comments, views_count, created_at, media_urls, link_preview,
-            profiles!posts_user_id_fkey (
-              id,
-              username,
-              full_name,
-              avatar_url,
-              tier
-            )
-          `,
-      )
+      .select(POST_QUOTED_SELECT)
       .in("id", quotedIds);
 
     if (!qErr && quotedPosts?.length) {
       quotedMap = Object.fromEntries(
         quotedPosts.map((qp) => {
-          const r = qp as Parameters<typeof mapQuotedRow>[0];
-          return [r.id, mapQuotedRow(r)];
+          const r = qp as Record<string, unknown>;
+          return [String(r.id), mapQuotedRow(r)];
         }),
       );
     }
   }
 
-  const posts = data.map((row) =>
-    mapMainRow(row as Parameters<typeof mapMainRow>[0], userId, quotedMap, savedSet),
-  );
+  const posts = data.map((row) => mapMainRow(row as Record<string, unknown>, userId, quotedMap, savedSet));
   return {
     posts,
     hasMore: data.length === PAGE_SIZE,

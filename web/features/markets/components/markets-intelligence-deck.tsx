@@ -14,7 +14,7 @@ type Props = {
 function MoverCol({ title, rows }: { title: string; rows: readonly MarketIntelMoverRow[] }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-meta)]">{title}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-meta)]">{title}</p>
       <ul className="mt-[var(--sp-2)] space-y-1.5">
         {rows.length === 0 ? (
           <li className="text-[12px] font-medium text-[var(--color-meta)]">—</li>
@@ -117,7 +117,7 @@ export function MarketsIntelligenceDeck({ intelligence }: Props) {
         <MarketIntelSection title="Analist dikkati" description="Odağa alınan semboller ve segment liderleri." bodyClassName="p-[var(--sp-3)]">
           <div className="grid gap-[var(--sp-4)] min-[520px]:grid-cols-2">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Takip yoğunluğu</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Takip yoğunluğu</p>
               <ul className="mt-[var(--sp-2)] space-y-1.5">
                 {analystAttention.analystFocusSymbols.length === 0 ? (
                   <li className="text-[12px] text-[var(--color-meta)]">—</li>
@@ -137,7 +137,7 @@ export function MarketsIntelligenceDeck({ intelligence }: Props) {
               </ul>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Tartışma artışı</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Tartışma artışı</p>
               <ul className="mt-[var(--sp-2)] space-y-1.5">
                 {analystAttention.risingDiscussion.map((x) => (
                   <li key={x.symbol} className="flex items-center justify-between gap-[var(--sp-2)] text-[12px]">
@@ -151,7 +151,7 @@ export function MarketsIntelligenceDeck({ intelligence }: Props) {
             </div>
           </div>
           <div className="mt-[var(--sp-3)] border-t border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] pt-[var(--sp-3)]">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Üretici aktivitesi</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Üretici aktivitesi</p>
             <ul className="mt-[var(--sp-2)] flex flex-wrap gap-[var(--sp-2)]">
               {analystAttention.creatorHot.map((x) => (
                 <li key={x.symbol}>
@@ -167,7 +167,7 @@ export function MarketsIntelligenceDeck({ intelligence }: Props) {
             </ul>
           </div>
           <div className="mt-[var(--sp-3)] border-t border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] pt-[var(--sp-3)]">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Segment liderleri</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Segment liderleri</p>
             <div className="mt-[var(--sp-2)] grid gap-[var(--sp-3)] min-[640px]:grid-cols-2">
               {(["crypto", "stocks", "forex", "index", "commodity"] as const).map((seg) => {
                 const leaders = analystAttention.segmentLeaders[seg];

@@ -8,9 +8,9 @@ import type {
 import type { CloseFriendsRepository } from "./close-friends-repository";
 
 const NAV = {
-  subscriptions: "/subscriptions",
-  messages: "/messages",
-  notifications: "/notifications",
+  subscriptions: "/hub/subscriptions",
+  messages: "/hub/messages",
+  notifications: "/hub/notifications",
   discover: "/discover",
   watch: "/watch",
 } as const;
@@ -81,7 +81,7 @@ export class SupabaseCloseFriendsRepository implements CloseFriendsRepository {
         subscription_href: `/subscriptions/${encodeURIComponent(creatorId)}`,
         signals_href: "/signals",
         rooms_href: `/channel/${encodeURIComponent(creatorId)}?tab=rooms`,
-        messages_href: "/messages",
+        messages_href: "/hub/messages",
       },
       feed: [],
       publishing_hint: "Kitle seçimi yakında.",

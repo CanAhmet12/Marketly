@@ -1,0 +1,162 @@
+/* Paylaşım sheet — home + post detail ortak */
+
+.ml-share-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  border: none;
+  background: rgba(0, 0, 0, 0.52);
+  cursor: pointer;
+  animation: ml-share-fade-in 0.2s ease;
+}
+
+@keyframes ml-share-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ml-share-sheet {
+  position: fixed;
+  z-index: 111;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100%, 26rem);
+  padding: 1rem clamp(0.85rem, 2.2vw, 1.35rem) calc(1.15rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 1rem 1rem 0 0;
+  background: var(--color-bg-elevated, var(--color-surface));
+  border: 1px solid var(--color-border, var(--color-divider));
+  border-bottom: none;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28);
+  animation: ml-share-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ml-share-sheet-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(100%); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@media (min-width: 640px) {
+  .ml-share-sheet {
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 1rem;
+    border-bottom: 1px solid var(--color-border, var(--color-divider));
+    animation: ml-share-modal-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes ml-share-modal-in {
+    from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+}
+
+.ml-share-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.ml-share-sheet-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.ml-share-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--color-surface-muted, var(--color-card-plate));
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ml-share-sheet-close:hover {
+  background: var(--color-surface-hover);
+}
+
+.ml-share-sheet-preview {
+  margin: 0 0 0.85rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--color-meta, var(--color-text-secondary));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ml-share-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ml-share-action {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 2.45rem;
+  padding: 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border, var(--color-divider));
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ml-share-action:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-strong, var(--color-border));
+}
+
+.ml-share-action--primary {
+  color: var(--color-primary, #0f9d75);
+  background: var(--color-primary-light, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  border-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.ml-share-action--primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.ml-share-action__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.ml-share-toast {
+  position: fixed;
+  z-index: 112;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary-dark, var(--color-primary));
+  background: var(--color-primary-light, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
+  animation: ml-share-fade-in 0.2s ease;
+  pointer-events: none;
+}

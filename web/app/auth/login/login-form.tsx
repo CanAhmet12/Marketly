@@ -1,22 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { AUTH_LOGIN_SCENE } from "@/features/auth/auth-scenes";
 import { getAuthRepository } from "@/features/auth/repository";
 import { useAuth } from "@/features/auth/use-auth";
-import { getOnboardingRepository } from "@/features/onboarding/repository";
+import { navigateAfterAuth } from "@/lib/auth/post-login-nav";
 import { safeInternalNextPath } from "@/lib/auth/safe-next-path";
 
+const CALLBACK_ERRORS: Record<string, string> = {
+  auth_callback_failed: "Doğrulama bağlantısı geçersiz veya süresi dolmuş. Tekrar giriş yapın veya yeni kayıt oluşturun.",
+};
+
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, isSubmitting, error, clearError, configError } = useAuth();
   const form = useMemo(() => getAuthRepository().getFormPresentation("login"), []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [callbackError, setCallbackError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const code = searchParams.get("error");
+    if (code && CALLBACK_ERRORS[code]) {
+      setCallbackError(CALLBACK_ERRORS[code]);
+    }
+  }, [searchParams]);
 
   const nextQ = useMemo(() => {
     const raw = searchParams.get("next");
@@ -28,35 +40,32 @@ export function LoginForm() {
     async (e: React.FormEvent) => {
       e.preventDefault();
       clearError();
+      setCallbackError(null);
       const ok = await signIn(email, password);
       if (!ok) return;
-      const explicitNext = searchParams.get("next");
-      const resolved = safeInternalNextPath(explicitNext);
-      const onboarding = getOnboardingRepository();
-      const wantsDefaultHome = !explicitNext || resolved === "/";
-      const target = wantsDefaultHome && onboarding.needsOnboarding() ? "/onboarding" : resolved;
-      router.replace(target);
-      router.refresh();
+      navigateAfterAuth(searchParams.get("next"), "/");
     },
-    [signIn, email, password, clearError, router, searchParams],
+    [signIn, email, password, clearError, searchParams],
   );
 
   return (
-    <div className="w-full max-w-[400px]">
+    <div className="auth-form-panel">
       {configError ? (
-        <div role="alert" className="mb-3 rounded-[12px] border border-amber-200/90 bg-amber-50 px-3 py-2.5 text-[13px] font-medium text-amber-950">
+        <div role="alert" className="auth-form-alert auth-form-alert--warn">
           {configError}
         </div>
       ) : null}
-      <div className="rounded-[14px] border border-[color-mix(in_srgb,var(--color-border)_90%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-[var(--sp-4)] shadow-[var(--shadow-card)] min-[480px]:px-[var(--sp-4)]">
-        <h1 className="text-[20px] font-bold tracking-tight text-[var(--color-text)]">{form.title}</h1>
-        <p className="mt-1 text-[13px] font-medium leading-snug text-[var(--color-text-secondary)]">{form.subtitle}</p>
 
-        <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-3">
-          <div>
-            <label htmlFor="email" className="mb-1 block text-[12px] font-bold text-[var(--color-text)]">
-              E-posta
-            </label>
+      <header className="auth-form-panel__head">
+        <span className="auth-form-panel__kicker">{AUTH_LOGIN_SCENE.kicker}</span>
+        <h2 className="auth-form-panel__title">{form.title}</h2>
+        <p className="auth-form-panel__subtitle">{form.subtitle}</p>
+      </header>
+
+      <form onSubmit={onSubmit} className="auth-form-panel__form">
+        <div className="auth-form-panel__fields">
+          <div className="auth-form-field">
+            <label htmlFor="email">E-posta</label>
             <input
               id="email"
               name="email"
@@ -64,15 +73,12 @@ export function LoginForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[14px] font-medium text-[var(--color-text)] outline-none ring-[var(--color-primary-dark)] transition-shadow focus:ring-2"
               placeholder="ornek@email.com"
               disabled={isSubmitting}
             />
           </div>
-          <div>
-            <label htmlFor="password" className="mb-1 block text-[12px] font-bold text-[var(--color-text)]">
-              Şifre
-            </label>
+          <div className="auth-form-field">
+            <label htmlFor="password">Şifre</label>
             <input
               id="password"
               name="password"
@@ -80,42 +86,41 @@ export function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[14px] font-medium text-[var(--color-text)] outline-none ring-[var(--color-primary-dark)] transition-shadow focus:ring-2"
               placeholder="••••••••"
               disabled={isSubmitting}
             />
           </div>
+        </div>
 
-          {error ? (
-            <div role="alert" aria-live="assertive" className="rounded-[10px] bg-red-50 px-3 py-2 text-[13px] font-medium text-red-900">
-              {error}
-            </div>
-          ) : null}
+        {error ? (
+          <div role="alert" aria-live="assertive" className="auth-form-alert auth-form-alert--error">
+            {error}
+          </div>
+        ) : null}
+        {callbackError ? (
+          <div role="alert" aria-live="assertive" className="auth-form-alert auth-form-alert--error">
+            {callbackError}
+          </div>
+        ) : null}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            className="mt-1 flex h-10 items-center justify-center rounded-[10px] bg-[var(--color-text)] text-[13px] font-bold text-[var(--color-surface)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
-          >
+        <div className="auth-form-panel__actions">
+          <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="auth-form-submit">
             {isSubmitting ? "Giriş yapılıyor…" : form.primary_cta}
           </button>
-        </form>
 
-        {form.secondary_hint ? <p className="mt-3 text-center text-[11px] font-medium text-[var(--color-meta)]">{form.secondary_hint}</p> : null}
-
-        <div className="mt-5 flex flex-col gap-2 text-center text-[13px] font-medium text-[var(--color-text-secondary)]">
-          <Link href={`/auth/forgot-password${nextQ}`} className="font-bold text-[var(--color-text)] hover:underline">
-            Şifreni mi unuttun?
-          </Link>
-          <p>
-            Hesabın yok mu?{" "}
-            <Link href={`/auth/register${nextQ}`} className="font-bold text-[var(--color-text)] hover:underline">
-              Kayıt ol
-            </Link>
-          </p>
+          <div className="auth-form-links">
+            <Link href={`/auth/forgot-password${nextQ}`}>Şifreni mi unuttun?</Link>
+            <span className="auth-form-links__sep" aria-hidden>
+              ·
+            </span>
+            <span>
+              Hesabın yok mu? <Link href={`/auth/register${nextQ}`}>Kayıt ol</Link>
+            </span>
+          </div>
         </div>
-      </div>
+      </form>
+
+      {form.secondary_hint ? <p className="auth-form-hint">{form.secondary_hint}</p> : null}
     </div>
   );
 }

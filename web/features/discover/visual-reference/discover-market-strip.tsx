@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, type CSSProperties } from "react";
+
+import { formatSignedChangePercent } from "@/features/markets/lib/market-display";
+import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
+import type { MarketAssetView } from "@/features/markets/types";
 import { cn } from "@/lib/cn";
+import { isMockDataEnabled } from "@/mock/config";
+
+import { resolveTickerMark, TickerMark } from "./discover-ticker-mark";
 import {
   VR_MARKET_TICKERS,
   VR_MINI_SIGNALS,
@@ -9,29 +17,109 @@ import {
   type VRMiniSignal,
 } from "./discover-visual-reference-data";
 
-/* ─── Top atmosphere ticker ──────────────────────────────────────────────── */
-export function MarketTickerStrip({ tickers = VR_MARKET_TICKERS }: { tickers?: VRMarketTicker[] }) {
-  const row = tickers.length > 0 ? tickers : VR_MARKET_TICKERS;
+function formatTickerPrice(price: number): string {
+  if (price >= 1000) return price.toLocaleString("tr-TR", { maximumFractionDigits: 2 });
+  if (price >= 1) return price.toLocaleString("tr-TR", { maximumFractionDigits: 4 });
+  return price.toLocaleString("tr-TR", { maximumFractionDigits: 6 });
+}
+
+export function mapAssetsToTickers(assets: MarketAssetView[]): VRMarketTicker[] {
+  return [...assets]
+    .sort((a, b) => Math.abs(b.change_percent) - Math.abs(a.change_percent))
+    .slice(0, 14)
+    .map((a) => ({
+      id: a.id,
+      symbol: a.symbol,
+      name: a.name,
+      price: formatTickerPrice(a.price),
+      change: formatSignedChangePercent(a.change_percent),
+      positive: a.change_percent > 0,
+      href: `/markets/${encodeURIComponent(a.symbol)}`,
+      category: a.category,
+    }));
+}
+
+function TickerRow({
+  items,
+  ariaHidden = false,
+  keyPrefix = "",
+}: {
+  items: VRMarketTicker[];
+  ariaHidden?: boolean;
+  keyPrefix?: string;
+}) {
   return (
-    <div className="dvr-ticker-strip" aria-label="Piyasa nabzı" role="marquee">
-      <div className="dvr-ticker-inner">
-        {/* Render twice for seamless loop feel */}
-        {[...row, ...row].map((t, i) => (
-          <Link key={`${t.id}-${i}`} href={t.href} className="dvr-ticker-item shrink-0">
+    <div className="dvr-ticker-inner" aria-hidden={ariaHidden || undefined}>
+      {items.map((t, i) => {
+        const mark = resolveTickerMark(t.symbol, t.category);
+        return (
+          <Link
+            key={`${keyPrefix}${t.id}`}
+            href={t.href}
+            className="dvr-ticker-item"
+            title={t.name}
+            data-category={mark.category ?? undefined}
+            style={
+              {
+                "--ticker-accent": mark.color,
+                "--ticker-stagger": `${(i % 8) * 0.35}s`,
+              } as CSSProperties
+            }
+            tabIndex={ariaHidden ? -1 : undefined}
+          >
+            <TickerMark symbol={t.symbol} category={t.category} />
             <span className="dvr-ticker-symbol">{t.symbol}</span>
             <span className="dvr-ticker-price">{t.price}</span>
             <span
               className={cn(
-                "dvr-ticker-change tabular-nums",
+                "dvr-ticker-change",
                 t.positive ? "dvr-ticker-change--up" : "dvr-ticker-change--down",
               )}
             >
               {t.change}
             </span>
           </Link>
-        ))}
-      </div>
+        );
+      })}
     </div>
+  );
+}
+
+/* ─── Premium piyasa ticker ──────────────────────────────────────────────── */
+export function MarketTickerStrip({ tickers }: { tickers: VRMarketTicker[] }) {
+  const row = tickers;
+  const marquee = row.length >= 3;
+
+  return (
+    <nav className="dvr-ticker-strip" aria-label="Piyasa ticker" data-marquee={marquee || undefined}>
+      <div className="dvr-ticker-shell">
+        <div className={cn("dvr-ticker-scroll-wrap", marquee && "dvr-ticker-scroll-wrap--marquee")}>
+          {row.length > 0 ? (
+            <div
+              className={cn("dvr-ticker-track", marquee && "dvr-ticker-track--live")}
+              style={
+                marquee
+                  ? ({ "--ticker-marquee-dur": `${Math.max(28, row.length * 4.2)}s` } as CSSProperties)
+                  : undefined
+              }
+            >
+              <TickerRow items={row} keyPrefix="a-" />
+              {marquee ? <TickerRow items={row} ariaHidden keyPrefix="b-" /> : null}
+            </div>
+          ) : (
+            <div className="dvr-ticker-inner">
+              <span className="dvr-ticker-empty">Piyasa verisi yükleniyor…</span>
+            </div>
+          )}
+        </div>
+
+        <Link href="/markets" className="dvr-ticker-all" aria-label="Tüm piyasalar">
+          <span className="dvr-ticker-all__arrow" aria-hidden>
+            →
+          </span>
+        </Link>
+      </div>
+    </nav>
   );
 }
 
@@ -50,8 +138,9 @@ function MiniSignalPill({ item }: { item: VRMiniSignal }) {
       className="dvr-mini-signal-pill group inline-flex shrink-0 items-center gap-1.5 rounded-lg"
     >
       <span
-        className={cn("dvr-mini-sig-bar h-3.5 w-[2px] shrink-0 rounded-full",
-          item.direction === "BUY"  && "bg-emerald-400/80",
+        className={cn(
+          "dvr-mini-sig-bar h-3.5 w-[2px] shrink-0 rounded-full",
+          item.direction === "BUY" && "bg-emerald-400/80",
           item.direction === "SELL" && "bg-red-400/80",
           item.direction === "HOLD" && "bg-amber-400/60",
         )}
@@ -116,9 +205,9 @@ export function DiscoverAtmosphereStrip() {
             <span
               className={cn(
                 "dvr-atm-sub",
-                t.positive === true  && "text-emerald-400/80",
+                t.positive === true && "text-emerald-400/80",
                 t.positive === false && "text-red-400/80",
-                t.positive === null  && "dvr-atm-sub--neutral",
+                t.positive === null && "dvr-atm-sub--neutral",
               )}
             >
               {t.sub}
@@ -130,8 +219,18 @@ export function DiscoverAtmosphereStrip() {
   );
 }
 
-/* ─── Üst bar: yalnızca ticker (sekmeler + gündem şeridi ayrı katman) ──────── */
-/** Ticker verisi üst katmanda bilinçli static/adapter fallback; gerçek piyasa stream’i ayrı entegrasyon. */
-export function MarketAtmosphereStack({ tickers }: { tickers?: VRMarketTicker[] }) {
-  return <MarketTickerStrip tickers={tickers} />;
+/* ─── Üst bar: canlı ticker ─────────────────────────────────────────────── */
+export function MarketAtmosphereStack({ tickers: propTickers }: { tickers?: VRMarketTicker[] }) {
+  const { assets } = useMarketAssetsLive();
+
+  const liveTickers = useMemo(() => mapAssetsToTickers(assets), [assets]);
+
+  const effective = useMemo(() => {
+    if (propTickers && propTickers.length > 0) return propTickers;
+    if (liveTickers.length > 0) return liveTickers;
+    if (isMockDataEnabled()) return VR_MARKET_TICKERS;
+    return [];
+  }, [propTickers, liveTickers]);
+
+  return <MarketTickerStrip tickers={effective} />;
 }

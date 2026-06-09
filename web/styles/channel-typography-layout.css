@@ -1,0 +1,236 @@
+/**
+ * Channel / Profile — premium tipografi + yerleşim sistemi
+ * Tüm /channel/* yüzeyleri: hiyerarşi, ritim, okunabilirlik
+ */
+
+/* ─── Tipografi & ritim tokenları ─────────────────────────────────────────── */
+.ch-canvas {
+  --font-bold: var(--font-sans);
+  --ch-type-base: 14px;
+  --ch-type-sm: 12px;
+  --ch-type-xs: 11px;
+  --ch-type-2xs: 10px;
+  --ch-type-eyebrow: 10px;
+  --ch-type-name: clamp(20px, 3vw, 26px);
+  --ch-type-stat: 16px;
+  --ch-lh-tight: 1.12;
+  --ch-lh-snug: 1.35;
+  --ch-lh-body: 1.55;
+  --ch-track-tight: -0.03em;
+  --ch-track-caps: 0.1em;
+  --ch-space-page-x: 24px;
+  --ch-space-page-y: 28px;
+  --ch-space-section: 40px;
+  --ch-space-hero-gap: 16px;
+  font-family: var(--font-sans);
+  font-size: var(--ch-type-base);
+  line-height: var(--ch-lh-body);
+  letter-spacing: -0.011em;
+  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+}
+
+@media (min-width: 640px) {
+  .ch-canvas { --ch-space-page-x: 32px; }
+}
+
+@media (min-width: 1024px) {
+  .ch-canvas {
+    --ch-space-page-x: 40px;
+    --ch-space-page-y: 32px;
+    --ch-type-name: clamp(22px, 2.8vw, 28px);
+    --ch-type-stat: 17px;
+    --ch-space-hero-gap: 24px;
+  }
+}
+
+/* ─── Hero & içerik ritmi ─────────────────────────────────────────────────── */
+.ch-hero {
+  padding-left: var(--ch-space-page-x);
+  padding-right: var(--ch-space-page-x);
+}
+
+.ch-hero-row {
+  gap: var(--ch-space-hero-gap);
+}
+
+.ch-content-area {
+  padding-top: var(--ch-space-page-y);
+  padding-left: var(--ch-space-page-x);
+  padding-right: var(--ch-space-page-x);
+}
+
+.ch-overview-stack {
+  gap: var(--ch-space-section);
+}
+
+/* ─── Kimlik hiyerarşisi ──────────────────────────────────────────────────── */
+.ch-name {
+  font-size: var(--ch-type-name);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: var(--ch-track-tight);
+  line-height: var(--ch-lh-tight);
+}
+
+.ch-verified-badge,
+.ch-tier-badge {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-2xs);
+  letter-spacing: var(--ch-track-caps);
+}
+
+.ch-handle-row {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-snug);
+}
+
+.ch-bio {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-body);
+}
+
+.ch-spec {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-2xs);
+  letter-spacing: 0.04em;
+}
+
+/* ─── İstatistikler & itibar ──────────────────────────────────────────────── */
+.ch-stat-value {
+  font-size: var(--ch-type-stat);
+  font-family: var(--font-bold);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ch-stat-label {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-2xs);
+  letter-spacing: 0.07em;
+}
+
+.ch-reputation-title,
+.ch-thread-blurb-title,
+.ch-about-title,
+.ch-section-title {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-eyebrow);
+  letter-spacing: var(--ch-track-caps);
+}
+
+.ch-reputation-headline,
+.ch-thread-blurb-text {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-snug);
+}
+
+.ch-rep-score {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-2xs);
+}
+
+/* ─── Aksiyonlar & sekmeler ───────────────────────────────────────────────── */
+.ch-btn {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-sm);
+  letter-spacing: 0.02em;
+  min-height: 36px;
+}
+
+.ch-tab {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-sm);
+  letter-spacing: 0.015em;
+  min-height: 44px;
+}
+
+.ch-tab-count {
+  font-size: var(--ch-type-2xs);
+}
+
+.ch-section-more {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-xs);
+}
+
+/* ─── İçerik listeleri & kartlar ──────────────────────────────────────────── */
+.ch-post-excerpt {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-body);
+}
+
+.ch-post-meta {
+  font-size: var(--ch-type-2xs);
+}
+
+.ch-post-card-snippet {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-body);
+}
+
+.ch-post-card-meta {
+  font-size: var(--ch-type-xs);
+}
+
+.ch-post-card-cta {
+  font-size: var(--ch-type-xs);
+}
+
+.ch-playlist-title {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: var(--ch-type-sm);
+}
+
+.ch-playlist-meta {
+  font-size: var(--ch-type-2xs);
+}
+
+.ch-about-bio {
+  font-size: var(--ch-type-base);
+  line-height: var(--ch-lh-body);
+}
+
+.ch-about-key,
+.ch-about-val {
+  font-size: var(--ch-type-sm);
+}
+
+.ch-about-val {
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+.ch-error-title {
+  font-family: var(--font-bold);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.ch-error-desc,
+.ch-tab-loading,
+.ch-feed-error__text {
+  font-size: var(--ch-type-sm);
+  line-height: var(--ch-lh-snug);
+}
+
+.ch-feed-error__retry {
+  font-family: var(--font-bold);
+  font-weight: 600;
+}
+
+.ch-follow-sheet-title {
+  font-size: 15px;
+}
+
+.ch-follow-sheet-name {
+  font-size: var(--ch-type-sm);
+}

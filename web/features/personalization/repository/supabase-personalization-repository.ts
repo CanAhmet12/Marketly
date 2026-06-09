@@ -1,5 +1,10 @@
 import type { DiscoverTabId } from "@/features/feed/discover-feed-filters";
 import type { FeedPost } from "@/features/feed/types";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+
+import { appendBehaviorEvent, clearBehaviorStore, readBehaviorStore } from "../domain/behavioral-store";
+import { mergeAffinityContexts } from "../domain/affinity-merge";
 import { applyFeedFeedbackAction, clearFeedFeedbackStore, readFeedFeedbackState } from "../domain/feed-feedback-store";
 import {
   applyExplorationFeedbackAction,
@@ -48,6 +53,20 @@ import {
 } from "../domain/adaptive-learning-engine";
 import type { AdaptiveLearningRecord, RecommendationAdaptationSnapshot } from "../domain/adaptive-learning-types";
 
+import {
+  getLatestLiveRankContext,
+  getLiveRankContextCache,
+  getLiveRankContextUserId,
+} from "../live-rank-context-cache";
+import { getServerAffinityCache } from "../server-affinity-cache";
+import { scheduleAffinitySync } from "../sync-affinity-to-server";
+import { buildAffinityContext, buildInterestIntelligence } from "../domain/personalization-engine";
+import {
+  getCreatorRecommendationsCache,
+  getSignalRecommendationsCache,
+} from "@/features/signals/signal-recommendations-cache";
+import { AlgoFlags } from "@/lib/algo-flags";
+
 import type { PersonalizationRepository } from "./personalization-repository";
 
 const EMPTY_CTX: AffinityContext = {
@@ -63,12 +82,12 @@ const EMPTY_CTX: AffinityContext = {
 
 const EMPTY_INTEL: InterestIntelligenceSnapshot = {
   headline: "İlgi grafiği",
-  subline: "Canlı modda sunucu tarafı kişiselleştirme yakında — davranış belleği henüz bağlı değil.",
+  subline: "Piyasalar, sinyaller ve tartışmalar arasında gezindiğinde profilin otomatik güçlenir.",
   strongest: [],
   rising: [],
   fading: [],
   marketThemes: [],
-  confidenceLabel: "Sunucu verisi bekleniyor",
+  confidenceLabel: "Veri toplanıyor",
   horizonLabel: "Nötr",
   formatSummary: "—",
   coldStart: true,
@@ -89,33 +108,64 @@ const EMPTY_REC_BUNDLE: RecommendationNetworkBundle = {
   coldStart: true,
 };
 
-function liveRankOpts(): HomeFeedRankOptions {
+function resolveAffinity(viewerId: string | null): AffinityContext {
+  const behavioral = readBehaviorStore().events;
+  const liveCtx = getLiveRankContextCache(viewerId);
+  const liveEvents = liveCtx?.affinityEvents ?? [];
+  const allEvents = [...behavioral, ...liveEvents];
+
+  const local = allEvents.length > 0 ? buildAffinityContext(allEvents) : null;
+  const server = viewerId ? getServerAffinityCache(viewerId)?.affinity ?? null : null;
+
+  if (local && server) return mergeAffinityContexts(server, local);
+  if (local) return local;
+  if (server) return server;
+  return EMPTY_CTX;
+}
+
+function maybeSyncAffinity(viewerId: string | null, ctx: AffinityContext): void {
+  if (!viewerId || !isSupabaseConfigured() || typeof window === "undefined") return;
+  scheduleAffinitySync(getSupabaseBrowserClient(), ctx, readFeedFeedbackState());
+}
+
+function liveRankOpts(viewerId: string | null): HomeFeedRankOptions {
+  const ctx = getLiveRankContextCache(viewerId);
+  const affinity = resolveAffinity(viewerId);
+  const followed = ctx?.followedCreatorIds ?? new Set<string>();
+  const watched = ctx?.watchedSymbols ?? new Set<string>();
+  const portfolio = ctx?.portfolioSymbols ?? watched;
+  const pulse = ctx?.pulseSymbols ?? new Set<string>();
+  const coldStart =
+    followed.size < 2 &&
+    watched.size < 2 &&
+    (affinity?.meta.eventCount ?? 0) < 5;
   return {
-    affinity: null,
+    affinity,
     feedback: readFeedFeedbackState(),
-    watchedSymbols: new Set(),
-    portfolioSymbols: new Set(),
-    followedCreatorIds: new Set(),
-    pulseSymbols: new Set(),
-    coldStart: false,
-    adaptive: buildAdaptiveFeedRankAdjust(readAdaptiveLearningState(), null),
+    watchedSymbols: watched,
+    portfolioSymbols: portfolio,
+    followedCreatorIds: followed,
+    pulseSymbols: pulse,
+    coldStart,
+    adaptive: buildAdaptiveFeedRankAdjust(readAdaptiveLearningState(), affinity),
   };
 }
 
-function liveDiscoverOpts(tab: DiscoverTabId): DiscoverFeedRankOptions {
+function liveDiscoverOpts(tab: DiscoverTabId, viewerId: string | null): DiscoverFeedRankOptions {
+  const home = liveRankOpts(viewerId);
   return {
     tab,
-    affinity: null,
+    affinity: home.affinity,
     feedFeedback: readFeedFeedbackState(),
     exploration: readExplorationFeedbackState(),
-    watchedSymbols: new Set(),
-    portfolioSymbols: new Set(),
-    followedCreatorIds: new Set(),
-    pulseSymbols: new Set(),
+    watchedSymbols: home.watchedSymbols,
+    portfolioSymbols: home.portfolioSymbols,
+    followedCreatorIds: home.followedCreatorIds,
+    pulseSymbols: home.pulseSymbols,
     discussionBoostPostIds: new Set(),
-    hotSignalSymbols: new Set(),
-    coldStart: false,
-    adaptive: buildAdaptiveFeedRankAdjust(readAdaptiveLearningState(), null),
+    hotSignalSymbols: home.pulseSymbols,
+    coldStart: home.coldStart,
+    adaptive: home.adaptive ?? buildAdaptiveFeedRankAdjust(readAdaptiveLearningState(), home.affinity),
   };
 }
 
@@ -160,23 +210,34 @@ const EMPTY_EXPLORE: DiscoverExploreSurface = {
 
 export class SupabasePersonalizationRepository implements PersonalizationRepository {
   recordInteraction(event: Omit<PersonalizationEvent, "ts"> & { ts?: number }): void {
-    void event;
-    /* Edge ingest / RPC ile doldurulacak */
+    const ts = event.ts ?? Date.now();
+    appendBehaviorEvent({ ...event, ts } as PersonalizationEvent);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("marketly-personalization-updated"));
+    }
   }
 
   getAffinityContext(): AffinityContext {
-    return EMPTY_CTX;
+    const viewerId = getLiveRankContextUserId();
+    return resolveAffinity(viewerId);
   }
 
   getAffinityContextForSignals(): AffinityContext {
-    return EMPTY_CTX;
+    return this.getAffinityContext();
   }
 
   getInterestIntelligence(): InterestIntelligenceSnapshot {
-    return EMPTY_INTEL;
+    const viewerId = getLiveRankContextUserId();
+    const behavioral = readBehaviorStore().events;
+    const liveCtx = getLatestLiveRankContext();
+    const allEvents = [...behavioral, ...(liveCtx?.affinityEvents ?? [])];
+    if (allEvents.length === 0) return EMPTY_INTEL;
+    const ctx = resolveAffinity(viewerId);
+    return buildInterestIntelligence(allEvents, ctx);
   }
 
   clearBehavioralMemory(): void {
+    clearBehaviorStore();
     clearFeedFeedbackStore();
     clearExplorationFeedbackStore();
     clearWatchFeedbackStore();
@@ -204,13 +265,11 @@ export class SupabasePersonalizationRepository implements PersonalizationReposit
   }
 
   rankHomeFeedForYou(posts: readonly FeedPost[], viewerId: string | null): FeedPost[] {
-    void viewerId;
-    return computeHomeFeedRanking(posts, liveRankOpts());
+    return computeHomeFeedRanking(posts, liveRankOpts(viewerId));
   }
 
   getHomeFeedRankOptions(viewerId: string | null): HomeFeedRankOptions {
-    void viewerId;
-    return liveRankOpts();
+    return liveRankOpts(viewerId);
   }
 
   getFeedFeedbackState() {
@@ -219,6 +278,7 @@ export class SupabasePersonalizationRepository implements PersonalizationReposit
 
   applyFeedFeedback(action: FeedRecommendationFeedbackAction): void {
     applyFeedFeedbackAction(action);
+    maybeSyncAffinity(getLiveRankContextUserId(), resolveAffinity(getLiveRankContextUserId()));
     switch (action.type) {
       case "mute_creator":
         appendAdaptiveLearningRecord({ type: "negative_creator", creatorId: action.creatorId });
@@ -238,13 +298,11 @@ export class SupabasePersonalizationRepository implements PersonalizationReposit
   }
 
   rankDiscoverFeed(posts: readonly FeedPost[], tab: DiscoverTabId, viewerId: string | null): FeedPost[] {
-    void viewerId;
-    return computeDiscoverFeedRanking(posts, liveDiscoverOpts(tab));
+    return computeDiscoverFeedRanking(posts, liveDiscoverOpts(tab, viewerId));
   }
 
   getDiscoverFeedRankOptions(tab: DiscoverTabId, viewerId: string | null): DiscoverFeedRankOptions {
-    void viewerId;
-    return liveDiscoverOpts(tab);
+    return liveDiscoverOpts(tab, viewerId);
   }
 
   getExplorationFeedbackState() {
@@ -320,9 +378,61 @@ export class SupabasePersonalizationRepository implements PersonalizationReposit
     viewerId: string | null,
     _context?: { excludeCreatorId?: string | null } | null,
   ): RecommendationNetworkBundle {
-    void viewerId;
     void _context;
-    return { ...EMPTY_REC_BUNDLE };
+    if (!AlgoFlags.signalCollaborativeFilter) {
+      return { ...EMPTY_REC_BUNDLE };
+    }
+
+    const sigRelevance = getSignalRecommendationsCache(viewerId);
+    const creatorRecs = getCreatorRecommendationsCache(viewerId);
+    if (!sigRelevance.rows.length && !creatorRecs.length) {
+      return { ...EMPTY_REC_BUNDLE };
+    }
+
+    const affinity = resolveAffinity(viewerId);
+    const strategyHints = computeStrategyProfileHints(affinity);
+    const excludeId = _context?.excludeCreatorId ?? null;
+
+    const creator_follow = creatorRecs
+      .filter((c) => c.creator_id !== excludeId)
+      .map((c) => ({
+        href: `/channel/${encodeURIComponent(c.creator_id)}`,
+        label: c.full_name?.trim() || c.username?.trim() || "Analist",
+        sub: "Birlikte takip",
+        rel: "Ağ",
+        feedbackCreatorId: c.creator_id,
+      }));
+
+    const recommended_signals = sigRelevance.rows.slice(0, 5).map((r) => ({
+      href: r.href,
+      label: `${r.symbol} · ${r.analystDisplay}`,
+      sub: "Sinyal",
+      rel: r.reason,
+      feedbackThemeSlug: r.symbol.replace(/^#/, "").toLowerCase(),
+    }));
+
+    const signal_style_peers = sigRelevance.rows.slice(1, 6).map((r) => ({
+      href: `/results?q=${encodeURIComponent(r.symbol)}&tab=signals`,
+      label: r.symbol,
+      sub: "Benzer çağrı",
+      rel: "Stil",
+      feedbackThemeSlug: r.symbol.replace(/^#/, "").toLowerCase(),
+    }));
+
+    return {
+      strategyHints,
+      creator_follow,
+      rising_creators: [],
+      premium_analysts: [],
+      similar_creators: creator_follow.slice(1, 6),
+      related_topics: [],
+      rising_communities: [],
+      portfolio_themes: [],
+      recommended_signals,
+      signal_style_peers,
+      affinity_line: sigRelevance.headline,
+      coldStart: sigRelevance.rows.length < 3,
+    };
   }
 
   getRecommendationMemoryState() {

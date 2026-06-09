@@ -1,0 +1,61 @@
+/**
+ * Fiyat alarmları — Hub Premium uyarlama
+ */
+
+.hp-canvas .pa-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas .pa-group {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .pa-group-head {
+  border-bottom-color: var(--hp-border-2);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)),
+    var(--hp-surface)
+  );
+}
+
+.hp-canvas .pa-symbol {
+  color: var(--hp-zone-1);
+  font-family: var(--font-bold);
+}
+
+.hp-canvas .pa-stat {
+  border-color: var(--hp-zone-border);
+  border-radius: var(--hp-radius-block);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
+    var(--hp-surface) 100%
+  );
+  box-shadow: var(--hp-shadow-block);
+}
+
+.hp-canvas .pa-stat-val {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--hp-type-stat);
+  letter-spacing: var(--hp-track-tight);
+}
+
+.hp-canvas .pa-row-label {
+  font-family: var(--font-bold);
+}
+
+.hp-canvas .pa-row-time {
+  font-family: var(--hp-font-mono);
+  font-size: var(--hp-type-2xs);
+}
+
+.hp-canvas .pa-skeleton {
+  border-radius: var(--hp-radius-block);
+  border: 1px solid var(--hp-glass-border);
+}

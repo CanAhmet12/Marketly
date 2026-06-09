@@ -3,6 +3,7 @@ import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import type {
   EconomicCalendarIntelEvent,
   EconomicCalendarIntelligenceBundle,
+  MarketNewsDetailItem,
   MarketNewsIntelligenceItem,
   MarketNewsroomBundle,
 } from "@/features/markets/types/news-calendar-intelligence";
@@ -57,6 +58,42 @@ function creatorNotesForSeed(
   return out;
 }
 
+function mockPublishedAt(row: MarketNewsRow): string {
+  if (row.publishedAt) return row.publishedAt;
+  return new Date(Date.now() - row.minutesAgo * 60_000).toISOString();
+}
+
+function mockSourceUrl(row: MarketNewsRow): string {
+  if (row.sourceUrl) return row.sourceUrl;
+  const host = row.source.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const slug = row.headline
+    .toLowerCase()
+    .replace(/[^a-z0-9ğüşıöç]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+  return `https://news.example.com/${host}/${row.id}/${slug || "haber"}`;
+}
+
+function mockSummary(row: MarketNewsRow, seed: number): string {
+  if (row.summary?.trim()) return row.summary.trim();
+  return pick(
+    [
+      `${row.headline} — piyasa katılımcıları kısa vadeli volatilite artışına hazırlanıyor.`,
+      `${row.headline} — analistler haberin ${row.symbol} ve ilişkili varlıklara etkisini izliyor.`,
+      `${row.headline} — likidite ve spread dinamikleri haber sonrası yeniden fiyatlanabilir.`,
+    ],
+    seed + 11,
+  );
+}
+
+function mockSentiment(row: MarketNewsRow, seed: number): string {
+  if (row.sentiment?.trim()) return row.sentiment.trim();
+  const tier = row.impactTier ?? pick([1, 2, 3] as const, seed);
+  if (tier >= 3) return pick(["negative", "bearish"], seed + 12);
+  if (tier === 2) return "neutral";
+  return pick(["positive", "bullish"], seed + 13);
+}
+
 function inferNewsCategory(row: MarketNewsRow): MarketNewsIntelligenceItem["newsCategory"] {
   const sym = row.symbol.toUpperCase();
   const h = row.headline.toLowerCase();
@@ -67,7 +104,7 @@ function inferNewsCategory(row: MarketNewsRow): MarketNewsIntelligenceItem["news
   return "macro";
 }
 
-function enrichNewsRow(row: MarketNewsRow, feed: readonly SignalsFeedRow[]): MarketNewsIntelligenceItem {
+function enrichNewsRow(row: MarketNewsRow, feed: readonly SignalsFeedRow[]): MarketNewsDetailItem {
   const seed = hashString(row.id + row.headline);
   const aff = row.affectedSymbols?.length ? row.affectedSymbols : [row.symbol];
   const sigCount = countSignalsForSymbol(feed, row.symbol);
@@ -137,6 +174,11 @@ function enrichNewsRow(row: MarketNewsRow, feed: readonly SignalsFeedRow[]): Mar
     hitsWatchlist: false,
     hitsPortfolio: false,
     newsCategory: cat,
+    imageUrl: row.imageUrl ?? null,
+    sourceUrl: mockSourceUrl(row),
+    summary: mockSummary(row, seed),
+    publishedAt: mockPublishedAt(row),
+    sentimentLabel: mockSentiment(row, seed),
   };
 }
 

@@ -71,6 +71,25 @@ export type StudioLiveStreamItem = {
   status: "scheduled" | "live" | "ended";
   reminderCount: number;
   thumbnailUrl: string | null;
+  postId?: string | null;
+  channelName?: string | null;
+  viewerCount?: number;
+  href?: string | null;
+};
+
+export type StudioLiveActiveSession = {
+  postId: string;
+  channelName: string;
+  title: string;
+  viewerCount: number;
+  startedAt: string;
+  href: string;
+};
+
+export type StudioLiveCommand = {
+  activeSession: StudioLiveActiveSession | null;
+  scheduled: StudioLiveStreamItem[];
+  endedRecent: StudioLiveStreamItem[];
 };
 
 export type StudioTimeframe = "7d" | "28d" | "90d";
@@ -102,6 +121,8 @@ export type StudioAnalyticsBundle = {
   engagementSeries: StudioMetricPoint[];
   followerSeries: StudioMetricPoint[];
   audienceBreakdown: StudioAudienceSegment[];
+  /** Video / gönderi / sinyal / canlı görüntülenme payı */
+  contentTypeBreakdown: StudioAudienceSegment[];
   topVideos: { id: string; title: string; views: number; thumbnailUrl: string | null }[];
   topPosts: { id: string; title: string; views: number; thumbnailUrl: string | null }[];
   topAssets: { symbol: string; mentions: number; engagement: number }[];
@@ -206,6 +227,24 @@ export type StudioEconomyRevenueIntel = {
   conversion_hint: string;
 };
 
+export type StudioEconomyRevenueSegment = {
+  label: string;
+  pct: number;
+  color: string;
+  amountUsd: number;
+};
+
+/** Live/mock gelir özeti — hardcoded hero yerine */
+export type StudioEconomyRevenueSnapshot = {
+  estimatedTotalUsd: number | null;
+  changePercent: number;
+  segments: StudioEconomyRevenueSegment[];
+  activeSubscribers: number;
+  monetizedSignals: number;
+  premiumRooms: number;
+  dataSource: "live" | "mock" | "sparse";
+};
+
 export type StudioEconomyPublishingDefaults = {
   premium_default: string;
   room_target: string;
@@ -241,4 +280,5 @@ export type CreatorStudioEconomyHubPayload = {
   revenue: StudioEconomyRevenueIntel;
   publishing_defaults: StudioEconomyPublishingDefaults;
   members: StudioEconomyMemberRow[];
+  revenue_snapshot?: StudioEconomyRevenueSnapshot;
 };

@@ -1,0 +1,63 @@
+/**
+ * İçerik Oluştur — Hub Premium uyarlama (tools zone)
+ */
+
+.hp-canvas .up-hub-page {
+  padding: 0;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas--embedded-upload > .up-canvas {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  --up-long: var(--hp-up);
+  --up-short: var(--hp-down);
+}
+
+.hp-canvas--embedded-upload .up-header {
+  padding-top: 0;
+  border-bottom-color: var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-upload .up-header .up-title,
+.hp-canvas--embedded-upload .up-header .up-subtitle {
+  display: none;
+}
+
+.hp-canvas--embedded-upload .up-type-tab--active {
+  background: var(--hp-zone-1);
+  border-color: var(--hp-zone-1);
+  color: #fff;
+}
+
+.hp-canvas--embedded-upload .up-chip--active {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 45%, var(--up-border));
+  color: var(--hp-zone-1);
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+}
+
+.hp-canvas--embedded-upload .up-publish-btn {
+  background: var(--hp-zone-1);
+  border-color: transparent;
+}
+
+.hp-canvas--embedded-upload .up-publish-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.hp-canvas--embedded-upload .up-guide {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+}
+
+.hp-canvas--embedded-upload .up-drop-zone {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+}
+
+.hp-canvas--embedded-upload .up-drop-zone--over {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 45%, var(--hp-glass-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface));
+}

@@ -40,7 +40,7 @@
 .wl-header-left { display: flex; flex-direction: column; gap: 3px; }
 
 .wl-header-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -49,7 +49,7 @@
 
 .wl-header-title {
   font-size: 24px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--wl-text);
   line-height: 1;
@@ -77,7 +77,7 @@
 .wl-btn--primary {
   background: var(--wl-accent);
   color: #000;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .wl-btn--primary:hover { filter: brightness(1.1); }
@@ -106,13 +106,13 @@
 .wl-stat + .wl-stat { border-left: 1px solid var(--wl-border-2); }
 
 .wl-stat-label {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--wl-meta);
 }
 
 .wl-stat-value {
-  font-size: 20px; font-weight: 900;
+  font-size: 20px; font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   color: var(--wl-text);
@@ -120,7 +120,7 @@
 
 .wl-stat-value--accent { color: var(--wl-accent); }
 
-.wl-stat-sub { font-size: 10px; color: var(--wl-meta); }
+.wl-stat-sub { font-size: 11px; color: var(--wl-meta); }
 
 /* ================================
    MAIN LAYOUT
@@ -168,7 +168,7 @@
 }
 
 .wl-block-link {
-  font-size: 10px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   color: rgba(15,157,117,0.65);
   text-decoration: none; transition: color 0.1s;
 }
@@ -201,7 +201,7 @@
 
 .wl-table th {
   padding: 7px 18px;
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--wl-meta);
   border-bottom: 1px solid var(--wl-border-2);
@@ -230,8 +230,51 @@
 /* Sembol kolonu */
 .wl-sym-cell { display: flex; flex-direction: column; gap: 2px; }
 
+.wl-sym-cell-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wl-sym-link {
+  text-decoration: none;
+}
+
+.wl-empty-cell {
+  font-size: 11px;
+  color: var(--wl-meta);
+}
+
+.wl-td-right {
+  text-align: right;
+}
+
+.wl-th-spark {
+  width: 90px;
+}
+
+.wl-mover-pct--up {
+  color: var(--wl-up);
+}
+
+.wl-mover-pct--down {
+  color: var(--wl-down);
+}
+
+.wl-pulse-summary {
+  padding-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--wl-meta);
+  margin: 0;
+}
+
+.wl-signal-rows--spaced {
+  margin-top: 8px;
+}
+
 .wl-sym-name {
-  font-size: 14px; font-weight: 800;
+  font-size: 14px; font-weight: 700;
   color: var(--wl-text);
   letter-spacing: -0.01em;
 }
@@ -271,7 +314,7 @@
 
 /* Sinyal badge */
 .wl-sig-badge {
-  font-size: 10px; font-weight: 800;
+  font-size: 11px; font-weight: 700;
   padding: 2px 7px;
   border-radius: 4px;
   background: rgba(15,157,117,0.10);
@@ -281,7 +324,7 @@
 
 /* Pin badge */
 .wl-pin-badge {
-  font-size: 9px; font-weight: 800;
+  font-size: 11px; font-weight: 700;
   padding: 1px 5px; border-radius: 3px;
   background: rgba(245,158,11,0.12);
   color: #fbbf24;
@@ -345,7 +388,7 @@
 }
 
 .wl-pulse-val {
-  font-size: 14px; font-weight: 800;
+  font-size: 14px; font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--wl-accent);
 }
@@ -362,7 +405,7 @@
 .wl-mover-row + .wl-mover-row { border-top: 1px solid var(--wl-border-2); }
 
 .wl-mover-sym {
-  font-size: 13px; font-weight: 800;
+  font-size: 13px; font-weight: 700;
   color: var(--wl-text);
   min-width: 52px;
 }
@@ -413,13 +456,13 @@
 }
 
 .wl-disc-meta {
-  font-size: 10px; color: var(--wl-meta);
+  font-size: 11px; color: var(--wl-meta);
   margin-top: 3px;
 }
 
 .wl-live-dot {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 9px; font-weight: 800;
+  font-size: 11px; font-weight: 700;
   color: #ef4444; margin-right: 4px;
 }
 
@@ -448,7 +491,7 @@
 .wl-signal-row + .wl-signal-row { border-top: 1px solid var(--wl-border-2); }
 
 .wl-signal-sym {
-  font-size: 13px; font-weight: 800;
+  font-size: 13px; font-weight: 700;
   color: var(--wl-accent);
   min-width: 44px;
 }
@@ -461,10 +504,10 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.wl-signal-meta { font-size: 10px; color: var(--wl-meta); margin-top: 1px; }
+.wl-signal-meta { font-size: 11px; color: var(--wl-meta); margin-top: 1px; }
 
 .wl-dir-badge {
-  font-size: 10px; font-weight: 800;
+  font-size: 11px; font-weight: 700;
   padding: 2px 6px; border-radius: 3px;
 }
 
@@ -488,7 +531,7 @@
 }
 
 .wl-onboarding-title {
-  font-size: 20px; font-weight: 900;
+  font-size: 20px; font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--wl-text);
 }
@@ -504,7 +547,7 @@
 .wl-onboard-section { width: 100%; }
 
 .wl-onboard-label {
-  font-size: 10px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--wl-meta);
   margin-bottom: 10px;
@@ -528,12 +571,12 @@
 .wl-sym-chip:hover { border-color: var(--wl-accent); background: rgba(15,157,117,0.06); }
 
 .wl-sym-chip-name {
-  font-size: 13px; font-weight: 800;
+  font-size: 13px; font-weight: 700;
   color: var(--wl-text);
 }
 
 .wl-sym-chip-hint {
-  font-size: 10px; color: var(--wl-meta);
+  font-size: 11px; color: var(--wl-meta);
 }
 
 .wl-theme-chips { display: flex; flex-wrap: wrap; gap: 6px; }

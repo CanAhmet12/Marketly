@@ -82,7 +82,7 @@ export function ForexScreener({ screener }: Props) {
     const active = sortKey === k;
     return (
       <th onClick={() => handleSort(k)} style={{ cursor: "pointer", userSelect: "none", textAlign: "right",
-        padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
+        padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
         borderBottom: "1px solid var(--cc-border-subtle)", whiteSpace: "nowrap", color: active ? "#8b5cf6" : undefined }}>
         {label}{active ? (sortDir === 1 ? " ↑" : " ↓") : ""}
       </th>
@@ -107,21 +107,21 @@ export function ForexScreener({ screener }: Props) {
         <table className="cc-screener-table" aria-label="Forex pariteleri" style={{ minWidth: 780 }}>
           <thead className={cn("cc-screener-thead", vt.enabled && "mkt-vt-sticky-thead")}>
             <tr>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: sortKey === "rank" ? "#8b5cf6" : undefined,
                 cursor: "pointer" }} onClick={() => handleSort("rank")}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Parite</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Bid / Ask</th>
               <SortTh label="Spread" k="spread" />
               <SortTh label="Pip Degisim" k="pipChange" />
               <SortTh label="24s %" k="changePct" />
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Gun Araligi</th>
-              <th style={{ textAlign: "center", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "center", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Seans</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
                 textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
             </tr>
           </thead>
@@ -148,7 +148,7 @@ const ScreenerRow = memo(function ScreenerRow({ asset }: { asset: ForexScreenerA
           <span className="cc-screener-symbol" style={{ color: isFeatured ? "#8b5cf6" : undefined }}>
             {asset.pair}
           </span>
-          <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 3,
+          <span style={{ fontSize: 11, fontWeight: 600, padding: "1px 5px", borderRadius: 3,
             background: "rgba(255,255,255,0.04)", color: "var(--cc-meta)", width: "fit-content",
             textTransform: "uppercase", letterSpacing: "0.03em" }}>
             {asset.category === "major" ? "Major" : asset.category === "minor" ? "Minor" : "Egzotik"}

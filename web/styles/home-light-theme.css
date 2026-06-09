@@ -72,6 +72,62 @@ html[data-theme="light"] .hv-ref .hv-ref-stories__label {
   }
 }
 
+/* Story ring — açık modda beyaz gap + daha güçlü ring rengi */
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="teal"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(45, 212, 191, 0.88),
+    0 0 0 5px rgba(45, 212, 191, 0.18);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="amber"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(245, 158, 11, 0.90),
+    0 0 0 5px rgba(245, 158, 11, 0.20);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="crypto"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(245, 158, 11, 0.90),
+    0 0 0 5px rgba(245, 158, 11, 0.18);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="blue"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(59, 130, 246, 0.88),
+    0 0 0 5px rgba(59, 130, 246, 0.18);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="violet"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(139, 92, 246, 0.88),
+    0 0 0 5px rgba(139, 92, 246, 0.18);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="orange"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(249, 115, 22, 0.88),
+    0 0 0 5px rgba(249, 115, 22, 0.18);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-tone="slate"] {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px rgba(100, 116, 139, 0.55),
+    0 0 0 5px rgba(100, 116, 139, 0.12);
+}
+
+/* İzlenmiş story — açık modda da görünür soluklaşma */
+html[data-theme="light"] .hv-ref .hv-ref-stories__hit[data-viewed="true"] .hv-ref-stories__ring {
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3.5px rgba(100, 116, 139, 0.35) !important;
+  opacity: 0.6;
+}
+
 /* ─── Feed articles ──────────────────────────────────────────────────────── */
 
 html[data-theme="light"] .hv-ref .hv-ref-article__name {
@@ -340,16 +396,6 @@ html[data-theme="light"] .ms-home-surface .ms-home-feed-row:hover {
   background-color: var(--color-surface-hover);
 }
 
-html[data-theme="light"] .ms-home-native-stream > .ms-home-native-item {
-  border-bottom-color: var(--color-divider);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  html[data-theme="light"] .ms-home-native-stream > .ms-home-native-item:hover {
-    background-color: var(--color-surface-hover);
-  }
-}
-
 html[data-theme="light"] .ms-home-native-surf {
   background: var(--color-card-plate);
   border-color: var(--color-border-card);
@@ -366,4 +412,457 @@ html[data-theme="light"] .ms-home-native-surf {
 html[data-theme="light"] .ms-home-ambient-summary {
   background: var(--color-surface-muted);
   border-color: var(--color-border-card);
+}
+
+/* ─── Açık mod: sağ rail glass kartlar ──────────────────────────── */
+/* Açık temada koyu glass tintler çok soluk görünür;
+   Kategori kimliği için:
+   - inset left border: kuvvetli kategori aksanı
+   - başlık: kategori rengiyle
+   - arka plan: hafif tint + gölge derinliği
+*/
+
+html[data-theme="light"] .hv-ref-rail__card {
+  background: color-mix(in srgb, var(--hv-cat-color, transparent) 4%, #ffffff 96%);
+  border-color: color-mix(in srgb, var(--hv-cat-color, var(--color-border)) 30%, var(--color-border) 70%);
+  box-shadow:
+    inset 3px 0 0 0 color-mix(in srgb, var(--hv-cat-color, transparent) 65%, transparent),
+    0 1px 4px rgba(0,0,0,0.05),
+    0 4px 16px color-mix(in srgb, var(--hv-cat-color, transparent) 6%, rgba(0,0,0,0.04));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref-rail__card:hover {
+    border-color: color-mix(in srgb, var(--hv-cat-color, var(--color-border)) 45%, var(--color-border) 55%);
+    box-shadow:
+      inset 3px 0 0 0 color-mix(in srgb, var(--hv-cat-color, transparent) 80%, transparent),
+      0 2px 8px rgba(0,0,0,0.07),
+      0 6px 20px color-mix(in srgb, var(--hv-cat-color, transparent) 9%, rgba(0,0,0,0.05));
+  }
+}
+
+html[data-theme="light"] .hv-ref-rail__card::before {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--hv-cat-color, transparent) 8%, transparent) 0%,
+    transparent 50%
+  );
+}
+
+/* Kategori başlığı: açık modda kategori rengini doğrudan kullan */
+html[data-theme="light"] .hv-ref-rail__card .hv-ref-rail__h {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--color-text-secondary)) 85%, var(--color-text-secondary) 15%);
+}
+
+/* ─── Açık mod: Piyasa Havası widget ────────────────────────────── */
+
+html[data-theme="light"] .hv-ref-rail__mood {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-label {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-detail {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-pill--bullish {
+  background: color-mix(in srgb, var(--color-rise) 10%, #ffffff 90%);
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-pill--bearish {
+  background: color-mix(in srgb, var(--color-fall) 10%, #ffffff 90%);
+  color: var(--color-fall);
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-pill--mixed {
+  background: color-mix(in srgb, #f59e0b 10%, #ffffff 90%);
+  color: #b45309;
+}
+
+html[data-theme="light"] .hv-ref-rail__mood-pill--flat {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Açık mod: Haberler ─────────────────────────────────────────── */
+
+html[data-theme="light"] .hv-ref-rail__news-title {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref-rail__news-meta {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref-rail__news-source {
+  color: var(--color-text-secondary);
+}
+
+/* ─── Açık mod: post kategori tonlaması ─────────────────────────── */
+
+html[data-theme="light"] .hv-ref-article--cat-tinted {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__link-preview,
+html[data-theme="light"] .hv-ref .hv-ref-article__quote,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed {
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__media {
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="light"] .hv-ref-feed-today {
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__inner {
+  background: var(--color-bg);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__ring[data-add="true"] .hv-ref-stories__inner {
+  background: color-mix(in srgb, var(--color-border) 35%, var(--color-bg) 65%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-stories__live-dot {
+  border-color: var(--color-bg);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__icon-btn--accent {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref-feed-state {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-feed-state__title {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref-feed-state__desc,
+html[data-theme="light"] .hv-ref-feed-state__steps {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref-feed-state__btn {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref-feed-state__btn--primary {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border) 65%);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref-feed-footer__line {
+  background: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-scroll-top {
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  border-color: var(--color-border);
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__read-more {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref-article__menu-popover {
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+  border-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-feed-nudge {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-kbd-hint {
+  background: color-mix(in srgb, var(--color-primary) 6%, #ffffff 94%);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border) 78%);
+}
+
+html[data-theme="light"] .hv-ref-kbd-hint__key {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+html[data-theme="light"] .hv-ref-creator-suggest {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-creator-suggest__row {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref-creator-suggest__more {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref-article__lead-badge {
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="light"] .hv-ref-article__lead-badge::before {
+  background: color-mix(in srgb, var(--color-text-tertiary) 70%, var(--color-text-secondary) 30%);
+}
+
+html[data-theme="light"] .hv-ref-article--lead {
+  background: transparent;
+}
+
+html[data-theme="light"] .hv-ref-article__comment-teaser:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, #ffffff 92%);
+  border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+html[data-theme="light"] .hv-ref-article__comment-teaser-arrow {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref-article__comment-teaser {
+  background: color-mix(in srgb, var(--color-bg-elevated) 80%, var(--color-bg) 20%);
+  border-color: var(--color-border);
+}
+
+/* ─── Açık mod: mast glass ──────────────────────────────────────── */
+html[data-theme="light"] .hv-ref .hv-ref__mast {
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  border-bottom-color: var(--color-border);
+}
+
+/* ─── Açık mod: Rail V2 modülleri ───────────────────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__section-sub {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__quick-pill {
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--hv-pill-color, var(--color-primary)) 7%, #ffffff 93%);
+  border-color: color-mix(in srgb, var(--hv-pill-color, var(--color-primary)) 28%, var(--color-border) 72%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-rail__quick-pill:hover {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--hv-pill-color, var(--color-primary)) 12%, #ffffff 88%);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__market-sym {
+  color: color-mix(in srgb, var(--hv-row-cat-color, var(--color-text)) 78%, var(--color-text) 22%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-sym {
+  color: color-mix(in srgb, var(--hv-cat-color, #ffb020) 72%, var(--color-text) 28%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__watch-sym {
+  color: color-mix(in srgb, var(--hv-cat-color, #22d3ee) 70%, var(--color-text) 30%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__discuss-tag {
+  color: color-mix(in srgb, var(--hv-cat-color, #2dd4a8) 68%, var(--color-text) 32%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail--v3 .hv-ref-rail__card .hv-ref-rail__h {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--color-text)) 68%, var(--color-text) 32%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail--v3 .hv-ref-rail__action-link {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 58%, var(--color-text-secondary) 42%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__market-price,
+html[data-theme="light"] .hv-ref .hv-ref-rail__discuss-views,
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-conf-val {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__market-pct,
+html[data-theme="light"] .hv-ref .hv-ref-rail__watch-pct {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-row {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-card);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-dir--buy {
+  color: #047857;
+  background: color-mix(in srgb, var(--color-rise) 10%, #ffffff 90%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-dir--sell {
+  color: #b91c1c;
+  background: color-mix(in srgb, var(--color-fall) 10%, #ffffff 90%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-dir--hold {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__news-cat {
+  color: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 75%, var(--color-text) 25%);
+  background: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 10%, #ffffff 90%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-pill {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-card);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-pill[data-strength="high"] {
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border) 70%);
+  background: color-mix(in srgb, var(--color-primary) 8%, #ffffff 92%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__watchlist-empty-text {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__creator-sub {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+/* ─── Açık mod: Rail V4 gömülü + haber görselli ─────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref-rail--v4 .hv-ref-rail__block {
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood--live {
+  background: transparent;
+  border-bottom-color: var(--color-border);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__quick-strip {
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__news-featured-title {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__news-featured-meta {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__watch-price {
+  color: var(--color-text-tertiary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__interest-chip {
+  background: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 5%, #ffffff 95%);
+  border-color: var(--color-border-card);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-list--embedded .hv-ref-rail__signal-row {
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__market-rows--live .hv-ref-rail__market-row + .hv-ref-rail__market-row {
+  border-top-color: var(--color-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail--v6 .hv-ref-rail__section-icon {
+  background: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 10%, #ffffff 90%);
+}
+
+/* ─── Tipografi & renk cilası (modern editorial) ─────────────────── */
+
+html[data-theme="light"] .hv-ref .hv-ref__tab[data-active="true"] {
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__tab:not([data-active="true"]) {
+  color: var(--color-text-tertiary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref__tab:not([data-active="true"]):hover {
+    color: var(--color-text-secondary);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__body {
+  color: var(--hv-zone-post-body);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__handle {
+  color: var(--hv-zone-post-handle);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage {
+  color: var(--hv-zone-post-engage);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage strong {
+  color: var(--hv-zone-post-engage-count);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__engage-btn--active {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__chip {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__h {
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-feed-today__chip {
+  background: color-mix(in srgb, var(--color-border) 55%, var(--color-bg-subtle) 45%);
+  color: var(--color-text-secondary);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-strip__chg[data-sign="up"] {
+  color: var(--color-rise);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref__icon-btn:hover {
+  color: var(--color-text-secondary);
 }

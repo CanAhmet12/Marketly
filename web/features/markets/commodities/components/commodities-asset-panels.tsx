@@ -60,12 +60,12 @@ function AssetPanel({ panel, isAltin }: PanelProps) {
     <div className={cn("cc-asset-panel block", isAltin ? "cc-asset-panel--btc" : "cc-asset-panel--eth")}>
       <div className="cc-asset-panel-header">
         <div className={cn("cc-asset-logo", isAltin ? "cc-asset-logo--btc" : "cc-asset-logo--eth")}
-          style={{ fontSize: isAltin ? 10 : 14, fontWeight: 900 }}>
+          style={{ fontSize: isAltin ? 10 : 14, fontWeight: 700 }}>
           {iconLabel}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span className="cc-asset-title">{panel.name.toUpperCase()}</span>
-          <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{panel.unit}</span>
+          <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{panel.unit}</span>
         </div>
       </div>
 

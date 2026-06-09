@@ -120,7 +120,7 @@ export function MarketAssetCard({
       </div>
 
       <div className="rounded-xl border border-[color-mix(in_srgb,var(--color-border)_80%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2.5%,var(--color-surface))] px-[var(--sp-2)] py-[var(--sp-2)]">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Sinyal özeti</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-meta)]">Sinyal özeti</p>
         <div className="mt-1 flex flex-wrap items-center gap-x-[var(--sp-3)] gap-y-1 text-[12px] font-semibold text-[var(--color-text)]">
           <Link href={`/signals?asset=${encodeURIComponent(asset.symbol)}`} className="hover:text-[var(--color-primary-dark)] hover:underline" onClick={(e) => e.stopPropagation()}>
             Aktif: {asset.signal_active_count}

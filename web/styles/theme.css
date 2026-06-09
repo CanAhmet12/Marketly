@@ -13,11 +13,11 @@ html[data-theme="light"] {
   --color-primary-glow: color-mix(in srgb, var(--color-primary) 26%, transparent);
 
   /* Sıcak off-white tuval (editorial fintech) — sidebar/topbar/body tek yüzey */
-  --color-canvas: #fafaf9;
-  --color-bg: #fafaf9;
-  --color-bg-subtle: #f2f1ef;
-  --color-bg-elevated: #fafaf9;
-  --color-surface: #fafaf9;
+  --color-canvas: #f6f5f2;
+  --color-bg: #f6f5f2;
+  --color-bg-subtle: #eceae5;
+  --color-bg-elevated: #faf9f6;
+  --color-surface: #faf9f6;
   --color-surface-muted: color-mix(in srgb, #e7e5e2 52%, #fafaf9 48%);
   --color-surface-hover: color-mix(in srgb, #d4d2ce 22%, #fafaf9 78%);
   --color-watch-canvas: #fafaf9;
@@ -26,12 +26,12 @@ html[data-theme="light"] {
 
   --color-sidebar-edge: transparent;
 
-  --color-text: #111114;
-  --color-text-secondary: #45454d;
-  --color-text-tertiary: #5a5a64;
+  --color-text: #121214;
+  --color-text-secondary: #3f3f48;
+  --color-text-tertiary: #5c5c66;
   --color-text-sub: var(--color-text-secondary);
   --color-muted: var(--color-text-tertiary);
-  --color-meta: #5f5f6a;
+  --color-meta: #6b6b76;
 
   --color-logo-wordmark: #111827;
   --color-logo-accent: var(--color-primary);
@@ -93,8 +93,12 @@ html[data-theme="light"] {
   --color-nav-section: color-mix(in srgb, var(--color-text-secondary) 92%, var(--color-text) 8%);
 
   --color-danger: #f03e3e;
-  --color-rise: var(--color-primary);
+  --color-rise: #0a6b4e;
+  --color-rise-muted: color-mix(in srgb, var(--color-rise) 55%, transparent);
+  --color-rise-bg: color-mix(in srgb, var(--color-rise) 7%, transparent);
   --color-fall: #f03e3e;
+  --color-fall-muted: color-mix(in srgb, var(--color-fall) 55%, transparent);
+  --color-fall-bg: color-mix(in srgb, var(--color-fall) 7%, transparent);
   --color-tier-elite: #c9a227;
   --color-tier-pro: #2563eb;
   --color-tier-free: #6b7280;
@@ -148,35 +152,43 @@ html[data-theme="light"] {
   --ring-nav-active: 0 0 0 2px var(--color-primary);
 
   --type-page: 1.3125rem;
-  --type-page--leading: 1.35;
+  --type-page--leading: 1.32;
   --type-page--weight: 700;
+  --type-page--tracking: -0.028em;
 
   --type-content-title: 1.0625rem;
-  --type-content-title--leading: 1.52;
+  --type-content-title--leading: 1.48;
   --type-content-title--weight: 700;
-  --type-content-title--tracking: -0.02em;
+  --type-content-title--tracking: -0.024em;
 
   --type-creator: 0.875rem;
-  --type-creator--leading: 1.45;
+  --type-creator--leading: 1.42;
   --type-creator--weight: 600;
+  --type-creator--tracking: -0.014em;
 
-  --type-meta: 0.84375rem;
-  --type-meta--leading: 1.45;
+  --type-meta: 0.8125rem;
+  --type-meta--leading: 1.44;
   --type-meta--weight: 500;
+  --type-meta--tracking: 0.005em;
 
   --type-chip: 0.875rem;
-  --type-chip--leading: 1.2;
+  --type-chip--leading: 1.18;
   --type-chip--weight: 600;
+  --type-chip--tracking: -0.012em;
 
   --type-nav: 0.9375rem;
-  --type-nav--leading: 1.46;
+  --type-nav--leading: 1.44;
   --type-nav--weight: 500;
-  --type-nav-active--weight: 600;
+  --type-nav-active--weight: 700;
 
-  --type-overline: 0.75rem;
-  --type-overline--leading: 1.25;
-  --type-overline--weight: 600;
-  --type-overline--tracking: 0.04em;
+  --type-overline: 0.6875rem;
+  --type-overline--leading: 1.28;
+  --type-overline--weight: 700;
+  --type-overline--tracking: 0.06em;
+
+  --type-caption-min: 0.6875rem;
+  --type-caption-min--leading: 1.3;
+  --type-caption-min--weight: 600;
 
   --text-grid-title: var(--type-content-title);
   --text-grid-creator: var(--type-creator);
@@ -283,8 +295,12 @@ html[data-theme="dark"] {
   --color-nav-section: rgba(186, 194, 208, 0.88);
 
   --color-danger: #f03e3e;
-  --color-rise: var(--color-primary);
+  --color-rise: #34c759;
+  --color-rise-muted: color-mix(in srgb, var(--color-rise) 55%, transparent);
+  --color-rise-bg: color-mix(in srgb, var(--color-rise) 7%, transparent);
   --color-fall: #f03e3e;
+  --color-fall-muted: color-mix(in srgb, var(--color-fall) 55%, transparent);
+  --color-fall-bg: color-mix(in srgb, var(--color-fall) 7%, transparent);
   --color-tier-elite: #e8c547;
   --color-tier-pro: #6ea8fe;
   --color-tier-free: #8b95a8;

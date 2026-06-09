@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
+import { getCardTagTone } from "./discover-card-tones";
 import type { VRCreatorItem } from "./discover-visual-reference-data";
 
 /* ─── Live pulse indicator ───────────────────────────────────────────────── */
@@ -47,20 +48,19 @@ function CreatorAvatar({ item, size = 44 }: { item: VRCreatorItem; size?: number
 /* ─── Creator card — horizontal compact analyst tile ─────────────────────── */
 export function DiscoverCreatorCard({ item, index = 0 }: { item: VRCreatorItem; index?: number }) {
   const [followed, setFollowed] = useState(false);
+  const tagTone = getCardTagTone(item.tag);
 
   return (
     <article
-      className="dvr-creator-tile group relative z-0 flex min-w-0 flex-col overflow-hidden rounded-xl motion-entrance"
+      className={cn(
+        "dvr-creator-tile dvr-creator-tile--premium group relative z-0 flex min-w-0 flex-col overflow-hidden rounded-xl motion-entrance",
+        `dvr-creator-tile--tone-${tagTone}`,
+        item.isLive && "dvr-creator-tile--live",
+      )}
       style={motionEntranceDelay(index)}
     >
-      {/* Subtle top gradient accent */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-16 opacity-40"
-        style={{
-          background: `linear-gradient(180deg, ${item.avatarColor}22 0%, transparent 100%)`,
-        }}
-        aria-hidden
-      />
+      <div className="dvr-creator-tile__accent" aria-hidden />
+      <div className="dvr-creator-tile__glow" aria-hidden />
 
       <Link href={item.href} className="absolute inset-0 z-0" aria-label={item.displayName} />
 
@@ -76,7 +76,7 @@ export function DiscoverCreatorCard({ item, index = 0 }: { item: VRCreatorItem; 
                 Canlı Yayında
               </span>
             ) : (
-              <span className="dvr-creator-status-badge rounded px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider">
+              <span className={cn("dvr-creator-status-badge rounded px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider", `dvr-creator-status-badge--${tagTone}`)}>
                 {item.tag}
               </span>
             )}
@@ -114,6 +114,80 @@ export function DiscoverCreatorCard({ item, index = 0 }: { item: VRCreatorItem; 
             {item.followers}
           </span>
         </div>
+      </div>
+    </article>
+  );
+}
+
+/** Üreticiler sekmesi — premium dizin satırı */
+export function DiscoverCreatorDirectoryRow({
+  item,
+  index = 0,
+  rank,
+  live = false,
+}: {
+  item: VRCreatorItem;
+  index?: number;
+  rank?: number;
+  /** Canlı bölümü vurgusu */
+  live?: boolean;
+}) {
+  const [followed, setFollowed] = useState(false);
+  const showLive = live || item.isLive;
+
+  return (
+    <article
+      className={cn(
+        "dvr-creator-dir-row group relative z-0 motion-entrance",
+        showLive && "dvr-creator-dir-row--live",
+      )}
+      style={motionEntranceDelay(index)}
+    >
+      <Link href={item.href} className="absolute inset-0 z-0 rounded-[inherit]" aria-label={item.displayName} />
+
+      {rank != null ? (
+        <span className="dvr-creator-dir-row__rank tabular-nums" aria-hidden>
+          {String(rank).padStart(2, "0")}
+        </span>
+      ) : null}
+
+      <CreatorAvatar item={item} size={showLive ? 42 : 38} />
+
+      <div className="dvr-creator-dir-row__copy relative z-1 min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href={item.href} className="dvr-creator-dir-row__name relative z-2 truncate">
+            {item.displayName}
+          </Link>
+          {showLive ? (
+            <span className="dvr-creator-dir-row__live-pill">
+              <LivePulse />
+              Canlı
+            </span>
+          ) : (
+            <span className="dvr-creator-dir-row__tag truncate">{item.tag}</span>
+          )}
+        </div>
+        <p className="dvr-creator-dir-row__handle truncate">{item.handle}</p>
+        <p className="dvr-creator-dir-row__specialty line-clamp-1">{item.specialty}</p>
+        <p className="dvr-creator-dir-row__formats truncate">{item.contentFormats}</p>
+      </div>
+
+      <div className="dvr-creator-dir-row__aside relative z-2 shrink-0">
+        <p className="dvr-creator-dir-row__followers tabular-nums">{item.followers}</p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setFollowed((f) => !f);
+          }}
+          className={cn(
+            "dvr-creator-dir-row__follow",
+            followed && "dvr-creator-dir-row__follow--active",
+          )}
+          aria-pressed={followed}
+        >
+          {followed ? "Takipte" : "Takip"}
+        </button>
       </div>
     </article>
   );

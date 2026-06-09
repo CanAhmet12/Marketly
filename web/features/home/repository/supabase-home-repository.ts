@@ -3,11 +3,8 @@ import { fetchDiscoverFeedPage, fetchHomeFeedPage } from "@/features/feed/fetch-
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import type { HomeRepository } from "./home-repository";
-import { buildLiveDiscoverSections } from "./build-live-discover-sections";
 import type { DiscoverTab, HomeFeedMode, StoryRing } from "./types";
-import type { FeedPost } from "@/features/feed/types";
-import type { HomeSection, RecommendedCreatorCard } from "@/features/home/types";
-import type { DiscoverSignalCardRow } from "@/features/signals/repository/types";
+import type { RecommendedCreatorCard } from "@/features/home/types";
 
 const STATIC_MARKET_PULSE: { label: string; href: string }[] = [
   { label: "BTC", href: "/results?q=BTC" },
@@ -18,11 +15,6 @@ const STATIC_MARKET_PULSE: { label: string; href: string }[] = [
   { label: "VIOP", href: "/results?q=viop" },
 ];
 
-/**
- * Üretim: `fetch-home-feed` / `fetch-discover-feed` ile gönderi havuzu.
- * Keşfet üst bölümleri: `build-live-discover-sections` (gönderi + statik sembol kısayolları).
- * TODO: `getHomeSections` → RPC; `getTrendingSignals` → trend RPC; `getStories` → stories tablosu.
- */
 export class SupabaseHomeRepository implements HomeRepository {
   async getHomeFeed(userId: string | null, mode: HomeFeedMode, page: number) {
     const client = getSupabaseBrowserClient();
@@ -35,12 +27,6 @@ export class SupabaseHomeRepository implements HomeRepository {
 
   async getForYouFeed(userId: string | null, page: number) {
     return this.getHomeFeed(userId, "for_you", page);
-  }
-
-  getHomeSections(_userId: string | null, _feedPosts: FeedPost[]): HomeSection[] {
-    void _userId;
-    void _feedPosts;
-    return [];
   }
 
   async getDiscoverFeedPage(userId: string | null, page: number) {
@@ -56,24 +42,6 @@ export class SupabaseHomeRepository implements HomeRepository {
     };
   }
 
-  getDiscoverSections(tab: DiscoverTab, userId: string | null, discoverPosts: FeedPost[]): HomeSection[] {
-    return buildLiveDiscoverSections(tab, userId, discoverPosts);
-  }
-
-  getTrendingVideos(userId: string | null): FeedPost[] {
-    void userId;
-    return [];
-  }
-
-  getDiscoverPulsePosts(userId: string | null): FeedPost[] {
-    void userId;
-    return [];
-  }
-
-  getTrendingSignals(): DiscoverSignalCardRow[] {
-    return [];
-  }
-
   getRecommendedCreators(): RecommendedCreatorCard[] {
     return [];
   }
@@ -86,13 +54,8 @@ export class SupabaseHomeRepository implements HomeRepository {
     return [];
   }
 
-  getLiveNow(userId: string | null): FeedPost[] {
-    void userId;
-    return [];
-  }
-
-  getStories(userId: string | null): StoryRing[] {
-    void userId;
+  getStories(_userId: string | null): StoryRing[] {
+    void _userId;
     return [];
   }
 }

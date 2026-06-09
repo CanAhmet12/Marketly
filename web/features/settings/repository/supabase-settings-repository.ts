@@ -6,10 +6,10 @@ import type { AccountControlHubPayload } from "../domain/types";
 import type { SettingsRepository } from "./settings-repository";
 
 const LINKS = {
-  subscriptions: "/subscriptions",
-  close_friends: "/close-friends",
-  notifications: "/notifications",
-  messages: "/messages",
+  subscriptions: "/hub/subscriptions",
+  close_friends: "/hub/close-friends",
+  notifications: "/hub/notifications",
+  messages: "/hub/messages",
   discover: "/discover",
 } as const;
 
@@ -60,7 +60,7 @@ export class SupabaseSettingsRepository implements SettingsRepository {
         visible: false,
         headline: "Üretici kontrolleri",
         bullets: [],
-        links: { upload: "/upload", subscriptions: LINKS.subscriptions, close_friends: LINKS.close_friends },
+        links: { upload: "/hub/upload", subscriptions: LINKS.subscriptions, close_friends: LINKS.close_friends },
       },
       links: { ...LINKS },
     };

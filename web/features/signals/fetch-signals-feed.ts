@@ -1,9 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { ChannelSignal } from "@/features/channel/types";
+import { mapRpcRowToSignalsFeedRow, type SignalsFeedRpcRow } from "@/features/signals/lib/map-rpc-to-feed-row";
 import { mapSignalsPageRowToFeedRow } from "@/features/signals/lib/map-page-row-to-feed-row";
 import { normalizeSignalConfidence } from "@/features/signals/lib/normalize-signal-confidence";
 import type { SignalsFeedRow, SignalsPageRow } from "@/features/signals/repository/types";
+import { AlgoFlags } from "@/lib/algo-flags";
+import { parseRpcRows } from "@/lib/supabase/parse-rpc-rows";
 
 type ProfileRow = {
   id: string;
@@ -57,8 +60,40 @@ function profileDisplay(p: ProfileRow | undefined): string {
   return p.full_name?.trim() || p.username?.trim() || "Analist";
 }
 
-/** `/signals` katalog beslemesi — signals + assets + profiles. */
-export async function fetchSignalsFeed(client: SupabaseClient, limit = 120): Promise<SignalsFeedRow[]> {
+/** MVECF + Gaussian trend — sunucu RPC sıralaması */
+async function fetchSignalsFeedFromRpc(
+  client: SupabaseClient,
+  limit: number,
+  userId: string | null,
+  sort: "trending" | "personalized" | "new" = "trending",
+): Promise<SignalsFeedRow[]> {
+  // Tüm parametreler explicit — PostgREST PGRST203 imza çakışması önlenir
+  const { data, error } = await client.rpc("get_signals_feed", {
+    p_limit: limit,
+    p_sort: sort,
+    p_asset: null as string | null,
+    p_direction: null as string | null,
+    p_user_id: userId,
+  });
+  if (error) {
+    console.warn("[signals] get_signals_feed RPC", error.message);
+    return [];
+  }
+  return parseRpcRows<SignalsFeedRpcRow>(data).map(mapRpcRowToSignalsFeedRow);
+}
+
+/** `/signals` katalog beslemesi — RPC (algo) veya signals + assets + profiles. */
+export async function fetchSignalsFeed(
+  client: SupabaseClient,
+  limit = 120,
+  userId: string | null = null,
+): Promise<SignalsFeedRow[]> {
+  if (AlgoFlags.signalTrendScore) {
+    const sort = userId ? "personalized" : "trending";
+    const rpcRows = await fetchSignalsFeedFromRpc(client, limit, userId, sort);
+    if (rpcRows.length > 0) return rpcRows;
+  }
+
   try {
     const { data, error } = await client
       .from("signals")

@@ -7,6 +7,8 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type Keybo
 import { EmptyState, SkeletonList } from "@/components/states";
 import { SafeAvatar } from "@/components/ui/safe-avatar";
 import { useAuth } from "@/features/auth/use-auth";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { buildThreadVirtualItems, type ThreadVirtualItem } from "@/features/social/lib/build-thread-virtual-items";
 import {
   MESSAGES_INBOX_ITEM_ESTIMATE,
@@ -18,6 +20,11 @@ import {
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import type { MessageInboxStreamId } from "@/features/messages/domain/types";
 import { useMessageCenter } from "@/features/messages/hooks/use-message-center";
+import {
+  MESSAGES_INBOX_PATH,
+  messagesConversationPath,
+  resolveMessagesBase,
+} from "@/features/messages/routes";
 import { MessagesPageSkeleton } from "@/features/social/components/social-states";
 import { useMessageInbox } from "@/features/social/hooks/use-message-inbox";
 import { formatMessageDayLabel, formatSocialRelativeTime, isSameCalendarDay } from "@/features/social/lib/social-format";
@@ -86,6 +93,8 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
 
   const stream = useMemo(() => resolveMessageStream(searchParams.get("stream")), [searchParams]);
 
+  const messagesBase = useMemo(() => resolveMessagesBase(pathname ?? ""), [pathname]);
+
   const pushStream = useCallback(
     (id: MessageInboxStreamId) => {
       const sp = new URLSearchParams(searchParams.toString());
@@ -151,10 +160,13 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
   const peerHref   = uid && activeConv ? peerChannelHref(activeConv, uid) : null;
   const activeExt  = activeConv ? ext(activeConv) : null;
 
-  const select = useCallback((id: string) => {
-    setSelected(id);
-    router.push(`/messages/${encodeURIComponent(id)}`);
-  }, [router]);
+  const select = useCallback(
+    (id: string) => {
+      setSelected(id);
+      router.push(messagesConversationPath(id));
+    },
+    [router],
+  );
 
   const onSend = useCallback(() => {
     send(draft);
@@ -172,19 +184,18 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
     const sp = new URLSearchParams(searchParams.toString());
     sp.delete("peer");
     const qs = sp.toString();
-    const basePath = pathname.startsWith("/messages/") ? pathname : "/messages";
 
     const match = findConversationWithPeer(conversations, uid, peerParam);
     if (match) {
       setPeerNotFound(null);
       setSelected(match.id);
-      router.replace(`/messages/${encodeURIComponent(match.id)}${qs ? `?${qs}` : ""}`, { scroll: false });
+      router.replace(`${messagesConversationPath(match.id)}${qs ? `?${qs}` : ""}`, { scroll: false });
       return;
     }
 
     setPeerNotFound(peerParam);
-    router.replace(`${basePath}${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [peerParam, uid, hydrated, conversations, router, searchParams, pathname]);
+    router.replace(`${messagesBase}${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [peerParam, uid, hydrated, conversations, router, searchParams, messagesBase]);
 
   useEffect(() => {
     if (!peerParam) setPeerNotFound(null);
@@ -291,40 +302,51 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
     );
   };
 
+  const loginNext = pathname?.startsWith("/hub") ? pathname : "/hub/messages";
+
   /* ── loading ── */
   if (!isInitialized) {
-    return <MessagesPageSkeleton />;
+    return (
+      <HubPageShell zone="inbox" withMainArea={false} className="hp-canvas--embedded-inbox">
+        <MessagesPageSkeleton />
+      </HubPageShell>
+    );
   }
 
   /* ── not logged in ── */
   if (!user) {
     return (
-      <div className="msg-canvas ms-page-wrapper--no-top min-w-0 px-5 py-8">
-        <EmptyState
-          title="Mesaj merkezi"
-          description="Sohbetlerinizi görmek için oturum açın."
-          actionLabel="Oturum aç"
-          actionHref={`/auth/login?next=${encodeURIComponent(pathname || "/messages")}`}
-          tone="social"
-          compact
-        />
-      </div>
+      <HubPageShell zone="inbox" withMainArea={false} className="hp-canvas--embedded-inbox">
+        <div className="msg-canvas ms-page-wrapper--no-top min-w-0 px-5 py-8">
+          <EmptyState
+            title="Mesaj merkezi"
+            description="Sohbetlerinizi görmek için oturum açın."
+            actionLabel="Oturum aç"
+            actionHref={`/auth/login?next=${encodeURIComponent(loginNext)}`}
+            tone="social"
+            compact
+          />
+        </div>
+      </HubPageShell>
     );
   }
 
   /* ── live + empty ── */
   if (!mockOn && conversations.length === 0) {
     return (
-      <div className="msg-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0, padding: "24px 20px" }}>
-        <EmptyState title="Henüz sohbet yok"
-          description="Canlı modda doğrudan mesajlar bağlandığında konuşmalarınız burada listelenir."
-          tone="social" compact />
-      </div>
+      <HubPageShell zone="inbox" withMainArea={false} className="hp-canvas--embedded-inbox">
+        <div className="msg-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0, padding: "24px 20px" }}>
+          <EmptyState title="Henüz sohbet yok"
+            description="Canlı modda doğrudan mesajlar bağlandığında konuşmalarınız burada listelenir."
+            tone="social" compact />
+        </div>
+      </HubPageShell>
     );
   }
 
   /* ── main layout ── */
   return (
+    <HubPageShell zone="inbox" withMainArea={false} className="hp-canvas--embedded-inbox">
     <div className={cn("msg-canvas msg-shell ms-container-wide", "min-w-0")}>
 
       {/* ── SIDEBAR ── */}
@@ -332,6 +354,7 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
 
         {/* Header */}
         <div className="msg-sidebar-head">
+          <span className="msg-sidebar-kicker">{hubPremiumKicker("inbox", "Mesajlar")}</span>
           <div className="msg-sidebar-title">{hub.headline}</div>
           <div className="msg-sidebar-sub">{hub.subline}</div>
           {hub.adaptive_line && <div className="msg-hub-note">{hub.adaptive_line}</div>}
@@ -454,7 +477,10 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
               title="Sohbet bulunamadı"
               description="Bu konuşma mevcut değil veya erişiminiz yok."
               actionLabel="Listeye dön"
-              onAction={() => { setSelected(null); router.push("/messages"); }}
+              onAction={() => {
+                setSelected(null);
+                router.push(messagesBase);
+              }}
               tone="social"
               compact
             />
@@ -464,8 +490,14 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
             {/* Thread header */}
             <header className="msg-thread-header">
               <div className="msg-thread-title-row">
-                <button type="button" className="msg-back-btn"
-                  onClick={() => { setSelected(null); router.push("/messages"); }}>
+                <button
+                  type="button"
+                  className="msg-back-btn"
+                  onClick={() => {
+                    setSelected(null);
+                    router.push(messagesBase);
+                  }}
+                >
                   ← Liste
                 </button>
 
@@ -515,7 +547,7 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
                     <Link href={activeExt.context.discussion_href} className="msg-ctx-chip">Tartışma</Link>
                   )}
                   {activeExt.context.portfolio_note && (
-                    <Link href="/portfolio" className="msg-ctx-chip">Portföy</Link>
+                    <Link href="/hub/portfolio" className="msg-ctx-chip">Portföy</Link>
                   )}
                 </div>
               )}
@@ -641,5 +673,6 @@ export function MessagesPageClient({ conversationId: initialConvId = null }: Pro
         )}
       </section>
     </div>
+    </HubPageShell>
   );
 }

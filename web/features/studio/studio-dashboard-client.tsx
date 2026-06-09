@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
-import { fetchStudioDashboardOverview } from "@/features/studio/fetch-studio-analytics";
+import { StudioAreaChart } from "@/features/studio/components/studio-area-chart";
+import { StudioSubpageSkeleton } from "@/features/studio/components/studio-states";
+import { fetchStudioDashboardOverview, fetchStudioAnalyticsBundle } from "@/features/studio/fetch-studio-analytics";
+import {
+  buildStudioNotifications,
+  buildStudioTips,
+} from "@/features/studio/lib/studio-dashboard-insights";
 import type { StudioTopContentRow } from "@/features/studio/repository";
 import { getStudioRepository } from "@/features/studio/repository";
+import type { StudioTimeframe } from "@/features/studio/types";
 import { useStudioLocalMutations } from "@/features/studio/use-studio-local-mutations";
 import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
 import { liveHrefForPostId } from "@/features/live/live-href";
@@ -19,6 +27,12 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
 import { cn } from "@/lib/cn";
 
+const CHART_TFS: { id: StudioTimeframe; label: string }[] = [
+  { id: "7d", label: "7g" },
+  { id: "28d", label: "28g" },
+  { id: "90d", label: "90g" },
+];
+
 function contentHref(row: StudioTopContentRow): string {
   if (row.kind === "signal") return `/signals`;
   if (row.kind === "short") return pulseHrefForPostId(row.id);
@@ -28,44 +42,14 @@ function contentHref(row: StudioTopContentRow): string {
 }
 
 function kindLabel(kind: string): string {
-  const m: Record<string, string> = { video: "VID", live: "LIVE", signal: "SIG", post: "POST", short: "SHORT" };
+  const m: Record<string, string> = {
+    video: "VID",
+    live: "LIVE",
+    signal: "SIG",
+    post: "POST",
+    short: "SHORT",
+  };
   return m[kind] ?? "—";
-}
-
-/** SVG alan grafiği */
-function AreaChart({ series, color, label }: { series: { label: string; value: number }[]; color: string; label: string }) {
-  const id = useId().replace(/:/g, "");
-  const W = 500; const H = 120; const padX = 8; const padY = 10;
-  const vals = series.map((s) => s.value);
-  const min = Math.min(...vals); const max = Math.max(...vals);
-  const span = max - min || 1;
-  const pts = vals.map((v, i) => ({
-    x: padX + (i / (vals.length - 1)) * (W - padX * 2),
-    y: padY + (1 - (v - min) / span) * (H - padY * 2),
-  }));
-  let line = `M ${pts[0]!.x.toFixed(1)} ${pts[0]!.y.toFixed(1)}`;
-  for (let i = 1; i < pts.length; i++) {
-    const cpx = (pts[i-1]!.x + pts[i]!.x) / 2;
-    line += ` C ${cpx.toFixed(1)} ${pts[i-1]!.y.toFixed(1)}, ${cpx.toFixed(1)} ${pts[i]!.y.toFixed(1)}, ${pts[i]!.x.toFixed(1)} ${pts[i]!.y.toFixed(1)}`;
-  }
-  const last = pts[pts.length-1]!; const first = pts[0]!;
-  const area = `${line} L ${last.x.toFixed(1)} ${H} L ${first.x.toFixed(1)} ${H} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height={H}
-      className="st-chart-svg" aria-label={label}>
-      <defs>
-        <linearGradient id={`stg-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.24" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#stg-${id})`} stroke="none" />
-      <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        style={{ filter: `drop-shadow(0 0 8px ${color}66)` }} />
-    </svg>
-  );
 }
 
 export function StudioDashboardClient() {
@@ -74,11 +58,18 @@ export function StudioDashboardClient() {
   const liveMode = !mockOn && isSupabaseConfigured();
   const { mutations } = useStudioLocalMutations(mockOn);
   const ownerId = useStudioOwnerId(user);
-  const [chartTf, setChartTf] = useState("7g");
+  const [chartTf, setChartTf] = useState<StudioTimeframe>("7d");
 
   const liveQuery = useQuery({
     queryKey: queryKeys.studioDashboard(ownerId),
     queryFn: () => fetchStudioDashboardOverview(getSupabaseBrowserClient()),
+    enabled: liveMode && Boolean(ownerId),
+    staleTime: 60_000,
+  });
+
+  const chartQuery = useQuery({
+    queryKey: queryKeys.studioAnalytics(chartTf),
+    queryFn: () => fetchStudioAnalyticsBundle(getSupabaseBrowserClient(), chartTf),
     enabled: liveMode && Boolean(ownerId),
     staleTime: 60_000,
   });
@@ -89,6 +80,12 @@ export function StudioDashboardClient() {
     return getStudioRepository().getDashboardOverview(ownerId, mutations);
   }, [ownerId, mutations, liveMode, liveQuery.data]);
 
+  const perfSeries = useMemo(() => {
+    if (!ownerId) return [];
+    if (liveMode) return chartQuery.data?.viewsSeries ?? [];
+    return getStudioRepository().getAnalyticsBundle(ownerId, chartTf).viewsSeries;
+  }, [ownerId, chartTf, liveMode, chartQuery.data]);
+
   const economy = useMemo(() => {
     if (!ownerId) return null;
     return getStudioRepository().getCreatorEconomyHub(ownerId);
@@ -97,49 +94,72 @@ export function StudioDashboardClient() {
   const displayName = user?.email?.split("@")[0] ?? "Creator";
   const initials = displayName.slice(0, 2).toUpperCase();
 
-  if (!ownerId || !data) {
+  if (!ownerId) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="st-hero" style={{ opacity: 0.4, minHeight: 100 }} />
-        <div className="st-metrics" style={{ opacity: 0.4, minHeight: 80 }} />
-      </div>
+      <EmptyState
+        title="Giriş gerekli"
+        description="Studio özeti için oturum açın."
+        tone="social"
+        compact
+      />
     );
   }
 
-  // ES-001: mock=false + gerçek içerik yok → empty state göster
-  const hasRealContent = mockOn || data.publishedCount > 0 || data.totalViews > 0 || data.followerGrowth7d !== 0;
+  if (liveMode && liveQuery.isLoading && !data) {
+    return <StudioSubpageSkeleton />;
+  }
+
+  if (liveMode && liveQuery.isError && !data) {
+    return (
+      <EmptyState
+        title="Dashboard yüklenemedi"
+        description="Analitik verisi alınamadı. Bağlantınızı kontrol edip tekrar deneyin."
+        actionLabel="Yenile"
+        onAction={() => void liveQuery.refetch()}
+        tone="social"
+        compact
+      />
+    );
+  }
+
+  if (!data) {
+    return <StudioSubpageSkeleton />;
+  }
+
+  const hasRealContent =
+    mockOn || data.publishedCount > 0 || data.totalViews > 0 || data.followerGrowth7d !== 0;
+
   if (!hasRealContent) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "64px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 48 }}>🎬</div>
-        <div style={{ fontWeight: 700, fontSize: 20 }}>Henüz içerik yok</div>
-        <div style={{ color: "var(--color-meta, #9CA3AF)", fontSize: 14, maxWidth: 320 }}>
-          İlk içeriğini yükleyerek Creator Studio'yu aktifleştir. Metrikler ve analizler burada görünecek.
-        </div>
-        <a href="/upload" className="studio-hbtn" style={{ padding: "10px 24px", fontSize: 14, textDecoration: "none" }}>
-          + İlk İçeriği Yükle
-        </a>
-      </div>
+      <EmptyState
+        title="Henüz içerik yok"
+        description="İlk içeriğini yükleyerek Creator Studio'yu aktifleştir. Metrikler ve analizler burada görünecek."
+        actionLabel="İlk İçeriği Yükle"
+        actionHref="/upload"
+        tone="creator"
+        compact
+      />
     );
   }
 
-  /* Performans serisi chart için */
-  const perfSeries = data.recentPerformance.map((p) => ({ label: p.label, value: p.value }));
-  const chartTFs = ["7g", "28g", "90g"];
+  const notifications = buildStudioNotifications(data);
+  const tips = buildStudioTips(data, hasRealContent);
+  const chartLoading = liveMode && chartQuery.isFetching && perfSeries.length === 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div className="st-dash-stack">
 
-      {/* ===== CREATOR HERO ===== */}
       <div className="st-hero">
         <div className="st-hero-left">
           <div className="st-hero-avatar">{initials}</div>
           <div className="st-hero-info">
-            <span className="st-hero-tag">Creator Studio</span>
+            <span className="st-hero-tag">Creator Home</span>
             <div className="st-hero-name">{displayName}</div>
             <div className="st-hero-badges">
-              <span className="st-badge st-badge--verified">Doğrulandı</span>
-              <span className="st-badge st-badge--pro">Pro</span>
+              <span className="st-badge st-badge--verified">Aktif</span>
+              {data.publishedCount > 0 ? (
+                <span className="st-badge st-badge--pro">{data.publishedCount} yayın</span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -160,13 +180,12 @@ export function StudioDashboardClient() {
         </div>
 
         <div className="st-hero-actions">
+          <Link href="/upload" className="studio-hbtn studio-hbtn--accent">Yeni İçerik</Link>
           <Link href="/studio/live" className="studio-hbtn studio-hbtn--live">Canlı Yayın</Link>
-          <Link href="/studio/content" className="studio-hbtn studio-hbtn--accent">Yeni İçerik</Link>
           <Link href="/studio/analytics" className="studio-hbtn studio-hbtn--ghost">Analitik</Link>
         </div>
       </div>
 
-      {/* ===== 5 METRİK ===== */}
       <div className="st-metrics">
         <div className="st-metric">
           <span className="st-metric-label">Görüntülenme</span>
@@ -197,54 +216,59 @@ export function StudioDashboardClient() {
         )}
       </div>
 
-      {/* ===== ORTA: Grafik + Top Content ===== */}
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 340px", gap: 16 }}
-           className="min-[1100px]:flex-row" /* responsive via CSS */>
-
-        {/* Performans grafiği */}
+      <div className="st-dash-row st-dash-row--chart">
         <div className="st-block">
           <div className="st-block-header">
-            <div className="st-block-title">
-              Performans Grafiği
-            </div>
+            <div className="st-block-title">Performans Grafiği</div>
             <div className="st-chart-tf">
-              {chartTFs.map((tf) => (
-                <button key={tf} type="button"
-                  className={cn("st-tf-btn", chartTf === tf && "st-tf-btn--active")}
-                  onClick={() => setChartTf(tf)}>
-                  {tf}
+              {CHART_TFS.map((tf) => (
+                <button
+                  key={tf.id}
+                  type="button"
+                  className={cn("st-tf-btn", chartTf === tf.id && "st-tf-btn--active")}
+                  onClick={() => setChartTf(tf.id)}
+                >
+                  {tf.label}
                 </button>
               ))}
             </div>
           </div>
           <div className="st-chart-wrap">
-            <AreaChart series={perfSeries} color="#0f9d75" label="Görüntülenme trendi" />
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, padding: "0 4px" }}>
-              {perfSeries.map((p) => (
-                <span key={p.label} style={{ fontSize: 9, color: "#64748b", fontWeight: 600 }}>
-                  {p.label.replace("Gün ", "")}
-                </span>
-              ))}
-            </div>
+            {chartLoading ? (
+              <div className="st-chart-empty" style={{ height: 120 }} aria-busy="true">
+                Yükleniyor…
+              </div>
+            ) : (
+              <StudioAreaChart series={perfSeries} color="var(--st-chart-views)" label="Görüntülenme trendi" />
+            )}
+            {perfSeries.length > 0 ? (
+              <div className="st-chart-labels">
+                {perfSeries.map((p) => (
+                  <span key={p.label} className="st-chart-label">
+                    {p.label.replace("Gün ", "")}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* Hızlı İşlemler */}
         <div className="st-block">
           <div className="st-block-header">
-            <div className="st-block-title">
-              Hızlı İşlemler
-            </div>
+            <div className="st-block-title">Hızlı İşlemler</div>
           </div>
           <div className="st-quick-actions">
             {data.quickActions.map((a) => (
-              <Link key={a.id} href={a.href}
+              <Link
+                key={a.id}
+                href={a.href}
                 className={cn(
                   "st-qa-link",
-                  a.variant === "primary"   && "st-qa-link--primary",
+                  a.variant === "primary" && "st-qa-link--primary",
                   a.variant === "secondary" && "st-qa-link--secondary",
-                  a.variant === "ghost"     && "st-qa-link--ghost",
-                )}>
+                  a.variant === "ghost" && "st-qa-link--ghost",
+                )}
+              >
                 {a.label}
               </Link>
             ))}
@@ -252,68 +276,105 @@ export function StudioDashboardClient() {
         </div>
       </div>
 
-      {/* ===== ALTTA: Top Content + Economy + Signal ===== */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
-
-        {/* Öne çıkan içerik */}
+      <div className="st-dash-row st-dash-row--split">
         <div className="st-block">
           <div className="st-block-header">
-            <div className="st-block-title">
-              Öne Çıkan İçerik
-            </div>
+            <div className="st-block-title">Öne Çıkan İçerik</div>
             <Link href="/studio/content" className="st-block-link">Tümü →</Link>
           </div>
-          <div className="st-top-content" style={{ marginTop: 8 }}>
-            {data.topContent.map((row) => (
-              <Link key={row.id} href={contentHref(row)} className="st-content-row">
-                <div className="st-content-row-thumb">
-                  {row.thumbnailUrl
-                    ? <img src={row.thumbnailUrl} alt="" />
-                    : <span style={{ fontSize: 9, letterSpacing: "0.06em", color: "var(--st-meta)", textTransform: "uppercase" }}>{kindLabel(row.kind)}</span>}
-                </div>
-                <div className="st-content-row-info">
-                  <div className="st-content-row-title">{row.title}</div>
-                  <div className="st-content-row-meta">
-                    <span style={{ textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 9 }}>{row.kind}</span>
-                    {" · "}etkileşim {formatCompactCount(row.engagement)}
+          <div className="st-top-content">
+            {data.topContent.length === 0 ? (
+              <div className="st-feed-item st-feed-item--static">
+                <div className="st-feed-body">Henüz öne çıkan içerik yok.</div>
+              </div>
+            ) : (
+              data.topContent.map((row) => (
+                <Link key={row.id} href={contentHref(row)} className="st-content-row">
+                  <div className="st-content-row-thumb">
+                    {row.thumbnailUrl ? (
+                      <img src={row.thumbnailUrl} alt="" />
+                    ) : (
+                      <span className="st-list-thumb-placeholder">{kindLabel(row.kind)}</span>
+                    )}
                   </div>
-                </div>
-                <div className="st-content-row-views">{formatCompactCount(row.views)}</div>
-              </Link>
-            ))}
+                  <div className="st-content-row-info">
+                    <div className="st-content-row-title">{row.title}</div>
+                    <div className="st-content-row-meta">
+                      <span style={{ textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 9 }}>
+                        {row.kind}
+                      </span>
+                      {" · "}etkileşim {formatCompactCount(row.engagement)}
+                    </div>
+                  </div>
+                  <div className="st-content-row-views">{formatCompactCount(row.views)}</div>
+                </Link>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Creator ekonomisi özet */}
-        {economy && (
+        <div className="st-dash-rail">
           <div className="st-block">
             <div className="st-block-header">
-              <div className="st-block-title">
-                Ekonomi Özeti
-              </div>
-              <Link href="/studio/economy" className="st-block-link">Detay →</Link>
+              <div className="st-block-title">Bildirimler</div>
             </div>
-            <div style={{ padding: "14px 18px" }}>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "var(--st-text)", marginBottom: 6 }}>
-                {economy.headline}
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--st-text-2)", lineHeight: 1.5, marginBottom: 14 }}>
-                {economy.subline}
-              </div>
-              <Link href="/studio/economy"
-                style={{
-                  display: "block", textAlign: "center", padding: "8px 14px",
-                  borderRadius: 8, background: "var(--st-violet-bg)",
-                  border: "1px solid rgba(139,92,246,0.25)", color: "var(--st-violet)",
-                  fontSize: 12, fontWeight: 700, textDecoration: "none",
-                }}>
-                İşletim Merkezi →
-              </Link>
+            <div className="st-feed-list">
+              {notifications.map((n) =>
+                n.href ? (
+                  <Link
+                    key={n.id}
+                    href={n.href}
+                    className={cn(
+                      "st-feed-item",
+                      n.tone === "action" && "st-feed-item--action",
+                      n.tone === "success" && "st-feed-item--success",
+                    )}
+                  >
+                    <div className="st-feed-title">{n.title}</div>
+                    <div className="st-feed-body">{n.body}</div>
+                  </Link>
+                ) : (
+                  <div key={n.id} className="st-feed-item st-feed-item--static">
+                    <div className="st-feed-title">{n.title}</div>
+                    <div className="st-feed-body">{n.body}</div>
+                  </div>
+                ),
+              )}
             </div>
           </div>
-        )}
+
+          <div className="st-block">
+            <div className="st-block-header">
+              <div className="st-block-title">Sana Önerilen</div>
+            </div>
+            {tips.map((tip) => (
+              <div key={tip.id} className="st-tip-card">
+                <div className="st-tip-title">{tip.title}</div>
+                <p className="st-tip-body">{tip.body}</p>
+                <Link href={tip.href} className="st-tip-cta">
+                  {tip.cta} →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {economy ? (
+        <div className="st-block">
+          <div className="st-block-header">
+            <div className="st-block-title">Ekonomi Özeti</div>
+            <Link href="/studio/economy" className="st-block-link">Detay →</Link>
+          </div>
+          <div className="st-economy-blurb">
+            <div className="st-economy-headline">{economy.headline}</div>
+            <div className="st-economy-sub">{economy.subline}</div>
+            <Link href="/studio/economy" className="st-economy-cta">
+              İşletim Merkezi →
+            </Link>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

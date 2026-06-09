@@ -1,0 +1,376 @@
+/**
+ * Portföy — premium renk zenginleştirme + görsel cilası
+ * Özelleştirilmiş zone paleti, cam yüzey, mono veri, ışık halkası
+ */
+
+/* ─── Temel mürekkep & yüzey tokenları ─────────────────────────────────────── */
+.pf-canvas {
+  --pf-ink: var(--pf-text);
+  --pf-ink-2: var(--pf-text-2);
+  --pf-ink-3: var(--pf-meta);
+  --pf-glass: color-mix(in srgb, var(--pf-surface) 88%, transparent);
+  --pf-glass-border: color-mix(in srgb, var(--pf-border) 72%, transparent);
+  --pf-radius-block: 14px;
+  --pf-radius-chip: 9px;
+  --pf-shadow-block: 0 1px 0 color-mix(in srgb, #fff 4%, transparent),
+    0 12px 32px color-mix(in srgb, #000 22%, transparent);
+
+  /* Kategori premium paleti */
+  --pf-cat-crypto-fg: #fcd34d;
+  --pf-cat-crypto-bg: color-mix(in srgb, #f59e0b 14%, transparent);
+  --pf-cat-stocks-fg: #67e8f9;
+  --pf-cat-stocks-bg: color-mix(in srgb, #06b6d4 12%, transparent);
+  --pf-cat-index-fg: #c4b5fd;
+  --pf-cat-index-bg: color-mix(in srgb, #8b5cf6 12%, transparent);
+  --pf-cat-forex-fg: #a5b4fc;
+  --pf-cat-forex-bg: color-mix(in srgb, #6366f1 12%, transparent);
+  --pf-cat-commodity-fg: #fdba74;
+  --pf-cat-commodity-bg: color-mix(in srgb, #f97316 12%, transparent);
+
+  /* Blok zone renkleri */
+  --pf-zone-performance: #0f9d75;
+  --pf-zone-holdings: #0891b2;
+  --pf-zone-allocation: #7c3aed;
+  --pf-zone-risk-low: #22c55e;
+  --pf-zone-risk-mid: #f97316;
+  --pf-zone-risk-high: #ef4444;
+  --pf-zone-signals: #059669;
+  --pf-zone-intel-news: #4a90e8;
+  --pf-zone-intel-cal: #d4920a;
+}
+
+/* ─── Sayfa atmosferi ─────────────────────────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-main-area::before {
+  content: "";
+  position: absolute;
+  inset: -40px 0 auto 0;
+  height: 280px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    120% 80% at 12% -10%,
+    var(--pf-zone-glow) 0%,
+    transparent 68%
+  );
+  opacity: 0.9;
+}
+
+.pf-canvas[data-portfolio-mode="paper"] .pf-main-area::before {
+  background: radial-gradient(
+    110% 75% at 88% -8%,
+    color-mix(in srgb, var(--pf-zone-3) 22%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.pf-canvas[data-portfolio-mode] .pf-main-area > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Header chrome ───────────────────────────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-header-tag {
+  color: color-mix(in srgb, var(--pf-zone-1) 55%, var(--pf-ink-3));
+}
+
+.pf-canvas[data-portfolio-mode] .pf-header-title {
+  background: linear-gradient(
+    120deg,
+    var(--pf-ink) 0%,
+    color-mix(in srgb, var(--pf-zone-1) 35%, var(--pf-ink)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pf-header-btn {
+  border-radius: var(--pf-radius-chip);
+  backdrop-filter: blur(6px);
+}
+
+.pf-header-btn:focus-visible,
+.pf-share-card__btn:focus-visible,
+.pf-intel-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--pf-zone-1) 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* ─── Hero strip — premium cam ────────────────────────────────────────────── */
+.pf-canvas[data-portfolio-mode] .pf-hero {
+  border-radius: var(--pf-radius-block);
+  border-color: var(--pf-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--pf-zone-1) 5%, var(--pf-surface)) 0%,
+    var(--pf-surface) 42%,
+    color-mix(in srgb, var(--pf-zone-2) 3%, var(--pf-surface)) 100%
+  );
+  box-shadow: var(--pf-shadow-block);
+}
+
+.pf-canvas[data-portfolio-mode] .pf-stat:first-child .pf-stat-value--accent {
+  background: linear-gradient(
+    135deg,
+    var(--pf-zone-1) 0%,
+    var(--pf-zone-3) 55%,
+    color-mix(in srgb, var(--pf-zone-1) 80%, #fff) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+
+.pf-stat-change--up {
+  color: color-mix(in srgb, var(--pf-up) 92%, #fff);
+}
+
+.pf-stat-change--down {
+  color: color-mix(in srgb, var(--pf-down) 92%, #fff);
+}
+
+/* ─── Bloklar — zone cam kenarlık ─────────────────────────────────────────── */
+.pf-block {
+  border-radius: var(--pf-radius-block);
+  background: var(--pf-glass);
+  border-color: var(--pf-glass-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.pf-block[data-pf-block-zone="performance"] {
+  border-color: color-mix(in srgb, var(--pf-zone-performance) 22%, var(--pf-border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pf-zone-performance) 5%, var(--pf-surface)),
+    var(--pf-surface)
+  );
+}
+
+.pf-block[data-pf-block-zone="holdings"] {
+  border-color: color-mix(in srgb, var(--pf-zone-holdings) 20%, var(--pf-border));
+}
+
+.pf-block[data-pf-block-zone="allocation"] {
+  border-color: color-mix(in srgb, var(--pf-zone-allocation) 20%, var(--pf-border));
+}
+
+.pf-block[data-pf-block-zone="risk"] {
+  border-color: color-mix(in srgb, var(--pf-zone-risk-mid) 18%, var(--pf-border));
+}
+
+.pf-block[data-pf-block-zone="signals"] .pf-block,
+.pf-bottom-zone .pf-block {
+  border-color: color-mix(in srgb, var(--pf-zone-signals) 16%, var(--pf-border));
+}
+
+.pf-block-stripe {
+  width: 3px;
+  height: 15px;
+  border-radius: 999px;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 25%, transparent);
+}
+
+/* ─── Grafik glow ─────────────────────────────────────────────────────────── */
+.pf-chart-line {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--pf-chart-primary) 55%, transparent));
+}
+
+.pf-chart-badge--live {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pf-zone-1) 12%, transparent);
+}
+
+.pf-chart-badge--demo {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #d4920a 14%, transparent);
+}
+
+/* ─── Kategori badge & fill — token tabanlı ───────────────────────────────── */
+.pf-cat-badge--crypto {
+  background: var(--pf-cat-crypto-bg);
+  color: var(--pf-cat-crypto-fg);
+  border: 1px solid color-mix(in srgb, var(--pf-cat-crypto-fg) 22%, transparent);
+}
+
+.pf-cat-badge--stocks {
+  background: var(--pf-cat-stocks-bg);
+  color: var(--pf-cat-stocks-fg);
+  border: 1px solid color-mix(in srgb, var(--pf-cat-stocks-fg) 22%, transparent);
+}
+
+.pf-cat-badge--index {
+  background: var(--pf-cat-index-bg);
+  color: var(--pf-cat-index-fg);
+  border: 1px solid color-mix(in srgb, var(--pf-cat-index-fg) 22%, transparent);
+}
+
+.pf-cat-badge--forex {
+  background: var(--pf-cat-forex-bg);
+  color: var(--pf-cat-forex-fg);
+  border: 1px solid color-mix(in srgb, var(--pf-cat-forex-fg) 22%, transparent);
+}
+
+.pf-cat-badge--commodity {
+  background: var(--pf-cat-commodity-bg);
+  color: var(--pf-cat-commodity-fg);
+  border: 1px solid color-mix(in srgb, var(--pf-cat-commodity-fg) 22%, transparent);
+}
+
+.pf-legend-dot--crypto,
+.pf-weight-fill--crypto,
+.pf-donut-segment--crypto {
+  background: #e8a317;
+  fill: #e8a317;
+  box-shadow: 0 0 8px color-mix(in srgb, #f59e0b 35%, transparent);
+}
+
+.pf-legend-dot--stocks,
+.pf-weight-fill--stocks,
+.pf-donut-segment--stocks {
+  background: #22d3ee;
+  fill: #22d3ee;
+}
+
+.pf-legend-dot--index,
+.pf-weight-fill--index,
+.pf-donut-segment--index {
+  background: #a78bfa;
+  fill: #a78bfa;
+}
+
+.pf-legend-dot--forex,
+.pf-weight-fill--forex,
+.pf-donut-segment--forex {
+  background: #818cf8;
+  fill: #818cf8;
+}
+
+.pf-legend-dot--commodity,
+.pf-weight-fill--commodity,
+.pf-donut-segment--commodity {
+  background: #fb923c;
+  fill: #fb923c;
+}
+
+.pf-donut-center-label { fill: var(--pf-ink-3); }
+.pf-donut-center-value { fill: var(--pf-ink); }
+
+/* ─── Tablo hover ─────────────────────────────────────────────────────────── */
+.pf-holdings-table tbody tr:hover {
+  background: color-mix(in srgb, var(--pf-zone-holdings) 6%, transparent);
+}
+
+.pf-holding-link:hover .pf-holding-name {
+  color: color-mix(in srgb, var(--pf-zone-holdings) 70%, var(--pf-ink));
+}
+
+/* ─── Intel zone premium ──────────────────────────────────────────────────── */
+.pf-intel-zone {
+  border-radius: var(--pf-radius-block);
+  border-color: color-mix(in srgb, var(--pf-zone-intel-news) 18%, var(--pf-border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pf-zone-intel-news) 5%, var(--pf-surface)),
+    color-mix(in srgb, var(--pf-zone-intel-cal) 4%, var(--pf-surface))
+  );
+}
+
+.pf-intel-chip {
+  border-radius: var(--pf-radius-chip);
+  backdrop-filter: blur(4px);
+}
+
+.pf-intel-chip--news {
+  border-left-color: var(--pf-zone-intel-news);
+  background: color-mix(in srgb, var(--pf-zone-intel-news) 5%, rgba(255, 255, 255, 0.02));
+}
+
+.pf-intel-chip--calendar {
+  border-left-color: var(--pf-zone-intel-cal);
+  background: color-mix(in srgb, var(--pf-zone-intel-cal) 5%, rgba(255, 255, 255, 0.02));
+}
+
+.pf-intel-impact--3 {
+  box-shadow: 0 0 6px color-mix(in srgb, #ef4444 55%, transparent);
+}
+
+/* ─── Paylaşım kartı ──────────────────────────────────────────────────────── */
+.pf-share-card {
+  border-radius: var(--pf-radius-block);
+}
+
+.pf-share-card--up {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pf-up) 12%, transparent),
+    0 10px 28px color-mix(in srgb, var(--pf-up) 8%, transparent);
+}
+
+.pf-share-card--down {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pf-down) 12%, transparent),
+    0 10px 28px color-mix(in srgb, var(--pf-down) 8%, transparent);
+}
+
+/* ─── Strateji & risk dolguları ───────────────────────────────────────────── */
+.pf-strat-fill--0 { background: linear-gradient(90deg, var(--pf-zone-1), var(--pf-zone-3)); }
+.pf-strat-fill--1 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.pf-strat-fill--2 { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+.pf-sector-fill {
+  background: linear-gradient(90deg, var(--pf-zone-2), var(--pf-zone-1));
+}
+
+.pf-corr-row {
+  border-color: color-mix(in srgb, var(--pf-zone-risk-mid) 14%, var(--pf-border-2));
+}
+
+/* ─── Sinyal satırları ───────────────────────────────────────────────────── */
+.pf-signal-dir--buy {
+  background: color-mix(in srgb, var(--pf-up) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pf-up) 22%, transparent);
+}
+
+.pf-signal-dir--sell {
+  background: color-mix(in srgb, var(--pf-down) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pf-down) 22%, transparent);
+}
+
+.pf-analyst-row:hover,
+.pf-signal-row:hover {
+  background: color-mix(in srgb, var(--pf-zone-signals) 6%, transparent);
+}
+
+/* ─── Açık tema ───────────────────────────────────────────────────────────── */
+html[data-theme="light"] .pf-canvas {
+  --pf-glass: var(--color-surface);
+  --pf-glass-border: var(--color-border);
+  --pf-shadow-block: 0 1px 2px color-mix(in srgb, #000 6%, transparent),
+    0 8px 24px color-mix(in srgb, #000 4%, transparent);
+}
+
+html[data-theme="light"] .pf-canvas[data-portfolio-mode] .pf-header-title {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  color: var(--color-text);
+}
+
+html[data-theme="light"] .pf-canvas[data-portfolio-mode] .pf-stat:first-child .pf-stat-value--accent {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  color: var(--pf-zone-1);
+}
+
+html[data-theme="light"] .pf-canvas .pf-block {
+  background: var(--color-surface);
+}
+
+html[data-theme="light"] .pf-canvas .pf-holdings-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+html[data-theme="light"] .pf-canvas .pf-donut-center-value {
+  fill: var(--color-text);
+}
+
+html[data-theme="light"] .pf-canvas .pf-donut-center-label {
+  fill: var(--color-meta);
+}

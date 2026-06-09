@@ -32,6 +32,13 @@ export type CreatorDirectoryRow = {
   editorPick: boolean;
   rising: boolean;
   createdAt: string;
+  /** Sunucu composite skoru (CreatorScore uyarlaması) */
+  compositeScore?: number | null;
+  /** 7 günlük kopya velocity % */
+  risingVelocity?: number | null;
+  /** Son kazanan sinyal ROI % */
+  latestGainPct?: number | null;
+  followerTier?: string | null;
 };
 
 export type CreatorDirectoryPayload = {

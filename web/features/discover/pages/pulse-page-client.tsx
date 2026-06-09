@@ -6,7 +6,8 @@ import { PulseFullPageContent } from "@/features/discover/visual-reference/disco
 import { PulseListSkeleton } from "@/features/pulse/pulse-list-skeleton";
 
 export function PulsePageClient() {
-  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel();
+  // TikTok Stage 2: "pulse" tab — explorationGamma 0.62 (en yüksek yenilik), format bias pulse 1.12×
+  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel("pulse");
 
   return (
     <DiscoverVerticalPageShell
@@ -16,6 +17,7 @@ export function PulsePageClient() {
       feedLoading={feedLoading}
       feedError={feedError}
       onFeedRetry={refetchFeed}
+      pageTone="pulse"
     >
       {feedLoading ? <PulseListSkeleton inline /> : <PulseFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

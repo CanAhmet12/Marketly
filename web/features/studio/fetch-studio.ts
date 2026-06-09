@@ -1,4 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import {
+  studioContentHref,
+  studioContentKindLabel,
+} from "@/features/studio/lib/studio-content-href";
 import type {
   CreatorContentItem,
   StudioDraftItem,
@@ -20,23 +25,28 @@ export async function fetchStudioContent(
 
   if (error || !data) return [];
 
-  return data.map((p: any): CreatorContentItem => ({
-    id:           String(p.id),
-    kind:         p.type === "video" ? "video" : p.type === "short" ? "short" : p.type === "signal" ? "signal" : "post",
-    title:        p.title ?? p.content?.slice(0, 60) ?? "İsimsiz",
-    preview:      p.content ?? "",
-    thumbnailUrl: p.thumbnail_url ?? p.image_url ?? null,
-    status:       "published",
-    views:        typeof p.views_count === "number" ? p.views_count : 0,
-    comments:     typeof p.comments === "number" ? p.comments : 0,
-    likes:        typeof p.likes === "number" ? p.likes : 0,
-    publishedAt:  p.created_at,
-    updatedAt:    p.created_at,
-    visibility:   "public",
-    platformTarget: "all",
-    signalSymbol:   null,
-    signalDirection: null,
-  } as CreatorContentItem));
+  return data.map((p: Record<string, unknown>): CreatorContentItem => {
+    const id = String(p.id);
+    const type = String(p.type ?? "post");
+    return {
+      id,
+      kind: studioContentKindLabel(type) as CreatorContentItem["kind"],
+      title: String(
+        (p.title ?? (typeof p.content === "string" ? p.content.slice(0, 60) : "")) || "İsimsiz",
+      ),
+      preview: typeof p.content === "string" ? p.content : "",
+      thumbnailUrl:
+        (typeof p.thumbnail_url === "string" ? p.thumbnail_url : null) ??
+        (typeof p.image_url === "string" ? p.image_url : null),
+      status: "published",
+      views: typeof p.views_count === "number" ? p.views_count : 0,
+      comments: typeof p.comments === "number" ? p.comments : 0,
+      likes: typeof p.likes === "number" ? p.likes : 0,
+      publishedAt: typeof p.created_at === "string" ? p.created_at : null,
+      visibility: "public",
+      href: studioContentHref(type, id),
+    };
+  });
 }
 
 /** `post_drafts` → StudioDraftItem[] */

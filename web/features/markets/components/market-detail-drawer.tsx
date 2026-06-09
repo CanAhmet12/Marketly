@@ -93,19 +93,19 @@ export function MarketDetailDrawer({ open, asset, onClose }: Props) {
 
           <dl className="mt-[var(--sp-3)] grid grid-cols-2 gap-[var(--sp-2)] text-[12px] font-semibold">
             <div className="ms-metric-block">
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--color-meta)]">Destek</dt>
+              <dt className="text-[11px] uppercase tracking-wide text-[var(--color-meta)]">Destek</dt>
               <dd className="ms-num-strong mt-1 text-[var(--color-text)]">{x.support.toLocaleString("tr-TR")}</dd>
             </div>
             <div className="ms-metric-block">
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--color-meta)]">Direnç</dt>
+              <dt className="text-[11px] uppercase tracking-wide text-[var(--color-meta)]">Direnç</dt>
               <dd className="ms-num-strong mt-1 text-[var(--color-text)]">{x.resistance.toLocaleString("tr-TR")}</dd>
             </div>
             <div className="ms-metric-block">
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--color-meta)]">Hacim</dt>
+              <dt className="text-[11px] uppercase tracking-wide text-[var(--color-meta)]">Hacim</dt>
               <dd className="mt-1 text-[var(--color-text)]">{asset.volume}</dd>
             </div>
             <div className="ms-metric-block">
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--color-meta)]">Piyasa değeri</dt>
+              <dt className="text-[11px] uppercase tracking-wide text-[var(--color-meta)]">Piyasa değeri</dt>
               <dd className="mt-1 text-[var(--color-text)]">{asset.marketCapLabel}</dd>
             </div>
           </dl>

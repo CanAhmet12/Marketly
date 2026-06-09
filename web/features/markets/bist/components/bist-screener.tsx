@@ -101,7 +101,7 @@ export function BistScreener({ screener }: Props) {
           userSelect: "none",
           textAlign: "right",
           padding: "8px 12px",
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.07em",
           textTransform: "uppercase",
@@ -120,7 +120,7 @@ export function BistScreener({ screener }: Props) {
     <div className="cc-screener cc-section" role="region" aria-label="BIST tarayici">
       <div className="cc-zone-label">
         BIST Tarama
-        <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--cc-meta)", fontWeight: 500 }}>
+        <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--cc-meta)", fontWeight: 500 }}>
           Son guncelleme: 17:40:12
         </span>
       </div>
@@ -145,15 +145,15 @@ export function BistScreener({ screener }: Props) {
         <table className="cc-screener-table" aria-label="BIST hisseleri">
           <thead className={cn("cc-screener-thead", vt.enabled && "mkt-vt-sticky-thead")}>
             <tr>
-              <th style={{ textAlign: "left", cursor: "pointer", userSelect: "none", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: sortKey === "rank" ? "var(--cc-gold)" : undefined }}
+              <th style={{ textAlign: "left", cursor: "pointer", userSelect: "none", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: sortKey === "rank" ? "var(--cc-gold)" : undefined }}
                 onClick={() => handleSort("rank")}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Senet / Sirket</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Fiyat (TL)</th>
+              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Senet / Sirket</th>
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Fiyat (TL)</th>
               <SortTh label="Gunluk %" k="changeDay" />
               <SortTh label="Haftalik %" k="changeWeek" />
               <SortTh label="Hacim" k="volume" />
               <SortTh label="Piyasa Degeri" k="marketCap" />
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
+              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
             </tr>
           </thead>
           <tbody className="cc-screener-tbody" style={vt.tbodyStyle}>

@@ -1,0 +1,49 @@
+/**
+ * Ayarlar — Hub Premium uyarlama (tools zone, gömülü layout)
+ */
+
+.hp-canvas--embedded-settings {
+  width: 100%;
+  min-width: 0;
+}
+
+.hp-canvas--embedded-settings > .sg-shell {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  --sg-accent: var(--hp-zone-1);
+  --sg-border: var(--hp-border);
+  --sg-border-2: var(--hp-border-2);
+}
+
+.hp-canvas--embedded-settings .sg-header {
+  display: none;
+}
+
+.hp-canvas--embedded-settings .sg-nav-item--active {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 6%, var(--hp-surface));
+}
+
+.hp-canvas--embedded-settings .sg-toggle-btn--on {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-settings .sg-stat-value {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-canvas--embedded-settings .sg-section-title {
+  font-family: var(--font-bold);
+}
+
+.hp-canvas--embedded-settings .sg-btn--primary {
+  background: var(--hp-zone-1);
+  border-color: transparent;
+}
+
+.hp-canvas--embedded-settings .sg-quick-link:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
+}

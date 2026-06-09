@@ -16,7 +16,9 @@ import { SignalsMarketIntelStrip } from "@/features/signals/components/signals-m
 import { SignalsMarketplaceRails } from "@/features/signals/components/signals-marketplace-rails";
 import { SignalsSidebar } from "@/features/signals/components/signals-sidebar";
 import { useSignalsCatalog } from "@/features/signals/hooks/use-signals-catalog";
+import { useSignalRecommendations } from "@/features/signals/hooks/use-signal-recommendations";
 import { useSignalsSaved } from "@/features/signals/hooks/use-signals-saved";
+import { logSignalInteraction } from "@/features/signals/fetch-signal-recommendations";
 import { computeSignalFacetCounts } from "@/features/signals/lib/compute-signal-facet-counts";
 import { filterSignalFeed } from "@/features/signals/lib/filter-feed";
 import {
@@ -28,6 +30,9 @@ import type { SignalFilterChipId } from "@/features/signals/types";
 import { usePersonalizationSnapshot } from "@/features/personalization/hooks/use-personalization-snapshot";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import { SIGNALS_FEED_CARD_ESTIMATE, useWindowVirtualList } from "@/hooks/use-virtual-list";
+import { AlgoFlags } from "@/lib/algo-flags";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export function SignalsPageClient() {
   const router = useRouter();
@@ -35,6 +40,7 @@ export function SignalsPageClient() {
   const pSnap = usePersonalizationSnapshot();
   const { rows, hero, marketIntel, leaderboardSections, rails, isLoading, isError, mockOn, supabaseOn, refetch } =
     useSignalsCatalog();
+  useSignalRecommendations();
 
   const focusAsset = useMemo(() => {
     const raw = searchParams.get("asset") ?? searchParams.get("symbol");
@@ -126,6 +132,11 @@ export function SignalsPageClient() {
     if (rows.length === 0 && !isError) return;
     closeDetail();
   }, [signalId, isLoading, rows, isError, closeDetail]);
+
+  useEffect(() => {
+    if (!signalId || !AlgoFlags.signalCollaborativeFilter || !isSupabaseConfigured()) return;
+    void logSignalInteraction(getSupabaseBrowserClient(), signalId, "view");
+  }, [signalId]);
 
   useEffect(() => {
     if (isLoading || rows.length === 0) return;

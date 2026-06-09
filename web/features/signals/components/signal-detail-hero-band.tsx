@@ -4,8 +4,11 @@ import Link from "next/link";
 
 import { SignalPremiumUnlockCta } from "@/features/signals/components/signal-economy-ui";
 import { SignalConfidenceRing } from "@/features/signals/components/signal-confidence-ring";
+import { SignalDetailVerdictBanner } from "@/features/signals/components/signal-detail-verdict-banner";
 import { SignalDirectionPill, strategyTacticLabel } from "@/features/signals/components/unified-signal-primitives";
 import { signalStatusKey, signalStatusLabel } from "@/features/signals/domain/signal-meta";
+import type { SignalDetailVerdict } from "@/features/signals/lib/signal-detail-narrative";
+import { buildTradePlanNarrative } from "@/features/signals/lib/signal-detail-narrative";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 
@@ -16,6 +19,7 @@ type Props = {
   targetLabel: string;
   stopLabel: string;
   rrLabel: string | null;
+  verdict: SignalDetailVerdict;
   onClose: () => void;
 };
 
@@ -28,10 +32,11 @@ function TicketCell({ label, value, tone }: { label: string; value: string; tone
   );
 }
 
-export function SignalDetailHeroBand({ row, locked, entryLabel, targetLabel, stopLabel, rrLabel, onClose }: Props) {
+export function SignalDetailHeroBand({ row, locked, entryLabel, targetLabel, stopLabel, rrLabel, verdict, onClose }: Props) {
   const dirClass =
     row.direction === "BUY" ? "sdm-hero--buy" : row.direction === "SELL" ? "sdm-hero--sell" : "sdm-hero--hold";
   const statusLabel = signalStatusLabel(signalStatusKey(row));
+  const tradePlanLine = !locked ? buildTradePlanNarrative(row) : null;
 
   return (
     <header className={`sdm-hero ${dirClass}`}>
@@ -47,6 +52,7 @@ export function SignalDetailHeroBand({ row, locked, entryLabel, targetLabel, sto
               </h2>
               <SignalDirectionPill direction={row.direction} />
             </div>
+            <SignalDetailVerdictBanner verdict={verdict} />
             <p className="sdm-hero__asset">{row.asset_display_name}</p>
             <div className="sdm-hero__badges">
               <span className="sdm-hero__badge">{strategyTacticLabel(row.strategy)}</span>
@@ -76,6 +82,7 @@ export function SignalDetailHeroBand({ row, locked, entryLabel, targetLabel, sto
               <TicketCell label="R/R" value={rrLabel ?? "—"} tone="rr" />
             </div>
           )}
+          {tradePlanLine ? <p className="sdm-hero__trade-plan">{tradePlanLine}</p> : null}
         </div>
 
         <div className="sdm-hero__quick-links">

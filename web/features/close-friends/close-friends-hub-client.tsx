@@ -6,6 +6,10 @@ import { useMemo } from "react";
 
 import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
+import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
+import { HubPageHeader } from "@/features/hub/components/hub-page-header";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { CloseFriendsPageSkeleton } from "@/features/social/components/social-states";
 import { getCloseFriendsRepository } from "@/features/close-friends/repository";
 import type { PrivateCircleSummary } from "@/features/close-friends/domain/types";
@@ -96,34 +100,72 @@ export function CloseFriendsHubClient() {
     return getCloseFriendsRepository().getPrivateCirclesHub(viewerId);
   }, [viewerId, pSnap.recommendRev, pSnap.affinity.meta.eventCount, mockOn]);
 
-  if (!isInitialized) return <CloseFriendsPageSkeleton />;
+  if (!isInitialized) {
+    return (
+      <HubPageShell zone="connect" className="cf-hub-page" header={
+        <HubPageHeader
+          kicker={hubPremiumKicker("connect", "Özel daireler")}
+          title="Yakın Arkadaşlar"
+          subtitle="Güven katmanı ve özel topluluklar"
+        />
+      }>
+        <CloseFriendsPageSkeleton />
+      </HubPageShell>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="ms-page-wrapper ms-container-standard py-8">
+      <HubPageShell zone="connect" className="cf-hub-page" mainClassName="py-16" header={
+        <HubPageHeader
+          kicker={hubPremiumKicker("connect", "Özel daireler")}
+          title="Yakın Arkadaşlar"
+          subtitle="Güven katmanı ve özel topluluklar"
+        />
+      }>
         <EmptyState
           title="Oturum gerekli"
           description="Özel daireler ve güven katmanı yalnızca oturum açmış üyeler için görünür."
           actionLabel="Oturum aç"
-          actionHref={`/auth/login?next=${encodeURIComponent("/close-friends")}`}
+          actionHref={`/auth/login?next=${encodeURIComponent("/hub/close-friends")}`}
           tone="social"
           compact
         />
-      </div>
+      </HubPageShell>
     );
   }
 
   const sparse = payload.data_mode === "live_sparse" && payload.your_circles.length === 0 && payload.suggested_circles.length === 0;
 
-  return (
-    <div className="ms-page-wrapper ms-container-standard pb-12 pt-6">
-      <header className="max-w-3xl">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Private network</p>
-        <h1 className="mt-1 text-[22px] font-bold leading-tight tracking-tight text-[var(--color-text)]">{payload.headline}</h1>
-        <p className="mt-2 text-[13px] font-medium leading-relaxed text-[var(--color-text-secondary)]">{payload.subline}</p>
-        <p className="mt-2 text-[12px] font-medium text-[var(--color-meta)]">{payload.affinity_line}</p>
-      </header>
+  const pageHeader = (
+    <HubPageHeader
+      kicker={hubPremiumKicker("connect", "Özel daireler")}
+      title={payload.headline}
+      subtitle={payload.subline}
+    />
+  );
 
-      <div className="mt-5 flex flex-wrap gap-2">
+  const heroStrip = (
+    <HubHeroStrip
+      stats={[
+        {
+          label: "Dairelerin",
+          value: payload.your_circles.length,
+          valueAccent: payload.your_circles.length > 0,
+        },
+        {
+          label: "Güvenilen",
+          value: payload.trusted_members.length,
+        },
+      ]}
+    />
+  );
+
+  return (
+    <HubPageShell zone="connect" className="cf-hub-page" header={pageHeader} hero={heroStrip}>
+      <p className="text-[12px] font-medium text-[var(--color-meta)]">{payload.affinity_line}</p>
+
+      <div className="flex flex-wrap gap-2">
         <Link href={payload.nav.subscriptions} className="social-hub-pill rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]">
           Üyelikler
         </Link>
@@ -139,22 +181,22 @@ export function CloseFriendsHubClient() {
         <Link href={payload.nav.watch} className="social-hub-pill rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]">
           İzle
         </Link>
-        <Link href={payload.publishing.upload_href} className="social-hub-pill rounded-full bg-[var(--color-text)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-surface)] hover:opacity-90">
+        <Link href={payload.publishing.upload_href} className="social-hub-pill social-hub-pill--accent rounded-full px-3 py-1.5 text-[12px] font-semibold hover:opacity-90">
           Yayınla
         </Link>
       </div>
 
-      <p className="mt-4 max-w-2xl rounded-[var(--radius-lg)] border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--color-surface))] px-3 py-2 text-[11px] font-medium text-[var(--color-text-secondary)]">
+      <p className="cf-hub-hint max-w-2xl px-3 py-2 text-[11px] font-medium text-[var(--color-text-secondary)]">
         {payload.publishing.composer_hint}
       </p>
 
       {payload.trusted_members.length > 0 ? (
-        <section className="mt-8">
+        <section>
           <h2 className="text-[14px] font-bold text-[var(--color-text)]">Güvenilen katman</h2>
           <p className="mt-1 text-[11px] font-medium text-[var(--color-meta)]">Yakın takip — özel yayın ve dar daire için çekirdek liste</p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {payload.trusted_members.map((m) => (
-              <li key={m.id} className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
+              <li key={m.id} className="cf-hub-trusted flex items-center gap-3 px-3 py-2">
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)]">
                   {m.avatar_url ? (
                     <Image src={m.avatar_url} alt={m.full_name ?? m.username} fill className="object-cover" sizes="40px" />
@@ -177,9 +219,9 @@ export function CloseFriendsHubClient() {
           </ul>
         </section>
       ) : (
-        <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] px-3 py-2 text-[12px] font-medium text-[var(--color-text-secondary)]">
+        <div className="cf-hub-empty rounded-[var(--radius-lg)] border border-dashed px-3 py-2 text-[12px] font-medium text-[var(--color-text-secondary)]">
           Yakın takip listen boş.{" "}
-          <Link href="/settings" className="font-bold text-[var(--color-primary-dark)] hover:underline">
+          <Link href="/hub/settings" className="font-bold text-[var(--color-primary-dark)] hover:underline">
             Ayarlardan
           </Link>{" "}
           çekirdek üreticilerini ekleyebilirsin.
@@ -220,7 +262,7 @@ export function CloseFriendsHubClient() {
             {payload.private_feed.length === 0 ? (
               <p className="mt-2 text-[12px] font-medium text-[var(--color-text-secondary)]">Özel akışta öğe yok.</p>
             ) : (
-              <ul className="mt-3 divide-y divide-[var(--ms-border-hairline)] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+              <ul className="cf-hub-feed mt-3 divide-y divide-[var(--ms-border-hairline)]">
                 {payload.private_feed.map((row) => (
                   <li key={row.id} className="px-3 py-2.5">
                     {row.href ? (
@@ -243,9 +285,9 @@ export function CloseFriendsHubClient() {
         </>
       )}
 
-      <Link href="/settings" className="mt-8 inline-block text-[13px] font-bold text-[var(--color-primary-dark)] hover:underline">
+      <Link href="/hub/settings" className="inline-block text-[13px] font-bold text-[var(--color-primary-dark)] hover:underline">
         ← Ayarlar
       </Link>
-    </div>
+    </HubPageShell>
   );
 }

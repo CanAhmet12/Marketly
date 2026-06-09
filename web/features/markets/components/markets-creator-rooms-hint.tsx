@@ -18,7 +18,7 @@ export function MarketsCreatorRoomsHint() {
 
   return (
     <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
-      <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Üretici oda köprüsü</p>
+      <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Üretici oda köprüsü</p>
       <p className="mt-1 text-[12px] font-semibold text-[var(--color-text)]">
         {s.creator_name} · {s.room_label}
       </p>

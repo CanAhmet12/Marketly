@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { StorySlide } from "@/features/stories/types";
+import { messagesInboxWithPeer } from "@/features/messages/routes";
 
 const STORY_MS = 5000;
 
@@ -212,7 +213,7 @@ export function StoryViewerOverlay({ slides, startIndex, open, onClose, onViewed
 
         <footer className="story-viewer__footer">
           <Link
-            href={`/messages?peer=${encodeURIComponent(current.userId)}`}
+            href={messagesInboxWithPeer(current.userId)}
             className="story-viewer__reply"
             onClick={onClose}
           >

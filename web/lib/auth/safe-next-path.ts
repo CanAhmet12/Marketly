@@ -5,8 +5,9 @@
 
 const MAX_LEN = 512;
 
-/** Pathname (+ opsiyonel ?query) — `/upload` ile `/uploads` ayrımı için regex. */
-const ALLOWED_PATH = /^\/(post|watch|channel|results|upload|studio|settings)(\/|$)/;
+/** Pathname (+ opsiyonel ?query) — open redirect engeli; uygulama rotaları. */
+const ALLOWED_PATH =
+  /^\/(post|watch|channel|hub|results|upload|studio|settings|profile|messages|notifications|portfolio|saved|onboarding|discover|creators|close-friends|pulse|live|markets|signals|videos|watchlist|price-alerts|economic-calendar|market-news|search|subscriptions|playlist)(\/|$)/;
 
 function pathnameOnly(path: string): string {
   const q = path.indexOf("?");

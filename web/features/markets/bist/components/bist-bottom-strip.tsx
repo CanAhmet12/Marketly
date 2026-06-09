@@ -82,7 +82,7 @@ export function BistBottomStrip({ strip }: Props) {
               </div>
               <div className="cc-cal-info">
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--cc-meta)" }}>{item.time}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--cc-meta)" }}>{item.time}</span>
                   <span
                     style={{
                       width: 6, height: 6, borderRadius: "50%",

@@ -2,33 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { STUDIO_NAV_FLAT } from "@/features/studio/lib/studio-nav-config";
+import {
+  mapStudioBaseHref,
+  isStudioRouteActive,
+  STUDIO_DEFAULT_BASE,
+} from "@/features/studio/lib/studio-route-base";
 import { cn } from "@/lib/cn";
 
-const LINKS = [
-  { href: "/studio",           label: "Genel Bakış",       end: true },
-  { href: "/studio/analytics", label: "Analitik" },
-  { href: "/studio/content",   label: "İçerik" },
-  { href: "/studio/economy",   label: "Ekonomi" },
-  { href: "/studio/live",      label: "Canlı Yayın" },
-  { href: "/studio/scheduled", label: "Zamanlanmış" },
-  { href: "/studio/drafts",    label: "Taslaklar" },
-  { href: "/studio/playlists", label: "Oynatma Listeleri" },
-];
+type Props = {
+  routeBase?: string;
+};
 
-export function StudioSubnav() {
-  const pathname = usePathname();
+export function StudioSubnav({ routeBase = STUDIO_DEFAULT_BASE }: Props) {
+  const pathname = usePathname() ?? "";
 
   return (
-    <nav className="studio-subnav" aria-label="Studio bölümleri">
+    <nav className="studio-subnav studio-subnav--mobile" aria-label="Studio bölümleri">
       <div className="studio-subnav-inner">
-        {LINKS.map((l) => {
-          const active = l.end
-            ? pathname === l.href
-            : pathname === l.href || pathname.startsWith(`${l.href}/`);
+        {STUDIO_NAV_FLAT.map((l) => {
+          const href = mapStudioBaseHref(l.href, routeBase);
+          const active = isStudioRouteActive(pathname, l.href, routeBase, l.end);
           return (
             <Link
               key={l.href}
-              href={l.href}
+              href={href}
               aria-current={active ? "page" : undefined}
               className={cn("studio-tab", active && "studio-tab--active")}
             >

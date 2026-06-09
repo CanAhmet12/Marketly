@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/states";
 import { getSocialRepository } from "@/features/social/repository";
-import { isMockDataEnabled } from "@/mock/config";
 import { cn } from "@/lib/cn";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 
@@ -13,24 +12,24 @@ type Props = { channelUserId: string; focusRoomId?: string | null };
 
 /** Kanal — üretici topluluk odaları (SocialRepository). */
 export function CreatorCommunityRoomsPanel({ channelUserId, focusRoomId = null }: Props) {
-  const surface = useMemo(() => {
-    if (!isMockDataEnabled()) return null;
-    return getSocialRepository().getCreatorCommunityRoomsSurface(channelUserId);
-  }, [channelUserId]);
+  const surface = useMemo(
+    () => getSocialRepository().getCreatorCommunityRoomsSurface(channelUserId),
+    [channelUserId],
+  );
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const selectedId = (focusRoomId && surface?.rooms.some((r) => r.id === focusRoomId) ? focusRoomId : null) ?? activeId ?? surface?.rooms[0]?.id ?? null;
 
-  if (!isMockDataEnabled()) {
-    return (
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-[var(--sp-3)] py-[var(--sp-3)]">
-        <p className="text-[12px] font-medium text-[var(--color-meta)]">Üretici odaları canlı modda bağlanınca burada görünecek.</p>
-      </div>
-    );
-  }
-
   if (!surface || surface.rooms.length === 0) {
-    return <EmptyState title="Oda yok" description="Bu üretici için mock oda kümesi tanımlı değil." compact />;
+    return (
+      <EmptyState
+        title="Topluluk odası yok"
+        description="Bu üretici için henüz açık oda görünmüyor. Tartışma sekmesinden gönderi trafiğini takip edebilirsin."
+        actionLabel="Tartışmalar"
+        actionHref={`/channel/${encodeURIComponent(channelUserId)}?tab=discussions`}
+        compact
+      />
+    );
   }
 
   const selected = surface.rooms.find((r) => r.id === selectedId) ?? surface.rooms[0]!;

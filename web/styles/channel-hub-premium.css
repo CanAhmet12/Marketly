@@ -1,0 +1,173 @@
+/**
+ * Kanal / Profil — Hub Premium gömülü mod (hp-canvas--embedded-channel)
+ */
+
+.hp-canvas--embedded-channel {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.hp-canvas--embedded-channel > .ch-canvas {
+  flex: 1;
+  min-width: 0;
+  --ch-zone-1: var(--hp-zone-1);
+  --ch-zone-2: var(--hp-zone-2);
+  --ch-zone-3: var(--hp-zone-3);
+  --ch-zone-ambient: var(--hp-zone-ambient);
+  --ch-zone-border: var(--hp-zone-border);
+  --ch-zone-glow: var(--hp-zone-glow);
+  --ch-accent: var(--hp-zone-1);
+  background: transparent;
+}
+
+.hp-canvas--embedded-channel .ch-canvas[data-channel-zone="profile"] {
+  --ch-zone-1: var(--hp-zone-1);
+  --ch-zone-2: var(--hp-zone-2);
+  --ch-zone-3: var(--hp-zone-3);
+}
+
+.ch-hub-chrome {
+  padding: 14px var(--sp-4) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--hp-zone-1) 12%, var(--color-divider));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--hp-zone-1) 4%, var(--color-bg)) 0%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 640px) {
+  .ch-hub-chrome {
+    padding-left: var(--sp-6, 32px);
+    padding-right: var(--sp-6, 32px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ch-hub-chrome {
+    padding-left: var(--sp-8, 40px);
+    padding-right: var(--sp-8, 40px);
+  }
+}
+
+.hp-canvas--embedded-channel .ch-cover-gradient {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--hp-zone-2) 22%, #060810) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 14%, #0c0f1a) 48%,
+    #050608 100%
+  );
+}
+
+.hp-canvas--embedded-channel .ch-cover-fade {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--color-bg) 40%, transparent) 55%,
+    var(--color-bg) 100%
+  );
+}
+
+.hp-canvas--embedded-channel .ch-name {
+  letter-spacing: var(--hp-track-display, -0.04em);
+  background: linear-gradient(
+    120deg,
+    var(--ch-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 32%, var(--ch-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-channel .ch-stat-value {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: var(--hp-track-mono, 0.01em);
+}
+
+.hp-canvas--embedded-channel .ch-stat-label {
+  font-size: var(--hp-type-2xs, 10px);
+  letter-spacing: var(--hp-track-caps, 0.11em);
+  text-transform: uppercase;
+}
+
+.hp-canvas--embedded-channel .ch-tabs {
+  border-bottom-color: var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-channel .ch-tab--active {
+  border-bottom-color: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-channel .ch-tab--active .ch-tab-count {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 32%, var(--ch-border-2));
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+}
+
+.hp-canvas--embedded-channel .ch-btn {
+  border-radius: var(--hp-radius-chip, 9px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hp-canvas--embedded-channel .ch-btn--follow,
+.hp-canvas--embedded-channel .ch-btn--following {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--ch-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+}
+
+.hp-canvas--embedded-channel .ch-btn--follow:hover,
+.hp-canvas--embedded-channel .ch-btn--following:hover {
+  background: color-mix(in srgb, var(--hp-zone-1) 14%, transparent);
+}
+
+.hp-canvas--embedded-channel .ch-content-area::before {
+  background: linear-gradient(
+    168deg,
+    var(--hp-zone-ambient) 0%,
+    color-mix(in srgb, var(--hp-zone-ambient) 38%, transparent) 40%,
+    transparent 74%
+  );
+}
+
+.hp-canvas--embedded-channel .ch-inset,
+.hp-canvas--embedded-channel .ch-post-card,
+.hp-canvas--embedded-channel .ch-signal-card,
+.hp-canvas--embedded-channel .ch-playlist-row {
+  border-radius: var(--hp-radius-block, 14px);
+}
+
+.hp-canvas--embedded-channel .ch-section-title::before {
+  height: 15px;
+  border-radius: 999px;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hp-zone-1) 25%, transparent);
+}
+
+.hp-canvas--embedded-channel .ch-reputation {
+  border-color: var(--hp-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--ch-surface)) 0%,
+    var(--ch-surface) 100%
+  );
+  border-radius: var(--hp-radius-block, 14px);
+}
+
+.hp-canvas--embedded-channel .ch-spec {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 28%, var(--ch-border));
+}
+
+.hp-canvas--embedded-channel .ch-error-block {
+  border-radius: var(--hp-radius-block, 14px);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: var(--hp-shadow-block);
+}

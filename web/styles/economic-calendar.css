@@ -52,7 +52,7 @@
 .ec-header-left { display: flex; flex-direction: column; gap: 3px; }
 
 .ec-header-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -113,7 +113,7 @@
 }
 
 .ec-filter-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -213,7 +213,7 @@
 }
 
 .ec-country-code {
-  font-size: 10px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--ec-meta);
   text-transform: uppercase;
@@ -236,7 +236,7 @@
 }
 
 .ec-data-label {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ec-meta);
@@ -275,7 +275,7 @@
 }
 
 .ec-day-count {
-  font-size: 10px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   padding: 2px 7px;
   border-radius: 4px;
   background: rgba(255,255,255,0.04);
@@ -300,7 +300,7 @@
 
 .ec-table thead th {
   padding: 8px 14px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -360,7 +360,7 @@
 }
 
 .ec-cat-badge {
-  font-size: 9px; font-weight: 800;
+  font-size: 11px; font-weight: 800;
   padding: 2px 6px;
   border-radius: 3px;
   letter-spacing: 0.03em;
@@ -375,7 +375,7 @@
 .ec-cat-badge--speech     { background: rgba(251,146,60,0.12);  color: #fdba74; }
 
 .ec-sym-tag {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   padding: 1px 5px;
   border-radius: 3px;
   background: rgba(255,255,255,0.04);
@@ -406,7 +406,7 @@
 
 /* Watchlist badge */
 .ec-wl-badge {
-  font-size: 9px; font-weight: 800;
+  font-size: 11px; font-weight: 800;
   padding: 2px 6px; border-radius: 3px;
   background: rgba(15,157,117,0.14);
   color: #0f9d75;
@@ -436,7 +436,7 @@
 .ec-strip-stat + .ec-strip-stat { border-left: 1px solid var(--ec-border-2); }
 
 .ec-strip-label {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--ec-meta);
 }
@@ -449,6 +449,6 @@
 }
 
 .ec-strip-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--ec-meta);
 }

@@ -7,6 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { useAuth } from "@/features/auth/use-auth";
+import { HubPageHeader } from "@/features/hub/components/hub-page-header";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import type { MediaItem } from "@/features/feed/types";
 import { pulseHrefForPostId } from "@/features/pulse/pulse-href";
 import { insertUploadPost } from "@/features/upload/insert-upload-post";
@@ -443,25 +446,36 @@ export function UploadPageClient() {
   const initials = displayName.slice(0, 2).toUpperCase() || "CR";
   const currentType = CONTENT_TYPES.find((t) => t.id === kind)!;
 
+  const pageHeader = (
+    <HubPageHeader
+      kicker={hubPremiumKicker("tools", "Yayın")}
+      title="İçerik Oluştur"
+      subtitle="Gönderi, sinyal, video, Pulse veya canlı yayın"
+    />
+  );
+
   // Not configured / not logged in fallback
   if (!isSupabaseConfigured() && !mockOn) {
     return (
-      <div className="up-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
-        <div className="up-page ms-container-wide" style={{ paddingTop: 40 }}>
-          <div style={{ padding: "20px 0", borderLeft: "2px solid rgba(239,68,68,0.4)", paddingLeft: 14 }}>
-            <p style={{ fontSize: 13, color: "rgba(239,68,68,0.8)", fontWeight: 600 }}>
-              Supabase yapılandırılmamış.
-            </p>
-            <p style={{ fontSize: 12, color: "var(--up-meta)", marginTop: 4 }}>
-              Demo modu için <code style={{ fontFamily: "monospace", fontSize: 11 }}>NEXT_PUBLIC_USE_MOCK=true</code> ortam değişkenini ekleyin.
-            </p>
+      <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader}>
+        <div className="up-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
+          <div className="up-page ms-container-wide" style={{ paddingTop: 40 }}>
+            <div style={{ padding: "20px 0", borderLeft: "2px solid rgba(239,68,68,0.4)", paddingLeft: 14 }}>
+              <p style={{ fontSize: 13, color: "rgba(239,68,68,0.8)", fontWeight: 600 }}>
+                Supabase yapılandırılmamış.
+              </p>
+              <p style={{ fontSize: 12, color: "var(--up-meta)", marginTop: 4 }}>
+                Demo modu için <code style={{ fontFamily: "monospace", fontSize: 11 }}>NEXT_PUBLIC_USE_MOCK=true</code> ortam değişkenini ekleyin.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </HubPageShell>
     );
   }
 
   return (
+    <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader}>
     <div className="up-canvas ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
       <div className="up-page ms-container-wide">
 
@@ -956,5 +970,6 @@ export function UploadPageClient() {
         </div>
       </div>
     </div>
+    </HubPageShell>
   );
 }

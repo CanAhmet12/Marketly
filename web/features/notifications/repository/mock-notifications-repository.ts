@@ -1,6 +1,11 @@
 import { getPersonalizationRepository } from "@/features/personalization/repository";
 import { getSocialRepository } from "@/features/social/repository";
 
+import {
+  recordNotificationDismissed,
+  recordNotificationRead,
+} from "@/features/notifications/domain/notification-action-store";
+
 import type { NotificationCenterAction, NotificationCenterPayload } from "../domain/types";
 import type { NotificationsRepository } from "./notifications-repository";
 import { assembleNotificationCenter } from "./assemble-notification-center";
@@ -54,9 +59,14 @@ export class MockNotificationsRepository implements NotificationsRepository {
     const p = getPersonalizationRepository();
 
     switch (action.type) {
-      case "mark_read":
-        if (viewerId) social.markNotificationRead(viewerId, action.notificationId);
+      case "mark_read": {
+        if (viewerId) {
+          const row = social.getNotifications(viewerId).find((n) => n.id === action.notificationId);
+          if (row) recordNotificationRead(row.type);
+          social.markNotificationRead(viewerId, action.notificationId);
+        }
         break;
+      }
       case "toggle_star": {
         const m = { ...readStarMap() };
         m[action.notificationId] = !m[action.notificationId];
@@ -65,6 +75,7 @@ export class MockNotificationsRepository implements NotificationsRepository {
         break;
       }
       case "mute_creator":
+        recordNotificationDismissed("follow");
         p.applyFeedFeedback({ type: "mute_creator", creatorId: action.creatorId });
         if (typeof window !== "undefined") window.dispatchEvent(new Event("marketly-personalization-updated"));
         break;

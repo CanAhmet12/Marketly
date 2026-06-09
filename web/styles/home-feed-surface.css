@@ -85,19 +85,16 @@
     padding-inline: 0.5rem 0.125rem;
     margin-inline-start: 0;
     border-left: 1px solid color-mix(in srgb, var(--color-divider) 24%, transparent);
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--color-divider) 55%, transparent) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 8px), transparent);
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 8px), transparent);
   }
 
   .ms-home-feed-rail::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .ms-home-feed-rail::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--color-meta) 38%, transparent);
-    border-radius: 999px;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -193,21 +190,6 @@
   margin-bottom: 0.35rem;
 }
 
-/* —— Home presentation layer (structure, not token-only) —— */
-.ms-home-ambient-rail__block + .ms-home-ambient-rail__block {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-divider) 24%, transparent);
-}
-
-.ms-home-ambient-rail__title {
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text) 82%, var(--color-bg) 18%);
-}
-
 .ms-home-editorial-post__fullbleed {
   background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-elevated) 40%, transparent) 0%, transparent 55%);
 }
@@ -218,58 +200,3 @@
   object-fit: cover;
 }
 
-.ms-home-highlight-rail__strip {
-  mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
-}
-
-/**
- * Home-native akış listesi — editoryal süreklilik, ağır border-stack yok.
- */
-.ms-home-native-stream > .ms-home-native-item {
-  padding-block: 0.5rem 1.15rem;
-  padding-inline: clamp(0.15rem, 1vw, 0.35rem);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  transition: background-color 160ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ms-home-native-stream > .ms-home-native-item:last-child {
-  border-bottom: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .ms-home-native-stream > .ms-home-native-item:hover {
-    background-color: rgba(255, 255, 255, 0.03);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ms-home-native-stream > .ms-home-native-item {
-    transition: none;
-  }
-}
-
-/* Home native: lifted post surface (Tailwind-safe: no color-mix, no -- in selector) */
-.ms-home-native-surf {
-  background: #12121a;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 48px -32px rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .ms-home-native-surf:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 22px 56px -30px rgba(0, 0, 0, 0.58);
-  }
-}
-
-.ms-home-ambient-summary {
-  border-radius: 0.65rem;
-  padding: 0.65rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.ms-home-feed-hero {
-  margin-bottom: 0.125rem;
-}

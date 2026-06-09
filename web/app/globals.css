@@ -8,13 +8,13 @@
 @import "../styles/engagement-pending.css";
 
 /*
- * Tek sans yığını — ağ fontu yok; serif geri dönüşü yok.
- * `--font-inter` yalnızca Tailwind / eski referanslar için alias.
+ * Inter (next/font) + sistem yedeği — mobil `constants/theme.ts` ile marka uyumu.
  */
 :root {
-  --font-sans-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-inter: var(--font-sans-stack);
+  --font-sans-stack: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono-stack: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
 }
 
 @theme inline {
@@ -27,6 +27,14 @@ html {
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body {
@@ -37,8 +45,46 @@ body {
   line-height: 1.58;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-optical-sizing: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Tüm sayfalarda scrollbar ok/çubuk görünmez — kaydırma çalışır */
+:where(html, body, main, .marketly-main-enter) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:where(html, body, main, .marketly-main-enter)::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Yatay rail okları (discover vb.) */
+.dvr-hscroll-nav {
+  display: none !important;
+}
+
+/* İç scroll alanları — ok/çubuk görünmez */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 :where(button, input, textarea, select, optgroup) {
@@ -58,6 +104,39 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes marketly-scroll-hint-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+}
+
+@keyframes marketly-scroll-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.marketly-scroll-hint__pill {
+  animation: marketly-scroll-hint-in 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .marketly-scroll-hint__chevron {
+    animation: marketly-scroll-hint-bounce 1.6s ease-in-out infinite;
   }
 }
 

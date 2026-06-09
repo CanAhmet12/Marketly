@@ -324,7 +324,7 @@ export function EconomicCalendarIntelligencePageClient() {
         <div className="ec-hero-event">
           <div className="ec-hero-impact">
             <ImpactDots impact={heroEvent.impact as 1|2|3} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>
               ÖNEMLI
             </span>
           </div>

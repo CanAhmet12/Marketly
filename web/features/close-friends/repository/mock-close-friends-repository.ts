@@ -19,9 +19,9 @@ import type {
 import type { CloseFriendsRepository } from "./close-friends-repository";
 
 const NAV = {
-  subscriptions: "/subscriptions",
-  messages: "/messages",
-  notifications: "/notifications",
+  subscriptions: "/hub/subscriptions",
+  messages: "/hub/messages",
+  notifications: "/hub/notifications",
   discover: "/discover",
   watch: "/watch",
 } as const;
@@ -119,7 +119,7 @@ function makeCircle(creatorId: string, kind: PrivateCircleKind): PrivateCircleSu
     subscription_href: `/subscriptions/${encodeURIComponent(creatorId)}`,
     signals_href: "/signals",
     rooms_href: `/channel/${encodeURIComponent(creatorId)}?tab=rooms`,
-    messages_href: "/messages",
+    messages_href: "/hub/messages",
   };
 }
 

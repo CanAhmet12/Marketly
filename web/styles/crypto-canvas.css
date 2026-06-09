@@ -21,13 +21,13 @@
   --cc-gold-glow:        rgba(245, 158, 11, 0.10);
   --cc-gold-bg:          rgba(245, 158, 11, 0.07);
 
-  --cc-teal:             #2dd4bf;
-  --cc-teal-muted:       rgba(45, 212, 191, 0.55);
-  --cc-teal-bg:          rgba(45, 212, 191, 0.07);
+  --cc-teal:             var(--color-rise);
+  --cc-teal-muted:       var(--color-rise-muted);
+  --cc-teal-bg:          var(--color-rise-bg);
 
-  --cc-rose:             #fb7185;
-  --cc-rose-muted:       rgba(251, 113, 133, 0.55);
-  --cc-rose-bg:          rgba(251, 113, 133, 0.07);
+  --cc-rose:             var(--color-fall);
+  --cc-rose-muted:       var(--color-fall-muted);
+  --cc-rose-bg:          var(--color-fall-bg);
 
   --cc-violet:           #a78bfa;
   --cc-violet-bg:        rgba(167, 139, 250, 0.08);
@@ -82,7 +82,7 @@
 .cc-section { min-width: 0; }
 
 .cc-section-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -92,7 +92,7 @@
 .cc-section-label--gold { color: var(--cc-gold-dim); }
 
 .cc-zone-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -111,7 +111,7 @@
 }
 
 .cc-zone-label-link {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--cc-gold-dim);
   text-decoration: none;
@@ -181,7 +181,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -197,7 +197,7 @@
 }
 
 .cc-pulse-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--cc-meta);
@@ -255,7 +255,7 @@
 }
 
 .cc-fg-band {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -302,7 +302,7 @@
 }
 
 .cc-alt-mode {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -351,7 +351,7 @@
 
 .cc-regime-headline {
   font-size: clamp(30px, 4vw, 46px);
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
   text-transform: uppercase;
@@ -433,7 +433,7 @@
 }
 
 .cc-dom-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -442,7 +442,7 @@
 
 .cc-dom-value {
   font-size: clamp(36px, 5vw, 52px);
-  font-weight: 900;
+  font-weight: 700;
   color: var(--cc-gold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
@@ -496,7 +496,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--cc-text-secondary);
 }
@@ -555,7 +555,7 @@
 }
 
 .cc-seg-name {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
   color: var(--cc-meta);
@@ -646,7 +646,7 @@
   align-items: center;
   justify-content: center;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -680,7 +680,7 @@
 
 .cc-asset-price {
   font-size: clamp(26px, 3.5vw, 36px);
-  font-weight: 900;
+  font-weight: 700;
   color: var(--cc-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
@@ -716,7 +716,7 @@
 }
 
 .cc-asset-stat-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -745,7 +745,7 @@
 }
 
 .cc-asset-tf-btn {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 5px;
@@ -784,7 +784,7 @@
 .cc-movers-v2-header {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--cc-border-subtle);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -811,7 +811,7 @@
 }
 
 .cc-movers-v2-col-title {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1048,7 +1048,7 @@
 
 .cc-screener-thead th {
   padding: 8px 12px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1197,7 +1197,7 @@
 }
 
 .cc-bottom-panel-link {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--cc-gold-dim);
   text-decoration: none;
@@ -1277,7 +1277,7 @@
 }
 
 .cc-news-tag {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 4px;
@@ -1286,7 +1286,7 @@
   letter-spacing: 0.03em;
 }
 
-.cc-news-time { font-size: 10px; color: var(--cc-meta); }
+.cc-news-time { font-size: 11px; color: var(--cc-meta); }
 
 .cc-news-title {
   font-size: 13px;
@@ -1338,7 +1338,7 @@
   text-overflow: ellipsis;
 }
 
-.cc-cal-date { font-size: 10px; color: var(--cc-meta); }
+.cc-cal-date { font-size: 11px; color: var(--cc-meta); }
 
 /* ================================
    RESPONSIVE — GENEL

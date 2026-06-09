@@ -40,6 +40,7 @@ function emptyAnalytics(timeframe: StudioTimeframe): StudioAnalyticsBundle {
     engagementSeries: z(len),
     followerSeries: z(len),
     audienceBreakdown: [],
+    contentTypeBreakdown: [],
     topVideos: [],
     topPosts: [],
     topAssets: [],

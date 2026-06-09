@@ -6,6 +6,33 @@ export function marketNewsDetailHref(id: string): string {
   return `/market-news/${encodeURIComponent(id)}`;
 }
 
+export function marketNewsShareUrl(id: string): string {
+  if (typeof window === "undefined") return marketNewsDetailHref(id);
+  return `${window.location.origin}${marketNewsDetailHref(id)}`;
+}
+
+export type MarketNewsShareResult = "shared" | "copied" | "failed";
+
+export async function shareMarketNews(
+  item: Pick<MarketNewsIntelligenceItem, "id" | "headline">,
+): Promise<MarketNewsShareResult> {
+  const url = marketNewsShareUrl(item.id);
+  const text = item.headline;
+  try {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      await navigator.share({ title: "Marketly · Piyasa Haberleri", text, url });
+      return "shared";
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      return "copied";
+    }
+    return "failed";
+  } catch {
+    return "failed";
+  }
+}
+
 /** MC-003: Yalnızca mock modda kullanılır. Live modda Unsplash yüklenmez. */
 const NEWS_PHOTOS: Record<string, string> = {
   "nw-f1": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
@@ -37,20 +64,62 @@ const CAT_PHOTOS: Record<string, string> = {
 /** MC-003: Kategori rengi bazlı neutral SVG placeholder (Unsplash'e bağımlılık yok). */
 function neutralPlaceholder(category?: string): string {
   const colors: Record<string, string> = {
-    crypto: "%23f59e0b", macro: "%233b82f6", earnings: "%2322c55e",
-    flows: "%238b5cf6", local: "%2314b8a6",
+    crypto: "%23d4920a", macro: "%234a90e8", earnings: "%2322a06b",
+    flows: "%237c5cfc", local: "%2314a89a",
   };
   const fill = colors[category ?? ""] ?? "%236b7280";
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect width='1200' height='630' fill='${fill}22'/%3E%3Ccircle cx='600' cy='315' r='60' fill='${fill}44'/%3E%3C/svg%3E`;
 }
 
 export const NEWS_CAT_CFG = {
-  crypto: { label: "Kripto", emoji: "₿", stripe: "#f59e0b" },
-  macro: { label: "Ekonomi", emoji: "📊", stripe: "#3b82f6" },
-  earnings: { label: "Şirketler", emoji: "🏢", stripe: "#22c55e" },
-  flows: { label: "Emtia & Akış", emoji: "⚡", stripe: "#8b5cf6" },
-  local: { label: "Türkiye", emoji: "🇹🇷", stripe: "#14b8a6" },
+  crypto: {
+    label: "Kripto",
+    tabLabel: "Kripto",
+    shortLabel: "Kripto",
+    stripe: "#d4920a",
+    tone: "#d4920a",
+    tone2: "#9a5f00",
+    tabCls: "mn-tab--crypto",
+  },
+  macro: {
+    label: "Ekonomi",
+    tabLabel: "Ekonomi",
+    shortLabel: "Makro",
+    stripe: "#1e5cb8",
+    tone: "#4a90e8",
+    tone2: "#1e5cb8",
+    tabCls: "mn-tab--macro",
+  },
+  earnings: {
+    label: "Şirketler",
+    tabLabel: "Şirketler",
+    shortLabel: "Şirket",
+    stripe: "#0f7049",
+    tone: "#22a06b",
+    tone2: "#0f7049",
+    tabCls: "mn-tab--earnings",
+  },
+  flows: {
+    label: "Emtia & Akış",
+    tabLabel: "Emtia & Akış",
+    shortLabel: "Akış",
+    stripe: "#5535b8",
+    tone: "#7c5cfc",
+    tone2: "#5535b8",
+    tabCls: "mn-tab--flows",
+  },
+  local: {
+    label: "Türkiye",
+    tabLabel: "Türkiye",
+    shortLabel: "TR",
+    stripe: "#0a7068",
+    tone: "#14a89a",
+    tone2: "#0a7068",
+    tabCls: "mn-tab--local",
+  },
 } as const;
+
+export type NewsCategoryKey = keyof typeof NEWS_CAT_CFG;
 
 /**
  * MC-003: Mock false iken gerçek image_url önceliklidir.
@@ -76,6 +145,30 @@ export function formatNewsTimeAgo(mins: number): string {
   return `${Math.floor(h / 24)} gün önce`;
 }
 
+export function formatNewsPublishedAt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function formatSentimentLabel(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const s = raw.toLowerCase();
+  if (s.includes("positive") || s.includes("bullish")) return "Pozitif sentiment";
+  if (s.includes("negative") || s.includes("bearish")) return "Negatif sentiment";
+  if (s.includes("neutral")) return "Nötr sentiment";
+  return raw.trim() || null;
+}
+
 export function newsIntelBullets(item: MarketNewsIntelligenceItem): string[] {
-  return [item.discussionSnippet, item.marketReaction, item.volatilityExpectation].filter(Boolean);
+  return [item.discussionSnippet, item.marketReaction, item.volatilityExpectation].filter(
+    (b) => Boolean(b?.trim()) && b.trim() !== "—",
+  );
 }

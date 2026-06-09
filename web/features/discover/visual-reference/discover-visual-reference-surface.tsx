@@ -8,11 +8,12 @@ import { cn } from "@/lib/cn";
 import { InfiniteScrollSentinel } from "@/components/ui/infinite-scroll-sentinel";
 import { VR_TABS, type VRTabId } from "./discover-visual-reference-tabs";
 import { DISCOVER_STATIC_VIEW_MODEL, type DiscoverViewModel } from "./discover-view-model-adapter";
-import { CreatorFaceRail, TopicChipBoard } from "./discover-creator-network";
+import { CreatorsHubFaceRail } from "@/features/creators/components/creators-hub-face-rail";
+import { TopicChipBoard } from "./discover-creator-network";
 import { MarketAtmosphereStack } from "./discover-market-strip";
+import { DiscoverErrorBanner } from "./discover-error-banner";
+import { DiscoverFeedFooter } from "./discover-feed-footer";
 import { DiscoverFeedSkeleton } from "./discover-feed-skeleton";
-import { HomeStoriesSection } from "@/features/stories/home-stories-section";
-
 const DiscoveryStream = dynamic(
   () => import("./discover-vr-sections").then((m) => m.DiscoveryStream),
   { loading: () => <DiscoverFeedSkeleton inline /> },
@@ -20,27 +21,27 @@ const DiscoveryStream = dynamic(
 
 const LiveTabPreview = dynamic(
   () => import("./discover-vr-sections").then((m) => m.LiveTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline /> },
+  { loading: () => <DiscoverFeedSkeleton inline preset="live" /> },
 );
 
 const PulseTabPreview = dynamic(
   () => import("./discover-vr-sections").then((m) => m.PulseTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline /> },
+  { loading: () => <DiscoverFeedSkeleton inline preset="pulse" /> },
 );
 
 const VideosTabPreview = dynamic(
   () => import("./discover-vr-sections").then((m) => m.VideosTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline /> },
+  { loading: () => <DiscoverFeedSkeleton inline preset="videos" /> },
 );
 
 const SignalsTabPreview = dynamic(
   () => import("./discover-vr-sections").then((m) => m.SignalsTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline /> },
+  { loading: () => <DiscoverFeedSkeleton inline preset="signals" /> },
 );
 
 const CreatorsTabPreview = dynamic(
-  () => import("./discover-vr-sections").then((m) => m.CreatorsTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline /> },
+  () => import("@/features/creators/components/creators-hub-preview").then((m) => m.CreatorsHubPreview),
+  { loading: () => <DiscoverFeedSkeleton inline preset="creators" /> },
 );
 
 const DISCOVER_PANEL_ID = "discover-feed-panel";
@@ -63,11 +64,12 @@ function TabBar({
   onTabKeyDown: (e: KeyboardEvent<HTMLButtonElement>, target: TabTarget) => void;
 }) {
   return (
-    <div
-      className="dvr-tab-bar scrollbar-none overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-      role="tablist"
-      aria-label="Keşfet sekmeleri"
-    >
+    <div className="dvr-tab-bar-wrap">
+      <div
+        className="dvr-tab-bar scrollbar-none overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label="Keşfet sekmeleri"
+      >
       <button
         ref={(el) => {
           tabRefs.current.all = el ?? undefined;
@@ -83,7 +85,7 @@ function TabBar({
         onKeyDown={(e) => onTabKeyDown(e, "all")}
         data-active={active === null}
       >
-        Tümü
+        <span className="dvr-tab__label">Tümü</span>
       </button>
 
       {VR_TABS.map((t) => (
@@ -103,12 +105,11 @@ function TabBar({
           onKeyDown={(e) => onTabKeyDown(e, t.id)}
           data-active={active === t.id}
         >
-          {t.id === "live" ? (
-            <span className="dvr-live-tab-dot mr-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" aria-hidden />
-          ) : null}
-          {t.label}
+          {t.id === "live" ? <span className="dvr-live-tab-dot" aria-hidden /> : null}
+          <span className="dvr-tab__label">{t.label}</span>
         </button>
       ))}
+      </div>
     </div>
   );
 }
@@ -124,7 +125,7 @@ function TabContent({ tab, vm }: { tab: VRTabId; vm: DiscoverViewModel }) {
     case "signals":
       return <SignalsTabPreview vm={vm} />;
     case "creators":
-      return <CreatorsTabPreview vm={vm} />;
+      return <CreatorsTabPreview />;
     default:
       return null;
   }
@@ -231,21 +232,13 @@ export function DiscoverVisualReferenceSurface({
             />
           </div>
           <div className="dvr-chrome-discovery" aria-label="Keşfet giriş katmanı">
-            <HomeStoriesSection variant="discover" useStaticFallback={!feedEnabled && !feedLoading} />
             <TopicChipBoard compact chips={vm.marketTopicChips} />
-            <CreatorFaceRail compact creators={vm.creatorItems} activityRows={vm.creatorActivityFeed} />
+            <CreatorsHubFaceRail compact />
           </div>
         </div>
       </header>
 
-      {feedError && onFeedRetry ? (
-        <div className="dvr-error-banner" role="alert">
-          <p className="dvr-error-banner__text">Keşfet akışı yüklenemedi. İçerik şu an görüntülenemiyor.</p>
-          <button type="button" className="dvr-error-banner__retry" onClick={onFeedRetry}>
-            Tekrar dene
-          </button>
-        </div>
-      ) : null}
+      {feedError && onFeedRetry ? <DiscoverErrorBanner onRetry={onFeedRetry} /> : null}
 
       <div
         ref={contentRef}
@@ -271,12 +264,10 @@ export function DiscoverVisualReferenceSurface({
                 if (!feedIsFetchingNextPage) onFeedLoadMore?.();
               }}
             />
-            {feedIsFetchingNextPage ? (
-              <p className="py-6 text-center text-[0.8125rem] text-[var(--color-meta)]" aria-live="polite">
-                Yükleniyor…
-              </p>
-            ) : null}
+            <DiscoverFeedFooter loading={feedIsFetchingNextPage} />
           </>
+        ) : feedEnabled && !feedLoading && !feedError ? (
+          <DiscoverFeedFooter showEnd />
         ) : null}
       </div>
     </div>

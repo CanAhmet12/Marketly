@@ -129,3 +129,66 @@ export function IntelWorkspaceSkeleton({ rows = 5 }: { rows?: number }) {
     </div>
   );
 }
+
+/** `/market-news` — hero + grid şekilli skeleton */
+export function MarketNewsPageSkeleton() {
+  return (
+    <div
+      className="mn-skeleton-page mn-page--premium ms-page-wrapper ms-container-markets min-w-0"
+      aria-busy="true"
+      aria-label="Haberler yükleniyor"
+    >
+      <div className="mn-skeleton-header">
+        <div className="motion-shimmer h-10 w-56 rounded-md bg-[var(--color-divider)]" />
+        <div className="motion-shimmer h-8 w-40 rounded-md bg-[var(--color-divider)]" />
+      </div>
+      <div className="motion-shimmer mn-skeleton-band bg-[var(--color-divider)]" />
+      <div className="mn-skeleton-tabs">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="motion-shimmer mn-skeleton-tab bg-[var(--color-divider)]" />
+        ))}
+      </div>
+      <div className="mn-skeleton-hero">
+        <div className="motion-shimmer mn-skeleton-hero-main bg-[var(--color-divider)]" />
+        <div className="mn-skeleton-hero-side">
+          <div className="motion-shimmer mn-skeleton-hero-side-card bg-[var(--color-divider)]" />
+          <div className="motion-shimmer mn-skeleton-hero-side-card bg-[var(--color-divider)]" />
+        </div>
+      </div>
+      <div className="motion-shimmer mb-6 h-4 w-32 rounded bg-[var(--color-divider)]" />
+      <div className="mb-6 flex gap-3 overflow-hidden">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="motion-shimmer h-36 w-64 shrink-0 rounded-lg bg-[var(--color-divider)]" />
+        ))}
+      </div>
+      <div className="mn-skeleton-grid">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="motion-shimmer mn-skeleton-grid-card bg-[var(--color-divider)]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** `/market-news/[id]` — detay sayfası skeleton */
+export function MarketNewsDetailSkeleton() {
+  return (
+    <div
+      className="mnd-skeleton-page mnd-page--premium ms-page-wrapper ms-container-markets min-w-0"
+      aria-busy="true"
+      aria-label="Haber detayı yükleniyor"
+    >
+      <div className="motion-shimmer mnd-skeleton-line mb-3 h-8 w-48 rounded bg-[var(--color-divider)]" />
+      <div className="motion-shimmer mnd-skeleton-hero bg-[var(--color-divider)]" />
+      <div className="mnd-skeleton-content">
+        <div className="mnd-skeleton-main">
+          <div className="motion-shimmer mnd-skeleton-line w-full bg-[var(--color-divider)]" />
+          <div className="motion-shimmer mnd-skeleton-line w-[92%] bg-[var(--color-divider)]" />
+          <div className="motion-shimmer mnd-skeleton-line w-[88%] bg-[var(--color-divider)]" />
+          <div className="motion-shimmer mnd-skeleton-line w-[70%] bg-[var(--color-divider)]" />
+        </div>
+        <div className="motion-shimmer mnd-skeleton-rail bg-[var(--color-divider)]" />
+      </div>
+    </div>
+  );
+}

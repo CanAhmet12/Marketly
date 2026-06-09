@@ -6,7 +6,8 @@ import { LiveFullPageContent } from "@/features/discover/visual-reference/discov
 import { LiveListSkeleton } from "@/features/discover/visual-reference/live-list-skeleton";
 
 export function LivePageClient() {
-  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel();
+  // TikTok Stage 2: "live" tab — explorationGamma 0.58, canlı içerik öncelikli
+  const { viewModel, feedLoading, feedError, refetchFeed } = useDiscoverViewModel("live");
 
   return (
     <DiscoverVerticalPageShell
@@ -17,6 +18,7 @@ export function LivePageClient() {
       feedError={feedError}
       onFeedRetry={refetchFeed}
       liveDot
+      pageTone="live"
     >
       {feedLoading ? <LiveListSkeleton inline /> : <LiveFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

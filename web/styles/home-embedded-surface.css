@@ -1,0 +1,214 @@
+/**
+ * Home — gömülü yüzey (kart yok, tek tuval)
+ * Çizgi + tipografi ile bölüm ayrımı; plaka, gölge, radius kaldırıldı.
+ */
+
+html[data-theme="light"] .hv-ref {
+  --hv-stream-tint: var(--hv-bg-base);
+  --hv-zone-mast-bg: color-mix(in srgb, var(--hv-bg-base) 94%, transparent);
+  --hv-zone-strip-bg: transparent;
+  --hv-zone-post-lead-bg: transparent;
+  --hv-zone-post-hover: color-mix(in srgb, #1a1a20 2%, transparent);
+  --hv-zone-post-comment-bg: transparent;
+  --hv-zone-post-comment-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-rail-card-bg: transparent;
+  --hv-zone-rail-card-border: transparent;
+  --hv-zone-rail-mood-bg: transparent;
+  --hv-zone-state-bg: transparent;
+  --hv-zone-state-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-nudge-bg: transparent;
+  --hv-zone-nudge-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-creator-bg: transparent;
+  --hv-zone-creator-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-today-chip-bg: transparent;
+  --hv-zone-kbd-bg: color-mix(in srgb, #1a1a20 2.5%, var(--hv-bg-base) 97.5%);
+  --hv-zone-kbd-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-kbd-key-bg: color-mix(in srgb, #1a1a20 3%, var(--hv-bg-base) 97%);
+}
+
+/* Mast — sayfa ile birleşik */
+html[data-theme="light"] .hv-ref .hv-ref__mast {
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-strip-region {
+  background: transparent;
+}
+
+/* Lead / kategori — sol aksan yok (divider-sync hizalar) */
+html[data-theme="light"] .hv-ref .hv-ref-article--lead,
+html[data-theme="light"] .hv-ref .hv-ref-article--cat-tinted {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+/* Gönderi hover — kart şişmesi yok */
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-article:not(.hv-ref-article--cat-tinted):hover {
+    border-radius: 0;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
+
+/* Embed / link — sol çizgi, şeffaf zemin */
+html[data-theme="light"] .hv-ref .hv-ref-article__link-preview,
+html[data-theme="light"] .hv-ref .hv-ref-article__quote,
+html[data-theme="light"] .hv-ref .hv-ref-article__repost-embed {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__media {
+  border: none;
+  background: transparent;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__comment-teaser {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--hv-zone-post-comment-border);
+  padding-inline: 0;
+}
+
+/* Bugün chip — underline stili */
+html[data-theme="light"] .hv-ref .hv-ref-feed-today__chip {
+  border-radius: 0;
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, #1a1a20 8%, transparent);
+  padding-inline: 0.1rem;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-feed-today__chip--up,
+html[data-theme="light"] .hv-ref .hv-ref-feed-today__chip--down {
+  background: transparent;
+  border-bottom-color: currentColor;
+}
+
+/* Sağ rail — bölüm listesi, kart değil */
+html[data-theme="light"] .hv-ref .hv-ref-rail__card {
+  border-radius: 0;
+  padding: 1rem 0 0.85rem;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--hv-zone-feed-border);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__card::before {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-rail__card:hover {
+    box-shadow: none;
+    border-color: transparent;
+    border-bottom-color: color-mix(in srgb, var(--hv-cat-color, var(--hv-zone-tab-line)) 28%, var(--hv-zone-feed-border) 72%);
+    background: transparent;
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__card .hv-ref-rail__h {
+  padding-left: 0;
+  border-left: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--hv-zone-feed-border);
+  padding-inline: 0;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood::before {
+  display: none;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__signal-row,
+html[data-theme="light"] .hv-ref .hv-ref-rail__market-row {
+  background: transparent;
+  border-color: var(--hv-zone-feed-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__quick-pill {
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--hv-cat-color, var(--hv-zone-feed-border)) 20%, var(--hv-zone-feed-border) 80%);
+  padding-inline: 0;
+}
+
+/* Durum / nudge / creator — gömülü metin blokları */
+html[data-theme="light"] .hv-ref .hv-ref-feed-state,
+html[data-theme="light"] .hv-ref .hv-ref-feed-nudge,
+html[data-theme="light"] .hv-ref .hv-ref-creator-suggest {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-top: 1px solid var(--hv-zone-feed-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-creator-suggest__row {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--hv-zone-post-divider);
+  border-radius: 0;
+  padding-inline: 0;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-feed-state__icon {
+  background: transparent;
+  border: 1px solid var(--hv-zone-state-border);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-kbd-hint {
+  border-radius: 0;
+  background: var(--hv-zone-kbd-bg);
+  border: none;
+  border-left: 2px solid color-mix(in srgb, var(--hv-zone-tab-line) 40%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-scroll-top {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--hv-bg-base) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Discover band plakaları — düz liste */
+html[data-theme="light"] .hv-ref .discover-live-cinema,
+html[data-theme="light"] .hv-ref .discover-pulse-tile,
+html[data-theme="light"] .hv-ref .discover-sig-strip,
+html[data-theme="light"] .hv-ref .discover-video-editorial .ms-home-cinematic-post__below,
+html[data-theme="light"] .hv-ref .ms-home-native-surf {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid var(--hv-zone-discover-band-border);
+  border-radius: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .discover-live-cinema:hover,
+  html[data-theme="light"] .hv-ref .discover-pulse-tile:hover,
+  html[data-theme="light"] .hv-ref .ms-home-native-surf:hover {
+    box-shadow: none;
+    background: color-mix(in srgb, #1a1a20 2%, transparent);
+  }
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__card + .hv-ref-rail__card {
+  margin-top: 0;
+}

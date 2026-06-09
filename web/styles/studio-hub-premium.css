@@ -1,0 +1,60 @@
+/**
+ * Creator Studio — Hub Premium uyarlama (tools zone, gömülü layout)
+ */
+
+.hp-canvas--embedded-studio {
+  width: 100%;
+  min-width: 0;
+}
+
+.hp-canvas--embedded-studio > .hb-studio-embed {
+  width: 100%;
+  min-width: 0;
+}
+
+.hp-canvas--embedded-studio .hb-studio-embed.studio-shell {
+  background: transparent;
+}
+
+.hp-canvas--embedded-studio .studio-subnav {
+  border-bottom-color: var(--hp-zone-border);
+  background: color-mix(in srgb, var(--hp-zone-1) 3%, var(--hp-surface));
+}
+
+.hp-canvas--embedded-studio .studio-tab--active {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 40%, var(--hp-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, var(--hp-surface));
+}
+
+.hp-canvas--embedded-studio .studio-shell[data-studio-zone] .st-block-title::before {
+  background: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-studio .studio-shell[data-studio-zone] .st-block-link,
+.hp-canvas--embedded-studio .studio-shell[data-studio-zone] .st-tip-cta:hover {
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-studio .studio-shell[data-studio-zone] .st-tf-btn--active,
+.hp-canvas--embedded-studio .studio-shell[data-studio-zone] .st-filter-pill--active {
+  background: color-mix(in srgb, var(--hp-zone-1) 12%, var(--hp-surface));
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-border));
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-studio .st-page-eyebrow {
+  color: var(--hp-zone-1);
+  font-family: var(--font-bold);
+  letter-spacing: 0.08em;
+}
+
+.hp-canvas--embedded-studio .st-page-title {
+  font-family: var(--font-bold);
+}
+
+.hp-canvas--embedded-studio .st-metric-value,
+.hp-canvas--embedded-studio .st-revenue-amount {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+}

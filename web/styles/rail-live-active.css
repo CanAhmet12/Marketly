@@ -1,0 +1,222 @@
+/**
+ * Sağ rail V10 — canlı / aktif görünüm
+ * Gereksiz meta metin gizlenir; pulse + accent ile veri akışı hissi
+ */
+
+.hv-ref-rail--v10 {
+  --rail-live-rise: var(--color-rise);
+  --rail-live-pulse-dur: 2s;
+}
+
+/* Üst canlı şerit */
+.hv-ref-rail--v10 .hv-ref-rail__live-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0 0.65rem;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--rail-live-rise) 14%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__live-strip-pulse {
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 999px;
+  background: var(--rail-live-rise);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rail-live-rise) 24%, transparent);
+  animation: hv-rail-live-pulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__live-strip-track {
+  flex: 1;
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hv-text) 6%, transparent);
+  overflow: hidden;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__live-strip-fill {
+  display: block;
+  height: 100%;
+  width: 38%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--rail-live-rise) 70%, transparent),
+    transparent
+  );
+  animation: hv-rail-live-scan 2.8s ease-in-out infinite;
+}
+
+@keyframes hv-rail-live-scan {
+  0% { transform: translateX(-120%); opacity: 0.35; }
+  45% { opacity: 1; }
+  100% { transform: translateX(320%); opacity: 0.35; }
+}
+
+@keyframes hv-rail-accent-breathe {
+  0%, 100% { opacity: 0.72; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.15); }
+}
+
+@keyframes hv-rail-price-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+
+/* Gereksiz meta metinleri gizle */
+.hv-ref-rail--v10 .hv-ref-rail__section-sub,
+.hv-ref-rail--v10 .hv-ref-rail__mood-detail {
+  display: none !important;
+}
+
+/* Canlı bölüm — sol accent nabız */
+.hv-ref-rail--v10 .hv-ref-rail__section[data-live] .hv-ref-rail__block-accent {
+  animation: hv-rail-accent-breathe 3.2s ease-in-out infinite;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__section[data-live] .hv-ref-rail__section-icon {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 18%, transparent);
+}
+
+/* Canlı dot — pulse geri */
+.hv-ref-rail--v10 .hv-ref-rail__live-dot,
+.hv-ref-rail--v10 .hv-ref-rail__market-live {
+  animation: hv-rail-live-pulse var(--rail-live-pulse-dur) ease-in-out infinite !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rail-live-rise) 22%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__live-tag--dot-only {
+  padding: 0;
+  border: none;
+  background: transparent;
+  gap: 0;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__live-tag--dot-only .hv-ref-rail__live-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+}
+
+/* Mood — canlı segmentler */
+.hv-ref-rail--v10 .hv-ref-rail__mood--live {
+  border-bottom-color: color-mix(in srgb, var(--rail-live-rise) 12%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__mood-seg[data-sign="up"] {
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-rise) 35%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__mood-seg[data-sign="down"] {
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-fall) 30%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__mood-score {
+  font-variant-numeric: tabular-nums;
+  color: var(--hv-text);
+}
+
+/* Piyasa satırları — fiyat vurgusu */
+.hv-ref-rail--v10 .hv-ref-rail__market-rows--live .hv-ref-rail__market-row {
+  position: relative;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-price--live {
+  font-variant-numeric: tabular-nums;
+  animation: hv-rail-price-glow 3.5s ease-in-out infinite;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-pct[data-accent="up"] {
+  color: var(--color-rise);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-rise) 18%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-pct[data-accent="down"] {
+  color: var(--color-fall);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-fall) 16%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-spark {
+  opacity: 0.95;
+  filter: saturate(1.08);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-sigs {
+  font-variant-numeric: tabular-nums;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__market-sigs-label {
+  display: none;
+}
+
+/* Sinyaller — canlı featured */
+.hv-ref-rail--v10 .hv-ref-rail__sig-featured[data-dir="buy"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-rise) 14%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-rise) 6%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__sig-featured[data-dir="sell"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-fall) 14%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-fall) 6%, transparent);
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__sig-conf-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-rise) 35%, transparent),
+    var(--color-primary),
+    color-mix(in srgb, var(--color-rise) 55%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: hv-rail-conf-flow 4s linear infinite;
+}
+
+@keyframes hv-rail-conf-flow {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__sig-conf-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* İzleme — canlı fiyat */
+.hv-ref-rail--v10 .hv-ref-rail__watch-pct[data-accent="up"],
+.hv-ref-rail--v10 .hv-ref-rail__watch-pct[data-accent="down"] {
+  font-weight: 700;
+}
+
+.hv-ref-rail--v10 .hv-ref-rail__watch-price {
+  font-variant-numeric: tabular-nums;
+  animation: hv-rail-price-glow 4s ease-in-out infinite;
+}
+
+/* Haber — taze göstergesi */
+.hv-ref-rail--v10 .hv-ref-rail__news-fresh-dot {
+  animation: hv-rail-live-pulse 1.8s ease-in-out infinite;
+}
+
+/* Creator online */
+.hv-ref-rail--v10 .hv-ref-rail__creator-online {
+  animation: hv-rail-live-pulse 2.4s ease-in-out infinite;
+}
+
+/* ── Rail: statik akış, iç/dış scroll yok ─ */
+@media (min-width: 1180px) {
+  .hv-ref .hv-ref__grid.hv-ref__grid--composed .hv-ref__rail-col,
+  .hv-ref .hv-ref__grid.hv-ref__grid--composed .hv-ref__rail-bridge {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .hv-ref .hv-ref-rail {
+    overflow: visible;
+    max-height: none;
+  }
+}

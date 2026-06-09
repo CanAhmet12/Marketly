@@ -5,6 +5,7 @@ import { useState, memo, type ComponentType } from "react";
 import { RemoteCoverImage } from "@/components/ui/remote-cover-image";
 import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
+import { getCardTagTone } from "./discover-card-tones";
 import { formatViewers, type VRLiveItem } from "./discover-visual-reference-data";
 import {
   ThumbLive1, ThumbLive2, ThumbLive3,
@@ -13,14 +14,9 @@ import {
 } from "./vr-thumbnails";
 
 function LiveBadge({ size = "md" }: { size?: "sm" | "md" }) {
-  const cls = size === "sm" ? "gap-1 px-1.5 py-[3px] text-[8px]" : "gap-1.5 px-2 py-[3px] text-[9px]";
-  const dotCls = size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2";
   return (
-    <span className={cn("dvr-live-badge inline-flex items-center rounded font-bold uppercase tracking-wider text-white", cls)}>
-      <span className={cn("relative flex shrink-0", dotCls)}>
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400/40 motion-reduce:animate-none" />
-        <span className={cn("relative inline-flex rounded-full bg-red-50", dotCls)} />
-      </span>
+    <span className={cn("dvr-live-badge", size === "sm" && "dvr-live-badge--sm")}>
+      <span className="dvr-live-badge__dot" aria-hidden />
       Canlı
     </span>
   );
@@ -28,7 +24,7 @@ function LiveBadge({ size = "md" }: { size?: "sm" | "md" }) {
 
 function ViewerBadge({ count }: { count: number }) {
   return (
-    <span className="dvr-viewer-badge dvr-viewer-badge--live inline-flex items-center gap-1 rounded font-semibold tabular-nums text-white/92">
+    <span className="dvr-viewer-badge dvr-viewer-badge--live">
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
@@ -51,21 +47,25 @@ function AvatarFallback({
 }) {
   return (
     <span
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-full font-bold text-white",
-        liveRing
-          ? "dvr-live-avatar-ring ring-2 ring-red-500/55 ring-offset-2 ring-offset-black/50"
-          : "ring-1 ring-white/18",
-      )}
+      className={cn("dvr-live-avatar", liveRing && "dvr-live-avatar--live")}
       style={{
         width: size,
         height: size,
-        background: `radial-gradient(circle at 35% 35%, ${color}ee, ${color}88)`,
         fontSize: size * 0.42,
+        background: `radial-gradient(circle at 35% 35%, ${color}ee, ${color}88)`,
       }}
       aria-hidden
     >
       {initial}
+    </span>
+  );
+}
+
+function LiveHeatPill({ chatPerMin }: { chatPerMin: number }) {
+  return (
+    <span className="dvr-live-heat-pill">
+      <span className="dvr-live-heat-pill__dot" aria-hidden />
+      {chatPerMin}+ sohbet/dk
     </span>
   );
 }
@@ -79,7 +79,6 @@ const LIVE_THUMBS: Record<string, ComponentType> = {
   "live-6": ThumbLive6,
 };
 
-/** Home / LiveCard ile aynı: `thumb` URL + `onError` → SVG sahne yedeği. */
 function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?: "rail" | "compact" }) {
   const [imgFailed, setImgFailed] = useState(false);
   const rail = variant === "rail";
@@ -96,7 +95,7 @@ function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?
             <RemoteCoverImage
               src={url}
               className="absolute inset-0 z-0"
-              sizes="(max-width: 640px) 50vw, 280px"
+              sizes={rail ? "(max-width: 640px) 88vw, 640px" : "(max-width: 640px) 72vw, 480px"}
               onFailed={() => setImgFailed(true)}
             />
           ) : (
@@ -120,29 +119,15 @@ function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?
           <ThumbSvg />
         </div>
       )}
-      {rail && !showPhoto ? (
-        <div className="dvr-live-thumb-grain pointer-events-none absolute inset-0 z-[1]" aria-hidden />
-      ) : null}
       {!showPhoto ? (
-        <div className="dvr-live-thumb-vignette pointer-events-none absolute inset-0 z-[2]" aria-hidden />
+        <>
+          <div className="dvr-live-thumb-grain pointer-events-none absolute inset-0 z-1" aria-hidden />
+          <div className="dvr-live-thumb-vignette pointer-events-none absolute inset-0 z-2" aria-hidden />
+        </>
       ) : null}
     </div>
   );
 }
-
-const playRailCls = cn(
-  "dvr-live-play-fab dvr-live-play-fab--rail dvr-live-play-anchor z-20",
-  "flex h-[52px] w-[52px] items-center justify-center rounded-full",
-  "opacity-0 transition-opacity duration-200 motion-reduce:transition-none",
-  "group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100",
-);
-
-const playCompactCls = cn(
-  "dvr-live-play-fab dvr-live-play-fab--compact dvr-live-play-anchor--compact z-20",
-  "absolute flex h-9 w-9 items-center justify-center rounded-full",
-  "opacity-0 transition-opacity duration-200 motion-reduce:transition-none",
-  "group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100",
-);
 
 function DiscoverLiveCardInner({
   item,
@@ -154,11 +139,13 @@ function DiscoverLiveCardInner({
   urgencyLead?: boolean;
 }) {
   const hostLiveRing = item.heat === "high" || (item.chatPerMin != null && item.chatPerMin >= 50);
+  const tagTone = getCardTagTone(item.tag);
 
   return (
     <article
       className={cn(
-        "dvr-live-card dvr-live-card--rail group relative flex w-full flex-col overflow-hidden rounded-2xl",
+        "dvr-live-card dvr-live-card--rail dvr-live-card--premium group relative flex w-full flex-col overflow-hidden rounded-2xl",
+        `dvr-live-card--tone-${tagTone}`,
         item.heat === "high" && "dvr-live-card--heat",
         urgencyLead && "dvr-live-card--urgency-lead",
         "motion-entrance",
@@ -167,40 +154,46 @@ function DiscoverLiveCardInner({
     >
       <div className="dvr-live-media dvr-live-media--rail relative w-full overflow-hidden rounded-2xl">
         <LiveThumbLayer item={item} variant="rail" />
-        <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-1" aria-hidden />
+        <div className="dvr-live-tone-wash pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="dvr-live-media-glint pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-2" aria-hidden />
         {item.heat === "high" ? (
-          <div className="dvr-live-heat-glow pointer-events-none absolute inset-0 z-1 rounded-2xl" aria-hidden />
+          <div className="dvr-live-heat-glow pointer-events-none absolute inset-0 z-2 rounded-2xl" aria-hidden />
         ) : null}
+        <div className="dvr-live-media-scan pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-3 dvr-live-read-grad" aria-hidden />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] dvr-live-read-grad" aria-hidden />
-
-        <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 px-3.5 pt-3.5">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="dvr-live-overlay-top">
+          <div className="dvr-live-overlay-top__left">
             <LiveBadge size="sm" />
-            <span className="dvr-live-tag-min">{item.tag}</span>
+            <span className={cn("dvr-live-tag-min", `dvr-live-tag-min--${tagTone}`)}>{item.tag}</span>
+            {item.heat === "high" && item.chatPerMin != null && item.chatPerMin >= 50 ? (
+              <LiveHeatPill chatPerMin={item.chatPerMin} />
+            ) : null}
           </div>
           <ViewerBadge count={item.viewers} />
         </div>
 
-        <Link href={item.href} className={playRailCls} aria-label="İzle">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white" className="ml-0.5" aria-hidden>
+        <Link href={item.href} className="dvr-live-play-anchor dvr-live-play-fab dvr-live-play-fab--rail dvr-live-play-fab--corner" aria-label="İzle">
+          <span className="dvr-live-play-fab__ring" aria-hidden />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white" className="dvr-live-play-fab__icon" aria-hidden>
             <path d="M8 5v14l11-7z" />
           </svg>
         </Link>
 
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3.5 pb-3.5 pt-11">
-          <Link href={item.href} className="dvr-live-title-link block">
-            <h3 className="dvr-live-title dvr-live-title--hero line-clamp-2 text-white">{item.title}</h3>
-          </Link>
-          <div className="dvr-live-meta-row mt-2 flex min-w-0 items-center gap-2.5 pr-1">
+        <div className="dvr-live-overlay-bottom">
+          <p className="dvr-live-title dvr-live-title--hero line-clamp-2">{item.title}</p>
+          <div className="dvr-live-meta-row">
             <AvatarFallback initial={item.avatarInitial} color={item.avatarColor} size={36} liveRing={hostLiveRing} />
-            <p className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-snug text-white/88">
-              {item.creator}
-              <span className="font-medium text-white/42"> · </span>
-              <span className="tabular-nums text-white/52">{formatViewers(item.viewers)} izleyici</span>
+            <p className="dvr-live-meta-copy">
+              <span className="dvr-live-meta-creator">{item.creator}</span>
+              <span className="dvr-live-meta-sep" aria-hidden>·</span>
+              <span className="dvr-live-meta-viewers">{formatViewers(item.viewers)} izleyici</span>
             </p>
           </div>
         </div>
+
+        <Link href={item.href} className="dvr-live-hit-layer" aria-label={item.title} />
       </div>
     </article>
   );
@@ -215,54 +208,72 @@ function DiscoverLiveCardCompactInner({
 }: {
   item: VRLiveItem;
   index?: number;
-  /** Topic 3×2 grid: alt footer yok, sadece medya + overlay */
   topicTile?: boolean;
 }) {
   const hostLiveRing = item.heat === "high" || (item.chatPerMin != null && item.chatPerMin >= 50);
+  const tagTone = getCardTagTone(item.tag);
 
   return (
     <article
       className={cn(
-        "dvr-live-card dvr-live-card--compact group relative flex w-full flex-col overflow-hidden rounded-xl",
+        "dvr-live-card dvr-live-card--compact dvr-live-card--premium group relative flex w-full flex-col overflow-hidden rounded-xl",
+        `dvr-live-card--tone-${tagTone}`,
+        item.heat === "high" && "dvr-live-card--heat",
         topicTile && "dvr-live-card--topic-tile",
+        !topicTile && "dvr-live-card--overlay-v2",
         "motion-entrance",
       )}
       style={motionEntranceDelay(index)}
     >
       <div className="dvr-live-media dvr-live-media--compact relative w-full overflow-hidden rounded-xl">
         <LiveThumbLayer item={item} variant="compact" />
-        <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-1" aria-hidden />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[46%] bg-linear-to-t from-black/68 via-black/14 to-transparent" />
+        <div className="dvr-live-tone-wash pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="dvr-live-media-glint pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-2" aria-hidden />
+        {item.heat === "high" ? (
+          <div className="dvr-live-heat-glow pointer-events-none absolute inset-0 z-2 rounded-xl" aria-hidden />
+        ) : null}
+        <div className="dvr-live-media-scan pointer-events-none absolute inset-0 z-2" aria-hidden />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-3 dvr-live-read-grad dvr-live-read-grad--compact" aria-hidden />
 
-        <div className="absolute left-2.5 top-2.5 z-10">
-          <LiveBadge size="sm" />
-        </div>
-        <div className="absolute right-2.5 top-2.5 z-10">
+        <div className="dvr-live-overlay-top dvr-live-overlay-top--compact">
+          <div className="dvr-live-overlay-top__left">
+            <LiveBadge size="sm" />
+            <span className={cn("dvr-live-tag-min dvr-live-tag-min--compact", `dvr-live-tag-min--${tagTone}`)}>{item.tag}</span>
+            {item.heat === "high" && item.chatPerMin != null && item.chatPerMin >= 50 ? (
+              <LiveHeatPill chatPerMin={item.chatPerMin} />
+            ) : null}
+          </div>
           <ViewerBadge count={item.viewers} />
         </div>
-        <span className="absolute left-2.5 top-11 z-10 rounded bg-black/45 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-white/65">
-          {item.tag}
-        </span>
 
-        <Link href={item.href} className={playCompactCls} aria-label="İzle">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" className="ml-px" aria-hidden>
+        <Link href={item.href} className="dvr-live-play-anchor--compact dvr-live-play-fab dvr-live-play-fab--compact dvr-live-play-fab--corner" aria-label="İzle">
+          <span className="dvr-live-play-fab__ring" aria-hidden />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" className="dvr-live-play-fab__icon" aria-hidden>
             <path d="M8 5v14l11-7z" />
           </svg>
         </Link>
 
-        <div className="absolute inset-x-0 bottom-0 z-10 px-2.5 pb-2.5">
-          <Link href={item.href} className="dvr-live-title-link block">
-            <p className="dvr-live-title dvr-live-title--compact line-clamp-2 text-white">{item.title}</p>
-          </Link>
-        </div>
-      </div>
+        {topicTile ? (
+          <div className="dvr-live-overlay-bottom dvr-live-overlay-bottom--compact">
+            <p className="dvr-live-title dvr-live-title--compact line-clamp-2">{item.title}</p>
+          </div>
+        ) : (
+          <div className="dvr-live-overlay-bottom dvr-live-overlay-bottom--compact">
+            <p className="dvr-live-title dvr-live-title--compact line-clamp-2">{item.title}</p>
+            <div className="dvr-live-overlay-meta-row">
+              <AvatarFallback initial={item.avatarInitial} color={item.avatarColor} size={32} liveRing={hostLiveRing} />
+              <p className="dvr-live-overlay-meta-copy">
+                <span className="dvr-live-overlay-creator">{item.creator}</span>
+                <span className="dvr-live-overlay-sep" aria-hidden>·</span>
+                <span className="dvr-live-overlay-viewers tabular-nums">{formatViewers(item.viewers)} izleyici</span>
+              </p>
+            </div>
+          </div>
+        )}
 
-      {topicTile ? null : (
-      <div className="dvr-live-card__footer dvr-live-card__footer--slim flex items-center gap-2 px-2.5 py-2">
-        <AvatarFallback initial={item.avatarInitial} color={item.avatarColor} size={22} liveRing={hostLiveRing} />
-        <p className="min-w-0 flex-1 truncate text-[12px] font-semibold text-white/85">{item.creator}</p>
+        <Link href={item.href} className="dvr-live-hit-layer" aria-label={item.title} />
       </div>
-      )}
     </article>
   );
 }

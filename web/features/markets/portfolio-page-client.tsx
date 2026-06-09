@@ -1,223 +1,92 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import { EmptyState } from "@/components/states";
 import { useAuth } from "@/features/auth/use-auth";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { fetchPortfolioHoldings, type PortfolioHoldingLive } from "@/features/markets/fetch-portfolio-holdings";
+import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { PortfolioAddHoldingSheet } from "@/features/markets/components/portfolio-add-holding-sheet";
+import {
+  PortfolioPageView,
+  type PortfolioHoldingRowEnrichment,
+} from "@/features/markets/components/portfolio-page-view";
+import { PortfolioPageSkeleton } from "@/features/markets/components/markets-states";
 import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
+import { usePortfolioHoldings } from "@/features/markets/hooks/use-portfolio-holdings";
+import { useMarketsWatchlist } from "@/features/markets/hooks/use-markets-watchlist";
+import {
+  fetchCorrelatedAssets,
+  mapCorrelationsToPortfolioPairs,
+} from "@/features/markets/fetch-correlated-assets";
+import { buildPortfolioIntelContext } from "@/features/markets/lib/build-portfolio-intel-context";
+import { buildMockPortfolioPerfChart } from "@/features/markets/lib/build-portfolio-perf-series";
+import { fetchEconomicCalendarBundle } from "@/features/markets/fetch-economic-calendar";
+import { fetchMarketNewsroomBundle } from "@/features/markets/fetch-market-news";
+import { emptyPortfolioIntelContext } from "@/features/markets/types/portfolio-intel-context";
 import {
   buildPortfolioIntelligenceFromLive,
   type PortfolioLiveStats,
 } from "@/features/markets/lib/live-richness/build-portfolio-intelligence-from-live";
-import { buildPersonalizedSignalRelevance } from "@/features/signals/lib/build-personalized-signal-relevance";
-import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
-import { queryKeys } from "@/lib/query-keys";
-
-import { EmptyState } from "@/components/states";
-import { PortfolioPageSkeleton } from "@/features/markets/components/markets-states";
+import { fmtPortfolioMoney, portfolioCurrencyForSymbol } from "@/features/markets/lib/portfolio-format";
 import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 import { getMarketsRepository } from "@/features/markets/repository";
-import { useMarketsWatchlist } from "@/features/markets/hooks/use-markets-watchlist";
+import { buildPersonalizedSignalRelevance } from "@/features/signals/lib/build-personalized-signal-relevance";
+import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
 import { getSignalsRepository } from "@/features/signals/repository";
-import type { PortfolioIntelligenceBundle } from "@/features/markets/types/personal-market-intelligence";
-import type { PersonalizedSignalRelevance } from "@/features/signals/repository/types";
+import { AlgoFlags } from "@/lib/algo-flags";
+import { queryKeys } from "@/lib/query-keys";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
-import { cn } from "@/lib/cn";
 
-/* ================================
-   MOCK ENRİCHMENT VERİSİ
-   Gerçek P&L, toplam değer, grafik serisi
-   ================================ */
+const PORTFOLIO_LOGIN_NEXT = "/hub/portfolio";
 
-const PORTFOLIO_STATS = {
-  totalValue:   42_847.50,
-  investedCost: 36_000.00,
-  todayPnL:      +324.18,
-  todayPnLPct:   +0.76,
-  totalPnL:    +6_847.50,
-  totalPnLPct:  +19.03,
-  riskScore:       62,
-  riskLabel:    "Orta",
-  /* Aylık performans serisi (12 nokta) */
-  perfSeries: [33800, 35200, 36100, 34900, 37200, 38800, 39400, 40100, 39600, 41200, 42100, 42847],
+const MOCK_PERF = buildMockPortfolioPerfChart([
+  33800, 35200, 36100, 34900, 37200, 38800, 39400, 40100, 39600, 41200, 42100, 42847,
+]);
+
+const MOCK_STATS: PortfolioLiveStats = {
+  totalValue: 42_847.5,
+  investedCost: 36_000,
+  todayPnL: 324.18,
+  todayPnLPct: 0.76,
+  totalPnL: 6_847.5,
+  totalPnLPct: 19.03,
+  riskScore: 62,
+  riskLabel: "Orta",
+  perfSeries: MOCK_PERF.series,
+  perfMode: MOCK_PERF.mode,
+  perfCaption: MOCK_PERF.caption,
+  primaryCurrency: "USD",
 };
 
-const HOLDING_ENRICHMENT: Record<string, { pnlPct: number; price: string; color: string }> = {
-  BTC:   { pnlPct: +18.4,  price: "$103,840", color: "#f59e0b" },
-  ETH:   { pnlPct: +12.8,  price: "$3,812",   color: "#a78bfa" },
-  THYAO: { pnlPct: +28.4,  price: "291 TL",   color: "#06b6d4" },
-  XU100: { pnlPct: +11.2,  price: "9,663",    color: "#3b82f6" },
-  AAPL:  { pnlPct:  -3.2,  price: "$188",     color: "#22c55e" },
-  SOL:   { pnlPct: +44.2,  price: "$198",     color: "#f97316" },
+const MOCK_HOLDING_ENRICHMENT: Record<string, PortfolioHoldingRowEnrichment> = {
+  BTC: { pnlPct: 18.4, priceLabel: "$103,840", categoryKey: "crypto" },
+  ETH: { pnlPct: 12.8, priceLabel: "$3,812", categoryKey: "crypto" },
+  THYAO: { pnlPct: 28.4, priceLabel: "291 TL", categoryKey: "stocks" },
+  XU100: { pnlPct: 11.2, priceLabel: "9,663", categoryKey: "index" },
+  AAPL: { pnlPct: -3.2, priceLabel: "$188", categoryKey: "stocks" },
+  SOL: { pnlPct: 44.2, priceLabel: "$198", categoryKey: "crypto" },
 };
-
-const CAT_COLORS: Record<string, string> = {
-  crypto:    "#f59e0b",
-  stocks:    "#06b6d4",
-  index:     "#8b5cf6",
-  forex:     "#8b5cf6",
-  commodity: "#f97316",
-};
-
-/* ================================
-   YARDIMCI FONKSİYONLAR
-   ================================ */
-
-function fmtCurrency(n: number): string {
-  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function fmtPct(n: number): string {
-  return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
-}
-
-function changeClass(v: number): string {
-  return v >= 0 ? "pf-pnl-val--up" : "pf-pnl-val--down";
-}
-
-function changeStatClass(v: number): string {
-  return v >= 0 ? "pf-stat-change--up" : "pf-stat-change--down";
-}
-
-/* ================================
-   PERFORMANS ALAN GRAFİĞİ (SVG)
-   ================================ */
-
-function PerformanceChart({ series }: { series: number[] }) {
-  const id = useId().replace(/:/g, "");
-  const W = 600; const H = 120; const padX = 8; const padY = 8;
-  const min = Math.min(...series); const max = Math.max(...series);
-  const span = max - min || 1;
-  const pts = series.map((v, i) => ({
-    x: padX + (i / (series.length - 1)) * (W - padX * 2),
-    y: padY + (1 - (v - min) / span) * (H - padY * 2),
-  }));
-
-  let line = `M ${pts[0]!.x.toFixed(1)} ${pts[0]!.y.toFixed(1)}`;
-  for (let i = 1; i < pts.length; i++) {
-    const cpx = (pts[i-1]!.x + pts[i]!.x) / 2;
-    line += ` C ${cpx.toFixed(1)} ${pts[i-1]!.y.toFixed(1)}, ${cpx.toFixed(1)} ${pts[i]!.y.toFixed(1)}, ${pts[i]!.x.toFixed(1)} ${pts[i]!.y.toFixed(1)}`;
-  }
-  const last = pts[pts.length - 1]!; const first = pts[0]!;
-  const area = `${line} L ${last.x.toFixed(1)} ${H} L ${first.x.toFixed(1)} ${H} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="pf-chart-svg" height={H} aria-label="Portföy performansı">
-      <defs>
-        <linearGradient id={`pfg-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0f9d75" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#0f9d75" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#pfg-${id})`} stroke="none" />
-      <path d={line} fill="none" stroke="#0f9d75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        style={{ filter: "drop-shadow(0 0 8px rgba(15,157,117,0.5))" }} />
-    </svg>
-  );
-}
-
-/* ================================
-   ALLOCATION DONUT (SVG)
-   ================================ */
-
-function AllocationDonut({
-  holdings,
-  totalValue,
-}: {
-  portfolio?: PortfolioIntelligenceBundle;
-  holdings: PortfolioIntelligenceBundle["holdings"];
-  totalValue: number;
-}) {
-  const id = useId().replace(/:/g, "");
-  const cx = 90; const cy = 90; const outerR = 78; const innerR = 52;
-  const totalW = holdings.reduce((s, h) => s + h.weightPct, 0) || 100;
-
-  function polar(r: number, deg: number) {
-    const rad = ((deg - 90) * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  }
-
-  function arcPath(startDeg: number, endDeg: number): string {
-    const os = polar(outerR, startDeg); const oe = polar(outerR, endDeg);
-    const is = polar(innerR, endDeg);   const ie = polar(innerR, startDeg);
-    const large = endDeg - startDeg > 180 ? 1 : 0;
-    return [
-      `M ${os.x.toFixed(2)} ${os.y.toFixed(2)}`,
-      `A ${outerR} ${outerR} 0 ${large} 1 ${oe.x.toFixed(2)} ${oe.y.toFixed(2)}`,
-      `L ${is.x.toFixed(2)} ${is.y.toFixed(2)}`,
-      `A ${innerR} ${innerR} 0 ${large} 0 ${ie.x.toFixed(2)} ${ie.y.toFixed(2)}`,
-      "Z",
-    ].join(" ");
-  }
-
-  const arcs: { path: string; color: string; symbol: string; pct: number }[] = [];
-  let start = 0;
-  for (const h of holdings) {
-    const sweep = (h.weightPct / totalW) * 360;
-    const color = CAT_COLORS[h.category] ?? "#64748b";
-    arcs.push({ path: arcPath(start, start + sweep - 0.5), color, symbol: h.symbol, pct: h.weightPct });
-    start += sweep;
-  }
-
-  return (
-    <div className="pf-donut-wrap">
-      <svg className="pf-donut-svg" viewBox="0 0 180 180" width={180} height={180} aria-label="Portföy dağılımı">
-        {arcs.map((arc, i) => (
-          <path key={arc.symbol + i} d={arc.path} fill={arc.color} opacity={0.85}
-            style={{ filter: `drop-shadow(0 0 4px ${arc.color}44)` }} />
-        ))}
-        {/* Center text */}
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="11" fontWeight="700" fill="#64748b" fontFamily="system-ui">
-          TOPLAM
-        </text>
-        <text x={cx} y={cy + 12} textAnchor="middle" fontSize="15" fontWeight="900" fill="#f1f5f9" fontFamily="system-ui" letterSpacing="-0.5">
-          ${(totalValue / 1000).toFixed(1)}K
-        </text>
-      </svg>
-
-      {/* Legend */}
-      <div className="pf-donut-legend">
-        {holdings.map((h) => (
-          <div key={h.symbol} className="pf-legend-row">
-            <div className="pf-legend-dot" style={{ background: CAT_COLORS[h.category] ?? "#64748b" }} />
-            <span className="pf-legend-label">{h.symbol}</span>
-            <span className="pf-legend-pct">%{h.weightPct}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ================================
-   ANA CLIENT
-   ================================ */
 
 export function PortfolioPageClient() {
   const mockOn = isMockDataEnabled();
+  const { user, isInitialized } = useAuth();
+  const [addOpen, setAddOpen] = useState(false);
+
   const mRepo = useMemo(() => getMarketsRepository(), []);
   const sRepo = useMemo(() => getSignalsRepository(), []);
   const { watchlist, hydrated } = useMarketsWatchlist(mockOn ? mRepo.getWatchlistSeed() : undefined);
 
-  const strip       = useMemo(() => mRepo.getPortfolioStrip(), [mRepo]);
-  const portfolio   = useMemo(() => mRepo.getPortfolioIntelligenceBundle(), [mRepo]);
-  const personalized = useMemo(
-    () => sRepo.getPersonalizedSignalRelevance(Array.from(watchlist), portfolio.portfolioSymbols),
-    [sRepo, watchlist, portfolio.portfolioSymbols],
-  );
-
-  const [activeTf, setActiveTf] = useState("1H");
-  const TFS = ["1G", "1H", "3H", "YTD", "1Y"];
-
-  // Canlı mod: Supabase'den holdings çek
-  const { user } = useAuth();
-  const [liveHoldings, setLiveHoldings] = useState<PortfolioHoldingLive[]>([]);
-  const [liveLoading, setLiveLoading] = useState(false);
   const { assets: liveAssets } = useMarketAssetsLive();
+  const {
+    holdings: liveHoldings,
+    isLoading: holdingsLoading,
+    upsertHolding,
+    upsertPending,
+    writeEnabled,
+  } = usePortfolioHoldings(user?.id);
 
   const liveSignalsQuery = useQuery({
     queryKey: queryKeys.signalsFeed(),
@@ -226,18 +95,51 @@ export function PortfolioPageClient() {
     staleTime: 60_000,
   });
 
-  useEffect(() => {
-    if (mockOn || !user?.id || !isSupabaseConfigured()) return;
-    setLiveLoading(true);
-    fetchPortfolioHoldings(getSupabaseBrowserClient(), user.id)
-      .then(setLiveHoldings)
-      .finally(() => setLiveLoading(false));
-  }, [mockOn, user?.id]);
+  const mockPortfolio = useMemo(() => mRepo.getPortfolioIntelligenceBundle(), [mRepo]);
+  const mockPersonalized = useMemo(
+    () => sRepo.getPersonalizedSignalRelevance(Array.from(watchlist), mockPortfolio.portfolioSymbols),
+    [sRepo, watchlist, mockPortfolio.portfolioSymbols],
+  );
+
+  const mockIntel = useMemo(() => {
+    if (!mockOn) return emptyPortfolioIntelContext();
+    const news = mRepo.getMarketNewsroomBundle([], mockPortfolio.portfolioSymbols);
+    const cal = mRepo.getEconomicCalendarIntelligenceBundle([], mockPortfolio.portfolioSymbols);
+    return buildPortfolioIntelContext(news.items, cal.events, mockPortfolio.portfolioSymbols);
+  }, [mRepo, mockOn, mockPortfolio.portfolioSymbols]);
+
+  const anchorSymbol = useMemo(() => {
+    if (mockOn || liveHoldings.length === 0) return null;
+    const top = [...liveHoldings].sort((a, b) => b.total_value - a.total_value)[0];
+    return top?.symbol ?? top?.asset_id ?? null;
+  }, [mockOn, liveHoldings]);
+
+  const corrQuery = useQuery({
+    queryKey: queryKeys.correlatedAssets(anchorSymbol ?? ""),
+    queryFn: async () => {
+      const client = getSupabaseBrowserClient();
+      const rows = await fetchCorrelatedAssets(client, anchorSymbol!, 8);
+      const portSyms = liveHoldings.map((h) => h.symbol ?? h.asset_id);
+      return mapCorrelationsToPortfolioPairs(anchorSymbol!, rows, portSyms);
+    },
+    enabled:
+      !mockOn &&
+      isSupabaseConfigured() &&
+      AlgoFlags.marketDataAlgorithms &&
+      Boolean(anchorSymbol) &&
+      liveHoldings.length >= 2,
+    staleTime: 300_000,
+  });
 
   const liveDerived = useMemo(() => {
     if (mockOn || liveHoldings.length === 0) return null;
-    return buildPortfolioIntelligenceFromLive(liveHoldings, liveAssets, liveSignalsQuery.data ?? []);
-  }, [mockOn, liveHoldings, liveAssets, liveSignalsQuery.data]);
+    return buildPortfolioIntelligenceFromLive(
+      liveHoldings,
+      liveAssets,
+      liveSignalsQuery.data ?? [],
+      corrQuery.data ?? [],
+    );
+  }, [mockOn, liveHoldings, liveAssets, liveSignalsQuery.data, corrQuery.data]);
 
   const livePersonalized = useMemo(() => {
     if (mockOn || !liveDerived) return null;
@@ -249,600 +151,171 @@ export function PortfolioPageClient() {
     );
   }, [mockOn, liveDerived, liveSignalsQuery.data]);
 
+  const livePortfolioSymbolsKey = useMemo(() => {
+    if (!liveDerived) return "";
+    return [...liveDerived.bundle.portfolioSymbols].sort().join(",");
+  }, [liveDerived]);
+
+  const liveIntelQuery = useQuery({
+    queryKey: queryKeys.portfolioIntel(livePortfolioSymbolsKey),
+    queryFn: async () => {
+      const syms = liveDerived!.bundle.portfolioSymbols;
+      const client = getSupabaseBrowserClient();
+      const [news, cal] = await Promise.all([
+        fetchMarketNewsroomBundle(client, [], syms),
+        fetchEconomicCalendarBundle(client, [], syms),
+      ]);
+      return buildPortfolioIntelContext(news.items, cal.events, syms);
+    },
+    enabled: !mockOn && isSupabaseConfigured() && livePortfolioSymbolsKey.length > 0,
+    staleTime: 90_000,
+  });
+
+  const liveHoldingEnrichment = useMemo(() => {
+    const out: Record<string, PortfolioHoldingRowEnrichment> = {};
+    if (!liveDerived) return out;
+    for (const h of liveDerived.bundle.holdings) {
+      const liveH = liveHoldings.find((x) => x.asset_id.toUpperCase() === h.symbol.toUpperCase());
+      const rowCur = portfolioCurrencyForSymbol(h.symbol, h.category);
+      out[h.symbol] = {
+        priceLabel: liveH ? fmtPortfolioMoney(liveH.total_value, rowCur) : "—",
+        pnlPct: liveH?.pnl_percent ?? 0,
+        categoryKey: h.category,
+      };
+    }
+    return out;
+  }, [liveDerived, liveHoldings]);
+
+  const handleAddHolding = async ({
+    asset,
+    quantity,
+    avgCost,
+  }: {
+    asset: { id: string; symbol: string; name: string };
+    quantity: number;
+    avgCost: number;
+  }) => {
+    await upsertHolding({
+      assetId: asset.id,
+      symbol: asset.symbol,
+      name: asset.name,
+      quantity,
+      avgCost,
+    });
+  };
+
   if (!mockOn) {
-    if (liveLoading) return <PortfolioPageSkeleton />;
-    if (liveHoldings.length === 0) {
+    if (!isInitialized) return <PortfolioPageSkeleton />;
+    if (!isSupabaseConfigured()) {
       return (
-        <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0 py-16">
-          <EmptyState title="Portföy boş" description="Henüz pozisyon eklenmemiş. APP üzerinden holding ekleyebilirsiniz." actionLabel="Piyasalar" actionHref={MARKETS_HUB_PATH} tone="market" compact />
-        </div>
+        <HubPageShell zone="finance" className="pf-canvas" mainClassName="py-16">
+          <EmptyState
+            title="Portföy kullanılamıyor"
+            description="Supabase yapılandırması eksik."
+            actionLabel="Piyasalar"
+            actionHref={MARKETS_HUB_PATH}
+            tone="market"
+            compact
+          />
+        </HubPageShell>
       );
     }
-    if (!liveDerived) return <PortfolioPageSkeleton />;
-
-    const portfolio = liveDerived.bundle;
-    const s: PortfolioLiveStats = liveDerived.stats;
-    const { risk, overlaps, holdings, strategyMix, headlineSentiment } = portfolio;
-    const personalized = livePersonalized ?? { headline: "Portföy sinyalleri", rows: [] };
+    if (!user) {
+      return (
+        <HubPageShell zone="finance" className="pf-canvas" mainClassName="py-16">
+          <EmptyState
+            title="Giriş gerekli"
+            description="Canlı portföyünü görüntülemek ve pozisyon eklemek için giriş yap."
+            actionLabel="Giriş yap"
+            actionHref={`/auth/login?next=${encodeURIComponent(PORTFOLIO_LOGIN_NEXT)}`}
+            secondaryActionLabel="Piyasalar"
+            secondaryActionHref={MARKETS_HUB_PATH}
+            tone="market"
+            compact
+          />
+        </HubPageShell>
+      );
+    }
+    if (holdingsLoading || (liveHoldings.length > 0 && !liveDerived)) {
+      return <PortfolioPageSkeleton />;
+    }
+    if (liveHoldings.length === 0) {
+      return (
+        <>
+          <HubPageShell zone="finance" className="pf-canvas" mainClassName="py-16">
+            <EmptyState
+              title="Portföy boş"
+              description="Henüz pozisyon eklenmemiş. İlk varlığını ekleyerek canlı P&L takibine başla."
+              actionLabel={writeEnabled ? "Pozisyon ekle" : undefined}
+              onAction={writeEnabled ? () => setAddOpen(true) : undefined}
+              secondaryActionLabel="Piyasalar"
+              secondaryActionHref={MARKETS_HUB_PATH}
+              tone="market"
+              compact
+            />
+          </HubPageShell>
+          <PortfolioAddHoldingSheet
+            open={addOpen}
+            onClose={() => setAddOpen(false)}
+            assets={liveAssets}
+            writeEnabled={writeEnabled}
+            pending={upsertPending}
+            onSubmit={handleAddHolding}
+          />
+        </>
+      );
+    }
 
     return (
-      <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0">
-        <div className="pf-header">
-          <div className="pf-header-left">
-            <span className="pf-header-tag">Marketly · Yatırım</span>
-            <h1 className="pf-header-title">Canlı Portföy</h1>
-          </div>
-          <div className="pf-header-actions">
-            <Link href="/watchlist" className="pf-header-btn">⭐ İzleme Listesi</Link>
-            <Link href="/signals" className="pf-header-btn">📊 Sinyaller</Link>
-          </div>
-        </div>
-
-        <div className="pf-hero">
-          <div className="pf-stat">
-            <span className="pf-stat-label">Toplam Değer</span>
-            <span className="pf-stat-value pf-stat-value--accent">{fmtCurrency(s.totalValue)}</span>
-            <span className="pf-stat-change pf-stat-change--neutral" style={{ fontSize: 11, color: "#475569" }}>
-              Yatırılan: {fmtCurrency(s.investedCost)}
-            </span>
-          </div>
-          <div className="pf-stat">
-            <span className="pf-stat-label">Günlük hareket</span>
-            <span className={cn("pf-stat-value", s.todayPnLPct >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
-              {fmtPct(s.todayPnLPct)}
-            </span>
-            <span className="pf-stat-change pf-stat-change--neutral">Ort. değişim</span>
-          </div>
-          <div className="pf-stat">
-            <span className="pf-stat-label">Toplam P&L</span>
-            <span className={cn("pf-stat-value", s.totalPnL >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
-              {s.totalPnL >= 0 ? "+" : ""}{fmtCurrency(s.totalPnL)}
-            </span>
-            <span className={cn("pf-stat-change", changeStatClass(s.totalPnLPct))}>{fmtPct(s.totalPnLPct)}</span>
-          </div>
-          <div className="pf-stat">
-            <span className="pf-stat-label">Pozisyon</span>
-            <span className="pf-stat-value">{holdings.length}</span>
-            <span className="pf-stat-change pf-stat-change--neutral">{headlineSentiment.slice(0, 22)}</span>
-          </div>
-          <div className="pf-stat">
-            <span className="pf-stat-label">Risk Skoru</span>
-            <span className="pf-stat-value" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
-              {s.riskScore}<span style={{ fontSize: 12, opacity: 0.6 }}>/100</span>
-            </span>
-            <span className="pf-stat-change pf-stat-change--neutral">{s.riskLabel}</span>
-          </div>
-        </div>
-
-        <div className="pf-main">
-          <div className="pf-left">
-            <div className="pf-block">
-              <div className="pf-block-header">
-                <div className="pf-block-title">
-                  <span className="pf-block-stripe" />
-                  Portföy Performansı
-                </div>
-              </div>
-              <div className="pf-chart-wrap">
-                <PerformanceChart series={s.perfSeries} />
-              </div>
-            </div>
-
-            <div className="pf-block">
-              <div className="pf-block-header">
-                <div className="pf-block-title">
-                  <span className="pf-block-stripe" />
-                  Pozisyonlar
-                </div>
-              </div>
-              <div className="pf-holdings" style={{ marginTop: 12 }}>
-                <table className="pf-holdings-table">
-                  <thead>
-                    <tr>
-                      <th>Varlık</th>
-                      <th>Kategori</th>
-                      <th>Ağırlık</th>
-                      <th className="right">Değer</th>
-                      <th className="right">P&L %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {holdings.map((h) => {
-                      const liveH = liveHoldings.find(
-                        (x) => x.asset_id.toUpperCase() === h.symbol.toUpperCase(),
-                      );
-                      const color = CAT_COLORS[h.category] ?? "#64748b";
-                      const pnlPct = liveH?.pnl_percent ?? 0;
-                      return (
-                        <tr key={h.symbol} onClick={() => { window.location.href = h.href; }}>
-                          <td>
-                            <Link href={h.href} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-                              <div className="pf-holding-name">{h.symbol}</div>
-                              <div className="pf-holding-fullname">{h.name}</div>
-                            </Link>
-                          </td>
-                          <td>
-                            <span className={cn("pf-cat-badge", `pf-cat-badge--${h.category}`)}>{h.category}</span>
-                          </td>
-                          <td>
-                            <div className="pf-weight-cell">
-                              <div className="pf-weight-row">
-                                <span className="pf-weight-pct">%{h.weightPct}</span>
-                                <div className="pf-weight-bar">
-                                  <div className="pf-weight-fill" style={{ width: `${Math.min(100, h.weightPct * 1.5)}%`, background: color }} />
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="pf-price-val">{liveH ? fmtCurrency(liveH.total_value) : "—"}</span>
-                          </td>
-                          <td>
-                            <span className={cn("pf-pnl-val", changeClass(pnlPct))}>{fmtPct(pnlPct)}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <aside className="pf-sidebar">
-            <div className="pf-sidebar-inner">
-              <div className="pf-block">
-                <div className="pf-block-header">
-                  <div className="pf-block-title">
-                    <span className="pf-block-stripe" />
-                    Dağılım
-                  </div>
-                </div>
-                <AllocationDonut holdings={holdings} totalValue={s.totalValue} />
-              </div>
-
-              <div className="pf-block">
-                <div className="pf-block-header">
-                  <div className="pf-block-title">
-                    <span className="pf-block-stripe" />
-                    Strateji Karması
-                  </div>
-                </div>
-                <div className="pf-strategy-rows">
-                  {strategyMix.map((mix, i) => {
-                    const colors = ["#0f9d75", "#3b82f6", "#8b5cf6"];
-                    return (
-                      <div key={mix.label} className="pf-strat-row">
-                        <div className="pf-strat-header">
-                          <span className="pf-strat-label">{mix.label}</span>
-                          <span className="pf-strat-pct">%{mix.pct}</span>
-                        </div>
-                        <div className="pf-strat-bar">
-                          <div className="pf-strat-fill" style={{ width: `${mix.pct}%`, background: colors[i % colors.length] }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pf-block">
-                <div className="pf-block-header">
-                  <div className="pf-block-title">
-                    <span className="pf-block-stripe" style={{ background: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }} />
-                    Risk Analizi
-                  </div>
-                </div>
-                <div className="pf-risk-body">
-                  <div className="pf-risk-gauge">
-                    <div>
-                      <div className="pf-risk-score" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
-                        {s.riskScore}
-                      </div>
-                      <div className="pf-risk-label">{s.riskLabel} Risk</div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      {[
-                        { label: "Konsantrasyon", val: risk.concentrationLabel },
-                        { label: "Volatilite", val: risk.volCluster },
-                        { label: "Rejim", val: risk.regimeAlignment },
-                      ].map((item) => (
-                        <div key={item.label} className="pf-risk-item">
-                          <span className="pf-risk-item-label">{item.label}</span>
-                          <span className="pf-risk-item-value">{item.val}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {risk.sectorTop.length > 0 && (
-                    <div className="pf-sector-rows">
-                      {risk.sectorTop.map((sec) => (
-                        <div key={sec.label} className="pf-sector-row">
-                          <span className="pf-sector-label">{sec.label}</span>
-                          <div className="pf-sector-bar">
-                            <div className="pf-sector-fill" style={{ width: `${sec.pct}%` }} />
-                          </div>
-                          <span className="pf-sector-pct">%{sec.pct}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-
-        <div className="pf-bottom-zone" style={{ marginTop: 20 }}>
-          <div className="pf-block">
-            <div className="pf-block-header">
-              <div className="pf-block-title">
-                <span className="pf-block-stripe" />
-                Analist Örtüşmesi
-              </div>
-            </div>
-            <div className="pf-analyst-rows">
-              {overlaps.overlappingAnalysts.length === 0 ? (
-                <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Portföy sembollerinde aktif sinyal yok.</p>
-              ) : (
-                overlaps.overlappingAnalysts.map((a) => (
-                  <Link key={a.href} href={a.href} className="pf-analyst-row">
-                    <div className="pf-analyst-avatar">{a.display.slice(0, 1).toUpperCase()}</div>
-                    <span className="pf-analyst-name">{a.display}</span>
-                    <span className="pf-analyst-count">{a.count} sinyal</span>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="pf-block">
-            <div className="pf-block-header">
-              <div className="pf-block-title">
-                <span className="pf-block-stripe" />
-                Portföy Sinyalleri
-              </div>
-              <Link href="/signals" className="pf-block-link">Tümü →</Link>
-            </div>
-            <div className="pf-signal-rows">
-              {personalized.rows.length === 0 ? (
-                <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Sinyal örtüşmesi bulunamadı.</p>
-              ) : (
-                personalized.rows.slice(0, 5).map((row) => (
-                  <Link key={row.id} href={row.href} className="pf-signal-row">
-                    <span className="pf-signal-sym">{row.symbol}</span>
-                    <div className="pf-signal-info">
-                      <div className="pf-signal-reason">{row.reason}</div>
-                      <div className="pf-signal-meta">{row.analystDisplay} · {row.direction}</div>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <>
+        <PortfolioPageView
+          pageTitle="Canlı Portföy"
+          stats={liveDerived!.stats}
+          portfolio={liveDerived!.bundle}
+          personalized={livePersonalized ?? { headline: "Portföy sinyalleri", rows: [] }}
+          holdingEnrichment={liveHoldingEnrichment}
+          intel={liveIntelQuery.data ?? emptyPortfolioIntelContext()}
+          valueColumnLabel="Değer"
+          canAddHolding={writeEnabled}
+          onAddHolding={() => setAddOpen(true)}
+        />
+        <PortfolioAddHoldingSheet
+          open={addOpen}
+          onClose={() => setAddOpen(false)}
+          assets={liveAssets}
+          writeEnabled={writeEnabled}
+          pending={upsertPending}
+          onSubmit={handleAddHolding}
+        />
+      </>
     );
   }
 
-  if (!hydrated) {
-    return <PortfolioPageSkeleton />;
-  }
+  if (!hydrated) return <PortfolioPageSkeleton />;
 
-  if (portfolio.holdings.length === 0) {
+  if (mockPortfolio.holdings.length === 0) {
     return (
-      <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0 py-16">
-        <EmptyState title="Portföy boş" description="Henüz pozisyon eklenmemiş." actionLabel="Piyasalar" actionHref={MARKETS_HUB_PATH} tone="market" />
-      </div>
+      <HubPageShell zone="finance" className="pf-canvas" mainClassName="py-16">
+        <EmptyState
+          title="Portföy boş"
+          description="Henüz pozisyon eklenmemiş."
+          actionLabel="Piyasalar"
+          actionHref={MARKETS_HUB_PATH}
+          tone="market"
+        />
+      </HubPageShell>
     );
   }
-
-  const { risk, overlaps, holdings, strategyMix, headlineSentiment } = portfolio;
-  const s = PORTFOLIO_STATS;
 
   return (
-    <div className="pf-canvas ms-page-wrapper ms-container-markets min-w-0">
-
-      {/* ===== HEADER ===== */}
-      <div className="pf-header">
-        <div className="pf-header-left">
-          <span className="pf-header-tag">Marketly · Yatırım</span>
-          <h1 className="pf-header-title">Kağıt Portföy</h1>
-        </div>
-        <div className="pf-header-actions">
-          <Link href="/watchlist" className="pf-header-btn">⭐ İzleme Listesi</Link>
-          <Link href="/signals" className="pf-header-btn">📊 Sinyaller</Link>
-        </div>
-      </div>
-
-      {/* ===== HERO STATS STRIP ===== */}
-      <div className="pf-hero">
-        <div className="pf-stat">
-          <span className="pf-stat-label">Toplam Değer</span>
-          <span className="pf-stat-value pf-stat-value--accent">{fmtCurrency(s.totalValue)}</span>
-          <span className="pf-stat-change pf-stat-change--neutral" style={{ fontSize: 11, color: "#475569" }}>
-            Yatırılan: {fmtCurrency(s.investedCost)}
-          </span>
-        </div>
-        <div className="pf-stat">
-          <span className="pf-stat-label">Bugün P&L</span>
-          <span className={cn("pf-stat-value", s.todayPnL >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
-            {s.todayPnL >= 0 ? "+" : ""}{fmtCurrency(s.todayPnL)}
-          </span>
-          <span className={cn("pf-stat-change", changeStatClass(s.todayPnLPct))}>
-            {fmtPct(s.todayPnLPct)}
-          </span>
-        </div>
-        <div className="pf-stat">
-          <span className="pf-stat-label">Toplam P&L</span>
-          <span className={cn("pf-stat-value", s.totalPnL >= 0 ? "pf-stat-change--up" : "pf-stat-change--down")}>
-            {s.totalPnL >= 0 ? "+" : ""}{fmtCurrency(s.totalPnL)}
-          </span>
-          <span className={cn("pf-stat-change", changeStatClass(s.totalPnLPct))}>
-            {fmtPct(s.totalPnLPct)}
-          </span>
-        </div>
-        <div className="pf-stat">
-          <span className="pf-stat-label">Pozisyon</span>
-          <span className="pf-stat-value">{holdings.length}</span>
-          <span className="pf-stat-change pf-stat-change--neutral">{headlineSentiment.slice(0, 22)}</span>
-        </div>
-        <div className="pf-stat">
-          <span className="pf-stat-label">Risk Skoru</span>
-          <span className="pf-stat-value" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
-            {s.riskScore}<span style={{ fontSize: 12, opacity: 0.6 }}>/100</span>
-          </span>
-          <span className="pf-stat-change pf-stat-change--neutral">{s.riskLabel}</span>
-        </div>
-      </div>
-
-      {/* ===== MAIN 2-KOLON ===== */}
-      <div className="pf-main">
-
-        {/* SOL: Grafik + Tablo */}
-        <div className="pf-left">
-
-          {/* Performans grafiği */}
-          <div className="pf-block">
-            <div className="pf-block-header">
-              <div className="pf-block-title">
-                <span className="pf-block-stripe" />
-                Portföy Performansı
-              </div>
-              <div className="pf-chart-tf">
-                {TFS.map((tf) => (
-                  <button key={tf} type="button"
-                    className={cn("pf-tf-btn", activeTf === tf && "pf-tf-btn--active")}
-                    onClick={() => setActiveTf(tf)}>
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="pf-chart-wrap">
-              <PerformanceChart series={s.perfSeries} />
-            </div>
-          </div>
-
-          {/* Holdings tablosu */}
-          <div className="pf-block">
-            <div className="pf-block-header">
-              <div className="pf-block-title">
-                <span className="pf-block-stripe" />
-                Pozisyonlar
-              </div>
-            </div>
-            <div className="pf-holdings" style={{ marginTop: 12 }}>
-              <table className="pf-holdings-table">
-                <thead>
-                  <tr>
-                    <th>Varlık</th>
-                    <th>Kategori</th>
-                    <th>Ağırlık</th>
-                    <th className="right">Fiyat</th>
-                    <th className="right">P&L %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {holdings.map((h) => {
-                    const enrich = HOLDING_ENRICHMENT[h.symbol] ?? { pnlPct: 0, price: "—", color: "#64748b" };
-                    return (
-                      <tr key={h.symbol} onClick={() => { window.location.href = h.href; }}>
-                        <td>
-                          <Link href={h.href} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-                            <div className="pf-holding-name">{h.symbol}</div>
-                            <div className="pf-holding-fullname">{h.name}</div>
-                          </Link>
-                        </td>
-                        <td>
-                          <span className={cn("pf-cat-badge", `pf-cat-badge--${h.category}`)}>
-                            {h.category}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="pf-weight-cell">
-                            <div className="pf-weight-row">
-                              <span className="pf-weight-pct">%{h.weightPct}</span>
-                              <div className="pf-weight-bar">
-                                <div className="pf-weight-fill" style={{ width: `${Math.min(100, h.weightPct * 1.5)}%`, background: enrich.color }} />
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="pf-price-val">{enrich.price}</span>
-                        </td>
-                        <td>
-                          <span className={cn("pf-pnl-val", changeClass(enrich.pnlPct))}>
-                            {fmtPct(enrich.pnlPct)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-        {/* SAĞ: Sidebar */}
-        <aside className="pf-sidebar">
-          <div className="pf-sidebar-inner">
-
-            {/* Allocation Donut */}
-            <div className="pf-block">
-              <div className="pf-block-header">
-                <div className="pf-block-title">
-                  <span className="pf-block-stripe" />
-                  Dağılım
-                </div>
-              </div>
-              <AllocationDonut portfolio={portfolio} holdings={holdings} totalValue={s.totalValue} />
-            </div>
-
-            {/* Strateji Mix */}
-            <div className="pf-block">
-              <div className="pf-block-header">
-                <div className="pf-block-title">
-                  <span className="pf-block-stripe" />
-                  Strateji Karması
-                </div>
-              </div>
-              <div className="pf-strategy-rows">
-                {strategyMix.map((s, i) => {
-                  const colors = ["#0f9d75", "#3b82f6", "#8b5cf6"];
-                  return (
-                    <div key={s.label} className="pf-strat-row">
-                      <div className="pf-strat-header">
-                        <span className="pf-strat-label">{s.label}</span>
-                        <span className="pf-strat-pct">%{s.pct}</span>
-                      </div>
-                      <div className="pf-strat-bar">
-                        <div className="pf-strat-fill" style={{ width: `${s.pct}%`, background: colors[i % colors.length] }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Risk Paneli */}
-            <div className="pf-block">
-              <div className="pf-block-header">
-                <div className="pf-block-title">
-                  <span className="pf-block-stripe" style={{ background: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }} />
-                  Risk Analizi
-                </div>
-              </div>
-              <div className="pf-risk-body">
-                <div className="pf-risk-gauge">
-                  <div>
-                    <div className="pf-risk-score" style={{ color: s.riskScore > 70 ? "#ef4444" : s.riskScore > 45 ? "#f97316" : "#22c55e" }}>
-                      {s.riskScore}
-                    </div>
-                    <div className="pf-risk-label">{s.riskLabel} Risk</div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    {[
-                      { label: "Konsantrasyon", val: risk.concentrationLabel },
-                      { label: "Volatilite", val: risk.volCluster },
-                      { label: "Rejim", val: risk.regimeAlignment },
-                    ].map((item) => (
-                      <div key={item.label} className="pf-risk-item">
-                        <span className="pf-risk-item-label">{item.label}</span>
-                        <span className="pf-risk-item-value">{item.val}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Sektör dağılımı */}
-                {risk.sectorTop.length > 0 && (
-                  <div className="pf-sector-rows">
-                    {risk.sectorTop.map((sec) => (
-                      <div key={sec.label} className="pf-sector-row">
-                        <span className="pf-sector-label">{sec.label}</span>
-                        <div className="pf-sector-bar">
-                          <div className="pf-sector-fill" style={{ width: `${sec.pct}%` }} />
-                        </div>
-                        <span className="pf-sector-pct">%{sec.pct}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </aside>
-      </div>
-
-      {/* ===== BOTTOM: Sinyal + Analist ===== */}
-      <div className="pf-bottom-zone" style={{ marginTop: 20 }}>
-
-        {/* Overlapping Analysts */}
-        <div className="pf-block">
-          <div className="pf-block-header">
-            <div className="pf-block-title">
-              <span className="pf-block-stripe" />
-              Analist Örtüşmesi
-            </div>
-          </div>
-          <div className="pf-analyst-rows">
-            {overlaps.overlappingAnalysts.length === 0 ? (
-              <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Analist verisi bekleniyor.</p>
-            ) : (
-              overlaps.overlappingAnalysts.map((a) => (
-                <Link key={a.href} href={a.href} className="pf-analyst-row">
-                  <div className="pf-analyst-avatar">{a.display.slice(0, 1).toUpperCase()}</div>
-                  <span className="pf-analyst-name">{a.display}</span>
-                  <span className="pf-analyst-count">{a.count} sinyal</span>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Personalized Signals */}
-        <div className="pf-block">
-          <div className="pf-block-header">
-            <div className="pf-block-title">
-              <span className="pf-block-stripe" />
-              Portföy Sinyalleri
-            </div>
-            <Link href="/signals" className="pf-block-link">Tümü →</Link>
-          </div>
-          <div className="pf-signal-rows">
-            {personalized.rows.length === 0 ? (
-              <p style={{ fontSize: 12, color: "#64748b", padding: "12px 18px" }}>Sinyal örtüşmesi bulunamadı.</p>
-            ) : (
-              personalized.rows.slice(0, 5).map((row) => (
-                <Link key={row.id} href={row.href} className="pf-signal-row">
-                  <span className="pf-signal-sym">{row.symbol}</span>
-                  <div className="pf-signal-info">
-                    <div className="pf-signal-reason">{row.reason}</div>
-                    <div className="pf-signal-meta">{row.analystDisplay} · {row.direction}</div>
-                  </div>
-                  <span style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    padding: "2px 6px",
-                    borderRadius: 4,
-                    background: row.direction === "BUY" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                    color: row.direction === "BUY" ? "#22c55e" : "#ef4444",
-                  }}>
-                    {row.direction}
-                  </span>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-
-      </div>
-
-    </div>
+    <PortfolioPageView
+      pageTitle="Kağıt Portföy"
+      stats={MOCK_STATS}
+      portfolio={mockPortfolio}
+      personalized={mockPersonalized}
+      holdingEnrichment={MOCK_HOLDING_ENRICHMENT}
+      intel={mockIntel}
+      valueColumnLabel="Fiyat"
+    />
   );
 }

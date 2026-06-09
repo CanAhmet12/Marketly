@@ -1,10 +1,10 @@
 import { isMockDataEnabled } from "@/mock/config";
 
-import type { CreatorsRepository } from "./creators-repository";
+import type { CreatorsRepository } from "./supabase-creators-repository";
 import { MockCreatorsRepository } from "./mock-creators-repository";
 import { SupabaseCreatorsRepository } from "./supabase-creators-repository";
 
-export type { CreatorsRepository } from "./creators-repository";
+export type { CreatorsRepository } from "./supabase-creators-repository";
 
 let mockSingleton: MockCreatorsRepository | null = null;
 let supabaseSingleton: SupabaseCreatorsRepository | null = null;

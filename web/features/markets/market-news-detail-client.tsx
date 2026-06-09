@@ -1,36 +1,52 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useState } from "react";
 
 import { EmptyState } from "@/components/states";
-import { IntelWorkspaceSkeleton } from "@/features/markets/components/markets-states";
+import { RemoteCoverImage } from "@/components/ui/remote-cover-image";
+import { MarketNewsDetailSkeleton } from "@/features/markets/components/markets-states";
+import {
+  NewsCategoryBadge,
+  NewsImpactBadge,
+  NewsPortfolioBadge,
+  NewsWatchlistBadge,
+} from "@/features/markets/components/market-news/market-news-badges";
+import { MarketNewsBreakingBadge } from "@/features/markets/components/market-news/market-news-breaking-badge";
+import { MarketNewsDetailBreadcrumb } from "@/features/markets/components/market-news/market-news-detail-breadcrumb";
+import { MarketNewsDetailByline } from "@/features/markets/components/market-news/market-news-detail-byline";
+import { MarketNewsDetailContextBar } from "@/features/markets/components/market-news/market-news-detail-context-bar";
+import { MarketNewsDetailReadNext } from "@/features/markets/components/market-news/market-news-detail-read-next";
+import { MarketNewsDetailRelatedCard } from "@/features/markets/components/market-news/market-news-detail-related-card";
+import { MarketNewsLivePill } from "@/features/markets/components/market-news/market-news-live-pill";
+import {
+  estimateReadMinutes,
+  pickStandfirst,
+} from "@/features/markets/lib/market-news-channel";
 import { useMarketNewsDetail } from "@/features/markets/hooks/use-market-news-detail";
 import {
+  articleBodyText,
+  hasChainIntel,
+  hasDiscussionIntel,
+  hasHistoricalIntel,
+  hasMarketReactionIntel,
+  hasRichIntelSections,
+  hasVolatilityIntel,
+  isIntelPlaceholder,
+  newsIntelBulletsFiltered,
+} from "@/features/markets/lib/market-news-detail-intel";
+import {
+  formatNewsPublishedAt,
   formatNewsTimeAgo,
+  formatSentimentLabel,
   getMarketNewsPhoto,
-  marketNewsDetailHref,
   NEWS_CAT_CFG,
-  newsIntelBullets,
+  shareMarketNews,
 } from "@/features/markets/lib/market-news-shared";
-import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
-import type { MarketNewsIntelligenceItem } from "@/features/markets/types/news-calendar-intelligence";
+import { getNewsCardTone } from "@/features/markets/lib/news-card-tones";
 import { cn } from "@/lib/cn";
 
 type Props = { newsId: string };
-
-function ImpactBadge({ tier }: { tier: 1 | 2 | 3 }) {
-  return <span className={`mnd-badge-impact mnd-badge-impact--${tier}`}>ETKİ {tier}</span>;
-}
-
-function CatBadge({ cat }: { cat: string }) {
-  const cfg = NEWS_CAT_CFG[cat as keyof typeof NEWS_CAT_CFG];
-  if (!cfg) return null;
-  return (
-    <span className={`mnd-badge-cat mnd-badge-cat--${cat}`}>
-      {cfg.emoji} {cfg.label}
-    </span>
-  );
-}
 
 function IntelSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -41,98 +57,171 @@ function IntelSection({ title, children }: { title: string; children: React.Reac
   );
 }
 
-function RelatedCard({ item }: { item: MarketNewsIntelligenceItem }) {
-  const src = getMarketNewsPhoto(item);
-  const cfg = NEWS_CAT_CFG[item.newsCategory as keyof typeof NEWS_CAT_CFG] ?? NEWS_CAT_CFG.macro;
+function DetailHeroMedia({
+  photo,
+  tone,
+}: {
+  photo: string;
+  tone: ReturnType<typeof getNewsCardTone>;
+}) {
+  const remote = photo.startsWith("http://") || photo.startsWith("https://");
 
   return (
-    <Link href={marketNewsDetailHref(item.id)} className="mnd-related-card">
-      <div className="mnd-related-img-wrap">
-        <img src={src} alt="" className="mnd-related-img" loading="lazy" />
-        <div className="mnd-related-stripe" style={{ background: cfg.stripe }} />
-      </div>
-      <div className="mnd-related-body">
-        <ImpactBadge tier={item.impactTier} />
-        <p className="mnd-related-headline">{item.headline}</p>
-        <p className="mnd-related-meta">
-          {item.source} · {formatNewsTimeAgo(item.minutesAgo)}
-        </p>
-      </div>
-    </Link>
+    <div className={cn("mnd-hero-media", `mnd-hero-media--tone-${tone}`)}>
+      {remote ? (
+        <RemoteCoverImage
+          src={photo}
+          alt=""
+          className="mnd-hero-img"
+          sizes="(max-width: 960px) 100vw, 960px"
+          priority
+        />
+      ) : (
+        <img src={photo} alt="" className="mnd-hero-img" />
+      )}
+      <div className="mnd-hero-media__well" aria-hidden />
+      <div className="mnd-hero-overlay mnd-hero-overlay--article" aria-hidden />
+      <div className="mnd-hero-tone-wash mnd-hero-tone-wash--article pointer-events-none absolute inset-0 z-[2]" aria-hidden />
+    </div>
   );
 }
 
 export function MarketNewsDetailClient({ newsId }: Props) {
-  const { item, related, isLoading, notFound } = useMarketNewsDetail(newsId);
+  const { item, related, isLoading, notFound, liveMode, isRefetching } = useMarketNewsDetail(newsId);
+  const [shareNote, setShareNote] = useState<string | null>(null);
+
+  const onShare = useCallback(async () => {
+    if (!item) return;
+    const result = await shareMarketNews(item);
+    if (result === "shared") setShareNote("Paylaşıldı");
+    else if (result === "copied") setShareNote("Bağlantı kopyalandı");
+    else setShareNote("Paylaşım desteklenmiyor");
+    window.setTimeout(() => setShareNote(null), 2200);
+  }, [item]);
 
   if (isLoading) {
-    return <IntelWorkspaceSkeleton rows={6} />;
+    return <MarketNewsDetailSkeleton />;
   }
 
   if (notFound || !item) {
     return (
-      <div className="mnd-page ms-page-wrapper ms-container-markets min-w-0 py-16">
-        <EmptyState
-          title="Haber bulunamadı"
-          description="Bağlantı süresi dolmuş veya haber kaldırılmış olabilir."
-          actionLabel="Haber merkezine dön"
-          actionHref="/market-news"
-          tone="market"
-          compact
-        />
-      </div>
+      <article className="mnd-page mnd-page--premium ms-page-wrapper ms-container-markets min-w-0">
+        <header className="mnd-topbar">
+          <Link href="/market-news" className="mnd-back-link">
+            ← Piyasa Haberleri
+          </Link>
+        </header>
+        <div className="py-16">
+          <EmptyState
+            title="Haber bulunamadı"
+            description="Bağlantı süresi dolmuş veya haber kaldırılmış olabilir."
+            actionLabel="Haber merkezine dön"
+            actionHref="/market-news"
+            tone="market"
+            compact
+          />
+        </div>
+      </article>
     );
   }
 
-  const ext = item as typeof item & { imageUrl?: string | null };
-  const photo = getMarketNewsPhoto({ ...item, imageUrl: ext.imageUrl });
-  const cfg = NEWS_CAT_CFG[item.newsCategory as keyof typeof NEWS_CAT_CFG] ?? NEWS_CAT_CFG.macro;
-  const bullets = newsIntelBullets(item);
+  const photo = getMarketNewsPhoto({ ...item, imageUrl: item.imageUrl });
+  const tone = getNewsCardTone(item.newsCategory);
+  const cfg = NEWS_CAT_CFG[item.newsCategory];
+  const body = articleBodyText(item);
+  const bullets = newsIntelBulletsFiltered(item, body);
+  const sourceUrl = item.sourceUrl?.trim();
+  const showRichIntel = hasRichIntelSections(item);
+  const publishedLabel = formatNewsPublishedAt(item.publishedAt);
+  const sentimentLabel = formatSentimentLabel(item.sentimentLabel) ?? null;
+  const standfirst = pickStandfirst(item, body);
+  const readMinutes = estimateReadMinutes(body ?? standfirst);
+  const sectorLabel = !isIntelPlaceholder(item.sectorImpact) ? item.sectorImpact : null;
 
   return (
-    <article className="mnd-page ms-page-wrapper ms-container-markets min-w-0">
-      {/* Üst navigasyon — Bloomberg reader chrome */}
+    <article
+      className={cn(
+        "mnd-page mnd-page--premium mnd-page--channel ms-page-wrapper ms-container-markets min-w-0",
+        `mnd-page--tone-${tone}`,
+      )}
+    >
+      <div className="mnd-ch-channel-strip" aria-hidden>
+        <span>Marketly Intel</span>
+        <span className="mnd-ch-channel-strip__sep">|</span>
+        <span>Piyasa Haberleri</span>
+      </div>
       <header className="mnd-topbar">
         <Link href="/market-news" className="mnd-back-link">
           ← Piyasa Haberleri
         </Link>
-        <div className="mnd-topbar-actions">
+        <nav className="mnd-topbar-actions" aria-label="Haber eylemleri">
+          {liveMode ? <MarketNewsLivePill isRefetching={isRefetching} className="mnd-topbar-live" /> : null}
+          <button type="button" className="mnd-topbar-btn" onClick={() => void onShare()}>
+            Paylaş
+          </button>
           <Link href="/economic-calendar" className="mnd-topbar-btn">
-            📅 Takvim
+            Ekonomik takvim
           </Link>
           <Link href="/watchlist" className="mnd-topbar-btn">
-            ⭐ İzleme
+            İzleme listesi
           </Link>
-        </div>
+        </nav>
+        {shareNote ? (
+          <p className="mnd-share-note" role="status" aria-live="polite">
+            {shareNote}
+          </p>
+        ) : null}
       </header>
 
-      {/* Hero — sinematik kapak + meta */}
-      <div className="mnd-hero">
-        <div className="mnd-hero-media">
-          <img src={photo} alt="" className="mnd-hero-img" />
-          <div className="mnd-hero-overlay" />
-          <div className="mnd-hero-stripe" style={{ background: cfg.stripe }} />
-        </div>
-        <div className="mnd-hero-content">
-          <div className="mnd-hero-badges">
-            <ImpactBadge tier={item.impactTier} />
-            <CatBadge cat={item.newsCategory} />
-            {item.hitsWatchlist ? <span className="mnd-watch-tag">İZLEME</span> : null}
-            {item.hitsPortfolio ? <span className="mnd-portfolio-tag">PORTFÖY</span> : null}
-          </div>
-          <h1 className="mnd-headline">{item.headline}</h1>
-          <div className="mnd-meta-row">
-            <span className="mnd-meta-src">{item.source}</span>
-            <span className="mnd-meta-dot">·</span>
-            <time className="mnd-meta-time">{formatNewsTimeAgo(item.minutesAgo)}</time>
-            <span className="mnd-meta-dot">·</span>
-            <span className="mnd-meta-sector">Sektör: {item.sectorImpact}</span>
-          </div>
-        </div>
-      </div>
+      <MarketNewsDetailBreadcrumb category={tone} headline={item.headline} />
 
-      {/* Intel özeti — Bloomberg 3-bullet pattern */}
-      {bullets.length > 0 ? (
+      <header className={cn("mnd-ch-article-header", `mnd-ch-article-header--${tone}`)}>
+        <div className="mnd-hero-badges">
+          {item.impactTier >= 3 ? <MarketNewsBreakingBadge /> : null}
+          <NewsImpactBadge tier={item.impactTier} />
+          <NewsCategoryBadge cat={tone} />
+          {item.hitsWatchlist ? <NewsWatchlistBadge variant="hero" /> : null}
+          {item.hitsPortfolio ? <NewsPortfolioBadge /> : null}
+        </div>
+        <h1 className="mnd-headline mnd-ch-headline">{item.headline}</h1>
+        {standfirst ? <p className="mnd-ch-standfirst">{standfirst}</p> : null}
+        <MarketNewsDetailByline
+          source={item.source}
+          minutesAgo={item.minutesAgo}
+          publishedAt={item.publishedAt}
+          readMinutes={readMinutes}
+          sectorImpact={sectorLabel}
+        />
+        {sourceUrl ? (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mnd-source-cta mnd-ch-source-cta"
+          >
+            Orijinal kaynağı aç
+            <span className="mnd-source-cta__icon" aria-hidden>
+              ↗
+            </span>
+          </a>
+        ) : null}
+      </header>
+
+      <figure className={cn("mnd-ch-figure", `mnd-ch-figure--${tone}`)}>
+        <DetailHeroMedia photo={photo} tone={tone} />
+        <figcaption className="mnd-ch-caption">
+          {item.source}
+          {publishedLabel ? ` · ${publishedLabel}` : ` · ${formatNewsTimeAgo(item.minutesAgo)}`}
+        </figcaption>
+      </figure>
+
+      <MarketNewsDetailContextBar
+        category={tone}
+        symbols={item.affectedSymbols}
+        sentimentLabel={sentimentLabel}
+      />
+
+      {bullets.length > 0 && (showRichIntel || bullets.length > 1 || !body) ? (
         <aside className="mnd-intel-summary" aria-label="Haber özeti">
           <p className="mnd-intel-label">Piyasa özeti</p>
           <ul className="mnd-intel-list">
@@ -144,41 +233,67 @@ export function MarketNewsDetailClient({ newsId }: Props) {
       ) : null}
 
       <div className="mnd-layout">
-        {/* Ana kolon — derin analiz */}
         <div className="mnd-main">
-          <IntelSection title="Piyasa tepkisi">
-            <p className="mnd-prose">{item.marketReaction}</p>
-            <p className="mnd-prose mnd-prose--muted">
-              Momentum: <strong>{item.momentumShift}</strong>
-            </p>
-          </IntelSection>
+          {body ? (
+            <IntelSection title="Haber metni">
+              <p className="mnd-prose mnd-prose--lead">{body}</p>
+            </IntelSection>
+          ) : null}
 
-          <IntelSection title="Volatilite beklentisi">
-            <p className="mnd-prose">{item.volatilityExpectation}</p>
-            <p className="mnd-prose mnd-prose--muted">{item.signalActivityLabel}</p>
-          </IntelSection>
+          {hasMarketReactionIntel(item) ? (
+            <IntelSection title="Piyasa tepkisi">
+              {!isIntelPlaceholder(item.marketReaction) ? (
+                <p className="mnd-prose">{item.marketReaction}</p>
+              ) : null}
+              {!isIntelPlaceholder(item.momentumShift) ? (
+                <p className="mnd-prose mnd-prose--muted">
+                  Momentum: <strong>{item.momentumShift}</strong>
+                </p>
+              ) : null}
+            </IntelSection>
+          ) : null}
 
-          <IntelSection title="Zincir etkisi">
-            <p className="mnd-prose">{item.chainReactionHint}</p>
-            {item.relatedMacroThemes.length > 0 ? (
-              <div className="mnd-theme-chips">
-                {item.relatedMacroThemes.map((t) => (
-                  <span key={t} className="mnd-theme-chip">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </IntelSection>
+          {hasVolatilityIntel(item) ? (
+            <IntelSection title="Volatilite beklentisi">
+              {!isIntelPlaceholder(item.volatilityExpectation) ? (
+                <p className="mnd-prose">{item.volatilityExpectation}</p>
+              ) : null}
+              {!isIntelPlaceholder(item.signalActivityLabel) ? (
+                <p className="mnd-prose mnd-prose--muted">{item.signalActivityLabel}</p>
+              ) : null}
+            </IntelSection>
+          ) : null}
 
-          <IntelSection title="Geçmiş seans yankısı">
-            <p className="mnd-prose">{item.historicalEcho}</p>
-          </IntelSection>
+          {hasChainIntel(item) ? (
+            <IntelSection title="Zincir etkisi">
+              {!isIntelPlaceholder(item.chainReactionHint) ? (
+                <p className="mnd-prose">{item.chainReactionHint}</p>
+              ) : null}
+              {item.relatedMacroThemes.length > 0 ? (
+                <div className="mnd-theme-chips">
+                  {item.relatedMacroThemes.map((t) => (
+                    <span key={t} className="mnd-theme-chip">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </IntelSection>
+          ) : null}
 
-          {item.discussionSnippet ? (
+          {hasHistoricalIntel(item) ? (
+            <IntelSection title="Geçmiş seans yankısı">
+              <p className="mnd-prose">{item.historicalEcho}</p>
+            </IntelSection>
+          ) : null}
+
+          {hasDiscussionIntel(item) && body !== item.discussionSnippet.trim() ? (
             <IntelSection title="Topluluk akışı">
               <p className="mnd-prose">{item.discussionSnippet}</p>
-              <Link href={`/results?q=${encodeURIComponent(item.symbol)}&tab=community`} className="mnd-inline-cta">
+              <Link
+                href={`/results?q=${encodeURIComponent(item.symbol)}&tab=community`}
+                className="mnd-inline-cta"
+              >
                 İlgili tartışmaları ara →
               </Link>
             </IntelSection>
@@ -198,11 +313,21 @@ export function MarketNewsDetailClient({ newsId }: Props) {
               </ul>
             </IntelSection>
           ) : null}
+
+          {!showRichIntel && !body ? (
+            <div className="mnd-fallback-note">
+              <p className="mnd-prose mnd-prose--muted">
+                Bu haber için derinlemesine intel henüz işlenmedi.
+                {sourceUrl ? " Orijinal kaynaktan detayları okuyabilirsiniz." : null}
+              </p>
+            </div>
+          ) : null}
+
+          <MarketNewsDetailReadNext items={related} />
         </div>
 
-        {/* Yan kolon — Robinhood-style sembol rail */}
         <aside className="mnd-rail" aria-label="Piyasa bağlamı">
-          <div className="mnd-rail-block">
+          <div className={cn("mnd-rail-block", "mnd-rail-block--tone", `mnd-rail-block--${tone}`)}>
             <h3 className="mnd-rail-title">Etkilenen semboller</h3>
             <div className="mnd-sym-grid">
               {item.affectedSymbols.map((s) => (
@@ -225,6 +350,9 @@ export function MarketNewsDetailClient({ newsId }: Props) {
               <Link href={`/markets/${encodeURIComponent(item.symbol)}`}>Varlık detayı</Link>
               <Link href="/portfolio">Portföy etkisi</Link>
               <Link href="/economic-calendar">Ekonomik takvim</Link>
+              <Link href={`/market-news?cat=${item.newsCategory}`}>
+                {cfg.label} haberleri
+              </Link>
             </nav>
           </div>
 
@@ -233,7 +361,7 @@ export function MarketNewsDetailClient({ newsId }: Props) {
               <h3 className="mnd-rail-title">İlgili haberler</h3>
               <div className="mnd-related-stack">
                 {related.map((r) => (
-                  <RelatedCard key={r.id} item={r} />
+                  <MarketNewsDetailRelatedCard key={r.id} item={r} />
                 ))}
               </div>
             </div>

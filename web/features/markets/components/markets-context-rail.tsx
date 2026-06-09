@@ -36,7 +36,7 @@ export function MarketsContextRail({ calendar, news, portfolio }: Props) {
                   Sembol: {e.affectedSymbols.slice(0, 5).join(", ")}
                 </p>
               ) : null}
-              {e.volatilityHint ? <p className="mt-0.5 text-[10px] font-medium leading-snug text-[var(--color-meta)]">{e.volatilityHint}</p> : null}
+              {e.volatilityHint ? <p className="mt-0.5 text-[11px] font-medium leading-snug text-[var(--color-meta)]">{e.volatilityHint}</p> : null}
             </li>
           ))}
         </ul>
@@ -54,7 +54,7 @@ export function MarketsContextRail({ calendar, news, portfolio }: Props) {
             <li key={n.id}>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {n.impactTier ? (
-                  <span className="rounded bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                  <span className="rounded bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)] px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">
                     Etki {n.impactTier}
                   </span>
                 ) : null}
@@ -90,7 +90,7 @@ export function MarketsContextRail({ calendar, news, portfolio }: Props) {
             </li>
           ))}
         </ul>
-        {stripHint ? <p className="mt-[var(--sp-2)] text-[10px] font-medium text-[var(--color-meta)]">{stripHint}</p> : null}
+        {stripHint ? <p className="mt-[var(--sp-2)] text-[11px] font-medium text-[var(--color-meta)]">{stripHint}</p> : null}
       </section>
     </div>
   );

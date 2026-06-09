@@ -38,7 +38,7 @@ export function SignalsMarketplaceRails({ rails, onOpen }: Props) {
                 {row.signal_access !== "public" ? (
                   <span
                     className={cn(
-                      "pointer-events-none absolute right-2 top-2 rounded-md border px-1.5 py-px text-[9px] font-bold uppercase tracking-wide",
+                      "pointer-events-none absolute right-2 top-2 rounded-md border px-1.5 py-px text-[11px] font-bold uppercase tracking-wide",
                       isSubscriber
                         ? "border-[var(--ms-border-hairline)] text-[var(--color-meta)]"
                         : "border-[color-mix(in_srgb,var(--color-primary)_28%,var(--ms-border-hairline))] bg-[color-mix(in_srgb,var(--color-primary)_7%,transparent)] text-[var(--color-primary-dark)]",
@@ -52,11 +52,11 @@ export function SignalsMarketplaceRails({ rails, onOpen }: Props) {
                     <p className="text-[16px] font-bold tabular-nums tracking-tight text-[var(--color-text)]">{row.symbol}</p>
                     <p className="mt-0.5 truncate text-[11px] font-medium text-[var(--color-text-secondary)]">{row.asset_display_name}</p>
                   </div>
-                  <SignalDirectionPill direction={row.direction} className="!py-px !text-[9px]" />
+                  <SignalDirectionPill direction={row.direction} className="!py-px !text-[11px]" />
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <span className="text-[11px] font-semibold tabular-nums text-[var(--color-text)]">%{row.confidence}</span>
-                  <span className="truncate rounded-md bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-1.5 py-px text-[10px] font-semibold text-[var(--color-meta)]">
+                  <span className="truncate rounded-md bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-meta)]">
                     {signalLifecycleLabel(row.lifecycle_phase)}
                   </span>
                 </div>
@@ -70,7 +70,7 @@ export function SignalsMarketplaceRails({ rails, onOpen }: Props) {
                   )}
                   <p className="min-w-0 truncate text-[11px] font-semibold text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]">{row.analyst.display}</p>
                 </div>
-                <p className="mt-1.5 text-[10px] font-medium text-[var(--color-meta)]">
+                <p className="mt-1.5 text-[11px] font-medium text-[var(--color-meta)]">
                   Kopya {row.community_copies_24h.toLocaleString("tr-TR")} · 24s
                 </p>
               </button>

@@ -1,0 +1,129 @@
+/**
+ * Takip listesi — Hub Premium uyarlama (hp-canvas içinde)
+ */
+
+.hp-canvas .wl-page {
+  background: transparent;
+  color: inherit;
+  --wl-accent: var(--hp-zone-1);
+  --wl-up: var(--hp-up);
+  --wl-down: var(--hp-down);
+  --wl-up-bg: var(--hp-up-bg);
+  --wl-down-bg: var(--hp-down-bg);
+  --wl-border: var(--hp-border);
+  --wl-border-2: var(--hp-border-2);
+  --wl-surface: var(--hp-surface);
+  --wl-text: var(--hp-text);
+  --wl-text-2: var(--hp-text-2);
+  --wl-meta: var(--hp-meta);
+}
+
+.hp-canvas .wl-block {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-glass-border);
+  background: var(--hp-glass);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+.hp-canvas .wl-block-stripe {
+  height: 15px;
+  background: var(--hp-zone-1);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hp-zone-1) 25%, transparent);
+}
+
+.hp-canvas .wl-block-link {
+  color: color-mix(in srgb, var(--hp-zone-1) 65%, transparent);
+}
+
+.hp-canvas .wl-block-link:hover {
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas .wl-table th {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-2xs);
+  letter-spacing: 0.09em;
+}
+
+.hp-canvas .wl-sym-name {
+  font-family: var(--font-bold);
+  font-size: var(--hp-type-base);
+}
+
+.hp-canvas .wl-price,
+.hp-canvas .wl-change-pct,
+.hp-canvas .wl-mover-pct,
+.hp-canvas .wl-pulse-val {
+  font-family: var(--hp-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-canvas .wl-change-pct--up {
+  color: color-mix(in srgb, var(--hp-up) 92%, #fff);
+}
+
+.hp-canvas .wl-change-pct--down {
+  color: color-mix(in srgb, var(--hp-down) 92%, #fff);
+}
+
+.hp-canvas .wl-sig-badge {
+  background: color-mix(in srgb, var(--hp-zone-1) 10%, transparent);
+  color: var(--hp-zone-1);
+  border: 1px solid color-mix(in srgb, var(--hp-zone-1) 22%, transparent);
+}
+
+.hp-canvas .wl-action-btn--signals {
+  color: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 28%, var(--hp-border));
+}
+
+.hp-canvas .wl-action-btn--signals:hover {
+  background: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+}
+
+.hp-canvas .wl-signal-sym {
+  color: var(--hp-zone-1);
+}
+
+.hp-canvas .wl-onboarding {
+  border-radius: var(--hp-radius-block);
+  border-color: var(--hp-zone-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
+    var(--hp-surface) 48%
+  );
+  box-shadow: var(--hp-shadow-block);
+}
+
+.hp-canvas .wl-sym-chip:hover {
+  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-border));
+  background: color-mix(in srgb, var(--hp-zone-1) 6%, transparent);
+}
+
+.hp-canvas .wl-main {
+  position: relative;
+}
+
+.hp-canvas .wl-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    168deg,
+    var(--hp-zone-ambient) 0%,
+    color-mix(in srgb, var(--hp-zone-ambient) 35%, transparent) 42%,
+    transparent 78%
+  );
+}
+
+.hp-canvas .wl-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hp-stat-value--warn {
+  color: #f97316;
+}

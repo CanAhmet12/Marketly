@@ -56,7 +56,7 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
     >
       <div className={cn("grid min-w-0 gap-[var(--sp-3)]", compact ? "" : "min-[900px]:grid-cols-2")}>
         <div className="min-w-0 space-y-[var(--sp-2)] rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_82%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2.5%,var(--color-surface))] p-[var(--sp-3)]">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Canlı seans</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Canlı seans</p>
           <p className="text-[12px] font-semibold text-[var(--color-text)]">{live.activeNowLabel}</p>
           <div className="flex flex-wrap gap-x-[var(--sp-2)] gap-y-1 text-[11px] font-medium text-[var(--color-text-secondary)]">
             <span>{live.activeRoomsCount} oda</span>
@@ -77,7 +77,7 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
                     {c.assetSymbol}
                   </Link>
                   {c.live ? (
-                    <span className="rounded-full bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)] px-1.5 py-px text-[9px] font-bold uppercase text-[var(--color-primary-dark)]">
+                    <span className="rounded-full bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)] px-1.5 py-px text-[11px] font-bold uppercase text-[var(--color-primary-dark)]">
                       canlı
                     </span>
                   ) : null}
@@ -88,7 +88,7 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
           {live.breakingThemes.length ? (
             <div className="mt-[var(--sp-2)] flex flex-wrap gap-1">
               {live.breakingThemes.map((t) => (
-                <span key={t} className="rounded-md border border-[color-mix(in_srgb,var(--color-border)_75%,transparent)] px-1.5 py-px text-[10px] font-semibold text-[var(--color-text-secondary)]">
+                <span key={t} className="rounded-md border border-[color-mix(in_srgb,var(--color-border)_75%,transparent)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-text-secondary)]">
                   {t}
                 </span>
               ))}
@@ -97,12 +97,12 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
         </div>
 
         <div className="min-w-0 space-y-[var(--sp-2)] rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_82%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2.5%,var(--color-surface))] p-[var(--sp-3)]">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Topluluk istihbaratı</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Topluluk istihbaratı</p>
           <p className="text-[11px] font-medium text-[var(--color-text-secondary)]">
             {community.discussionMomentumLabel} · yoğunluk %{community.participationDensityPct}
           </p>
           <p className="text-[11px] text-[var(--color-meta)]">{community.analystVsCommunitySplitLabel}</p>
-          <p className="text-[10px] font-semibold uppercase text-[var(--color-meta)]">Sıcak tartışmalar</p>
+          <p className="text-[11px] font-semibold uppercase text-[var(--color-meta)]">Sıcak tartışmalar</p>
           <ul className="space-y-1">
             {community.hottestDebates.length === 0 ? (
               <li className="text-[11px] text-[var(--color-meta)]">—</li>
@@ -117,7 +117,7 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
               ))
             )}
           </ul>
-          <p className="text-[10px] font-semibold uppercase text-[var(--color-meta)]">Çapraz akış</p>
+          <p className="text-[11px] font-semibold uppercase text-[var(--color-meta)]">Çapraz akış</p>
           <ul className="space-y-1">
             {crossAssetChains.length === 0 ? (
               <li className="text-[11px] text-[var(--color-meta)]">—</li>
@@ -139,16 +139,16 @@ export function MarketsCommunityNetworkPanel({ bundle, compact = false }: Props)
 
       {!compact && socialMechanics.length ? (
         <div className="mt-[var(--sp-3)] border-t border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] pt-[var(--sp-3)]">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Pazar-sosyal sinyal</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Pazar-sosyal sinyal</p>
           <ul className="mt-[var(--sp-2)] grid gap-2 min-[640px]:grid-cols-2">
             {socialMechanics.map((s) => (
               <li key={s.id} className="min-w-0 rounded-lg border border-[color-mix(in_srgb,var(--color-border)_78%,transparent)] px-[var(--sp-2)] py-[var(--sp-2)]">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1 py-px text-[9px] font-bold uppercase text-[var(--color-meta)]">
+                  <span className="rounded bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-1 py-px text-[11px] font-bold uppercase text-[var(--color-meta)]">
                     {socialKindLabel(s.kind)}
                   </span>
                   {s.symbol ? (
-                    <Link href={`/markets/${encodeURIComponent(s.symbol)}`} className="text-[10px] font-bold text-[var(--color-primary-dark)] hover:underline">
+                    <Link href={`/markets/${encodeURIComponent(s.symbol)}`} className="text-[11px] font-bold text-[var(--color-primary-dark)] hover:underline">
                       {s.symbol}
                     </Link>
                   ) : null}

@@ -1,32 +1,20 @@
-import { mockChannelPosts } from "@/mock/adapters/channel";
-import { getSignalsRepository } from "@/features/signals/repository";
-import { MOCK_PROFILES } from "@/mock/fixtures/profiles";
-import { CREATOR_ASSET_PRESETS } from "@/features/creators/creators-filters";
+import { buildCreatorsDirectoryPayload } from "@/features/creators/lib/build-creators-directory-payload";
+import {
+  enrichCreatorFromPosts,
+  mapMockProfileToDirectoryRow,
+} from "@/features/creators/lib/map-creator-directory-row";
 import type { CreatorDirectoryPayload } from "@/features/creators/types";
-import type { CreatorsRepository } from "@/features/creators/repository/creators-repository";
-import { buildCreatorRowFromProfile, pickFeaturedIds, pickLiveNowIds } from "@/features/creators/lib/build-creator-row";
+import { mockDiscoverFeedPage } from "@/mock/adapters/feed";
+import { MOCK_PROFILES } from "@/mock/fixtures/profiles";
 
-export class MockCreatorsRepository implements CreatorsRepository {
-  getDirectoryPayload(_viewerId: string | null): CreatorDirectoryPayload {
-    const allSignals = getSignalsRepository().getFeedRows();
-
-    const creators = MOCK_PROFILES.map((profile) => {
-      const posts = mockChannelPosts(profile.id);
-      const signalRows = allSignals.filter((s) => s.creator_id === profile.id);
-      return buildCreatorRowFromProfile(profile, posts, signalRows);
+export class MockCreatorsRepository {
+  async getDirectory(_userId: string | null): Promise<CreatorDirectoryPayload> {
+    void _userId;
+    const posts = mockDiscoverFeedPage(0, null).posts;
+    const rows = MOCK_PROFILES.map((p) => {
+      const enrich = enrichCreatorFromPosts(p.id, posts);
+      return mapMockProfileToDirectoryRow(p, enrich);
     });
-
-    const featuredIds = pickFeaturedIds(creators);
-    const withFeatured = creators.map((c) => ({
-      ...c,
-      editorPick: featuredIds.includes(c.id),
-    }));
-
-    return {
-      creators: withFeatured,
-      featuredIds,
-      liveNowIds: pickLiveNowIds(withFeatured),
-      assetPresets: CREATOR_ASSET_PRESETS,
-    };
+    return buildCreatorsDirectoryPayload(rows);
   }
 }

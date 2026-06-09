@@ -1,203 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { Fragment, type ReactNode } from "react";
+import { useMemo } from "react";
 
+import { useMarketsWatchlist } from "@/features/markets/hooks/use-markets-watchlist";
+import type { MarketAssetView } from "@/features/markets/types";
 import { cn } from "@/lib/cn";
+import type { CategoryPreview, RailNewsItem } from "@/features/home/editorial/build-editorial-rail";
 
 import type { HomeVisualRailLink } from "./mock-data";
-import { RailCreatorFollow } from "./rail-creator-follow";
+import { RAIL_ACCENT_COLORS } from "./rail-design-tokens";
+import {
+  IconRailChevronRight,
+  PctTrendIcon,
+  RAIL_SECTION_ICONS,
+} from "./rail-icons";
+import {
+  CATEGORY_COLORS,
+  CATEGORY_ROUTES,
+  CategoryMarketRows,
+  CreatorRailRows,
+  InterestChipPills,
+  MarketMoodWidget,
+  QuickFilterPills,
+  RailLiveStrip,
+  RailNewsRows,
+  RailSection,
+  SignalRailRows,
+  TrendingDiscussionRows,
+  WatchlistPreview,
+} from "./rail-modules";
 
-type SectionProps = { title: string; children: ReactNode; action?: ReactNode };
-
-function Section({ title, children, action }: SectionProps) {
+function RailSectionIcon({ id, color }: { id: keyof typeof RAIL_SECTION_ICONS; color?: string }) {
+  const Icon = RAIL_SECTION_ICONS[id];
   return (
-    <section className="hv-ref-rail__section hv-ref-rail__section--soft" aria-label={title}>
-      <div className="hv-ref-rail__section-head">
-        <h3 className="hv-ref-rail__h">{title}</h3>
-        {action ? <div className="hv-ref-rail__section-action">{action}</div> : null}
-      </div>
-      {children}
-    </section>
+    <Icon
+      className="hv-ref-rail__section-icon-svg"
+      size={17}
+      {...(color ? { style: { color } } : {})}
+    />
   );
 }
 
-function TodayCue({ tone }: { tone?: HomeVisualRailLink["tone"] }) {
-  const t = tone ?? "flat";
-  if (t === "up") {
-    return (
-      <span className="hv-ref-rail__cue hv-ref-rail__cue--up" aria-hidden>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 19V6M12 6l-5 5M12 6l5 5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    );
-  }
-  if (t === "down") {
-    return (
-      <span className="hv-ref-rail__cue hv-ref-rail__cue--down" aria-hidden>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 5v13M12 18l5-5M12 18l-5-5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    );
-  }
+function RailActionLink({ href, label }: { href: string; label: string }) {
   return (
-    <span className="hv-ref-rail__cue hv-ref-rail__cue--flat" aria-hidden>
-      <span className="hv-ref-rail__cue-dot" />
-    </span>
-  );
-}
-
-/** Piyasa kısayolları — 2 sütun editorial satırlar (tile yok) */
-function ShortcutEditorial({ items }: { items: HomeVisualRailLink[] }) {
-  return (
-    <ul className="hv-ref-rail__sc-rows" role="list">
-      {items.map((item) => {
-        const accent = item.accent === "up" ? "up" : item.accent === "down" ? "down" : "flat";
-        return (
-          <li key={item.label} className="hv-ref-rail__sc-row" role="listitem">
-            <span className="hv-ref-rail__sc-dot" data-accent={accent} aria-hidden />
-            <span className="hv-ref-rail__sc-lab">{item.label}</span>
-            {item.meta ? (
-              <span className="hv-ref-rail__sc-pct" data-accent={accent}>
-                {item.meta}
-              </span>
-            ) : null}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function TodayFeed({ items }: { items: HomeVisualRailLink[] }) {
-  return (
-    <div className="hv-ref-rail__today-stack">
-      {items.map((item) => (
-        <div key={item.label} className="hv-ref-rail__event">
-          <div className="hv-ref-rail__event-row">
-            <TodayCue tone={item.tone} />
-            <div className="hv-ref-rail__event-main">
-              <div className="hv-ref-rail__event-line1">
-                <span className="hv-ref-rail__event-title">{item.label}</span>
-                {item.meta ? <span className="hv-ref-rail__event-time">{item.meta}</span> : null}
-              </div>
-              {item.detail ? <p className="hv-ref-rail__event-detail">{item.detail}</p> : null}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function InterestInline({ items }: { items: HomeVisualRailLink[] }) {
-  return (
-    <p className="hv-ref-rail__interest-flow">
-      {items.map((item, i) => (
-        <Fragment key={item.label}>
-          {i > 0 ? <span className="hv-ref-rail__interest-sep" aria-hidden>
-              {" · "}
-            </span> : null}
-          <span className="hv-ref-rail__interest" data-strength={item.chipStrength ?? "mid"}>
-            {item.label}
-            {item.meta ? <span className="hv-ref-rail__interest-meta">{item.meta}</span> : null}
-          </span>
-        </Fragment>
-      ))}
-    </p>
-  );
-}
-
-function TrendingRows({ items }: { items: HomeVisualRailLink[] }) {
-  return (
-    <ol className="hv-ref-rail__trend-list">
-      {items.map((item) => {
-        const da =
-          item.trendDeltaAccent === "up"
-            ? "up"
-            : item.trendDeltaAccent === "down"
-              ? "down"
-              : undefined;
-        return (
-          <li key={item.label} className="hv-ref-rail__trend-row">
-            <span className="hv-ref-rail__trend-rank">{item.rank != null ? item.rank : "—"}</span>
-            <div className="hv-ref-rail__trend-body">
-              <span className="hv-ref-rail__trend-tag">{item.label}</span>
-            </div>
-            <div className="hv-ref-rail__trend-metrics">
-              {item.meta ? <span className="hv-ref-rail__trend-views">{item.meta}</span> : null}
-              {item.trendDelta ? (
-                <span className="hv-ref-rail__trend-delta" data-accent={da}>
-                  {item.trendDelta}
-                </span>
-              ) : null}
-            </div>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-function CreatorRows({ items, viewerId }: { items: HomeVisualRailLink[]; viewerId: string | null }) {
-  return (
-    <div className="hv-ref-rail__creators">
-      {items.map((item) => (
-        <div key={item.creatorUserId ?? item.label} className="hv-ref-rail__creator">
-          <div className="hv-ref-rail__creator-avatar">
-            {item.avatarUrl ? (
-              <Image
-                src={item.avatarUrl}
-                alt=""
-                width={36}
-                height={36}
-                sizes="36px"
-                className="hv-ref-rail__creator-img"
-              />
-            ) : (
-              <span className="hv-ref-rail__creator-placeholder" aria-hidden>
-                {item.label.slice(0, 1)}
-              </span>
-            )}
-          </div>
-          <div className="hv-ref-rail__creator-text">
-            <div className="hv-ref-rail__creator-top">
-              {item.creatorUserId ? (
-                <Link href={`/channel/${item.creatorUserId}`} className="hv-ref-rail__creator-name hover:opacity-90">
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="hv-ref-rail__creator-name">{item.label}</span>
-              )}
-              {item.meta ? <span className="hv-ref-rail__creator-tier">{item.meta}</span> : null}
-            </div>
-            {item.handle ? <span className="hv-ref-rail__creator-handle">{item.handle}</span> : null}
-          </div>
-          {item.creatorUserId ? (
-            <RailCreatorFollow creatorUserId={item.creatorUserId} viewerId={viewerId} />
-          ) : (
-            <Link href="/discover?tab=creators" className="hv-ref-rail__follow">
-              Takip Et
-            </Link>
-          )}
-        </div>
-      ))}
-    </div>
+    <Link href={href} className="hv-ref-rail__action-link hv-ref-rail__action-link--icon">
+      <span>{label}</span>
+      <IconRailChevronRight className="hv-ref-rail__action-chevron" size={13} />
+    </Link>
   );
 }
 
@@ -205,45 +55,186 @@ type Props = {
   shortcuts: HomeVisualRailLink[];
   today: HomeVisualRailLink[];
   interests: HomeVisualRailLink[];
-  trending: HomeVisualRailLink[];
+  signals: HomeVisualRailLink[];
+  discussions: HomeVisualRailLink[];
   creators: HomeVisualRailLink[];
+  categoryPreviews: CategoryPreview[];
+  newsItems: RailNewsItem[];
+  liveAssets?: MarketAssetView[];
   viewerId?: string | null;
 };
 
-export function HomeVisualRightRail({ shortcuts, today, interests, trending, creators, viewerId = null }: Props) {
+export function HomeVisualRightRail({
+  shortcuts,
+  today,
+  interests,
+  signals,
+  discussions,
+  creators,
+  categoryPreviews,
+  newsItems,
+  liveAssets = [],
+  viewerId = null,
+}: Props) {
+  const { watchlist, hydrated } = useMarketsWatchlist();
+
+  const watchSymbols = useMemo(() => (hydrated ? [...watchlist].slice(0, 5) : []), [hydrated, watchlist]);
+
+  const showCategoryPreviews = categoryPreviews.length > 0;
+  const showToday = !showCategoryPreviews && today.length > 0;
+  const hasSignals = signals.length > 0;
+  const hasDiscussions = discussions.length > 0;
+
+  const hasRichContent =
+    showCategoryPreviews ||
+    today.length > 0 ||
+    signals.length > 0 ||
+    creators.length > 0 ||
+    interests.length > 0 ||
+    newsItems.length > 0;
+
+  const showShortcuts = shortcuts.length > 0 && !hasRichContent;
+
   return (
-    <div className={cn("hv-ref-rail", "hv-ref-rail--rich")}>
-      {shortcuts.length > 0 ? (
-        <Section title="Piyasa kısayolları">
-          <ShortcutEditorial items={shortcuts} />
-        </Section>
+    <div className={cn("hv-ref-rail", "hv-ref-rail--rich", "hv-ref-rail--v3", "hv-ref-rail--v4", "hv-ref-rail--v5", "hv-ref-rail--v6", "hv-ref-rail--v7", "hv-ref-rail--v8", "hv-ref-rail--v9", "hv-ref-rail--v10")}>
+      <RailLiveStrip />
+      <QuickFilterPills />
+
+      {showCategoryPreviews ? <MarketMoodWidget previews={categoryPreviews} /> : null}
+
+      {showCategoryPreviews
+        ? categoryPreviews.map((cat) => {
+            const catColor = CATEGORY_COLORS[cat.id] ?? RAIL_ACCENT_COLORS.primary;
+            const catRoute = CATEGORY_ROUTES[cat.id] ?? "/markets";
+            const signAccent =
+              cat.overallSign === "up" ? "up" : cat.overallSign === "down" ? "down" : "flat";
+            const sectionIconId = (cat.id in RAIL_SECTION_ICONS ? cat.id : "stocks") as keyof typeof RAIL_SECTION_ICONS;
+
+            return (
+              <RailSection
+                key={cat.id}
+                title={cat.label}
+                color={catColor}
+                live
+                icon={<RailSectionIcon id={sectionIconId} color={catColor} />}
+                badge={
+                  <span className="hv-ref-rail__cat-sign">
+                    <PctTrendIcon accent={signAccent} className="hv-ref-rail__cat-sign-icon" />
+                  </span>
+                }
+                action={<RailActionLink href={catRoute} label="Tümü" />}
+              >
+                <CategoryMarketRows items={cat.items} catColor={catColor} />
+              </RailSection>
+            );
+          })
+        : null}
+
+      {showToday ? (
+        <RailSection
+          title="Hareketli piyasalar"
+          color={RAIL_ACCENT_COLORS.primary}
+          live
+          icon={<RailSectionIcon id="movers" color={RAIL_ACCENT_COLORS.primary} />}
+          action={<RailActionLink href="/markets" label="Tümü" />}
+        >
+          <CategoryMarketRows items={today} catColor={RAIL_ACCENT_COLORS.primary} />
+        </RailSection>
       ) : null}
-      {today.length > 0 ? (
-        <Section title="Bugün">
-          <TodayFeed items={today} />
-        </Section>
+
+      {hasSignals ? (
+        <RailSection
+          title="Aktif sinyaller"
+          color={RAIL_ACCENT_COLORS.signals}
+          live
+          icon={<RailSectionIcon id="signals" color={RAIL_ACCENT_COLORS.signals} />}
+          action={<RailActionLink href="/signals" label="Sinyal pazarı" />}
+        >
+          <SignalRailRows items={signals} />
+        </RailSection>
       ) : null}
+
+      {hydrated ? (
+        <RailSection
+          title="İzleme listesi"
+          color={RAIL_ACCENT_COLORS.watchlist}
+          live={watchSymbols.length > 0}
+          icon={<RailSectionIcon id="watchlist" color={RAIL_ACCENT_COLORS.watchlist} />}
+          action={<RailActionLink href="/watchlist" label="Listeyi aç" />}
+        >
+          <WatchlistPreview symbols={watchSymbols} assets={liveAssets} />
+        </RailSection>
+      ) : null}
+
+      {newsItems.length > 0 ? (
+        <RailSection
+          title="Piyasa haberleri"
+          color={RAIL_ACCENT_COLORS.news}
+          icon={<RailSectionIcon id="news" color={RAIL_ACCENT_COLORS.news} />}
+          action={<RailActionLink href="/market-news" label="Tümü" />}
+        >
+          <RailNewsRows items={newsItems} />
+        </RailSection>
+      ) : null}
+
+      {hasDiscussions ? (
+        <RailSection
+          title="Trend konular"
+          color={RAIL_ACCENT_COLORS.discussions}
+          icon={<RailSectionIcon id="discussions" color={RAIL_ACCENT_COLORS.discussions} />}
+          action={<RailActionLink href="/discover" label="Keşfet" />}
+        >
+          <TrendingDiscussionRows items={discussions} />
+        </RailSection>
+      ) : null}
+
+      {creators.length > 0 ? (
+        <RailSection
+          title="Öne çıkan analistler"
+          color={RAIL_ACCENT_COLORS.creators}
+          icon={<RailSectionIcon id="creators" color={RAIL_ACCENT_COLORS.creators} />}
+          action={<RailActionLink href="/discover?tab=creators" label="Tümünü gör" />}
+        >
+          <CreatorRailRows items={creators.slice(0, 4)} viewerId={viewerId} />
+        </RailSection>
+      ) : null}
+
       {interests.length > 0 ? (
-        <Section
+        <RailSection
           title="İlgi alanların"
+          color={RAIL_ACCENT_COLORS.interests}
+          icon={<RailSectionIcon id="interests" color={RAIL_ACCENT_COLORS.interests} />}
+          action={<RailActionLink href="/settings" label="Düzenle" />}
+        >
+          <InterestChipPills items={interests} />
+        </RailSection>
+      ) : null}
+
+      {showShortcuts ? (
+        <RailSection
+          title="Piyasa kısayolları"
+          color={RAIL_ACCENT_COLORS.primary}
           action={
-            <Link href="/settings" className="hv-ref-rail__action-link">
-              Düzenle
+            <Link href="/markets" className="hv-ref-rail__action-link">
+              Tümü →
             </Link>
           }
         >
-          <InterestInline items={interests} />
-        </Section>
+          <CategoryMarketRows items={shortcuts} catColor={RAIL_ACCENT_COLORS.primary} />
+        </RailSection>
       ) : null}
-      {trending.length > 0 ? (
-        <Section title="Bugün konuşulanlar">
-          <TrendingRows items={trending} />
-        </Section>
-      ) : null}
-      {creators.length > 0 ? (
-        <Section title="Sana önerilen creatorlar">
-          <CreatorRows items={creators} viewerId={viewerId} />
-        </Section>
+
+      {creators.length === 0 && signals.length === 0 && hasRichContent ? (
+        <RailSection title="Topluluğu keşfet" color={RAIL_ACCENT_COLORS.creators}>
+          <div className="hv-ref-rail__discover-links">
+            <Link href="/discover?tab=creators" className="hv-ref-rail__action-link block">
+              Analistleri keşfet →
+            </Link>
+            <Link href="/signals" className="hv-ref-rail__action-link block">
+              Sinyalleri keşfet →
+            </Link>
+          </div>
+        </RailSection>
       ) : null}
     </div>
   );

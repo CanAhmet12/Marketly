@@ -5,6 +5,32 @@ import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
 import type { VRSignalItem } from "./discover-visual-reference-data";
 
+function signalDirMeta(direction: VRSignalItem["direction"]) {
+  if (direction === "BUY") {
+    return { label: "Al", cls: "buy" as const };
+  }
+  if (direction === "SELL") {
+    return { label: "Sat", cls: "sell" as const };
+  }
+  return { label: "Bekle", cls: "hold" as const };
+}
+
+export function SignalConfBar({ value, size = "sm" }: { value: number; size?: "sm" | "md" }) {
+  const pct = Math.min(100, Math.max(0, value));
+  const tone = pct >= 75 ? "high" : pct >= 55 ? "mid" : "low";
+  return (
+    <div className={cn("dvr-sig-conf-wrap", size === "md" && "dvr-sig-conf-wrap--md")}>
+      <div className="dvr-sig-conf-track h-[2px] flex-1 overflow-hidden rounded-full">
+        <div
+          className={cn("dvr-sig-conf-fill h-full rounded-full", `dvr-sig-conf-fill--${tone}`)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="dvr-sig-conf tabular-nums">%{pct}</span>
+    </div>
+  );
+}
+
 /* ─── Direction glyph ────────────────────────────────────────────────────── */
 function DirGlyph({ direction }: { direction: VRSignalItem["direction"] }) {
   if (direction === "BUY") {
@@ -34,19 +60,8 @@ function DirGlyph({ direction }: { direction: VRSignalItem["direction"] }) {
   );
 }
 
-/* ─── Confidence bar ─────────────────────────────────────────────────────── */
 function ConfBar({ value }: { value: number }) {
-  const pct = Math.min(100, Math.max(0, value));
-  const cls =
-    pct >= 75 ? "bg-emerald-400" : pct >= 55 ? "bg-amber-400" : "bg-red-400/80";
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="dvr-sig-conf-track h-[2px] flex-1 overflow-hidden rounded-full">
-        <div className={cn("h-full rounded-full", cls)} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="dvr-sig-conf tabular-nums">%{pct}</span>
-    </div>
-  );
+  return <SignalConfBar value={value} />;
 }
 
 /* ─── Signal stream row (tape style) ─────────────────────────────────────── */
@@ -106,6 +121,159 @@ export function DiscoverSignalTile({ item, index = 0 }: { item: VRSignalItem; in
           <div className="dvr-sig-rr-badge inline-block tabular-nums">R/R {item.rr}</div>
           <p className="dvr-sig-age tabular-nums">{item.age}</p>
           <p className="dvr-sig-analyst truncate">{item.analyst}</p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/** Sinyaller sekmesi — öne çıkan hero kart */
+export function DiscoverSignalHeroCard({ item, index = 0 }: { item: VRSignalItem; index?: number }) {
+  const dir = signalDirMeta(item.direction);
+
+  return (
+    <article
+      className={cn("dvr-sig-hero-card group relative z-0 motion-entrance", `dvr-sig-hero-card--${dir.cls}`)}
+      style={motionEntranceDelay(index)}
+    >
+      <Link href={item.href} className="absolute inset-0 z-0 rounded-[inherit]" aria-label={`${item.symbol} sinyali`} />
+
+      <div className="dvr-sig-hero-card__glow" aria-hidden />
+
+      <div className="relative z-1 flex min-h-0 flex-col gap-3 p-4 sm:p-[1.05rem]">
+        <div className="dvr-sig-hero-card__head">
+          <div className="dvr-sig-hero-card__symbol-wrap">
+            <p className="dvr-sig-hero-card__symbol tabular-nums">{item.symbol}</p>
+            <p className="dvr-sig-hero-card__asset truncate">{item.assetName}</p>
+          </div>
+          <span className={cn("dvr-sig-hero-card__dir-pill", `dvr-sig-hero-card__dir-pill--${dir.cls}`)}>
+            {dir.label}
+          </span>
+        </div>
+
+        <p className="dvr-sig-hero-card__rationale line-clamp-2">{item.rationale}</p>
+
+        <div className="dvr-sig-hero-card__levels">
+          <div className="dvr-sig-hero-card__level">
+            <span className="dvr-sig-hero-card__level-label">Giriş</span>
+            <span className="dvr-sig-hero-card__level-value tabular-nums">{item.entry}</span>
+          </div>
+          <div className="dvr-sig-hero-card__level dvr-sig-hero-card__level--target">
+            <span className="dvr-sig-hero-card__level-label">Hedef</span>
+            <span className="dvr-sig-hero-card__level-value tabular-nums">{item.target}</span>
+          </div>
+          <div className="dvr-sig-hero-card__level dvr-sig-hero-card__level--stop">
+            <span className="dvr-sig-hero-card__level-label">Stop</span>
+            <span className="dvr-sig-hero-card__level-value tabular-nums">{item.stop}</span>
+          </div>
+        </div>
+
+        <div className="dvr-sig-hero-card__foot">
+          <div className="dvr-sig-hero-card__analyst min-w-0">
+            <span
+              className="dvr-sig-hero-card__analyst-avatar"
+              style={{ background: `radial-gradient(circle at 35% 35%, ${item.analystColor}ee, ${item.analystColor}88)` }}
+              aria-hidden
+            >
+              {item.analyst[0]}
+            </span>
+            <div className="min-w-0">
+              <p className="dvr-sig-hero-card__analyst-name truncate">{item.analyst}</p>
+              <p className="dvr-sig-hero-card__analyst-handle truncate">{item.analystHandle}</p>
+            </div>
+          </div>
+          <div className="dvr-sig-hero-card__metrics">
+            <span className="dvr-sig-hero-card__rr tabular-nums">R/R {item.rr}</span>
+            <span className="dvr-sig-hero-card__tf">{item.timeframe}</span>
+            <span className="dvr-sig-hero-card__age tabular-nums">{item.age}</span>
+          </div>
+        </div>
+
+        <SignalConfBar value={item.confidence} size="md" />
+      </div>
+    </article>
+  );
+}
+
+/** Sinyaller sekmesi — intel grid kartı */
+export function DiscoverSignalIntelCard({ item, index = 0 }: { item: VRSignalItem; index?: number }) {
+  const dir = signalDirMeta(item.direction);
+
+  return (
+    <article
+      className={cn("dvr-sig-intel-card group relative z-0 motion-entrance", `dvr-sig-intel-card--${dir.cls}`)}
+      style={motionEntranceDelay(index)}
+    >
+      <Link href={item.href} className="absolute inset-0 z-0 rounded-[inherit]" aria-label={`${item.symbol} sinyali`} />
+
+      <div className="relative z-1 flex min-h-0 flex-col gap-2.5 p-3.5">
+        <div className="dvr-sig-intel-card__head">
+          <div className="min-w-0">
+            <p className="dvr-sig-intel-card__symbol tabular-nums">{item.symbol}</p>
+            <p className="dvr-sig-intel-card__asset truncate">{item.assetName}</p>
+          </div>
+          <span className={cn("dvr-sig-intel-card__dir", `dvr-sig-intel-card__dir--${dir.cls}`)}>{dir.label}</span>
+        </div>
+
+        <p className="dvr-sig-intel-card__rationale line-clamp-2">{item.rationale}</p>
+
+        <div className="dvr-sig-intel-card__levels">
+          <span className="tabular-nums">
+            <span className="dvr-sig-intel-card__level-k">G</span> {item.entry}
+          </span>
+          <span className="dvr-sig-intel-card__level-target tabular-nums">
+            <span className="dvr-sig-intel-card__level-k">H</span> {item.target}
+          </span>
+          <span className="dvr-sig-intel-card__level-stop tabular-nums">
+            <span className="dvr-sig-intel-card__level-k">S</span> {item.stop}
+          </span>
+        </div>
+
+        <div className="dvr-sig-intel-card__foot">
+          <span className="dvr-sig-intel-card__analyst truncate">{item.analyst}</span>
+          <span className="dvr-sig-intel-card__rr tabular-nums">R/R {item.rr}</span>
+          <span className="dvr-sig-intel-card__age tabular-nums">{item.age}</span>
+        </div>
+
+        <SignalConfBar value={item.confidence} />
+      </div>
+    </article>
+  );
+}
+
+/** Sinyaller sekmesi — canlı akış satırı */
+export function DiscoverSignalTapeRow({ item, index = 0 }: { item: VRSignalItem; index?: number }) {
+  const dir = signalDirMeta(item.direction);
+
+  return (
+    <article
+      className={cn("dvr-sig-tape-row group relative z-0 motion-entrance", `dvr-sig-tape-row--${dir.cls}`)}
+      style={motionEntranceDelay(index)}
+    >
+      <Link href={item.href} className="absolute inset-0 z-0" aria-label={`${item.symbol} sinyali`} />
+
+      <div className="relative z-1 flex min-w-0 items-center gap-3 px-3.5 py-2.5 sm:gap-3.5 sm:px-4">
+        <div className="dvr-sig-tape-row__lead shrink-0">
+          <p className="dvr-sig-tape-row__symbol tabular-nums">{item.symbol}</p>
+          <span className={cn("dvr-sig-tape-row__dir", `dvr-sig-tape-row__dir--${dir.cls}`)}>{dir.label}</span>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="dvr-sig-tape-row__rationale line-clamp-1">{item.rationale}</p>
+          <p className="dvr-sig-tape-row__levels tabular-nums">
+            <span>G {item.entry}</span>
+            <span className="dvr-sig-tape-row__sep" aria-hidden>·</span>
+            <span>H {item.target}</span>
+            <span className="dvr-sig-tape-row__sep" aria-hidden>·</span>
+            <span>S {item.stop}</span>
+          </p>
+        </div>
+
+        <div className="dvr-sig-tape-row__trail shrink-0 text-right">
+          <span className="dvr-sig-tape-row__conf tabular-nums">%{item.confidence}</span>
+          <p className="dvr-sig-tape-row__meta tabular-nums">
+            {item.rr} · {item.age}
+          </p>
         </div>
       </div>
     </article>

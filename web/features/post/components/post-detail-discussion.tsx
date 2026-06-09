@@ -3,12 +3,18 @@
 import Link from "next/link";
 
 import { SafeAvatar } from "@/components/ui/safe-avatar";
-import { EmptyState, ErrorState } from "@/components/states";
+import { ErrorState } from "@/components/states";
 import { avatarUrl } from "@/lib/avatar-url";
+import { sendShortcutLabel } from "@/lib/keyboard-shortcut-label";
 import type { DiscussionReactionKind, ThesisStance } from "@/features/social/repository/discussion-types";
 import { PostDiscussionThreadTree } from "../discussion-thread-tree";
 import type { CommentTreeNode } from "../post-detail-helpers";
 import type { DiscussionIntent } from "../types";
+import { PostDiscussionSkeleton } from "./post-discussion-skeleton";
+
+function countComments(nodes: CommentTreeNode[]): number {
+  return nodes.reduce((n, { comment, children }) => n + 1 + countComments(children), 0);
+}
 
 interface Props {
   postId: string;
@@ -75,10 +81,14 @@ export function PostDetailDiscussion({
   const userAvatar = user
     ? user.avatarUrl || avatarUrl(user.id, user.displayName || user.email || "U")
     : null;
+  const totalComments = countComments(forest);
 
   return (
     <section id="yorumlar" className="pd-prose pd-discussion-wrap">
-      <h2 className="pd-section-title">Tartışma</h2>
+      <div className="pd-discussion-head">
+        <h2 className="pd-section-title">Tartışma</h2>
+        {totalComments > 0 ? <span className="pd-section-count">{totalComments}</span> : null}
+      </div>
 
       <div className="pd-composer">
         <div className="pd-composer-tools">
@@ -200,6 +210,7 @@ export function PostDetailDiscussion({
               />
               {commentError && <div className="pd-comment-err">{commentError}</div>}
               <div className="pd-composer-actions">
+                <span className="pd-composer-hint">{sendShortcutLabel()} ile gönder</span>
                 <button
                   type="button"
                   onClick={onSendComment}
@@ -215,9 +226,7 @@ export function PostDetailDiscussion({
       </div>
 
       {commentsLoading ? (
-        <p className="pd-login-hint" style={{ textAlign: "center", padding: "0.5rem 0" }}>
-          Yorumlar yükleniyor…
-        </p>
+        <PostDiscussionSkeleton />
       ) : commentsError ? (
         <ErrorState
           title="Yorumlar yüklenemedi"
@@ -227,12 +236,10 @@ export function PostDetailDiscussion({
           compact
         />
       ) : forest.length === 0 ? (
-        <EmptyState
-          title="Henüz yorum yok"
-          description="İlk yorumu siz yazın."
-          tone="social"
-          compact
-        />
+        <div className="pd-discussion-empty" role="status">
+          <p className="pd-discussion-empty__title">Henüz yorum yok</p>
+          <p className="pd-discussion-empty__desc">İlk görüşü paylaşan siz olun — tez, soru veya veri notu ekleyebilirsiniz.</p>
+        </div>
       ) : (
         <PostDiscussionThreadTree
           forest={forest}

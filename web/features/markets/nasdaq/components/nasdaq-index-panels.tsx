@@ -54,7 +54,7 @@ function IndexPanel({ panel, isNdx }: PanelProps) {
     <div className={cn("cc-asset-panel block", isNdx ? "cc-asset-panel--btc" : "cc-asset-panel--eth")}>
       <div className="cc-asset-panel-header">
         <div className={cn("cc-asset-logo", isNdx ? "cc-asset-logo--btc" : "cc-asset-logo--eth")}
-          style={{ fontSize: 8, fontWeight: 900 }}>{iconLabel}</div>
+          style={{ fontSize: 11, fontWeight: 700 }}>{iconLabel}</div>
         <span className="cc-asset-title">{panel.name}</span>
       </div>
       <div className="cc-asset-price-row">

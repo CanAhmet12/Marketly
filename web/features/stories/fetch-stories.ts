@@ -14,6 +14,41 @@ type ProfileRow = {
   avatar_url: string | null;
 };
 
+type StoryRow = {
+  id: string;
+  user_id: string;
+  image_url: string;
+  created_at: string;
+  expires_at?: string;
+};
+
+function displayName(profile: ProfileRow | undefined, fallbackId: string): string {
+  return profile?.username?.trim() || profile?.full_name?.trim() || "Kullanıcı";
+}
+
+function sortUserIds(
+  userIds: string[],
+  byUser: Map<string, StoryRow[]>,
+  viewedIds: Set<string>,
+  viewerId: string | null,
+): string[] {
+  return [...userIds].sort((a, b) => {
+    if (viewerId) {
+      if (a === viewerId && b !== viewerId) return -1;
+      if (b === viewerId && a !== viewerId) return 1;
+    }
+    const aStories = byUser.get(a) ?? [];
+    const bStories = byUser.get(b) ?? [];
+    const aUnviewed = aStories.some((s) => !viewedIds.has(s.id));
+    const bUnviewed = bStories.some((s) => !viewedIds.has(s.id));
+    if (aUnviewed && !bUnviewed) return -1;
+    if (!aUnviewed && bUnviewed) return 1;
+    const aLatest = aStories[0]?.created_at ?? "";
+    const bLatest = bStories[0]?.created_at ?? "";
+    return new Date(bLatest).getTime() - new Date(aLatest).getTime();
+  });
+}
+
 export async function fetchStorySlides(
   client: SupabaseClient | null,
   viewerId: string | null,
@@ -26,26 +61,33 @@ export async function fetchStorySlides(
   }
   if (!client) return [];
 
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const nowIso = new Date().toISOString();
 
   const { data: storiesData, error } = await client
     .from("stories")
-    .select("id, user_id, image_url")
-    .gte("created_at", since)
+    .select("id, user_id, image_url, created_at, expires_at")
+    .gt("expires_at", nowIso)
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(200);
 
   if (error || !storiesData?.length) {
     if (error) console.warn("[stories] fetch", error.message);
     return [];
   }
 
-  const userMap = new Map<string, (typeof storiesData)[0]>();
-  for (const story of storiesData) {
-    if (!userMap.has(story.user_id)) userMap.set(story.user_id, story);
+  const byUser = new Map<string, StoryRow[]>();
+  for (const story of storiesData as StoryRow[]) {
+    const list = byUser.get(story.user_id) ?? [];
+    list.push(story);
+    byUser.set(story.user_id, list);
   }
 
-  const userIds = Array.from(userMap.keys());
+  for (const [uid, rows] of byUser) {
+    rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    byUser.set(uid, rows);
+  }
+
+  const userIds = Array.from(byUser.keys());
   const { data: profiles } = await client
     .from("profiles")
     .select("id, username, full_name, avatar_url")
@@ -56,33 +98,32 @@ export async function fetchStorySlides(
   let viewedIds = new Set<string>();
   if (viewerId) {
     const { data: views } = await client.from("story_views").select("story_id").eq("viewer_id", viewerId);
-    viewedIds = new Set(views?.map((v) => v.story_id as string) ?? []);
+    viewedIds = new Set(views?.map((v) => String(v.story_id)) ?? []);
   }
 
+  const orderedUsers = sortUserIds(userIds, byUser, viewedIds, viewerId);
   const slides: StorySlide[] = [];
-  userMap.forEach((story, storyUserId) => {
+
+  for (const storyUserId of orderedUsers) {
     const profile = profileMap.get(storyUserId);
-    const name = profile?.username || profile?.full_name || "Kullanıcı";
-    const mediaUrl = (story.image_url as string | null)?.trim() || "";
-    if (!mediaUrl) return;
+    const name = displayName(profile, storyUserId);
+    const profileImage = profile?.avatar_url?.trim() || avatarUrl(storyUserId, name);
 
-    slides.push({
-      id: story.id as string,
-      userId: storyUserId,
-      username: name,
-      profileImage: profile?.avatar_url?.trim() || avatarUrl(storyUserId, name),
-      mediaUrl,
-      mediaType: "image",
-      isViewed: viewedIds.has(story.id as string),
-      label: name,
-    });
-  });
-
-  slides.sort((a, b) => {
-    if (!a.isViewed && b.isViewed) return -1;
-    if (a.isViewed && !b.isViewed) return 1;
-    return 0;
-  });
+    for (const story of byUser.get(storyUserId) ?? []) {
+      const mediaUrl = story.image_url?.trim() || "";
+      if (!mediaUrl) continue;
+      slides.push({
+        id: story.id,
+        userId: storyUserId,
+        username: name,
+        profileImage,
+        mediaUrl,
+        mediaType: "image",
+        isViewed: viewedIds.has(story.id),
+        label: name,
+      });
+    }
+  }
 
   return slides;
 }
@@ -94,7 +135,11 @@ export async function markStoryViewed(
 ): Promise<void> {
   if (isMockDataEnabled() || !client || !viewerId) return;
   try {
-    await client.from("story_views").insert({ story_id: storyId, viewer_id: viewerId });
+    const { error } = await client.from("story_views").upsert(
+      { story_id: storyId, viewer_id: viewerId, viewed_at: new Date().toISOString() },
+      { onConflict: "story_id,viewer_id", ignoreDuplicates: true },
+    );
+    if (error) console.warn("[stories] markViewed", error.message);
   } catch (e) {
     console.warn("[stories] markViewed", e);
   }

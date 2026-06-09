@@ -46,7 +46,7 @@ function MarketMoodGauge({ value, label }: { value: number; label: string }) {
         </svg>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{value}</div>
-          <div style={{ fontSize: 10, fontWeight: 700, color, marginTop: 1 }}>{bandLabel}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color, marginTop: 1 }}>{bandLabel}</div>
         </div>
       </div>
     </div>
@@ -76,7 +76,7 @@ export function NasdaqPulseBar({ pulse }: Props) {
       {/* NDX */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 8, fontWeight: 900 }}>NDX</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>NDX</div>
           <span className="cc-pulse-label">NASDAQ 100</span>
         </div>
         <span className="cc-pulse-value cc-pulse-value--btc">{fmtIndex(pulse.ndx.value)}</span>
@@ -89,7 +89,7 @@ export function NasdaqPulseBar({ pulse }: Props) {
       {/* Composite */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 8, fontWeight: 900 }}>NAS</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>NAS</div>
           <span className="cc-pulse-label">Composite</span>
         </div>
         <span className="cc-pulse-value">{fmtIndex(pulse.composite.value)}</span>

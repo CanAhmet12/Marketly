@@ -6,72 +6,83 @@ import { useMemo } from "react";
 import { getMarketsRepository } from "@/features/markets/repository";
 import { getSocialRepository } from "@/features/social/repository";
 import { isMockDataEnabled } from "@/mock/config";
-import { cn } from "@/lib/cn";
 
-type Props = { channelUserId: string };
+type Props = {
+  channelUserId: string;
+  assetTags?: string[];
+};
 
-/** Kanal profili — piyasa tartışma ağından ince bağlam (repository). */
-export function ChannelMarketCommunityInset({ channelUserId }: Props) {
+/** Kanal profili — piyasa tartışma ağından ince bağlam (repository + canlı varlık etiketleri). */
+export function ChannelMarketCommunityInset({ channelUserId, assetTags = [] }: Props) {
   const bundle = useMemo(() => getMarketsRepository().getMarketCommunityNetwork(), []);
   const topics = useMemo(() => {
-    if (!isMockDataEnabled()) return [];
-    return getSocialRepository().getCreatorTopicCommunities(channelUserId);
-  }, [channelUserId]);
+    if (isMockDataEnabled()) {
+      return getSocialRepository().getCreatorTopicCommunities(channelUserId);
+    }
+    return assetTags.slice(0, 6).map((tag) => ({
+      slug: tag.toLowerCase(),
+      label: tag.startsWith("#") ? tag : `#${tag}`,
+      href: `/search?q=${encodeURIComponent(tag)}`,
+      heatLabel: "tartışma",
+    }));
+  }, [channelUserId, assetTags]);
   const overlap = bundle.community.creatorOverlapLeaders.find((c) => c.href === `/channel/${channelUserId}`);
   const chains = bundle.crossAssetChains.slice(0, 2);
 
   if (!overlap && !chains.length && !topics.length) {
     return (
-      <div className="mb-4 rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[var(--color-surface)] px-[var(--sp-3)] py-2">
-        <p className="text-[11px] font-medium text-[var(--color-meta)]">Piyasa tartışma köprüsü: veri bekleniyor.</p>
+      <div className="ch-inset ch-inset--empty">
+        <p className="ch-inset-empty-text">Piyasa tartışma köprüsü: kanal içeriğinden varlık etiketleri görününce burada dolacak.</p>
       </div>
     );
   }
 
   return (
-    <div className="mb-4 space-y-[var(--sp-2)]">
-      {topics.length ? (
-        <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Konu ağı</p>
-            <Link href="/discover" className="text-[10px] font-bold text-[var(--color-primary-dark)] hover:underline">
+    <div className="ch-inset-stack">
+      {topics.length > 0 ? (
+        <div className="ch-inset">
+          <div className="ch-inset-head">
+            <p className="ch-inset-label">Konu ağı</p>
+            <Link href="/discover" className="ch-inset-link">
               Keşfet →
             </Link>
           </div>
-          <ul className="m-0 mt-1 flex flex-wrap gap-1.5 p-0">
+          <ul className="ch-inset-chip-list">
             {topics.map((t) => (
               <li key={t.slug}>
-                <Link href={t.href} className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text)] hover:border-[var(--color-primary)]/40">
+                <Link href={t.href} className="ch-inset-chip">
                   {t.label}
-                  <span className="ml-1 text-[10px] text-[var(--color-meta)]">{t.heatLabel}</span>
+                  <span className="ch-inset-chip-meta">{t.heatLabel}</span>
                 </Link>
               </li>
             ))}
           </ul>
         </div>
       ) : null}
-      {overlap || chains.length ? (
-        <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Piyasa ağı</p>
-            <Link href="/markets" className="text-[10px] font-bold text-[var(--color-primary-dark)] hover:underline">
+      {overlap || chains.length > 0 ? (
+        <div className="ch-inset">
+          <div className="ch-inset-head">
+            <p className="ch-inset-label">Piyasa ağı</p>
+            <Link href="/markets" className="ch-inset-link">
               Piyasalar →
             </Link>
           </div>
           {overlap ? (
-            <p className="mt-1 text-[12px] font-semibold text-[var(--color-text)]">
-              Bu kanal <span className="text-[var(--color-primary-dark)]">{overlap.topSymbol}</span> tartışma kümesinde — {overlap.sharedAssetCount} varlık kesişimi (mock)
+            <p className="ch-inset-body">
+              Bu kanal <span className="ch-inset-highlight">{overlap.topSymbol}</span> tartışma kümesinde —{" "}
+              {overlap.sharedAssetCount} varlık kesişimi
+              {isMockDataEnabled() ? " (mock)" : ""}
             </p>
           ) : (
-            <p className="mt-1 text-[12px] text-[var(--color-text-secondary)]">Çapraz tartışma zincirleri:</p>
+            <p className="ch-inset-body ch-inset-body--muted">Çapraz tartışma zincirleri:</p>
           )}
-          <ul className={cn("mt-1 flex flex-wrap gap-2", !chains.length && "hidden")}>
+          <ul className={chains.length > 0 ? "ch-inset-chain-list" : "ch-inset-chain-list ch-inset-chain-list--hidden"}>
             {chains.map((c) => (
               <li key={c.id}>
-                <Link href={c.href} className="text-[11px] font-bold text-[var(--color-primary-dark)] hover:underline">
+                <Link href={c.href} className="ch-inset-chain-link">
                   {c.leftSymbol} ↔ {c.rightSymbol}
                 </Link>
-                <span className="text-[11px] text-[var(--color-meta)]"> · {c.theme}</span>
+                <span className="ch-inset-chain-theme"> · {c.theme}</span>
               </li>
             ))}
           </ul>

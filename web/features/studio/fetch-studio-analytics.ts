@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { buildContentTypeBreakdown } from "@/features/studio/lib/studio-analytics-insights";
 import type {
   StudioAnalyticsBundle,
+  StudioAudienceSegment,
   StudioDashboardOverview,
   StudioMetricPoint,
   StudioTimeframe,
@@ -67,10 +69,37 @@ function emptyBundle(timeframe: StudioTimeframe): StudioAnalyticsBundle {
     engagementSeries: z(len),
     followerSeries: z(len),
     audienceBreakdown: [],
+    contentTypeBreakdown: [],
     topVideos: [],
     topPosts: [],
     topAssets: [],
   };
+}
+
+function mapTopVideoRows(
+  posts: NonNullable<AnalyticsRpc["top_posts"]>,
+): StudioAnalyticsBundle["topVideos"] {
+  return posts
+    .filter((p) => p.type === "video" || p.type === "short")
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      views: p.views ?? 0,
+      thumbnailUrl: p.thumbnail_url ?? p.image_url ?? null,
+    }));
+}
+
+function mapTopPostRows(
+  posts: NonNullable<AnalyticsRpc["top_posts"]>,
+): StudioAnalyticsBundle["topPosts"] {
+  return posts
+    .filter((p) => !p.type || p.type === "post" || p.type === "signal" || p.type === "live")
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      views: p.views ?? 0,
+      thumbnailUrl: p.thumbnail_url ?? p.image_url ?? null,
+    }));
 }
 
 function mapTopContent(row: AnalyticsRpc["top_posts"]): StudioTopContentRow[] {
@@ -102,12 +131,26 @@ export async function fetchStudioAnalyticsBundle(
     const len = timeframe === "7d" ? 7 : timeframe === "28d" ? 14 : 21;
     const viewsSeries = padSeries(rpc.daily_views ?? [], len);
     const engagementScore = Number(rpc.engagement_rate ?? 0);
-    const topPosts = (rpc.top_posts ?? []).map((p) => ({
-      id: p.id,
-      title: p.title,
-      views: p.views ?? 0,
-      thumbnailUrl: p.thumbnail_url ?? p.image_url ?? null,
-    }));
+    const rpcTopPosts = rpc.top_posts ?? [];
+    const topVideos = mapTopVideoRows(rpcTopPosts);
+    const topPosts = mapTopPostRows(rpcTopPosts);
+    let contentTypeBreakdown: StudioAudienceSegment[] = buildContentTypeBreakdown(
+      rpcTopPosts.map((p) => ({ type: p.type, views: p.views })),
+      rpc.signal_copy_count ?? 0,
+    );
+
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+    const ownerId = user?.id ?? "";
+
+    if (ownerId && contentTypeBreakdown.length === 0) {
+      const fallback = await fetchPostsFallback(client, ownerId);
+      contentTypeBreakdown = buildContentTypeBreakdown(
+        (fallback.topPosts ?? []).map((p) => ({ type: p.type, views: p.views })),
+        rpc.signal_copy_count ?? 0,
+      );
+    }
 
     return {
       summary: {
@@ -130,7 +173,8 @@ export async function fetchStudioAnalyticsBundle(
       engagementSeries: viewsSeries.map((p) => ({ ...p, value: Math.round(p.value * 0.08) })),
       followerSeries: padSeries([], len),
       audienceBreakdown: [],
-      topVideos: topPosts.filter((_, i) => i % 2 === 0),
+      contentTypeBreakdown,
+      topVideos: topVideos.length > 0 ? topVideos : topPosts.slice(0, 3),
       topPosts,
       topAssets: [],
     };
@@ -140,42 +184,84 @@ export async function fetchStudioAnalyticsBundle(
   }
 }
 
-/** Dashboard overview — analytics RPC'den türetilir */
+async function fetchPostsFallback(
+  client: SupabaseClient,
+  ownerId: string,
+): Promise<{ publishedCount: number; topPosts: AnalyticsRpc["top_posts"] }> {
+  const { count } = await client
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", ownerId);
+
+  const { data: rows } = await client
+    .from("posts")
+    .select("id, title, type, views_count, likes, thumbnail_url, image_url")
+    .eq("user_id", ownerId)
+    .order("views_count", { ascending: false })
+    .limit(5);
+
+  return {
+    publishedCount: count ?? 0,
+    topPosts: (rows ?? []).map((p) => ({
+      id: String(p.id),
+      title: p.title ?? "İsimsiz",
+      views: typeof p.views_count === "number" ? p.views_count : 0,
+      likes: typeof p.likes === "number" ? p.likes : 0,
+      thumbnail_url: p.thumbnail_url ?? null,
+      image_url: p.image_url ?? null,
+      type: p.type ?? "post",
+    })),
+  };
+}
+
+/** Dashboard overview — analytics RPC + posts fallback */
 export async function fetchStudioDashboardOverview(
   client: SupabaseClient,
 ): Promise<StudioDashboardOverview> {
   const bundle = await fetchStudioAnalyticsBundle(client, "7d");
   const { summary } = bundle;
-  let rpc: AnalyticsRpc | null = null;
-  try {
-    const { data, error } = await client.rpc("get_studio_analytics_bundle", { p_timeframe: "7d" });
-    if (!error && data) rpc = data as AnalyticsRpc;
-  } catch {
-    /* bundle fallback */
-  }
-  const topContent = mapTopContent(
-    rpc?.top_posts ?? bundle.topPosts.map((p) => ({
+
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  const ownerId = user?.id ?? "";
+
+  let publishedCount = summary.publishedContentCount;
+  let topContent = mapTopContent(
+    bundle.topPosts.map((p) => ({
       id: p.id,
       title: p.title,
       views: p.views,
       thumbnail_url: p.thumbnailUrl,
       image_url: p.thumbnailUrl,
+      type: "post",
     })),
   );
 
+  if (ownerId && publishedCount === 0 && topContent.length === 0) {
+    const fallback = await fetchPostsFallback(client, ownerId);
+    publishedCount = fallback.publishedCount;
+    topContent = mapTopContent(fallback.topPosts);
+  }
+
+  const totalViews =
+    summary.totalViews > 0
+      ? summary.totalViews
+      : topContent.reduce((sum, row) => sum + row.views, 0);
+
   return {
-    totalViews: summary.totalViews,
+    totalViews,
     followerGrowth7d: summary.followerGrowth7d,
     engagementScore: summary.engagementScore,
-    publishedCount: rpc?.published_count ?? summary.publishedContentCount,
-    draftCount: rpc?.draft_count ?? 0,
-    scheduledCount: rpc?.scheduled_count ?? 0,
+    publishedCount,
+    draftCount: 0,
+    scheduledCount: 0,
     estimatedRevenueUsd: null,
     metricHints: {
-      totalViews: "Son 7 gün",
+      totalViews: summary.totalViews > 0 ? "Son 7 gün" : "Doğrudan içerik",
       followerGrowth: summary.followerGrowth7d > 0 ? `+${summary.followerGrowth7d}` : "—",
       engagement: `${summary.engagementScore}%`,
-      published: `${summary.publishedContentCount} yayın`,
+      published: `${publishedCount} yayın`,
     },
     recentPerformance: bundle.viewsSeries,
     topContent,

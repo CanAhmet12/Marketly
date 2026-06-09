@@ -108,10 +108,10 @@ export function SignalsMarketIntelStrip({
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-right">
-          <span className="rounded-full border border-[var(--ms-border-hairline)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-text-secondary)]">
+          <span className="rounded-full border border-[var(--ms-border-hairline)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">
             Tartışmalı varlık: {intel.activeDebateAssetCount}
           </span>
-          <span className="rounded-full border border-[var(--ms-border-hairline)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-text-secondary)]">
+          <span className="rounded-full border border-[var(--ms-border-hairline)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">
             Çelişen küme: {intel.conflictingClusters}
           </span>
         </div>
@@ -128,14 +128,14 @@ export function SignalsMarketIntelStrip({
           />
         </div>
       </div>
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-[var(--color-text-secondary)]">
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-[var(--color-text-secondary)]">
         <span>{intel.momentumLabel}</span>
         <span className="text-[var(--color-border)]">·</span>
         <span className="max-w-[min(100%,28rem)] truncate">{intel.themeAcceleration}</span>
       </div>
       {top.length ? (
         <div className="mt-2 border-t border-[var(--ms-border-hairline)] pt-2">
-          <p className="text-[10px] font-bold uppercase text-[var(--color-meta)]">Sinyal yoğunluğu</p>
+          <p className="text-[11px] font-bold uppercase text-[var(--color-meta)]">Sinyal yoğunluğu</p>
           <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-3 gap-y-1 p-0">
             {top.map((t) => (
               <li key={t.symbol} className="text-[11px] font-semibold text-[var(--color-text)]">
@@ -145,7 +145,7 @@ export function SignalsMarketIntelStrip({
           </ul>
         </div>
       ) : null}
-      <p className="mt-2 text-[10px] font-medium leading-snug text-[var(--color-meta)]">{intel.overlapPairsLabel}</p>
+      <p className="mt-2 text-[11px] font-medium leading-snug text-[var(--color-meta)]">{intel.overlapPairsLabel}</p>
     </div>
   );
 }

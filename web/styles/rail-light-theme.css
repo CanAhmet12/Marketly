@@ -1,0 +1,92 @@
+/**
+ * Sağ rail — açık mod kontrast düzeltmesi
+ * Orijinal renk token'ları (--hv-cat-color, --hv-pill-color vb.) korunur.
+ * Sadece koyu mod rgba() metinleri ve çok soluk mix'ler hafifçe keskinleştirilir.
+ */
+
+/* Koyu mod rgba metin kalıntıları → tema metni */
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__market-sym {
+  color: color-mix(in srgb, var(--hv-row-cat-color, var(--hv-text)) 88%, var(--hv-text) 12%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__market-price {
+  color: var(--hv-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__market-pct {
+  color: var(--hv-text-2);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__h {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--hv-text)) 82%, var(--hv-text) 18%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__action-link {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--color-primary-dark)) 75%, var(--color-primary-dark) 25%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__section-sub,
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__mood-detail {
+  color: var(--hv-text-2);
+  opacity: 1;
+}
+
+/* Chip / pill — orijinal renk, biraz daha dolu arka plan */
+html[data-theme="light"] .hv-ref .hv-ref-rail__quick-chip {
+  color: color-mix(in srgb, var(--hv-pill-color) 72%, var(--hv-text) 28%);
+  background: color-mix(in srgb, var(--hv-pill-color) 10%, transparent);
+  border-color: color-mix(in srgb, var(--hv-pill-color) 28%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .hv-ref .hv-ref-rail__quick-chip:hover {
+    background: color-mix(in srgb, var(--hv-pill-color) 16%, transparent);
+    border-color: color-mix(in srgb, var(--hv-pill-color) 38%, transparent);
+    color: color-mix(in srgb, var(--hv-pill-color) 85%, var(--hv-text) 15%);
+  }
+}
+
+/* Bölüm ikon kutusu — orijinal kategori rengi */
+html[data-theme="light"] .hv-ref .hv-ref-rail__section-icon {
+  background: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 12%, transparent);
+  border-color: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 32%, transparent);
+  color: var(--hv-cat-color, var(--color-primary));
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__section-icon svg,
+html[data-theme="light"] .hv-ref .hv-ref-rail__section-icon-svg {
+  color: var(--hv-cat-color, var(--color-primary));
+  opacity: 1;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__block-accent {
+  background: var(--hv-cat-color, var(--color-primary));
+  opacity: 1;
+}
+
+/* Sinyal / izleme / tartışma — orijinal mix, hafif güçlendirme */
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__signal-sym,
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__watch-sym,
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__discuss-tag {
+  color: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 78%, var(--hv-text) 22%);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__news-title,
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__creator-name {
+  color: var(--hv-text);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__news-cat {
+  color: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 75%, var(--hv-text) 25%);
+  background: color-mix(in srgb, var(--hv-news-cat, var(--color-primary)) 14%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__market-sigs {
+  color: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 70%, var(--hv-text) 30%);
+  background: color-mix(in srgb, var(--hv-row-cat-color, var(--color-primary)) 10%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail .hv-ref-rail__interest-chip {
+  background: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 10%, transparent);
+  border-color: color-mix(in srgb, var(--hv-cat-color, var(--color-primary)) 26%, transparent);
+}

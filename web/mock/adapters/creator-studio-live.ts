@@ -1,3 +1,4 @@
+import { liveHrefForPostId } from "@/features/live/live-href";
 import type { StudioLiveStreamItem } from "@/features/studio/types";
 import { MOCK_POST_SOURCES } from "@/mock/fixtures/posts";
 
@@ -10,6 +11,9 @@ export function getStudioLiveSchedule(ownerId: string, mockDataset: boolean): St
   const anyPost = MOCK_POST_SOURCES.find((p) => p.user_id === ownerId);
   const thumb = posts[0] ? pickThumb(posts[0]) : anyPost ? pickThumb(anyPost) : null;
 
+  const livePostId = posts[0]?.id ?? `live-post-${ownerId}`;
+  const channelName = `marketly-${ownerId.slice(0, 8)}`;
+
   const items: StudioLiveStreamItem[] = [
     {
       id: `live-${ownerId}-up1`,
@@ -19,6 +23,7 @@ export function getStudioLiveSchedule(ownerId: string, mockDataset: boolean): St
       status: "scheduled",
       reminderCount: 120 + (studioSeed(ownerId, "rm1") % 400),
       thumbnailUrl: thumb,
+      href: "/studio/scheduled",
     },
     {
       id: `live-${ownerId}-up2`,
@@ -28,6 +33,7 @@ export function getStudioLiveSchedule(ownerId: string, mockDataset: boolean): St
       status: "scheduled",
       reminderCount: 40 + (studioSeed(ownerId, "rm2") % 200),
       thumbnailUrl: thumb,
+      href: "/studio/scheduled",
     },
   ];
 
@@ -40,6 +46,10 @@ export function getStudioLiveSchedule(ownerId: string, mockDataset: boolean): St
       status: "live",
       reminderCount: 890 + (studioSeed(ownerId, "rm0") % 200),
       thumbnailUrl: thumb,
+      postId: livePostId,
+      channelName,
+      viewerCount: 120 + (studioSeed(ownerId, "vc") % 480),
+      href: liveHrefForPostId(livePostId),
     });
   }
 

@@ -753,6 +753,168 @@ export function ThumbPulse6() {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIGNAL RAIL THUMBNAILS — 16:9 chart + giriş/hedef/stop seviyeleri
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function SignalLevelGuide({
+  entryY,
+  targetY,
+  stopY,
+  uid,
+}: {
+  entryY: number;
+  targetY: number;
+  stopY: number;
+  uid: string;
+}) {
+  return (
+    <g opacity="0.92">
+      <line x1="18" y1={targetY} x2="302" y2={targetY} stroke="rgba(52,211,153,0.42)" strokeWidth="0.9" strokeDasharray="5,4" />
+      <line x1="18" y1={entryY} x2="302" y2={entryY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" />
+      <line x1="18" y1={stopY} x2="302" y2={stopY} stroke="rgba(248,113,113,0.42)" strokeWidth="0.9" strokeDasharray="5,4" />
+      <rect x="236" y={targetY - 8} width="58" height="12" rx="3" fill="rgba(6,10,18,0.72)" stroke="rgba(52,211,153,0.28)" />
+      <text x="265" y={targetY + 1.5} textAnchor="middle" fill="rgba(110,231,183,0.92)" fontSize="6.5" fontWeight="700" fontFamily="monospace">
+        HEDEF
+      </text>
+      <rect x="236" y={entryY - 8} width="58" height="12" rx="3" fill="rgba(6,10,18,0.72)" stroke="rgba(255,255,255,0.14)" />
+      <text x="265" y={entryY + 1.5} textAnchor="middle" fill="rgba(255,255,255,0.72)" fontSize="6.5" fontWeight="700" fontFamily="monospace">
+        GİRİŞ
+      </text>
+      <rect x="236" y={stopY - 8} width="58" height="12" rx="3" fill="rgba(6,10,18,0.72)" stroke="rgba(248,113,113,0.28)" />
+      <text x="265" y={stopY + 1.5} textAnchor="middle" fill="rgba(252,165,165,0.92)" fontSize="6.5" fontWeight="700" fontFamily="monospace">
+        STOP
+      </text>
+      <circle cx="52" cy={entryY} r="3.2" fill={`url(#sigDot-${uid})`} stroke="rgba(255,255,255,0.35)" strokeWidth="0.6" />
+      <defs>
+        <radialGradient id={`sigDot-${uid}`}>
+          <stop offset="0%" stopColor="rgba(62,228,205,0.95)" />
+          <stop offset="100%" stopColor="rgba(62,228,205,0.2)" />
+        </radialGradient>
+      </defs>
+    </g>
+  );
+}
+
+/** Sinyal-1: BIST yükseliş — mum + trend */
+export function ThumbSignal1() {
+  const path: [number, number][] = [[24, 128], [58, 118], [92, 122], [126, 102], [160, 96], [194, 82], [228, 74], [262, 68], [296, 62]];
+  return (
+    <svg viewBox="0 0 320 180" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <linearGradient id="sg1bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#0b1a2e" />
+          <stop offset="100%" stopColor="#03060f" />
+        </linearGradient>
+        <linearGradient id="sg1fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(52,211,153,0.22)" />
+          <stop offset="100%" stopColor="rgba(52,211,153,0)" />
+        </linearGradient>
+      </defs>
+      <rect width="320" height="180" fill="url(#sg1bg)" />
+      {[30, 54, 78, 102, 126, 150, 174, 198, 222, 246, 270].map((x, i) => (
+        <CandleBar key={i} x={x} open={120 - i * 2} close={112 - i * 3} high={108 - i * 3} low={128 - i * 2} bullish={i % 4 !== 2} />
+      ))}
+      <PriceLine points={path} stroke="rgba(52,211,153,0.78)" width={2.2} fill fillColor="url(#sg1fill)" />
+      <SignalLevelGuide entryY={108} targetY={72} stopY={132} uid="sg1" />
+      <text x="14" y="22" fill="rgba(52,211,153,0.82)" fontSize="11" fontWeight="bold" fontFamily="monospace">
+        THYAO
+      </text>
+      <text x="14" y="34" fill="rgba(255,255,255,0.38)" fontSize="6.5" fontFamily="monospace">
+        1–2H · AL
+      </text>
+    </svg>
+  );
+}
+
+/** Sinyal-2: Kripto düşüş — mor trend */
+export function ThumbSignal2() {
+  const path: [number, number][] = [[24, 58], [58, 68], [92, 62], [126, 78], [160, 72], [194, 92], [228, 88], [262, 108], [296, 118]];
+  return (
+    <svg viewBox="0 0 320 180" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <linearGradient id="sg2bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#140a28" />
+          <stop offset="100%" stopColor="#050310" />
+        </linearGradient>
+        <linearGradient id="sg2fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(248,113,113,0.2)" />
+          <stop offset="100%" stopColor="rgba(248,113,113,0)" />
+        </linearGradient>
+      </defs>
+      <rect width="320" height="180" fill="url(#sg2bg)" />
+      <PriceLine points={path} stroke="rgba(248,113,113,0.78)" width={2.2} fill fillColor="url(#sg2fill)" />
+      <SignalLevelGuide entryY={78} targetY={118} stopY={58} uid="sg2" />
+      <text x="14" y="22" fill="rgba(167,139,250,0.88)" fontSize="11" fontWeight="bold" fontFamily="monospace">
+        BTC/USD
+      </text>
+      <text x="14" y="34" fill="rgba(255,255,255,0.38)" fontSize="6.5" fontFamily="monospace">
+        4S · SAT
+      </text>
+    </svg>
+  );
+}
+
+/** Sinyal-3: Bankacılık momentum */
+export function ThumbSignal3() {
+  const path: [number, number][] = [[20, 132], [55, 120], [90, 124], [125, 108], [160, 100], [195, 92], [230, 86], [265, 78], [300, 70]];
+  return (
+    <svg viewBox="0 0 320 180" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <linearGradient id="sg3bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1a0f12" />
+          <stop offset="100%" stopColor="#060308" />
+        </linearGradient>
+      </defs>
+      <rect width="320" height="180" fill="url(#sg3bg)" />
+      {[36, 72, 108, 144, 180, 216, 252, 288].map((x, i) => (
+        <rect
+          key={i}
+          x={x - 8}
+          y={130 - (48 + i * 5)}
+          width="16"
+          height={48 + i * 5}
+          fill={i > 4 ? "rgba(52,211,153,0.42)" : "rgba(52,211,153,0.22)"}
+          rx="2"
+        />
+      ))}
+      <PriceLine points={path} stroke="rgba(62,228,205,0.72)" width={2} />
+      <SignalLevelGuide entryY={104} targetY={74} stopY={138} uid="sg3" />
+      <text x="14" y="22" fill="rgba(248,113,113,0.78)" fontSize="11" fontWeight="bold" fontFamily="monospace">
+        GARAN
+      </text>
+      <text x="14" y="34" fill="rgba(255,255,255,0.38)" fontSize="6.5" fontFamily="monospace">
+        1H · AL
+      </text>
+    </svg>
+  );
+}
+
+/** Sinyal-4: Altın konsolidasyon */
+export function ThumbSignal4() {
+  const path: [number, number][] = [[24, 96], [64, 92], [104, 98], [144, 90], [184, 94], [224, 88], [264, 92], [296, 90]];
+  return (
+    <svg viewBox="0 0 320 180" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <linearGradient id="sg4bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1a1608" />
+          <stop offset="100%" stopColor="#080604" />
+        </linearGradient>
+      </defs>
+      <rect width="320" height="180" fill="url(#sg4bg)" />
+      <PriceLine points={path} stroke="rgba(251,191,36,0.68)" width={2} />
+      <rect x="24" y="82" width="272" height="24" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.18)" strokeDasharray="4,3" rx="4" />
+      <SignalLevelGuide entryY={94} targetY={78} stopY={110} uid="sg4" />
+      <text x="14" y="22" fill="rgba(251,191,36,0.88)" fontSize="11" fontWeight="bold" fontFamily="monospace">
+        XAU/USD
+      </text>
+      <text x="14" y="34" fill="rgba(255,255,255,0.38)" fontSize="6.5" fontFamily="monospace">
+        1G · BEKLE
+      </text>
+    </svg>
+  );
+}
+
 /** Generic fallback — sparkline */
 export function ThumbGeneric({ color = "#3ee4cd" }: { color?: string }) {
   const path: [number, number][] = [

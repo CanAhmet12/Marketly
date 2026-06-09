@@ -40,7 +40,7 @@ function signalRowsForSymbol(rows: readonly SignalsFeedRow[], symbol: string): S
   return rows.filter((r) => symKey(r.symbol) === key);
 }
 
-function enrichAssetWithSignals(asset: MarketAssetView, symRows: SignalsFeedRow[]): MarketAssetView {
+export function enrichAssetWithSignals(asset: MarketAssetView, symRows: SignalsFeedRow[]): MarketAssetView {
   const active = symRows.filter((r) => r.is_active);
   const buy = active.filter((r) => r.direction === "BUY").length;
   const sell = active.filter((r) => r.direction === "SELL").length;
@@ -355,6 +355,23 @@ export function buildAssetIntelligenceFromLive(input: BuildAssetIntelInput): Ass
     symbolConsensus: buildSymbolConsensusIntel([...signals], symbol),
     marketSignalIntel: buildMarketSignalIntelligence([...symRows]),
   };
+}
+
+/** Tüm varlıkları sinyal feed'i ile zenginleştir (home rail, markets). */
+export function enrichAllAssetsWithSignals(
+  assets: readonly MarketAssetView[],
+  signals: readonly SignalsFeedRow[],
+): MarketAssetView[] {
+  const bySymbol = new Map<string, SignalsFeedRow[]>();
+  for (const row of signals) {
+    const key = symKey(row.symbol);
+    const bucket = bySymbol.get(key) ?? [];
+    bucket.push(row);
+    bySymbol.set(key, bucket);
+  }
+  return assets.map((asset) =>
+    enrichAssetWithSignals(asset, bySymbol.get(symKey(asset.symbol)) ?? []),
+  );
 }
 
 /** Sembol için live asset bul ve bundle üret; asset yoksa null. */

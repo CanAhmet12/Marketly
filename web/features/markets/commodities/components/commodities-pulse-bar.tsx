@@ -52,11 +52,11 @@ export function CommoditiesPulseBar({ pulse }: Props) {
       {/* ALTIN */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 9, fontWeight: 900 }}>Au</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>Au</div>
           <span className="cc-pulse-label">ALTIN</span>
         </div>
         <span className="cc-pulse-value cc-pulse-value--btc">{fmtPrice(pulse.altin.price, pulse.altin.unit)}</span>
-        <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{pulse.altin.unit}</span>
+        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.altin.unit}</span>
         <span className="cc-pulse-change" style={{ color: changeColor(pulse.altin.changePct) }}>{signed(pulse.altin.changePct)}</span>
         <div className="cc-pulse-sparkline">
           <MiniSparkline series={pulse.altin.sparkline} trend="up" height={30} className="w-full" />
@@ -66,11 +66,11 @@ export function CommoditiesPulseBar({ pulse }: Props) {
       {/* GUMUS */}
       <div className="cc-pulse-cell">
         <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 9, fontWeight: 900 }}>Ag</div>
+          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>Ag</div>
           <span className="cc-pulse-label">GUMUS</span>
         </div>
         <span className="cc-pulse-value">{fmtPrice(pulse.gumus.price, pulse.gumus.unit)}</span>
-        <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{pulse.gumus.unit}</span>
+        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.gumus.unit}</span>
         <span className="cc-pulse-change" style={{ color: changeColor(pulse.gumus.changePct) }}>{signed(pulse.gumus.changePct)}</span>
         <div className="cc-pulse-sparkline">
           <MiniSparkline series={pulse.gumus.sparkline} trend="up" height={30} className="w-full" />
@@ -81,7 +81,7 @@ export function CommoditiesPulseBar({ pulse }: Props) {
       <div className="cc-pulse-cell">
         <span className="cc-pulse-label">PETROL WTI</span>
         <span className="cc-pulse-value">{fmtPrice(pulse.petrol.price, pulse.petrol.unit)}</span>
-        <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{pulse.petrol.unit}</span>
+        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.petrol.unit}</span>
         <span className="cc-pulse-change" style={{ color: changeColor(pulse.petrol.changePct) }}>{signed(pulse.petrol.changePct)}</span>
       </div>
 
@@ -89,7 +89,7 @@ export function CommoditiesPulseBar({ pulse }: Props) {
       <div className="cc-pulse-cell">
         <span className="cc-pulse-label">DOGALGAZ</span>
         <span className="cc-pulse-value" style={{ fontSize: 16 }}>{fmtPrice(pulse.dogalgaz.price, pulse.dogalgaz.unit)}</span>
-        <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{pulse.dogalgaz.unit}</span>
+        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.dogalgaz.unit}</span>
         <span className="cc-pulse-change" style={{ color: changeColor(pulse.dogalgaz.changePct) }}>{signed(pulse.dogalgaz.changePct)}</span>
       </div>
 
@@ -97,7 +97,7 @@ export function CommoditiesPulseBar({ pulse }: Props) {
       <div className="cc-pulse-cell">
         <span className="cc-pulse-label">BAKIR</span>
         <span className="cc-pulse-value" style={{ fontSize: 16 }}>{fmtPrice(pulse.bakir.price, pulse.bakir.unit)}</span>
-        <span style={{ fontSize: 10, color: "var(--cc-meta)" }}>{pulse.bakir.unit}</span>
+        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.bakir.unit}</span>
         <span className="cc-pulse-change" style={{ color: changeColor(pulse.bakir.changePct) }}>{signed(pulse.bakir.changePct)}</span>
       </div>
 

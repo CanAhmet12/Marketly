@@ -14,6 +14,21 @@ export function RequireAuthSkeleton() {
   );
 }
 
+/** Alt sayfa iç yükleme (route Suspense dışı) */
+export function StudioSubpageSkeleton() {
+  return (
+    <div className="studio-page" aria-busy="true">
+      <div className="motion-shimmer mb-4 h-6 w-40 rounded bg-[var(--color-divider)]" />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="motion-shimmer h-24 rounded-xl bg-[var(--color-divider)]" />
+        ))}
+      </div>
+      <div className="motion-shimmer mt-5 h-36 w-full rounded-xl bg-[var(--color-divider)]" />
+    </div>
+  );
+}
+
 /** Studio sayfa içeriği loading */
 export function StudioPageSkeleton() {
   return (

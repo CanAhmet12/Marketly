@@ -1,4 +1,14 @@
 import type { PortfolioHoldingLive } from "@/features/markets/fetch-portfolio-holdings";
+import {
+  buildPortfolioCorrelatedPairs,
+  mergePortfolioCorrelatedPairs,
+  type PortfolioCorrelatedPair,
+} from "@/features/markets/lib/build-portfolio-correlated-pairs";
+import { buildLivePortfolioPerfChart, type PortfolioPerfMode } from "@/features/markets/lib/build-portfolio-perf-series";
+import {
+  resolvePortfolioPrimaryCurrency,
+  type PortfolioCurrency,
+} from "@/features/markets/lib/portfolio-format";
 import type { MarketAssetView } from "@/features/markets/types";
 import type { PortfolioIntelligenceBundle } from "@/features/markets/types/personal-market-intelligence";
 import { marketAssetCategoryLabelTr } from "@/features/markets/types/asset-intelligence";
@@ -9,10 +19,14 @@ export type PortfolioLiveStats = {
   investedCost: number;
   totalPnL: number;
   totalPnLPct: number;
+  todayPnL?: number;
   todayPnLPct: number;
   riskScore: number;
   riskLabel: string;
   perfSeries: number[];
+  perfMode: PortfolioPerfMode;
+  perfCaption: string;
+  primaryCurrency: PortfolioCurrency;
 };
 
 function findAssetForHolding(h: PortfolioHoldingLive, assets: readonly MarketAssetView[]): MarketAssetView | undefined {
@@ -36,6 +50,7 @@ export function buildPortfolioIntelligenceFromLive(
   holdings: readonly PortfolioHoldingLive[],
   assets: readonly MarketAssetView[],
   signals: readonly SignalsFeedRow[],
+  pearsonPairs: readonly PortfolioCorrelatedPair[] = [],
 ): { bundle: PortfolioIntelligenceBundle; stats: PortfolioLiveStats } {
   const totalValue = holdings.reduce((s, h) => s + h.total_value, 0);
   const investedCost = holdings.reduce((s, h) => s + h.avg_cost * h.quantity, 0);
@@ -45,11 +60,11 @@ export function buildPortfolioIntelligenceFromLive(
   const holdingRows = holdings.map((h) => {
     const asset = findAssetForHolding(h, assets);
     const weightPct = totalValue > 0 ? Math.round((h.total_value / totalValue) * 100) : 0;
-    const sym = asset?.symbol ?? h.asset_id;
-    const cat = asset?.category ?? "crypto";
+    const sym = asset?.symbol ?? h.symbol ?? h.asset_id;
+    const cat = asset?.category ?? (h.category as MarketAssetView["category"] | undefined) ?? "crypto";
     return {
       symbol: sym,
-      name: asset?.name ?? sym,
+      name: asset?.name ?? h.name ?? sym,
       weightPct,
       category: categoryLabel(cat),
       contributionLabel: `${h.pnl >= 0 ? "+" : ""}${h.pnl_percent.toFixed(1)}%`,
@@ -103,11 +118,35 @@ export function buildPortfolioIntelligenceFromLive(
   const headlineSentiment =
     totalPnLPct >= 5 ? "Pozitif momentum" : totalPnLPct <= -5 ? "Koruma modu" : "Dengeli portföy";
 
-  const baseVal = totalValue - totalPnL;
-  const perfSeries = Array.from({ length: 12 }, (_, i) => {
-    const t = (i + 1) / 12;
-    return baseVal + totalPnL * t;
-  });
+  const weightedDailyChangePct =
+    totalValue > 0
+      ? holdingRows.reduce((s, h) => s + (h.weightPct / 100) * h._changePct, 0)
+      : 0;
+  const yesterdayEstimate =
+    weightedDailyChangePct !== 0 ? totalValue / (1 + weightedDailyChangePct / 100) : totalValue;
+  const todayPnL = totalValue - yesterdayEstimate;
+
+  const perfChart = buildLivePortfolioPerfChart(investedCost, totalValue, weightedDailyChangePct);
+  const primaryCurrency = resolvePortfolioPrimaryCurrency(
+    holdings.map((h) => {
+      const asset = findAssetForHolding(h, assets);
+      return {
+        symbol: asset?.symbol ?? h.symbol ?? h.asset_id,
+        category: asset?.category ?? h.category,
+        value: h.total_value,
+      };
+    }),
+  );
+
+  const heuristicPairs = buildPortfolioCorrelatedPairs(
+    holdingRows.map((h) => ({
+      symbol: h.symbol,
+      weightPct: h.weightPct,
+      category: h.category,
+      changePct: h._changePct,
+    })),
+  );
+  const correlatedPairs = mergePortfolioCorrelatedPairs(heuristicPairs, pearsonPairs);
 
   const bundle: PortfolioIntelligenceBundle = {
     headlineSentiment,
@@ -125,7 +164,7 @@ export function buildPortfolioIntelligenceFromLive(
       topWeightPct: topWeight,
       sectorTop,
       macroSensitivity: avgAbsChg >= 1.5 ? "Yüksek" : "Orta",
-      correlatedPairs: [],
+      correlatedPairs,
       volCluster: avgAbsChg >= 2 ? "Genişleyen" : "Sakin",
       regimeAlignment: totalPnLPct >= 0 ? "Risk-on" : "Risk-off",
       momentumVsDefense: sectorTop[0]?.label === "crypto" ? "Momentum" : "Dengeli",
@@ -143,10 +182,14 @@ export function buildPortfolioIntelligenceFromLive(
     investedCost,
     totalPnL,
     totalPnLPct,
-    todayPnLPct: holdingRows.reduce((s, h) => s + h._changePct, 0) / (holdingRows.length || 1),
+    todayPnL,
+    todayPnLPct: weightedDailyChangePct,
     riskScore,
     riskLabel,
-    perfSeries,
+    perfSeries: perfChart.series,
+    perfMode: perfChart.mode,
+    perfCaption: perfChart.caption,
+    primaryCurrency,
   };
 
   return { bundle, stats };

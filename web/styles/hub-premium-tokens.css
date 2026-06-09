@@ -1,0 +1,108 @@
+/**
+ * Hub Premium — ortak tasarım tokenları (Portföy pf-* referansından türetildi)
+ * Tüm /hub/* sayfa yüzeyleri bu namespace üzerinden hizalanır.
+ */
+
+.hp-canvas {
+  /* ─── Mürekkep & yüzey ─── */
+  --hp-text: var(--color-text);
+  --hp-text-2: var(--color-text-secondary);
+  --hp-meta: var(--color-meta);
+  --hp-surface: var(--color-surface);
+  --hp-surface-2: var(--color-bg-elevated);
+  --hp-border: var(--color-border);
+  --hp-border-2: var(--color-divider);
+  --hp-up: var(--color-rise);
+  --hp-down: var(--color-fall);
+  --hp-up-bg: color-mix(in srgb, var(--color-rise) 10%, transparent);
+  --hp-down-bg: color-mix(in srgb, var(--color-fall) 10%, transparent);
+
+  /* ─── Zone (data-hub-zone ile override) ─── */
+  --hp-zone-1: #6366f1;
+  --hp-zone-2: #4f46e5;
+  --hp-zone-3: #a5b4fc;
+  --hp-zone-ambient: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+  --hp-zone-border: color-mix(in srgb, var(--hp-zone-1) 22%, var(--hp-border-2));
+  --hp-zone-glow: color-mix(in srgb, var(--hp-zone-3) 16%, transparent);
+  --hp-accent: var(--hp-zone-1);
+  --hp-chart-primary: var(--hp-zone-1);
+
+  /* ─── Cam & derinlik ─── */
+  --hp-glass: color-mix(in srgb, var(--hp-surface) 88%, transparent);
+  --hp-glass-border: color-mix(in srgb, var(--hp-border) 72%, transparent);
+  --hp-radius-block: 14px;
+  --hp-radius-chip: 9px;
+  --hp-shadow-block:
+    0 1px 0 color-mix(in srgb, #fff 4%, transparent),
+    0 12px 32px color-mix(in srgb, #000 18%, transparent);
+
+  /* ─── Blok zone aksanları ─── */
+  --hp-block-accent: var(--hp-zone-1);
+  --hp-block-accent-2: var(--hp-zone-2);
+  --hp-block-accent-3: var(--hp-zone-3);
+
+  /* ─── Ritim ─── */
+  --hp-space-section: 20px;
+  --hp-space-block-pad: 16px;
+  --hp-space-inline: 18px;
+  --hp-space-page-y: 20px;
+
+  background: var(--color-bg);
+  color: var(--hp-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 1024px) {
+  .hp-canvas {
+    --hp-space-section: 22px;
+    --hp-space-block-pad: 18px;
+    --hp-space-inline: 20px;
+  }
+}
+
+/* pf-* sayfaları hub zone rengini devralır */
+.hp-canvas.pf-canvas,
+.hp-canvas .pf-canvas {
+  --pf-zone-1: var(--hp-zone-1);
+  --pf-zone-2: var(--hp-zone-2);
+  --pf-zone-3: var(--hp-zone-3);
+  --pf-zone-ambient: var(--hp-zone-ambient);
+  --pf-zone-border: var(--hp-zone-border);
+  --pf-zone-glow: var(--hp-zone-glow);
+  --pf-accent: var(--hp-accent);
+  --pf-chart-primary: var(--hp-chart-primary);
+}
+
+.hp-canvas .wl-page {
+  --wl-accent: var(--hp-zone-1);
+}
+
+.hp-canvas .pf-canvas,
+.hp-canvas.pf-canvas {
+  background: transparent;
+  color: inherit;
+}
+
+/* Portföy pf-main ambient — hp grid üzerinde devam */
+.hp-canvas .pf-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    168deg,
+    var(--hp-zone-ambient) 0%,
+    color-mix(in srgb, var(--hp-zone-ambient) 35%, transparent) 42%,
+    transparent 78%
+  );
+}
+
+.hp-canvas .pf-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hp-canvas .sg-shell {
+  --sg-accent: var(--hp-zone-1);
+}

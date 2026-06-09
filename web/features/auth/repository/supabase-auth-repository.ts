@@ -13,16 +13,16 @@ const SHELL: AuthShellPresentation = {
 
 const FORMS: Record<AuthSurfaceId, AuthFormPresentation> = {
   login: {
-    title: "Oturum",
-    subtitle: "Kurumsal e-postanızla giriş yapın.",
-    primary_cta: "Devam et",
+    title: "Giriş yap",
+    subtitle: "E-posta ve şifrenle hesabına bağlan.",
+    primary_cta: "Giriş yap",
     secondary_hint: null,
   },
   register: {
-    title: "Kayıt",
-    subtitle: "Hesabınız oluşturulduktan sonra onboarding akışına yönlendirilirsiniz.",
-    primary_cta: "Kayıt ol",
-    secondary_hint: null,
+    title: "Hesap oluştur",
+    subtitle: "Ücretsiz kayıt — ardından 3 adımlık kişisel kurulum.",
+    primary_cta: "Hesap oluştur",
+    secondary_hint: "E-posta onayı canlı ortamda gerekebilir.",
   },
   forgot: {
     title: "Şifre sıfırlama",

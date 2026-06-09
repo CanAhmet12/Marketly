@@ -251,6 +251,12 @@ function mapSignal(p: FeedPost): VRSignalItem {
     rr: `${(1.5 + (stableU32(id) % 20) / 10).toFixed(1)}x`,
     age: publishedAgoTr(p.created_at),
     href: `/post/${p.id}`,
+    spotPrice: "—",
+    changePct: "—",
+    changePositive: dir !== "SELL",
+    signalStatus: dir === "HOLD" ? "watching" : "in_entry",
+    signalStatusLabel: dir === "HOLD" ? "Nötr — izleme" : "Giriş bandında",
+    pricePosition: 40 + (stableU32(id) % 35),
   };
 }
 

@@ -2,36 +2,76 @@
 
 import { useMemo } from "react";
 
-import { getSignalsRepository } from "@/features/signals/repository";
+import { buildSymbolConsensusIntel } from "@/features/signals/lib/signal-intelligence-build";
+import {
+  buildConsensusNarrative,
+  getConsensusDirectionCounts,
+  SIGNAL_METRIC_LABELS,
+} from "@/features/signals/lib/signal-detail-narrative";
+import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import { cn } from "@/lib/cn";
 
 type Props = {
   symbol: string;
+  catalog: readonly SignalsFeedRow[];
+  currentDirection?: SignalsFeedRow["direction"];
   className?: string;
   title?: string;
 };
 
-function ScoreCell({ label, v }: { label: string; v: number }) {
+function ScoreCell({ label, hint, v }: { label: string; hint?: string; v: number }) {
   return (
-    <div className="sdm-score-cell">
+    <div className="sdm-score-cell" title={hint}>
       <p className="sdm-score-cell__label">{label}</p>
       <p className="sdm-score-cell__value">{v}</p>
     </div>
   );
 }
 
-/** Sembol konsensüsü — context kolonu (itibar ayrı analist kartında). */
-export function SignalDetailConsensusPanel({ symbol, className, title = "Konsensüs" }: Props) {
-  const consensus = useMemo(() => getSignalsRepository().getSymbolConsensusIntel(symbol), [symbol]);
+/** Sembol konsensüsü — catalog aggregation + narrative (E4B/E4D). */
+export function SignalDetailConsensusPanel({
+  symbol,
+  catalog,
+  currentDirection = "BUY",
+  className,
+  title = "Piyasa görüşü",
+}: Props) {
+  const consensus = useMemo(() => buildSymbolConsensusIntel([...catalog], symbol), [catalog, symbol]);
+  const counts = useMemo(() => getConsensusDirectionCounts(catalog, symbol), [catalog, symbol]);
+  const narrative = useMemo(
+    () => buildConsensusNarrative(consensus, counts, currentDirection),
+    [consensus, counts, currentDirection],
+  );
 
   return (
-    <section className={cn("sdm-panel-block sdm-consensus-block", className)} aria-label={`${symbol} konsensüsü`}>
+    <section className={cn("sdm-panel-block sdm-consensus-block", className)} aria-label={`${symbol} piyasa görüşü`}>
       <h3 className="sdm-panel-block__title">{title}</h3>
+      <p className="sdm-consensus-block__headline">{narrative.headline}</p>
+      <p className="sdm-panel-block__meta">{narrative.sampleLine}</p>
+      <p className="sdm-consensus-block__dirs" aria-label="Yön dağılımı">
+        {narrative.directionLine}
+      </p>
       <div className="sdm-score-grid sdm-score-grid--quad">
-        <ScoreCell label="Uyum" v={consensus.agreementPct} />
-        <ScoreCell label="Güven" v={consensus.confidenceAvg} />
-        <ScoreCell label="Boğa" v={consensus.bullishConcentrationPct} />
-        <ScoreCell label="Ayı" v={consensus.bearishConcentrationPct} />
+        <ScoreCell
+          label={SIGNAL_METRIC_LABELS.directionAgreement}
+          hint="Aktif çağrılarda baskın yönün payı"
+          v={consensus.agreementPct}
+        />
+        <ScoreCell
+          label={SIGNAL_METRIC_LABELS.consensusConfidence}
+          hint="Bu semboldeki aktif çağrıların ortalama tez gücü"
+          v={consensus.confidenceAvg}
+        />
+        <ScoreCell
+          label={SIGNAL_METRIC_LABELS.bullShare}
+          hint="AL yönündeki çağrıların AL+SAT içindeki payı"
+          v={consensus.bullishConcentrationPct}
+        />
+        <ScoreCell
+          label={SIGNAL_METRIC_LABELS.bearShare}
+          hint="SAT yönündeki çağrıların AL+SAT içindeki payı"
+          v={consensus.bearishConcentrationPct}
+        />
       </div>
     </section>
   );

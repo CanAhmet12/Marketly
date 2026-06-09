@@ -1,4 +1,5 @@
 import type { MockNotificationRow, MockNotificationType } from "@/features/social/types";
+import { MESSAGES_INBOX_PATH, messagesConversationPath } from "@/features/messages/routes";
 
 import { MOCK_PROFILE_BY_ID, MOCK_PROFILES } from "../fixtures/profiles";
 
@@ -37,7 +38,7 @@ function hrefFor(type: MockNotificationType, entityId: string | null): string {
     case "room_invite":
       return entityId ? `/channel/${encodeURIComponent(entityId)}` : "/live";
     case "message":
-      return entityId ? `/messages/${entityId}` : "/messages";
+      return entityId ? messagesConversationPath(entityId) : MESSAGES_INBOX_PATH;
     case "portfolio_intel":
     case "strategy_fit":
       return "/portfolio";

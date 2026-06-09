@@ -49,18 +49,14 @@ html[data-theme="dark"] {
 }
 
 .ms-scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .ms-scrollbar-thin::-webkit-scrollbar {
-  height: 5px;
-  width: 5px;
-}
-
-.ms-scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.35);
-  border-radius: 9999px;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .ms-num-strong {

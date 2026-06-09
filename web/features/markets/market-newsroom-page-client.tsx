@@ -1,255 +1,48 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { EmptyState } from "@/components/states";
-import { IntelWorkspaceSkeleton } from "@/features/markets/components/markets-states";
+import { MarketNewsBreakingStrip } from "@/features/markets/components/market-news/market-news-breaking-strip";
+import { MarketNewsDeskRail } from "@/features/markets/components/market-news/market-news-desk-rail";
+import { MarketNewsHeader } from "@/features/markets/components/market-news/market-news-header";
+import { MarketNewsTicker } from "@/features/markets/components/market-news/market-news-ticker";
+import { MarketNewsWireFeed } from "@/features/markets/components/market-news/market-news-wire-feed";
+import { pickBreakingLead, pickWireHeadlines } from "@/features/markets/lib/market-news-channel";
 import {
-  formatNewsTimeAgo,
-  getMarketNewsPhoto,
-  marketNewsDetailHref,
-} from "@/features/markets/lib/market-news-shared";
+  MarketNewsHeroMainCard,
+  MarketNewsHeroSideCard,
+} from "@/features/markets/components/market-news/market-news-hero-card";
+import { MarketNewsPersonalBand } from "@/features/markets/components/market-news/market-news-personal-band";
+import { MarketNewsPersonalizedRail } from "@/features/markets/components/market-news/market-news-personalized-rail";
+import { MarketNewsSection } from "@/features/markets/components/market-news/market-news-section";
+import {
+  MarketNewsTabs,
+  type NewsTabCat,
+} from "@/features/markets/components/market-news/market-news-tabs";
+import { MarketNewsPageSkeleton } from "@/features/markets/components/markets-states";
+import { pickHeroStack } from "@/features/markets/lib/market-news-editorial";
+import { NEWS_CATEGORY_ORDER } from "@/features/markets/lib/news-card-tones";
 import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 import { useMarketNewsroom } from "@/features/markets/hooks/use-market-newsroom";
-import type { MarketNewsIntelligenceItem, MarketNewsroomBundle } from "@/features/markets/types/news-calendar-intelligence";
 import { cn } from "@/lib/cn";
-
-type NewsCat = keyof MarketNewsroomBundle["categoryCounts"];
-
-const NEWS_CATS = ["crypto", "macro", "earnings", "flows", "local"] as const;
-
-const CAT_CFG = {
-  crypto:   { label: "Kripto",       tabLabel: "Kripto",       emoji: "₿",  stripe: "#f59e0b", tabCls: "mn-tab--crypto"   },
-  macro:    { label: "Ekonomi",      tabLabel: "Ekonomi",      emoji: "📊", stripe: "#3b82f6", tabCls: "mn-tab--macro"    },
-  earnings: { label: "Şirketler",    tabLabel: "Şirketler",    emoji: "🏢", stripe: "#22c55e", tabCls: "mn-tab--earnings" },
-  flows:    { label: "Emtia & Akış", tabLabel: "Emtia & Akış", emoji: "⚡", stripe: "#8b5cf6", tabCls: "mn-tab--flows"    },
-  local:    { label: "Türkiye",      tabLabel: "Türkiye",      emoji: "🇹🇷", stripe: "#14b8a6", tabCls: "mn-tab--local"    },
-} as const;
-
-function resolveNewsCat(raw: string | null): NewsCat {
+function resolveNewsCat(raw: string | null): NewsTabCat {
   if (!raw || raw === "all") return "all";
-  if ((NEWS_CATS as readonly string[]).includes(raw)) return raw as NewsCat;
+  if ((NEWS_CATEGORY_ORDER as readonly string[]).includes(raw)) return raw as NewsTabCat;
   return "all";
 }
-
-function fmtTime(mins: number): string {
-  return formatNewsTimeAgo(mins).replace(" önce", "");
-}
-
-function getPhoto(item: MarketNewsIntelligenceItem): string {
-  const ext = item as MarketNewsIntelligenceItem & { imageUrl?: string | null };
-  return getMarketNewsPhoto({ ...item, imageUrl: ext.imageUrl });
-}
-
-/* ================================
-   BADGE'LER
-   ================================ */
-
-function ImpactBadge({ tier }: { tier: 1 | 2 | 3 }) {
-  return <span className={`mn-badge-impact mn-badge-impact--${tier}`}>ETKİ {tier}</span>;
-}
-
-function CatBadge({ cat }: { cat: string }) {
-  const cfg = CAT_CFG[cat as keyof typeof CAT_CFG];
-  if (!cfg) return null;
-  return <span className={`mn-badge-cat mn-badge-cat--${cat}`}>{cfg.emoji} {cfg.label}</span>;
-}
-
-/* ================================
-   GRID NEWS CARD
-   Fotoğraf tam kart, gradient, başlık üstte
-   ================================ */
-
-function NewsCard({ item }: { item: MarketNewsIntelligenceItem }) {
-  const src = getPhoto(item);
-
-  return (
-    <Link href={marketNewsDetailHref(item.id)} className={cn("mn-card", `mn-card--${item.newsCategory}`, "mn-card--link")}>
-      {/* Fotoğraf */}
-      <img
-        src={src}
-        alt={item.headline}
-        className="mn-card-img"
-        loading="lazy"
-        onError={(e) => {
-          const el = e.target as HTMLImageElement;
-          el.style.display = "none";
-          const parent = el.parentElement;
-          if (parent) parent.style.background = "#0d0f17";
-        }}
-      />
-
-      {/* Sinematik gradient */}
-      <div className="mn-card-overlay" />
-
-      {/* Üst: badges */}
-      <div className="mn-card-top">
-        <ImpactBadge tier={item.impactTier} />
-        <CatBadge cat={item.newsCategory} />
-        {item.hitsWatchlist && <span className="mn-watchlist-tag">İZLEME</span>}
-      </div>
-
-      {/* Alt: başlık + meta */}
-      <div className="mn-card-bottom">
-        {item.affectedSymbols.length > 0 && (
-          <div className="mn-card-symbols">
-            {item.affectedSymbols.slice(0, 3).map((s) => (
-              <span key={s} className="mn-sym-tag">{s}</span>
-            ))}
-          </div>
-        )}
-        <h3 className="mn-card-headline">{item.headline}</h3>
-        <div className="mn-card-meta">
-          <span className="mn-card-meta-src">{item.source}</span>
-          <span>·</span>
-          <span>{fmtTime(item.minutesAgo)} önce</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/* ================================
-   HERO ANA KART — büyük, sinematik
-   ================================ */
-
-function HeroMainCard({ item }: { item: MarketNewsIntelligenceItem }) {
-  const src = getPhoto(item);
-  const cfg = CAT_CFG[item.newsCategory as keyof typeof CAT_CFG] ?? CAT_CFG.macro;
-
-  return (
-    <Link href={marketNewsDetailHref(item.id)} className="mn-hero-main mn-card--link">
-      {/* Fotoğraf */}
-      <img
-        src={src}
-        alt={item.headline}
-        className="mn-card-img"
-        loading="eager"
-        onError={(e) => {
-          const el = e.target as HTMLImageElement;
-          el.style.display = "none";
-          const parent = el.parentElement;
-          if (parent) parent.style.background = "#0d0f17";
-        }}
-      />
-
-      {/* Kategori sol şerit */}
-      <div className="mn-card-stripe" style={{ background: cfg.stripe }} />
-
-      {/* Sinematik gradient */}
-      <div className="mn-card-overlay" />
-
-      {/* Üst: badges */}
-      <div className="mn-card-top">
-        <ImpactBadge tier={item.impactTier} />
-        <CatBadge cat={item.newsCategory} />
-        {item.hitsWatchlist && <span className="mn-watchlist-tag">İZLEMEDE</span>}
-      </div>
-
-      {/* Alt: içerik */}
-      <div className="mn-card-bottom">
-        {item.affectedSymbols.length > 0 && (
-          <div className="mn-card-symbols">
-            {item.affectedSymbols.slice(0, 4).map((s) => (
-              <span key={s} className="mn-sym-tag">{s}</span>
-            ))}
-          </div>
-        )}
-        <h2 className="mn-card-headline">{item.headline}</h2>
-        {item.discussionSnippet && (
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.45, marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-            {item.discussionSnippet}
-          </p>
-        )}
-        <div className="mn-card-meta">
-          <span className="mn-card-meta-src">{item.source}</span>
-          <span>·</span>
-          <span>{fmtTime(item.minutesAgo)} önce</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/* ================================
-   HERO YAN KARTLAR — orantılı, 3 kart
-   ================================ */
-
-function HeroSideCard({ item }: { item: MarketNewsIntelligenceItem }) {
-  const src = getPhoto(item);
-
-  return (
-    <Link href={marketNewsDetailHref(item.id)} className="mn-hero-side-card mn-card--link">
-      <img
-        src={src}
-        alt={item.headline}
-        className="mn-card-img"
-        loading="lazy"
-        onError={(e) => {
-          const el = e.target as HTMLImageElement;
-          el.style.display = "none";
-          const parent = el.parentElement;
-          if (parent) parent.style.background = "#0d0f17";
-        }}
-      />
-      <div className="mn-card-overlay" />
-      <div className="mn-card-top">
-        <ImpactBadge tier={item.impactTier} />
-        <CatBadge cat={item.newsCategory} />
-      </div>
-      <div className="mn-card-bottom">
-        <h3 className="mn-card-headline">{item.headline}</h3>
-        <div className="mn-card-meta">
-          <span className="mn-card-meta-src">{item.source}</span>
-          <span>·</span>
-          <span>{fmtTime(item.minutesAgo)}</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function NewsSection({ sectionKey, items, cols = 3 }: {
-  sectionKey: string;
-  items: MarketNewsIntelligenceItem[];
-  cols?: 3 | 4;
-}) {
-  if (items.length === 0) return null;
-  const cfg = CAT_CFG[sectionKey as keyof typeof CAT_CFG];
-  if (!cfg) return null;
-
-  return (
-    <section className="mn-section">
-      <div className="mn-section-header">
-        <div className="mn-section-title">
-          <span className="mn-section-stripe" style={{ background: cfg.stripe }} />
-          {cfg.emoji} {cfg.label} Haberleri
-        </div>
-        <Link href="/market-news" className="mn-see-all">Tümünü Gör →</Link>
-      </div>
-      <div className={`mn-grid mn-grid--${cols}`}>
-        {items.map((item) => <NewsCard key={item.id} item={item} />)}
-      </div>
-    </section>
-  );
-}
-
-/* ================================
-   ANA CLIENT
-   ================================ */
 
 export function MarketNewsroomPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { bundle, isLoading, isEmpty } = useMarketNewsroom();
-  const tabRefs = useRef<Partial<Record<NewsCat, HTMLButtonElement | null>>>({});
+  const { bundle, isLoading, isEmpty, liveMode, isRefetching } = useMarketNewsroom();
+  const tabRefs = useRef<Partial<Record<NewsTabCat, HTMLButtonElement | null>>>({});
 
   const activeCat = useMemo(() => resolveNewsCat(searchParams.get("cat")), [searchParams]);
 
   const pushCat = useCallback(
-    (cat: NewsCat) => {
+    (cat: NewsTabCat) => {
       if (cat === "all") {
         router.replace("/market-news", { scroll: false });
       } else {
@@ -266,13 +59,47 @@ export function MarketNewsroomPageClient() {
     }
   }, [bundle, activeCat, pushCat]);
 
-  if (isLoading || !bundle) {
-    return <IntelWorkspaceSkeleton rows={5} />;
+  const editorial = useMemo(() => {
+    if (!bundle) return null;
+
+    const allItems = [...bundle.items];
+    const visibleCats = NEWS_CATEGORY_ORDER.filter(
+      (cat) => (bundle.categoryCounts[cat] ?? 0) > 0,
+    );
+    const tabOrder: NewsTabCat[] = ["all", ...visibleCats];
+
+    const filteredItems =
+      activeCat === "all"
+        ? allItems
+        : allItems.filter((i) => i.newsCategory === activeCat);
+
+    const heroSideCount = activeCat === "all" ? 2 : 3;
+    const { main: heroMain, side: heroSide } = pickHeroStack(filteredItems, heroSideCount);
+
+    const watchlistHits = allItems.filter((i) => i.hitsWatchlist).length;
+    const portfolioHits = allItems.filter((i) => i.hitsPortfolio).length;
+
+    return {
+      allItems,
+      visibleCats,
+      tabOrder,
+      filteredItems,
+      heroMain,
+      heroSide,
+      watchlistHits,
+      portfolioHits,
+    };
+  }, [bundle, activeCat]);
+
+  if (isLoading || !bundle || !editorial) {
+    return <MarketNewsPageSkeleton />;
   }
 
   if (isEmpty) {
     return (
-      <div className="mn-page ms-page-wrapper ms-container-markets min-w-0 py-16">
+      <div className="mn-page mn-page--premium ms-page-wrapper ms-container-markets min-w-0">
+        <MarketNewsHeader showLive={liveMode} isRefetching={isRefetching} />
+        <div className="py-16">
         <EmptyState
           title="Haber akışı boş"
           description="market_news tablosunda henüz kayıt yok. fetch-market-news Edge Function çalıştırıldığında haberler burada görünecek."
@@ -281,26 +108,15 @@ export function MarketNewsroomPageClient() {
           tone="market"
           compact
         />
+        </div>
       </div>
     );
   }
 
-  const allItems  = [...bundle.items];
-  const sorted    = [...allItems].sort((a, b) => b.impactTier - a.impactTier);
-  const heroMain  = sorted[0]!;
-  const heroSide  = sorted.slice(1, 3);   /* 2 yan kart — daha büyük */
+  const { heroMain, heroSide, filteredItems, visibleCats, tabOrder, watchlistHits, portfolioHits } =
+    editorial;
 
-  const byCat = (cat: string) => allItems.filter((i) => i.newsCategory === cat);
-
-  const CATS: (keyof typeof CAT_CFG)[] = ["crypto", "macro", "earnings", "flows", "local"];
-  const visibleCats = CATS.filter((cat) => (bundle.categoryCounts[cat] ?? 0) > 0);
-  const tabOrder: NewsCat[] = ["all", ...visibleCats];
-
-  const filteredItems = activeCat === "all"
-    ? allItems
-    : allItems.filter((i) => i.newsCategory === activeCat);
-
-  const onTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, current: NewsCat) => {
+  const onTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, current: NewsTabCat) => {
     const idx = tabOrder.indexOf(current);
     if (idx < 0) return;
     let nextIdx = idx;
@@ -313,128 +129,109 @@ export function MarketNewsroomPageClient() {
     pushCat(next);
   };
 
+  const gridOverflow =
+    activeCat !== "all" && filteredItems.length > 1 + heroSide.length
+      ? filteredItems.slice(1 + heroSide.length)
+      : [];
+
+  const heroIds = new Set(
+    [heroMain?.id, ...heroSide.map((item) => item.id)].filter(Boolean) as string[],
+  );
+  const breakingLead = pickBreakingLead(filteredItems);
+  const tickerItems = pickWireHeadlines(editorial.allItems, 8, heroIds);
+
   return (
-    <div className="mn-page ms-page-wrapper ms-container-markets min-w-0">
-
-      {/* ===== HEADER ===== */}
-      <div className="mn-header">
-        <div className="mn-header-left">
-          <div>
-            <div className="mn-header-brand">
-              <span className="mn-header-site">Marketly</span>
-              <div className="mn-header-divider" />
-              <h1 className="mn-header-title">Piyasa Haberleri</h1>
-            </div>
-          </div>
-          <span className="mn-live-badge">
-            <span className="mn-live-dot" />
-            Canlı
-          </span>
-        </div>
-        <div className="mn-header-actions">
-          <Link href="/economic-calendar" className="mn-header-btn">📅 Takvim</Link>
-          <Link href="/watchlist" className="mn-header-btn">⭐ İzleme</Link>
-        </div>
-      </div>
-
-      {/* ===== TABS ===== */}
-      <div className="mn-tabs" role="tablist" aria-label="Haber kategorileri">
-        <button
-          id="mn-tab-all"
-          type="button"
-          role="tab"
-          aria-selected={activeCat === "all"}
-          aria-controls="market-news-panel"
-          tabIndex={activeCat === "all" ? 0 : -1}
-          ref={(el) => { tabRefs.current.all = el; }}
-          className={cn("mn-tab mn-tab--all", activeCat === "all" && "active")}
-          onClick={() => pushCat("all")}
-          onKeyDown={(e) => onTabKeyDown(e, "all")}
-        >
-          Tüm Haberler <span className="mn-tab-count">{bundle.categoryCounts.all}</span>
-        </button>
-        {visibleCats.map((cat) => {
-          const cfg = CAT_CFG[cat];
-          const count = bundle.categoryCounts[cat] ?? 0;
-          return (
-            <button
-              key={cat}
-              id={`mn-tab-${cat}`}
-              type="button"
-              role="tab"
-              aria-selected={activeCat === cat}
-              aria-controls="market-news-panel"
-              tabIndex={activeCat === cat ? 0 : -1}
-              ref={(el) => { tabRefs.current[cat] = el; }}
-              className={cn("mn-tab", cfg.tabCls, activeCat === cat && "active")}
-              onClick={() => pushCat(cat)}
-              onKeyDown={(e) => onTabKeyDown(e, cat)}
-            >
-              {cfg.emoji} {cfg.tabLabel}
-              <span className="mn-tab-count">{count}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ===== İÇERİK ===== */}
-      <div id="market-news-panel" role="tabpanel" aria-labelledby={`mn-tab-${activeCat}`}>
-      {activeCat === "all" ? (
-        <>
-          {/* Hero */}
-          <div className="mn-hero">
-            <HeroMainCard item={heroMain} />
-            <div className="mn-hero-side">
-              {heroSide.map((item) => <HeroSideCard key={item.id} item={item} />)}
-            </div>
-          </div>
-
-          {/* Kategori section'ları */}
-          {CATS.map((cat) => {
-            const items = byCat(cat);
-            return (
-              <NewsSection
-                key={cat}
-                sectionKey={cat}
-                items={items}
-                cols={3}
-              />
-            );
-          })}
-        </>
-      ) : (
-        (() => {
-          if (filteredItems.length === 0) {
-            return (
-              <EmptyState
-                title="Bu kategoride haber yok"
-                description="Seçili kategoride şu an haber bulunmuyor."
-                actionLabel="Tüm haberler"
-                onAction={() => pushCat("all")}
-                tone="market"
-                compact
-              />
-            );
-          }
-          const heroF = filteredItems[0]!;
-          const sideF = filteredItems.slice(1, 4);
-          return (
-            <>
-              <div className="mn-hero">
-                <HeroMainCard item={heroF} />
-                <div className="mn-hero-side">
-                  {sideF.map((item) => <HeroSideCard key={item.id} item={item} />)}
-                </div>
-              </div>
-              {filteredItems.length > 4 && (
-                <NewsSection sectionKey={activeCat} items={filteredItems.slice(4)} cols={3} />
-              )}
-            </>
-          );
-        })()
+    <div
+      className={cn(
+        "mn-page mn-page--premium mn-page--channel ms-page-wrapper ms-container-markets min-w-0",
+        activeCat !== "all" && `mn-page--ambient-${activeCat}`,
       )}
-      </div>
+    >
+      <MarketNewsHeader showLive={liveMode} isRefetching={isRefetching} />
+      <MarketNewsTicker items={tickerItems} />
+      {breakingLead && breakingLead.id !== heroMain?.id ? (
+        <MarketNewsBreakingStrip item={breakingLead} />
+      ) : null}
 
+      <MarketNewsPersonalBand
+        headline={bundle.personalizedHeadline}
+        watchlistHits={watchlistHits}
+        portfolioHits={portfolioHits}
+      />
+
+      <MarketNewsTabs
+        activeCat={activeCat}
+        categoryCounts={bundle.categoryCounts}
+        visibleCats={visibleCats}
+        tabRefs={tabRefs}
+        onSelect={pushCat}
+        onKeyDown={onTabKeyDown}
+      />
+
+      <div id="market-news-panel" role="tabpanel" aria-labelledby={`mn-tab-${activeCat}`}>
+        {activeCat !== "all" && filteredItems.length === 0 ? (
+          <EmptyState
+            title="Bu kategoride haber yok"
+            description="Seçili kategoride şu an haber bulunmuyor."
+            actionLabel="Tüm haberler"
+            onAction={() => pushCat("all")}
+            tone="market"
+            compact
+          />
+        ) : heroMain ? (
+          <div className="mn-ch-desk">
+            <div className="mn-ch-desk__main">
+              <div className={heroSide.length > 0 ? "mn-hero" : "mn-hero mn-hero--solo"}>
+                <MarketNewsHeroMainCard item={heroMain} index={0} />
+                {heroSide.length > 0 ? (
+                  <div className="mn-hero-side">
+                    {heroSide.map((item, i) => (
+                      <MarketNewsHeroSideCard key={item.id} item={item} index={i + 1} />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              {activeCat === "all" ? (
+                <MarketNewsWireFeed items={editorial.allItems} excludeIds={heroIds} />
+              ) : null}
+
+              {activeCat === "all" ? (
+                <MarketNewsPersonalizedRail
+                  items={editorial.allItems}
+                  excludeIds={heroIds}
+                />
+              ) : null}
+
+              {activeCat === "all" ? (
+                NEWS_CATEGORY_ORDER.map((cat, sectionIndex) => (
+                  <MarketNewsSection
+                    key={cat}
+                    sectionKey={cat}
+                    items={editorial.allItems.filter((i) => i.newsCategory === cat)}
+                    excludeIds={heroIds}
+                    indexOffset={sectionIndex * 2}
+                  />
+                ))
+              ) : gridOverflow.length > 0 ? (
+                <MarketNewsSection
+                  sectionKey={activeCat as (typeof NEWS_CATEGORY_ORDER)[number]}
+                  items={gridOverflow}
+                  showSeeAll={false}
+                  indexOffset={4}
+                />
+              ) : null}
+            </div>
+
+            <MarketNewsDeskRail
+              items={editorial.allItems}
+              categoryCounts={bundle.categoryCounts}
+              excludeIds={heroIds}
+              activeCat={activeCat}
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

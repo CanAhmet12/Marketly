@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { SafeAvatar } from "@/components/ui/safe-avatar";
 import { deleteFollow, fetchFollowState, insertFollow } from "@/features/channel/fetch-follow";
 import { getSocialRepository } from "@/features/social/repository";
+import type { DiscussionTimelineRow } from "@/features/social/repository/discussion-types";
 import { mockFollowState } from "@/mock/adapters/channel";
 import { isMockDataEnabled } from "@/mock/config";
 import { queryKeys } from "@/lib/query-keys";
@@ -16,11 +18,56 @@ import { avatarUrl } from "@/lib/avatar-url";
 import { authorAvatarSrc } from "../post-detail-helpers";
 import type { PostDetail } from "../types";
 import { PostDetailMarketContext } from "./post-detail-market-context";
+import { PostDetailSideSkeleton } from "./post-detail-side-skeleton";
 
 interface Props {
   post: PostDetail;
   postId: string;
   viewerId: string | null;
+}
+
+function timelineTagLabel(tag: DiscussionTimelineRow["tag"]): string {
+  const m: Record<DiscussionTimelineRow["tag"], string> = {
+    active: "Aktif",
+    trending: "Trend",
+    creator: "Üretici",
+    signal: "Sinyal",
+    macro: "Makro",
+    asset: "Varlık",
+  };
+  return m[tag] ?? tag;
+}
+
+function signalDirection(label: string): "buy" | "sell" | "hold" {
+  const l = label.toLowerCase();
+  if (l.includes("sell") || l.includes("sat")) return "sell";
+  if (l.includes("buy") || l.includes("al")) return "buy";
+  return "hold";
+}
+
+function SideModule({
+  title,
+  accent,
+  children,
+  className,
+}: {
+  title: string;
+  accent?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`pd-side-module${className ? ` ${className}` : ""}`}
+      style={accent ? ({ "--pd-side-accent": accent } as CSSProperties) : undefined}
+    >
+      <span className="pd-side-module-accent" aria-hidden />
+      <div className="pd-side-module-inner">
+        <h3 className="pd-side-title">{title}</h3>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export function PostDetailSidebar({ post, postId, viewerId }: Props) {
@@ -82,8 +129,7 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
 
   return (
     <aside className="pd-sidebar-col">
-      <div className="pd-side-block">
-        <h3 className="pd-side-title">Yazar</h3>
+      <SideModule title="Yazar" className="pd-side-module--author">
         <Link href={`/channel/${post.user_id}`} className="pd-side-author">
           <SafeAvatar
             src={authorAvatarSrc(post)}
@@ -92,7 +138,11 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
             className="pd-avatar"
           />
           <div className="min-w-0">
-            <div className="pd-side-author-name">{post.author_name}</div>
+            <div className="pd-side-author-name-row">
+              <span className="pd-side-author-name">{post.author_name}</span>
+              {post.author_tier === "elite" ? <span className="pd-side-tier pd-side-tier--elite">Elite</span> : null}
+              {post.author_tier === "pro" ? <span className="pd-side-tier pd-side-tier--pro">Pro</span> : null}
+            </div>
             <div className="pd-side-author-handle">{post.author_handle}</div>
             <div className="pd-side-followers">
               {formatCompactCount(follow.followersCount)} takipçi
@@ -115,66 +165,96 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
             Profili gör →
           </Link>
         </div>
-      </div>
+      </SideModule>
 
       {asset && <PostDetailMarketContext assetTag={asset} />}
 
+      {sidecarQuery.isLoading ? <PostDetailSideSkeleton /> : null}
+
       {sidecar?.summary && (
-        <div className="pd-side-block">
-          <h3 className="pd-side-title">Tartışma özeti</h3>
+        <SideModule title="Tartışma özeti" accent="var(--pd-accent)">
           <p className="pd-side-summary">{sidecar.summary}</p>
-        </div>
+        </SideModule>
       )}
 
       {sidecar?.continuationHref && (
-        <div className="pd-side-block">
+        <SideModule title="Devam" accent="#60a5fa">
           <Link href={sidecar.continuationHref} className="pd-side-highlight-link">
             Thread devamını gör →
           </Link>
-        </div>
+        </SideModule>
+      )}
+
+      {(sidecar?.timelineRows?.length ?? 0) > 0 && (
+        <SideModule title="Tartışma akışı" accent="#a78bfa">
+          <ul className="pd-side-timeline">
+            {sidecar!.timelineRows.slice(0, 4).map((row) => (
+              <li key={row.id}>
+                <Link href={row.href} className="pd-side-timeline-link">
+                  <span className="pd-side-timeline-main">
+                    <span className="pd-side-timeline-label">{row.label}</span>
+                    <span className="pd-side-timeline-sub">{row.sub}</span>
+                  </span>
+                  <span className="pd-side-timeline-meta">
+                    <span className={`pd-side-timeline-tag pd-side-timeline-tag--${row.tag}`}>
+                      {timelineTagLabel(row.tag)}
+                    </span>
+                    <span className="pd-side-timeline-heat">{row.heat}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </SideModule>
       )}
 
       {(sidecar?.relatedPosts?.length ?? 0) > 0 && (
-        <div className="pd-side-block">
-          <h3 className="pd-side-title">İlgili gönderiler</h3>
+        <SideModule title="İlgili gönderiler" accent="#34d399">
           <ul className="pd-related-list">
             {sidecar!.relatedPosts.slice(0, 4).map((rp) => (
               <li key={rp.id}>
                 <Link href={rp.href} className="pd-related-link">
-                  <span className="pd-related-title">{rp.title}</span>
+                  <span className="pd-related-row">
+                    <span className="pd-related-title">{rp.title}</span>
+                    {rp.asset_tag ? (
+                      <span className="pd-related-asset">{rp.asset_tag.replace(/^#/, "")}</span>
+                    ) : null}
+                  </span>
                   {rp.comments > 0 && (
-                    <span className="pd-related-meta">{rp.comments} yorum</span>
+                    <span className="pd-related-meta">{formatCompactCount(rp.comments)} yorum</span>
                   )}
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+        </SideModule>
       )}
 
       {(sidecar?.relatedSignals?.length ?? 0) > 0 && (
-        <div className="pd-side-block">
-          <h3 className="pd-side-title">Bağlı sinyaller</h3>
-          <ul className="pd-related-list">
-            {sidecar!.relatedSignals.slice(0, 3).map((s) => (
-              <li key={s.id}>
-                <Link href={s.href} className="pd-related-link">
-                  <span className="pd-related-title">{s.symbol}</span>
-                  <span className="pd-related-meta">{s.label}</span>
-                </Link>
-              </li>
-            ))}
+        <SideModule title="Bağlı sinyaller" accent="#f59e0b">
+          <ul className="pd-related-list pd-related-list--signals">
+            {sidecar!.relatedSignals.slice(0, 3).map((s) => {
+              const dir = signalDirection(s.label);
+              return (
+                <li key={s.id}>
+                  <Link href={s.href} className="pd-related-link pd-related-link--signal">
+                    <span className="pd-signal-symbol">{s.symbol}</span>
+                    <span className={`pd-signal-dir pd-signal-dir--${dir}`}>{s.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-        </div>
+        </SideModule>
       )}
 
       {(sidecar?.activeParticipants?.length ?? 0) > 0 && (
-        <div className="pd-side-block">
-          <h3 className="pd-side-title">Aktif katılımcılar</h3>
+        <SideModule title="Aktif katılımcılar" accent="#38bdf8">
           <ul className="pd-participant-list">
-            {sidecar!.activeParticipants.slice(0, 5).map((p) => (
+            {sidecar!.activeParticipants.slice(0, 5).map((p, i) => (
               <li key={p.user_id}>
                 <Link href={`/channel/${p.user_id}`} className="pd-participant-link">
+                  <span className="pd-participant-rank">{i + 1}</span>
                   <SafeAvatar
                     src={p.avatar?.trim() || avatarUrl(p.user_id, p.name)}
                     alt={p.name}
@@ -187,12 +267,11 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
               </li>
             ))}
           </ul>
-        </div>
+        </SideModule>
       )}
 
       {(sidecar?.networkHints?.length ?? 0) > 0 && (
-        <div className="pd-side-block">
-          <h3 className="pd-side-title">Ağ ipuçları</h3>
+        <SideModule title="Ağ ipuçları" accent="#94a3b8">
           <ul className="pd-network-list">
             {sidecar!.networkHints.slice(0, 4).map((h) => (
               <li key={h.id}>
@@ -202,11 +281,10 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
               </li>
             ))}
           </ul>
-        </div>
+        </SideModule>
       )}
 
-      <div className="pd-side-block">
-        <h3 className="pd-side-title">Eylemler</h3>
+      <SideModule title="Eylemler" accent="var(--pd-accent)">
         <Link href={uploadQuote} className="pd-side-action">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <polyline points="17 1 21 5 17 9" />
@@ -229,7 +307,7 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
             Thread kökü
           </Link>
         )}
-      </div>
+      </SideModule>
     </aside>
   );
 }

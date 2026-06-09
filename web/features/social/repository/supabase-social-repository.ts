@@ -1,3 +1,5 @@
+import { getDiscussionRecommendationsCache } from "@/features/social/discussion-recommendations-cache";
+import { AlgoFlags } from "@/lib/algo-flags";
 import { getDefaultMockSettings } from "@/mock/adapters/settings-preferences";
 
 import type { AffinityContext } from "@/features/personalization/domain/personalization-types";
@@ -284,8 +286,17 @@ export class SupabaseSocialRepository implements SocialRepository {
     input: PersonalizedDiscussionInput,
     _affinityOverride?: AffinityContext | null,
   ): PersonalizedDiscussionPack {
-    void input;
     void _affinityOverride;
+    if (AlgoFlags.discussionRecommendations) {
+      const cached = getDiscussionRecommendationsCache(input.viewerId);
+      const hasAny =
+        cached.for_you.length +
+          cached.watchlist.length +
+          cached.followed_creators.length +
+          cached.portfolio.length >
+        0;
+      if (hasAny) return cached;
+    }
     return { ...EMPTY_PERSONALIZED };
   }
 
@@ -348,8 +359,7 @@ export class SupabaseSocialRepository implements SocialRepository {
   }
 
   getCreatorCommunityRoomsSurface(channelUserId: string): CreatorCommunityRoomsSurface {
-    void channelUserId;
-    return { ...EMPTY_CREATOR_ROOMS_SURFACE, creator_id: "" };
+    return { ...EMPTY_CREATOR_ROOMS_SURFACE, creator_id: channelUserId };
   }
 
   getDiscoverCreatorRoomsRail(): DiscoverCreatorRoomsRail {

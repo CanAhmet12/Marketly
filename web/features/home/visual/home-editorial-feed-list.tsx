@@ -4,11 +4,14 @@ import { useCallback } from "react";
 
 import { InfiniteScrollSentinel } from "@/components/ui/infinite-scroll-sentinel";
 import type { FeedPost } from "@/features/feed/types";
+import type { MarketAssetView } from "@/features/markets/types";
 import type { HomeEngagementHandlers } from "@/features/home/home-engagement";
 import { homeFeedCardEstimate, useWindowVirtualListVariable } from "@/hooks/use-virtual-list";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
 import { cn } from "@/lib/cn";
 
+import { HomeFeedDiscoverNudge } from "./home-feed-discover-nudge";
+import { HomeFeedLoadFooter } from "./home-feed-load-footer";
 import { HomeVisualPostCard } from "./home-visual-post-card";
 
 type Props = {
@@ -17,6 +20,9 @@ type Props = {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
+  assetMap?: Map<string, MarketAssetView> | null;
+  /** Sekme değişiminde kart stagger animasyonu */
+  tabKey?: string;
 };
 
 function renderPostCard(
@@ -24,8 +30,16 @@ function renderPostCard(
   index: number,
   engagement: HomeEngagementHandlers,
   virtualized: boolean,
+  assetMap?: Map<string, MarketAssetView> | null,
+  tabKey?: string,
 ) {
   const stripe = index > 0 && index % 2 === 1;
+  const tabStagger = Boolean(tabKey);
+  const staggerStyle = tabStagger
+    ? motionEntranceDelay(index, 55, 6)
+    : virtualized
+      ? undefined
+      : motionEntranceDelay(index);
   return (
     <HomeVisualPostCard
       key={post.id}
@@ -33,8 +47,13 @@ function renderPostCard(
       post={post}
       lead={index === 0}
       engagement={engagement}
-      className={cn("motion-entrance", stripe && "hv-ref-article--stripe")}
-      style={virtualized ? undefined : motionEntranceDelay(index)}
+      assetMap={assetMap}
+      className={cn(
+        "motion-entrance",
+        tabStagger && "motion-feed-tab-stagger",
+        stripe && "hv-ref-article--stripe",
+      )}
+      style={staggerStyle}
     />
   );
 }
@@ -46,6 +65,8 @@ export function HomeEditorialFeedList({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
+  assetMap,
+  tabKey,
 }: Props) {
   const estimateSize = useCallback((index: number) => homeFeedCardEstimate(index), []);
 
@@ -79,28 +100,26 @@ export function HomeEditorialFeedList({
                   transform: `translateY(${vRow.start}px)`,
                 }}
               >
-                {renderPostCard(post, vRow.index, engagement, true)}
+                {renderPostCard(post, vRow.index, engagement, true, assetMap, tabKey)}
               </div>
             );
           })}
         </div>
       ) : (
-        posts.map((post, index) => renderPostCard(post, index, engagement, false))
+        posts.map((post, index) => renderPostCard(post, index, engagement, false, assetMap, tabKey))
       )}
 
       {hasNextPage ? (
         <>
           <InfiniteScrollSentinel enabled={!isFetchingNextPage} onVisible={loadMore} />
-          {isFetchingNextPage ? (
-            <p
-              className="flex justify-center py-[var(--hv-s-6)] text-[0.875rem] text-[var(--hv-text-3)]"
-              aria-live="polite"
-            >
-              Yükleniyor…
-            </p>
-          ) : null}
+          <HomeFeedLoadFooter loading={isFetchingNextPage} />
         </>
-      ) : null}
+      ) : (
+        <>
+          <HomeFeedLoadFooter end postCount={posts.length} />
+          <HomeFeedDiscoverNudge postCount={posts.length} />
+        </>
+      )}
     </>
   );
 }

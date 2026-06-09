@@ -9,8 +9,8 @@ export const SIGNALS_FEED_CARD_ESTIMATE = 200;
 export const MESSAGES_INBOX_ITEM_ESTIMATE = 96;
 export const MESSAGES_THREAD_DAY_ESTIMATE = 36;
 export const MESSAGES_THREAD_BUBBLE_ESTIMATE = 58;
-export const HOME_FEED_LEAD_ESTIMATE = 400;
-export const HOME_FEED_CARD_ESTIMATE = 300;
+export const HOME_FEED_LEAD_ESTIMATE = 480;
+export const HOME_FEED_CARD_ESTIMATE = 380;
 
 export function homeFeedCardEstimate(index: number): number {
   return index === 0 ? HOME_FEED_LEAD_ESTIMATE : HOME_FEED_CARD_ESTIMATE;

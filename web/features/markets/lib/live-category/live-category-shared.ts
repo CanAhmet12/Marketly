@@ -1,4 +1,5 @@
 import type { MarketAssetView } from "@/features/markets/types";
+import { sparklineOrResolved } from "@/features/markets/lib/resolve-sparkline";
 
 export function trendFromChange(cp: number): "up" | "down" | "flat" {
   if (cp > 0) return "up";
@@ -17,7 +18,8 @@ export function fmtPct(n: number): string {
 }
 
 export function sparkOrFlat(asset: MarketAssetView): number[] {
-  return asset.sparkline.length > 1 ? asset.sparkline : [asset.price, asset.price];
+  const series = sparklineOrResolved(asset);
+  return series.length > 1 ? series : [asset.price, asset.price];
 }
 
 export function sortByChangeDesc(assets: readonly MarketAssetView[]): MarketAssetView[] {

@@ -1,0 +1,217 @@
+/**
+ * Home — premium bölüm paleti (açık tema)
+ * Her zone kendi yazı / yüzey / aksan rengine sahip — editorial fintech.
+ */
+
+html[data-theme="light"] .hv-ref {
+  /* Tuval — sıcak taş */
+  --hv-bg-base: #f6f5f2;
+  --hv-bg-mid: #eceae5;
+  --hv-bg-warm: #faf9f6;
+  --hv-stream-tint: #f6f5f2;
+
+  /* ── Mast: inci cam + mürekkep ── */
+  --hv-zone-mast-bg: color-mix(in srgb, #fdfcf9 94%, #e6e3dc 6%);
+  --hv-zone-mast-border: color-mix(in srgb, #1a1a20 5.5%, transparent);
+  --hv-zone-mast-icon: #7a7a84;
+  --hv-zone-mast-icon-hover: #2e2e36;
+  --hv-zone-mast-accent: #087a5c;
+
+  /* ── Sekmeler ── */
+  --hv-zone-tab-idle: #9494a0;
+  --hv-zone-tab-hover: #5c5c66;
+  --hv-zone-tab-active: #0f0f14;
+  --hv-zone-tab-line: #0a9a72;
+
+  /* ── Piyasa ticker ── */
+  --hv-zone-strip-bg: transparent;
+  --hv-zone-strip-border: color-mix(in srgb, #1a1a20 4.5%, transparent);
+  --hv-zone-strip-sym: #7e7e88;
+  --hv-zone-strip-sym-hover: #383840;
+  --hv-zone-strip-price: #121218;
+  --hv-zone-strip-up: #0a6b4e;
+  --hv-zone-strip-down: #b42318;
+  --hv-zone-strip-flat: #9a9aa4;
+  --hv-zone-strip-hover: color-mix(in srgb, #1a1a20 3.5%, transparent);
+
+  /* ── Hikâyeler ── */
+  --hv-zone-story-label: #64646e;
+  --hv-zone-story-label-hover: #222228;
+  --hv-zone-story-plus: color-mix(in srgb, #0a9a72 52%, #7a7a84 48%);
+  --hv-zone-story-badge-live-bg: #dc2626;
+  --hv-zone-story-badge-new-bg: #0a9a72;
+  --hv-zone-story-badge-text: #fafaf9;
+
+  /* ── Bugün şeridi ── */
+  --hv-zone-today-label: #8a8578;
+  --hv-zone-today-chip-bg: transparent;
+  --hv-zone-today-chip-text: #44444c;
+
+  /* ── Akış / gönderi ── */
+  --hv-zone-feed-border: color-mix(in srgb, #1a1a20 6%, transparent);
+  --hv-zone-post-name: #101014;
+  --hv-zone-post-handle: #52525c;
+  --hv-zone-post-title: #0c0c11;
+  --hv-zone-post-body: #35353f;
+  --hv-zone-post-badge: #087a5c;
+  --hv-zone-post-chip: #45454f;
+  --hv-zone-post-engage: #52525c;
+  --hv-zone-post-engage-count: #2a2a32;
+  --hv-zone-post-engage-active: #087a5c;
+  --hv-zone-post-readmore: #087a5c;
+  --hv-zone-post-lead-bg: transparent;
+  --hv-zone-post-hover: color-mix(in srgb, #1a1a20 2%, transparent);
+  --hv-zone-post-divider: color-mix(in srgb, #1a1a20 5%, transparent);
+  --hv-zone-post-comment-bg: transparent;
+  --hv-zone-post-comment-border: color-mix(in srgb, #0a9a72 14%, #d4d0c8 86%);
+  --hv-zone-post-comment-arrow: #087a5c;
+
+  /* ── Sağ rail ── */
+  --hv-zone-rail-head: #6e6e78;
+  --hv-zone-rail-link: #087a5c;
+  --hv-zone-rail-link-hover: #0a9a72;
+  --hv-zone-rail-title: #141418;
+  --hv-zone-rail-body: #45454d;
+  --hv-zone-rail-meta: #72727c;
+  --hv-zone-rail-up: #0a6b4e;
+  --hv-zone-rail-down: #b42318;
+  --hv-zone-rail-neutral: #8a8a94;
+  --hv-zone-rail-card-bg: transparent;
+  --hv-zone-rail-card-border: transparent;
+  --hv-zone-rail-mood-bg: transparent;
+  --hv-zone-rail-mood-label: #72727c;
+
+  /* ── Durum panelleri ── */
+  --hv-zone-state-bg: transparent;
+  --hv-zone-state-border: color-mix(in srgb, #1a1a20 7%, transparent);
+  --hv-zone-state-title: #101014;
+  --hv-zone-state-desc: #52525c;
+  --hv-zone-state-icon-bg: color-mix(in srgb, #0a9a72 10%, #ffffff 90%);
+  --hv-zone-state-icon: #087a5c;
+
+  /* ── Keşfet nudge + creator öneri ── */
+  --hv-zone-nudge-bg: transparent;
+  --hv-zone-nudge-border: color-mix(in srgb, #0a9a72 16%, #d4d0c8 84%);
+  --hv-zone-nudge-title: #101014;
+  --hv-zone-nudge-desc: #64646e;
+  --hv-zone-nudge-btn: #52525c;
+  --hv-zone-nudge-btn-primary-bg: color-mix(in srgb, #0a9a72 11%, #ffffff 89%);
+  --hv-zone-nudge-btn-primary-text: #087a5c;
+
+  --hv-zone-creator-bg: transparent;
+  --hv-zone-creator-border: color-mix(in srgb, #1a1a20 7%, transparent);
+  --hv-zone-creator-title: #101014;
+  --hv-zone-creator-desc: #64646e;
+  --hv-zone-creator-name: #141418;
+  --hv-zone-creator-handle: #72727c;
+  --hv-zone-creator-more: #087a5c;
+
+  /* ── Klavye ipucu + scroll-top ── */
+  --hv-zone-kbd-bg: color-mix(in srgb, #0a9a72 5%, #ffffff 95%);
+  --hv-zone-kbd-border: color-mix(in srgb, #0a9a72 18%, #d4d0c8 82%);
+  --hv-zone-kbd-key-text: #087a5c;
+  --hv-zone-kbd-key-bg: color-mix(in srgb, #0a9a72 9%, #ffffff 91%);
+
+  --hv-focus-ring: color-mix(in srgb, #0a9a72 38%, transparent);
+}
+
+/* Mast — sayfa ile birleşik */
+html[data-theme="light"] .hv-ref .hv-ref__mast {
+  box-shadow: none;
+}
+
+/* Ticker — şeffaf şerit */
+html[data-theme="light"] .hv-ref .hv-ref-strip-region {
+  background: transparent;
+  border-top-color: var(--hv-zone-strip-border);
+}
+
+/* Hikâye bölgesi — üstten nefes */
+html[data-theme="light"] .hv-ref .hv-ref__stories-wrap {
+  background: transparent;
+}
+
+/* Akış üst çizgisi */
+html[data-theme="light"] .hv-ref .hv-ref__posts {
+  border-top-color: var(--hv-zone-feed-border);
+}
+
+/* Lead — gradient yok, sol aksan çizgisi (embedded-surface tamamlar) */
+html[data-theme="light"] .hv-ref .hv-ref-article--lead {
+  background: transparent;
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__card .hv-ref-rail__h {
+  color: color-mix(in srgb, var(--hv-cat-color, #6e6e78) 55%, var(--hv-zone-rail-head) 45%);
+}
+
+/* Tier rozetleri — premium metalik ton */
+html[data-theme="light"] .hv-ref .hv-ref-article__tier--elite {
+  color: #9a7612;
+  background: color-mix(in srgb, #c9a227 11%, #ffffff 89%);
+  border-color: color-mix(in srgb, #c9a227 24%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-article__tier--pro {
+  color: #1d4ed8;
+  background: color-mix(in srgb, #3b82f6 9%, #ffffff 91%);
+  border-color: color-mix(in srgb, #3b82f6 20%, transparent);
+}
+
+/* Rail — olay / haber metinleri */
+html[data-theme="light"] .hv-ref .hv-ref-rail__event-time,
+html[data-theme="light"] .hv-ref .hv-ref-rail__event-detail {
+  color: var(--hv-zone-rail-meta);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood {
+  background: var(--hv-zone-rail-mood-bg);
+  border-color: color-mix(in srgb, #1a1a20 7%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood-label,
+html[data-theme="light"] .hv-ref .hv-ref-rail__mood-detail {
+  color: var(--hv-zone-rail-mood-label);
+}
+
+/* Scroll-top + footer */
+html[data-theme="light"] .hv-ref .hv-ref-scroll-top {
+  color: var(--hv-zone-mast-icon-hover);
+  background: color-mix(in srgb, #fdfcfa 94%, #e6e3dc 6%);
+  border-color: color-mix(in srgb, #1a1a20 8%, transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-feed-footer__end {
+  color: var(--hv-zone-rail-meta);
+}
+
+/* ─── Keşfet bantları (home discover flow) ───────────────────────── */
+
+html[data-theme="light"] .hv-ref {
+  --hv-zone-discover-title: #101014;
+  --hv-zone-discover-sub: #64646e;
+  --hv-zone-discover-band-border: color-mix(in srgb, #1a1a20 5%, transparent);
+  --hv-zone-discover-live-accent: #b42318;
+  --hv-zone-discover-signal-accent: #6e6e78;
+  --hv-zone-discover-primary-accent: #0a9a72;
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hv-zone-discover-primary-accent) 50%, transparent), transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band--live::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hv-zone-discover-live-accent) 48%, transparent), transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band--signals::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hv-zone-discover-signal-accent) 38%, transparent), transparent);
+}
+
+html[data-theme="light"] .hv-ref .hv-ref-discover__page-title {
+  color: var(--hv-zone-discover-title);
+}
+
+html[data-theme="light"] .hv-ref .hv-discover-band {
+  border-top-color: var(--hv-zone-discover-band-border);
+}
