@@ -1,49 +1,42 @@
 /**
- * Ayarlar — Hub Premium uyarlama (tools zone, gömülü layout)
+ * Ayarlar — Hub Premium (Portföy hp-header ile hizalı)
  */
 
 .hp-canvas--embedded-settings {
+  --stg-zone: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-settings .hp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-settings .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-settings .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-settings .hp-body {
+  margin-top: 20px;
+  gap: var(--hp-space-section);
+}
+
+.hp-canvas--embedded-settings .stg-studio {
   width: 100%;
   min-width: 0;
-}
-
-.hp-canvas--embedded-settings > .sg-shell {
-  width: 100%;
-  min-width: 0;
-  background: transparent;
-  --sg-accent: var(--hp-zone-1);
-  --sg-border: var(--hp-border);
-  --sg-border-2: var(--hp-border-2);
-}
-
-.hp-canvas--embedded-settings .sg-header {
-  display: none;
-}
-
-.hp-canvas--embedded-settings .sg-nav-item--active {
-  color: var(--hp-zone-1);
-  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-border));
-  background: color-mix(in srgb, var(--hp-zone-1) 6%, var(--hp-surface));
-}
-
-.hp-canvas--embedded-settings .sg-toggle-btn--on {
-  background: var(--hp-zone-1);
-}
-
-.hp-canvas--embedded-settings .sg-stat-value {
-  font-family: var(--hp-font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.hp-canvas--embedded-settings .sg-section-title {
-  font-family: var(--font-bold);
-}
-
-.hp-canvas--embedded-settings .sg-btn--primary {
-  background: var(--hp-zone-1);
-  border-color: transparent;
-}
-
-.hp-canvas--embedded-settings .sg-quick-link:hover {
-  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
 }

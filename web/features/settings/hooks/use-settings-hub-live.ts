@@ -18,7 +18,7 @@ function countNotificationCoverage(notifications: Record<string, unknown> | null
   return { filled: bools.filter(Boolean).length, total: bools.length };
 }
 
-async function fetchSettingsLiveStats(userId: string, notifications: Record<string, unknown> | null) {
+async function fetchSettingsLiveStats(userId: string, notifications: Record<string, unknown> | null, profile: Profile | null) {
   const client = getSupabaseBrowserClient();
   const [watchlist, savedPosts, followingRes, followersRes, postsRes] = await Promise.all([
     fetchWatchlistFromDb(client, userId),
@@ -38,9 +38,9 @@ async function fetchSettingsLiveStats(userId: string, notifications: Record<stri
     savedCount: savedPosts.length,
     watchlistCount: watchlist.length,
     postsCount: postsRes.count ?? 0,
-    hasBio: false,
-    hasAvatar: false,
-    hasUsername: false,
+    hasBio: Boolean(profile?.bio?.trim()),
+    hasAvatar: Boolean(profile?.avatar_url?.trim()),
+    hasUsername: Boolean(profile?.username?.trim()),
     notificationFieldsFilled,
     notificationFieldsTotal,
   };
@@ -57,7 +57,7 @@ export function useSettingsHubLive(
 
   const query = useQuery({
     queryKey: ["settings-hub-live", userId],
-    queryFn: () => fetchSettingsLiveStats(userId!, notifications),
+    queryFn: () => fetchSettingsLiveStats(userId!, notifications, profile),
     enabled: liveMode,
     staleTime: 120_000,
   });

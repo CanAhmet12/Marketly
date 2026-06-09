@@ -88,17 +88,5 @@ export function SavedPageSkeleton() {
   );
 }
 
-/** `/settings` loading */
-export function SettingsPageSkeleton() {
-  return (
-    <div className="sg-shell ms-page-wrapper--no-top min-w-0" aria-busy="true">
-      <div className="ms-container-wide pt-6">
-        <div className="motion-shimmer mb-6 h-8 w-32 rounded bg-[var(--color-divider)]" />
-        <div className="grid gap-6 min-[900px]:grid-cols-[220px_1fr]">
-          <div className="motion-shimmer hidden h-64 rounded-lg bg-[var(--color-divider)] min-[900px]:block" />
-          <div className="motion-shimmer h-80 rounded-lg bg-[var(--color-divider)]" />
-        </div>
-      </div>
-    </div>
-  );
-}
+/** `/settings` loading — re-export from settings v2 */
+export { SettingsPageSkeleton } from "@/features/settings/components/settings-states";
