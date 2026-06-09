@@ -1,61 +1,42 @@
 /**
- * Yakın Arkadaşlar — Hub Premium uyarlama (connect zone)
+ * Yakın Arkadaşlar — Hub Premium köprü
  */
 
-.hp-canvas .cf-hub-page {
-  padding: 0;
+.hp-canvas--embedded-close-friends {
+  --cf-zone: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-close-friends .hp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-close-friends .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-close-friends .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-close-friends .hp-body {
+  margin-top: 20px;
   gap: var(--hp-space-section);
 }
 
-.hp-canvas .cf-hub-page .social-hub-pill {
-  border-color: var(--hp-border);
-  background: var(--hp-surface);
-}
-
-.hp-canvas .cf-hub-page .social-hub-pill:hover {
-  border-color: color-mix(in srgb, var(--hp-zone-1) 30%, var(--hp-border));
-  background: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
-}
-
-.hp-canvas .cf-hub-page .social-hub-pill--accent {
-  background: var(--hp-zone-1);
-  border-color: transparent;
-  color: #fff;
-}
-
-.hp-canvas .cf-hub-page .social-hub-card {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-glass-border);
-  background: var(--hp-glass);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
-}
-
-.hp-canvas .cf-hub-page .social-hub-card:hover {
-  border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-glass-border));
-}
-
-.hp-canvas .cf-hub-hint {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-zone-border);
-  background: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--hp-zone-1) 5%, var(--hp-surface)) 0%,
-    var(--hp-surface) 100%
-  );
-}
-
-.hp-canvas .cf-hub-trusted {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-glass-border);
-  background: var(--hp-glass);
-}
-
-.hp-canvas .cf-hub-feed {
-  border-radius: var(--hp-radius-block);
-  border-color: var(--hp-glass-border);
-  background: var(--hp-glass);
-}
-
-.hp-canvas .cf-hub-empty {
-  border-radius: var(--hp-radius-block);
+.hp-canvas--embedded-close-friends .cf-studio {
+  width: 100%;
+  min-width: 0;
 }

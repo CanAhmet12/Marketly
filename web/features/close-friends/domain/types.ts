@@ -57,6 +57,14 @@ export type PrivateCircleSummary = {
   messages_href: string;
 };
 
+export type CloseFriendCandidate = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  verified: boolean;
+};
+
 export type TrustedMemberCard = {
   id: string;
   username: string;
@@ -112,13 +120,16 @@ export type CloseFriendsHubPayload = {
     discover: string;
     watch: string;
   };
-  data_mode: "mock" | "live_sparse";
+  data_mode: "mock" | "live_sparse" | "live";
+  write_enabled?: boolean;
 };
 
 export type PrivateCircleDetailPayload = {
   circle: PrivateCircleSummary;
   feed: PrivateFeedItem[];
   publishing_hint: string;
+  is_close_friend?: boolean;
+  write_enabled?: boolean;
 };
 
 export type ComposerCircleAudienceOption = {

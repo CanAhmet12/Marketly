@@ -292,7 +292,7 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
                   Planlar
                 </Link>
                 {" · "}
-                <Link href="/close-friends" className="ch-signal-link ch-signal-link--muted">
+                <Link href="/hub/close-friends" className="ch-signal-link ch-signal-link--muted">
                   Özel daireler
                 </Link>
               </div>

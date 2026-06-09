@@ -55,6 +55,11 @@ export const queryKeys = {
   membershipHub: (viewerId: string | null | undefined) => ["membership-hub", viewerId ?? "anon"] as const,
   membershipDetail: (creatorId: string, viewerId: string | null | undefined = null) =>
     ["membership-detail", creatorId, viewerId ?? "anon"] as const,
+  closeFriendsHub: (viewerId: string | null | undefined) => ["close-friends-hub", viewerId ?? "anon"] as const,
+  closeFriendsCandidates: (viewerId: string | null | undefined, trustedIds: string[] = []) =>
+    ["close-friends-candidates", viewerId ?? "anon", trustedIds.slice().sort().join(",")] as const,
+  closeFriendsCircle: (circleId: string, viewerId: string | null | undefined) =>
+    ["close-friends-circle", circleId, viewerId ?? "anon"] as const,
   playlistDetail: (playlistId: string, viewerKey: string | null | undefined) =>
     ["playlist-detail", playlistId, viewerKey ?? "anon"] as const,
 } as const;

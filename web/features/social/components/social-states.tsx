@@ -38,17 +38,11 @@ export function NotificationsPageSkeleton() {
 /** `/subscriptions` loading — re-export subscriptions v2 skeleton */
 export { SubscriptionsPageSkeleton, MembershipDetailSkeleton } from "@/features/subscriptions/components/subscriptions-states";
 
-/** `/close-friends` loading */
-export function CloseFriendsPageSkeleton() {
-  return (
-    <div className="ms-page-wrapper ms-container-standard min-w-0 pb-12 pt-6" aria-busy="true">
-      <div className="motion-shimmer mb-2 h-4 w-32 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-3 h-7 w-52 max-w-full rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-5 h-9 w-full max-w-lg rounded-full bg-[var(--color-divider)]" />
-      <SkeletonList count={5} />
-    </div>
-  );
-}
+/** `/close-friends` loading — re-export close-friends v2 skeleton */
+export {
+  CloseFriendsPageSkeleton,
+  CircleDetailSkeleton,
+} from "@/features/close-friends/components/close-friends-states";
 
 /** `/saved` SSR Suspense fallback */
 export function SavedPageSkeleton() {

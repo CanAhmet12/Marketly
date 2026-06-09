@@ -115,8 +115,8 @@ function makeCircle(creatorId: string, kind: PrivateCircleKind): PrivateCircleSu
     subline: meta.sub,
     access: accessFor(kind, h),
     intel: intelFor(creatorId, kind, h),
-    href: `/close-friends/circle/${encodeURIComponent(`${creatorId}::${kind}`)}`,
-    subscription_href: `/subscriptions/${encodeURIComponent(creatorId)}`,
+    href: `/hub/close-friends/circle/${encodeURIComponent(`${creatorId}::${kind}`)}`,
+    subscription_href: `/hub/subscriptions/${encodeURIComponent(creatorId)}`,
     signals_href: "/signals",
     rooms_href: `/channel/${encodeURIComponent(creatorId)}?tab=rooms`,
     messages_href: "/hub/messages",
@@ -270,11 +270,11 @@ export class MockCloseFriendsRepository implements CloseFriendsRepository {
       },
       nav: { ...NAV },
       data_mode: "mock",
+      write_enabled: false,
     };
   }
 
   getCircleDetail(circleId: string, viewerId: string | null): PrivateCircleDetailPayload | null {
-    void viewerId;
     const raw = decodeURIComponent(circleId).trim();
     const sep = raw.indexOf("::");
     if (sep < 1) return null;
@@ -325,10 +325,16 @@ export class MockCloseFriendsRepository implements CloseFriendsRepository {
       });
     }
     feed.sort((a, b) => (a.at < b.at ? 1 : -1));
+    const uid = viewerId ?? "mock-viewer";
+    const isFriend = getSocialRepository()
+      .getCloseFriends(uid)
+      .some((f) => f.id === creatorId);
     return {
       circle,
       feed: feed.slice(0, 12),
       publishing_hint: "Bu daireye yayın: yükleme ekranında kitle olarak seç.",
+      is_close_friend: isFriend,
+      write_enabled: false,
     };
   }
 
@@ -356,7 +362,7 @@ export class MockCloseFriendsRepository implements CloseFriendsRepository {
       label: KIND_LABELS[kind].title,
       sub: "Yalnızca bu daire üyeleri",
       locked: false,
-      href_learn: `/close-friends/circle/${encodeURIComponent(`${publisherUserId}::${kind}`)}`,
+      href_learn: `/hub/close-friends/circle/${encodeURIComponent(`${publisherUserId}::${kind}`)}`,
     }));
     return [...base, ...owned];
   }

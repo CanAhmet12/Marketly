@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
       { source: "/messages/:conversationId", destination: "/hub/messages/:conversationId", permanent: true },
       { source: "/notifications", destination: "/hub/notifications", permanent: true },
       { source: "/close-friends", destination: "/hub/close-friends", permanent: true },
+      { source: "/close-friends/circle/:circleId", destination: "/hub/close-friends/circle/:circleId", permanent: true },
       { source: "/settings", destination: "/hub/settings", permanent: true },
       { source: "/studio", destination: "/hub/studio", permanent: true },
       { source: "/studio/:path*", destination: "/hub/studio/:path*", permanent: true },
