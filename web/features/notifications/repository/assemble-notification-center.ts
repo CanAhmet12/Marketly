@@ -212,7 +212,7 @@ function buildDigests(viewerId: string | null): NotificationDigestCard[] {
     id: "digest-watch",
     title: "İzleme listesi",
     subline: explore.watchlist_linked[0]?.sub ?? "Kesişen varlıklar ve içerikçiler.",
-    href: "/watchlist",
+    href: "/hub/watchlist",
     tone: "portfolio",
   });
 
@@ -220,7 +220,7 @@ function buildDigests(viewerId: string | null): NotificationDigestCard[] {
     id: "digest-portfolio",
     title: "Portföy istihbaratı",
     subline: explore.portfolio_linked[0]?.sub ?? "Strateji uyumu ve makro bağlantılar.",
-    href: "/portfolio",
+    href: "/hub/portfolio",
     tone: "portfolio",
   });
 
@@ -247,16 +247,15 @@ function buildDigests(viewerId: string | null): NotificationDigestCard[] {
 }
 
 const NAV: NotificationSurfaceLink[] = [
-  { href: "/", label: "Ana" },
+  { href: "/", label: "Ana akış" },
   { href: "/discover", label: "Keşfet" },
-  { href: "/watchlist", label: "Liste" },
+  { href: "/hub/watchlist", label: "Takip listem" },
   { href: "/signals", label: "Sinyaller" },
   { href: "/markets", label: "Piyasalar" },
-  { href: "/live", label: "Canlı" },
-  { href: "/hub/messages", label: "Mesaj" },
-  { href: "/subscriptions", label: "Abonelikler" },
-  { href: "/close-friends", label: "Daireler" },
-  { href: "/search", label: "Arama" },
+  { href: "/hub/messages", label: "Mesajlar" },
+  { href: "/hub/subscriptions", label: "Abonelikler" },
+  { href: "/hub/close-friends", label: "Yakın arkadaşlar" },
+  { href: "/hub/settings", label: "Ayarlar" },
 ];
 
 export function assembleNotificationCenter(input: {

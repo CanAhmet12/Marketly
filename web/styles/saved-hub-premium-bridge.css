@@ -1,0 +1,42 @@
+/**
+ * Kaydedilenler — Hub Premium köprü
+ */
+
+.hp-canvas--embedded-saved {
+  --sv-zone: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-saved .hp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-saved .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-saved .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-saved .hp-body {
+  padding-top: 0;
+  gap: 0;
+}
+
+.hp-canvas--embedded-saved .sv-studio {
+  width: 100%;
+  min-width: 0;
+}

@@ -1,0 +1,51 @@
+/**
+ * Mesajlar — Hub Premium bridge (v2)
+ */
+
+.hp-canvas--embedded-inbox {
+  width: 100%;
+  min-width: 0;
+}
+
+.hp-canvas--embedded-inbox .msg-studio {
+  --msg-zone: var(--hp-zone-1);
+  --msg-border: var(--hp-border);
+  --msg-divider: var(--hp-border-2);
+}
+
+.hp-canvas--embedded-inbox .msg-surface {
+  --msg-border: var(--hp-glass-border);
+}
+
+.hp-canvas--embedded-inbox .msg-canvas {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+}
+
+/* Legacy route wrapper fallback */
+.hp-canvas--embedded-inbox > .msg-canvas {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  --msg-border: var(--hp-border);
+  --msg-border-strong: var(--hp-border-2);
+  --msg-divider: var(--hp-border-2);
+  --msg-fill: var(--hp-surface);
+  --msg-fill-hover: color-mix(in srgb, var(--hp-zone-1) 4%, var(--hp-surface));
+  --msg-fill-active: color-mix(in srgb, var(--hp-zone-1) 8%, var(--hp-surface));
+}
+
+.hp-canvas--embedded-inbox .msg-send-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Hide legacy pill UI when v2 classes present */
+.hp-canvas--embedded-inbox .msg-kind-pill,
+.hp-canvas--embedded-inbox .msg-kind-header-pill,
+.hp-canvas--embedded-inbox .msg-stream-tabs,
+.hp-canvas--embedded-inbox .msg-nav-link,
+.hp-canvas--embedded-inbox .msg-strip,
+.hp-canvas--embedded-inbox .msg-ctx-chip {
+  display: none;
+}

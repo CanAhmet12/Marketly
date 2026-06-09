@@ -1,0 +1,42 @@
+/**
+ * Bildirimler — Hub Premium köprü
+ */
+
+.hp-canvas--embedded-notifications {
+  --ntf-zone: var(--hp-zone-1);
+}
+
+.hp-canvas--embedded-notifications .hp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-notifications .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-notifications .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hp-canvas--embedded-notifications .hp-body {
+  padding-top: 0;
+  gap: 0;
+}
+
+.hp-canvas--embedded-notifications .ntf-studio {
+  width: 100%;
+  min-width: 0;
+}

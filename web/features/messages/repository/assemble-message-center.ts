@@ -94,14 +94,14 @@ function rankConv(
 }
 
 const NAV = [
-  { href: "/notifications", label: "Bildirimler" },
+  { href: "/hub/notifications", label: "Bildirimler" },
   { href: "/live", label: "Odalar" },
   { href: "/discover", label: "Keşfet" },
   { href: "/signals", label: "Sinyaller" },
   { href: "/markets", label: "Piyasalar" },
-  { href: "/watchlist", label: "Liste" },
-  { href: "/subscriptions", label: "Abonelik" },
-  { href: "/close-friends", label: "Daireler" },
+  { href: "/hub/watchlist", label: "Liste" },
+  { href: "/hub/subscriptions", label: "Abonelik" },
+  { href: "/hub/close-friends", label: "Daireler" },
   { href: "/search", label: "Arama" },
 ] as const;
 
