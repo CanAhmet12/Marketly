@@ -35,28 +35,32 @@ type Props = {
 
 export function UploadTypeRail({ active, onSelect }: Props) {
   return (
-    <div className="uv2-type-rail" role="tablist" aria-label="İçerik türü">
-      {UPLOAD_TYPE_META.map((t) => {
-        const on = active === t.id;
-        const Icon = t.Icon;
-        return (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={on}
-            onClick={() => onSelect(t.id)}
-            className={cn("uv2-type-card", on && "uv2-type-card--active")}
-            data-tone={t.tone}
-          >
-            <span className="uv2-type-card-icon" aria-hidden>
-              <Icon />
-            </span>
-            <span className="uv2-type-card-label">{t.label}</span>
-            <span className="uv2-type-card-hint">{t.hint}</span>
-          </button>
-        );
-      })}
+    <div className="uv2-type-segment-wrap">
+      <div className="uv2-type-segment" role="tablist" aria-label="İçerik türü">
+        {UPLOAD_TYPE_META.map((t) => {
+          const on = active === t.id;
+          const Icon = t.Icon;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => onSelect(t.id)}
+              className={cn("uv2-type-tab", on && "uv2-type-tab--active")}
+              data-tone={t.tone}
+            >
+              <span className="uv2-type-tab-icon" aria-hidden>
+                <Icon />
+              </span>
+              <span className="uv2-type-tab-text">
+                <span className="uv2-type-tab-label">{t.label}</span>
+                {on ? <span className="uv2-type-tab-hint">{t.hint}</span> : null}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

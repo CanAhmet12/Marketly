@@ -7,9 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { useAuth } from "@/features/auth/use-auth";
-import { HubHeroStrip } from "@/features/hub/components/hub-hero-strip";
 import { HubPageHeader } from "@/features/hub/components/hub-page-header";
 import { HubPageShell } from "@/features/hub/components/hub-page-shell";
+import { HubButtonLink } from "@/features/hub/components/hub-button";
 import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
 import { UploadPublishDock } from "@/features/upload/components/upload-publish-dock";
 import { UploadTypeRail, type UploadContentKind } from "@/features/upload/components/upload-type-rail";
@@ -453,38 +453,67 @@ export function UploadPageClient() {
     <HubPageHeader
       kicker={hubPremiumKicker("tools", "Yayın")}
       title="İçerik Oluştur"
-      subtitle="Ne paylaşmak istiyorsun?"
+      actions={
+        <>
+          <HubButtonLink href="/hub/studio/drafts">Taslaklar</HubButtonLink>
+          <HubButtonLink href="/hub/studio">Creator Studio</HubButtonLink>
+        </>
+      }
     />
   );
 
-  const heroStrip = (
-    <HubHeroStrip
-      stats={[
-        { label: "Format", value: currentType.label, valueAccent: true },
-        { label: "Varlık", value: assetTag.trim() || "Seçilmedi" },
-      ]}
-    />
-  );
+  const readiness = useMemo(() => {
+    if (kind === "post") {
+      return [
+        { label: "Metin yazıldı", done: content.trim().length > 0 },
+        { label: "Varlık etiketi", done: assetTag.trim().length > 0 },
+        { label: "Görsel eklendi", done: postFiles.length > 0 },
+        { label: "Başlık (opsiyonel)", done: title.trim().length > 0 },
+      ];
+    }
+    if (kind === "signal") {
+      return [
+        { label: "Varlık seçildi", done: assetTag.trim().length > 0 },
+        { label: "Tez yazıldı", done: signalThesis.trim().length > 0 },
+        { label: "Fiyat seviyeleri", done: !!(signalEntry || signalTarget || signalStop) },
+        { label: "Yön belirlendi", done: !!signalDirection },
+      ];
+    }
+    if (kind === "video" || kind === "pulse") {
+      return [
+        { label: "Video yüklendi", done: !!videoFile },
+        { label: "Başlık yazıldı", done: title.trim().length > 0 },
+        { label: "Açıklama", done: content.trim().length > 0 },
+        { label: "Kapak görseli", done: !!thumbFile },
+      ];
+    }
+    return [
+      { label: "Yayın başlığı", done: title.trim().length > 0 },
+      { label: "Kategori", done: !!liveCategory },
+      { label: "Açıklama", done: content.trim().length > 0 },
+      { label: "Varlık etiketi", done: assetTag.trim().length > 0 },
+    ];
+  }, [
+    kind, content, assetTag, postFiles.length, title,
+    signalThesis, signalEntry, signalTarget, signalStop, signalDirection,
+    videoFile, thumbFile, liveCategory,
+  ]);
 
   // Not configured / not logged in fallback
   if (!isSupabaseConfigured() && !mockOn) {
     return (
-      <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader}>
-        <div className="uv2-studio ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
-          <div className="uv2-page ms-container-wide" style={{ paddingTop: 40 }}>
-            <div className="uv2-feedback uv2-feedback--error">
-              Supabase yapılandırılmamış. Demo için NEXT_PUBLIC_USE_MOCK=true ekleyin.
-            </div>
-          </div>
+      <HubPageShell zone="tools" className="hp-canvas--embedded-upload" header={pageHeader}>
+        <div className="uv2-feedback uv2-feedback--error">
+          Supabase yapılandırılmamış. Demo için NEXT_PUBLIC_USE_MOCK=true ekleyin.
         </div>
       </HubPageShell>
     );
   }
 
   return (
-    <HubPageShell zone="tools" withMainArea={false} className="hp-canvas--embedded-upload up-hub-page" header={pageHeader} hero={heroStrip}>
-      <div className="uv2-studio ms-page-wrapper--no-top" style={{ width: "100%", minWidth: 0 }}>
-        <div className="uv2-page ms-container-wide">
+    <HubPageShell zone="tools" className="hp-canvas--embedded-upload" header={pageHeader}>
+      <div className="uv2-studio">
+        <div className="uv2-page">
 
           {mockOn && (
             <div className="uv2-demo-banner">
@@ -492,13 +521,6 @@ export function UploadPageClient() {
               <span>Gerçek veritabanına yazılmaz — akış simüle edilir.</span>
             </div>
           )}
-
-          {displayName ? (
-            <div className="uv2-creator-chip">
-              <div className="uv2-creator-avatar">{initials}</div>
-              <span className="uv2-creator-name">{displayName}</span>
-            </div>
-          ) : null}
 
           <UploadTypeRail active={kind} onSelect={switchKind} />
 
@@ -519,72 +541,46 @@ export function UploadPageClient() {
                   />
                 </div>
 
-                <details className="uv2-advanced">
-                  <summary className="uv2-advanced-summary">
-                    Gelişmiş ayarlar
-                    <span className="uv2-advanced-hint">Opsiyonel</span>
-                  </summary>
-                  <div className="uv2-advanced-body">
-                    <UploadComposerAdvanced
-                    userId={uid}
-                    contentKind={kind}
-                    content={content}
-                    setContent={setContent}
-                    title={title}
-                    assetTag={assetTag}
-                    setAssetTag={setAssetTag}
-                    intentId={composerIntentId}
-                    setIntentId={setComposerIntentId}
-                    quotedPostId={quotedPostId}
-                    setQuotedPostId={setQuotedPostId}
-                    replyToPostId={replyToPostId}
-                    setReplyToPostId={setReplyToPostId}
-                    quotedSignalId={quotedSignalId}
-                    setQuotedSignalId={setQuotedSignalId}
-                    discussionAnchorPostId={discussionAnchorPostId}
-                    setDiscussionAnchorPostId={setDiscussionAnchorPostId}
-                    targetRoomId={targetRoomId}
-                    setTargetRoomId={setTargetRoomId}
-                    targetTopicSlug={targetTopicSlug}
-                    setTargetTopicSlug={setTargetTopicSlug}
-                    scheduledPublishAt={scheduledPublishAt}
-                    setScheduledPublishAt={setScheduledPublishAt}
-                    circleAudienceId={circleAudienceId}
-                    setCircleAudienceId={setCircleAudienceId}
-                    />
-                  </div>
-                </details>
-
-                <div className="uv2-block">
-                  <Field label="Başlık" >
-                    <input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Opsiyonel başlık"
-                      className="uv2-input"
-                    />
-                  </Field>
-                  <Field label="Varlık">
-                    <input
-                      value={assetTag}
-                      onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
-                      placeholder="BTC"
-                      className="uv2-input uv2-input--mono"
-                      style={{ maxWidth: 180 }}
-                    />
-                    <div className="uv2-chips">
-                      {ASSET_CHIPS.map((chip) => (
-                        <button key={chip} type="button" onClick={() => setAssetTag(chip)}
-                          className={cn("uv2-chip", assetTag === chip && "uv2-chip--active")}>
-                          {chip}
-                        </button>
-                      ))}
+                <div className="uv2-meta-grid">
+                  <div className="uv2-meta-card" data-accent="title">
+                    <span className="uv2-meta-card-icon" aria-hidden>✦</span>
+                    <div className="uv2-meta-card-body">
+                      <label className="uv2-meta-card-label">Başlık</label>
+                      <input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Opsiyonel — dikkat çekici bir başlık"
+                        className="uv2-meta-card-input"
+                      />
                     </div>
-                  </Field>
+                  </div>
+                  <div className="uv2-meta-card" data-accent="asset">
+                    <span className="uv2-meta-card-icon" aria-hidden>◈</span>
+                    <div className="uv2-meta-card-body">
+                      <label className="uv2-meta-card-label">Varlık etiketi</label>
+                      <input
+                        value={assetTag}
+                        onChange={(e) => setAssetTag(e.target.value.toUpperCase())}
+                        placeholder="BTC, ETH, THYAO…"
+                        className="uv2-meta-card-input uv2-input--mono"
+                      />
+                      <div className="uv2-chips">
+                        {ASSET_CHIPS.map((chip) => (
+                          <button key={chip} type="button" onClick={() => setAssetTag(chip)}
+                            className={cn("uv2-chip", assetTag === chip && "uv2-chip--active")}>
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="uv2-block">
-                  <p className="uv2-block-title">Görseller</p>
+                <div className="uv2-block uv2-block--media">
+                  <div className="uv2-block-head">
+                    <span className="uv2-block-stripe" aria-hidden />
+                    <p className="uv2-block-title">Görseller</p>
+                  </div>
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
@@ -616,6 +612,45 @@ export function UploadPageClient() {
                     </div>
                   )}
                 </div>
+
+                <details className="uv2-advanced uv2-advanced--panel">
+                  <summary className="uv2-advanced-summary">
+                    <span className="uv2-advanced-summary-left">
+                      <span className="uv2-advanced-icon" aria-hidden>⚙</span>
+                      Gelişmiş ayarlar
+                    </span>
+                    <span className="uv2-advanced-hint">Niyet · kitle · referans</span>
+                  </summary>
+                  <div className="uv2-advanced-body">
+                    <UploadComposerAdvanced
+                    userId={uid}
+                    contentKind={kind}
+                    content={content}
+                    setContent={setContent}
+                    title={title}
+                    assetTag={assetTag}
+                    setAssetTag={setAssetTag}
+                    intentId={composerIntentId}
+                    setIntentId={setComposerIntentId}
+                    quotedPostId={quotedPostId}
+                    setQuotedPostId={setQuotedPostId}
+                    replyToPostId={replyToPostId}
+                    setReplyToPostId={setReplyToPostId}
+                    quotedSignalId={quotedSignalId}
+                    setQuotedSignalId={setQuotedSignalId}
+                    discussionAnchorPostId={discussionAnchorPostId}
+                    setDiscussionAnchorPostId={setDiscussionAnchorPostId}
+                    targetRoomId={targetRoomId}
+                    setTargetRoomId={setTargetRoomId}
+                    targetTopicSlug={targetTopicSlug}
+                    setTargetTopicSlug={setTargetTopicSlug}
+                    scheduledPublishAt={scheduledPublishAt}
+                    setScheduledPublishAt={setScheduledPublishAt}
+                    circleAudienceId={circleAudienceId}
+                    setCircleAudienceId={setCircleAudienceId}
+                    />
+                  </div>
+                </details>
               </>
             )}
 
@@ -890,6 +925,10 @@ export function UploadPageClient() {
             <UploadPublishDock
               kind={kind}
               guide={currentType.guide}
+              readiness={readiness}
+              displayName={displayName}
+              initials={initials}
+              assetTag={assetTag}
               submitting={submitting}
               mockOn={mockOn}
               onPublish={() => void publish()}
