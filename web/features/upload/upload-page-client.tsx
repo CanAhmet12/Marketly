@@ -7,10 +7,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { useAuth } from "@/features/auth/use-auth";
-import { HubPageHeader } from "@/features/hub/components/hub-page-header";
 import { HubPageShell } from "@/features/hub/components/hub-page-shell";
-import { HubButtonLink } from "@/features/hub/components/hub-button";
-import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
+import { UploadPageHeader } from "@/features/upload/components/upload-page-header";
 import { UploadPublishDock } from "@/features/upload/components/upload-publish-dock";
 import { UploadTypeRail, type UploadContentKind } from "@/features/upload/components/upload-type-rail";
 import type { MediaItem } from "@/features/feed/types";
@@ -449,18 +447,7 @@ export function UploadPageClient() {
   const initials = displayName.slice(0, 2).toUpperCase() || "CR";
   const currentType = CONTENT_TYPES.find((t) => t.id === kind)!;
 
-  const pageHeader = (
-    <HubPageHeader
-      kicker={hubPremiumKicker("tools", "Yayın")}
-      title="İçerik Oluştur"
-      actions={
-        <>
-          <HubButtonLink href="/hub/studio/drafts">Taslaklar</HubButtonLink>
-          <HubButtonLink href="/hub/studio">Creator Studio</HubButtonLink>
-        </>
-      }
-    />
-  );
+  const pageHeader = <UploadPageHeader />;
 
   const readiness = useMemo(() => {
     if (kind === "post") {

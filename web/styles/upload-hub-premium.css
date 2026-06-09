@@ -1,13 +1,41 @@
 /**
- * İçerik Oluştur — Hub Premium uyarlama (tools zone)
+ * İçerik Oluştur — Hub Premium (Portföy pf-header / hp-main-area ile hizalı)
  */
 
 .hp-canvas--embedded-upload {
   --uv2-zone: var(--hp-zone-1);
 }
 
+/* Portföy ile aynı üst chrome — padding, border, gradient başlık */
 .hp-canvas--embedded-upload .hp-header {
-  padding-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--hp-zone-border);
+}
+
+.hp-canvas--embedded-upload .hp-kicker {
+  color: color-mix(in srgb, var(--hp-zone-1) 55%, var(--hp-meta));
+}
+
+.hp-canvas--embedded-upload .hp-title {
+  background: linear-gradient(
+    120deg,
+    var(--hp-text) 0%,
+    color-mix(in srgb, var(--hp-zone-1) 35%, var(--hp-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Portföy'de hero şeridinin üst margin'i — hero yokken içerik nefes alır */
+.hp-canvas--embedded-upload .hp-body {
+  margin-top: 20px;
+  gap: var(--hp-space-section);
 }
 
 .hp-canvas--embedded-upload .uv2-studio {
@@ -22,5 +50,9 @@
 }
 
 .hp-canvas--embedded-upload .uv2-publish-btn {
-  background: linear-gradient(135deg, var(--uv2-tone, var(--hp-zone-1)), color-mix(in srgb, var(--uv2-tone, var(--hp-zone-1)) 70%, #000));
+  background: linear-gradient(
+    135deg,
+    var(--uv2-tone, var(--hp-zone-1)),
+    color-mix(in srgb, var(--uv2-tone, var(--hp-zone-1)) 70%, #000)
+  );
 }
