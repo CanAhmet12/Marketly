@@ -1,39 +1,138 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
+import { formatForexTickerPrice } from "@/features/markets/forex/lib/map-forex-tickers";
+import {
+  exaggerateSpark,
+  resolvePairSparkline,
+  trendFromSeries,
+} from "@/features/markets/forex/lib/forex-sparkline-utils";
 import type { ForexPulseMetrics, ForexSession } from "@/features/markets/forex/types";
 import { cn } from "@/lib/cn";
 
 type Props = { pulse: ForexPulseMetrics };
 
-function fmtRate(n: number, pair: string) {
-  if (pair.includes("JPY") || pair.includes("TRY")) {
-    return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-  return n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-}
-
 function signed(v: number) {
   return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
 
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)";
-  if (v < 0) return "var(--cc-rose)";
-  return "var(--cc-meta)";
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
 }
 
-function SessionsCell({ sessions }: { sessions: ForexSession[] }) {
+function fmtRate(n: number, pair: string) {
+  if (!n) return "—";
+  return formatForexTickerPrice(n, pair.replace("/", ""));
+}
+
+type PulseCellProps = {
+  label: ReactNode;
+  value: ReactNode;
+  valueClass?: string;
+  sub?: ReactNode;
+  subClass?: string;
+  foot?: ReactNode;
+  className?: string;
+  hideSub?: boolean;
+  layout?: "default" | "meter";
+};
+
+function PulseCell({
+  label,
+  value,
+  valueClass,
+  sub,
+  subClass,
+  foot,
+  className,
+  hideSub,
+  layout = "default",
+}: PulseCellProps) {
+  const isMeter = layout === "meter";
+
   return (
-    <div className="fc-sessions">
-      <span className="cc-pulse-label" style={{ marginBottom: 6 }}>Aktif Seans</span>
+    <div className={cn("cc-pulse-cell", isMeter && "cc-pulse-cell--meter", className)}>
+      <div className="cc-pulse-cell__top">{label}</div>
+
+      {isMeter ? (
+        <div className="cc-pulse-cell__main">{value}</div>
+      ) : (
+        <div className="cc-pulse-cell__body">
+          <div className={cn("cc-pulse-cell__value", valueClass)}>{value}</div>
+          {!hideSub ? (
+            <div className={cn("cc-pulse-cell__sub", subClass, !sub && "cc-pulse-cell__sub--empty")}>
+              {sub ?? "\u00A0"}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {!isMeter ? (
+        <div className="cc-pulse-cell__foot">{foot ?? <span className="cc-pulse-foot-spacer" aria-hidden />}</div>
+      ) : null}
+    </div>
+  );
+}
+
+type PairTone = "eur" | "gbp" | "try" | "jpy" | "dxy";
+
+function PairIconLabel({
+  icon,
+  text,
+  tone,
+}: {
+  icon: string;
+  text: string;
+  tone: PairTone;
+}) {
+  const iconClass =
+    tone === "eur"
+      ? "cc-pulse-cell-icon cc-pulse-cell-icon--btc"
+      : tone === "gbp"
+        ? "cc-pulse-cell-icon cc-pulse-cell-icon--eth"
+        : cn("fc-pulse-cell-icon", `fc-pulse-cell-icon--${tone}`);
+
+  return (
+    <div className="cc-pulse-cell-header">
+      <div className={iconClass}>{icon}</div>
+      <span className="cc-pulse-label">{text}</span>
+    </div>
+  );
+}
+
+function PulseSpark({ series, trend }: { series: number[]; trend: "up" | "down" | "flat" }) {
+  const boosted = exaggerateSpark(series);
+  return (
+    <div className="cc-pulse-spark-wrap">
+      <MiniSparkline series={boosted} trend={trend} height={34} className="cc-pulse-spark" />
+    </div>
+  );
+}
+
+const SESSION_STATUS_LABEL: Record<ForexSession["status"], string> = {
+  active: "Açık",
+  soon: "Yaklaşıyor",
+  closed: "Kapalı",
+};
+
+function SessionsMeter({ sessions }: { sessions: ForexSession[] }) {
+  if (!sessions.length) {
+    return <span className="fc-pulse-empty">Seans verisi yok</span>;
+  }
+
+  return (
+    <div className="fc-sessions fc-sessions--meter">
       {sessions.map((s) => (
         <div key={s.name} className="fc-session-row">
           <span
             className={cn(
               "fc-session-dot",
               s.status === "active" && "fc-session-dot--active",
-              s.status === "soon"   && "fc-session-dot--soon",
+              s.status === "soon" && "fc-session-dot--soon",
               s.status === "closed" && "fc-session-dot--closed",
             )}
             aria-hidden
@@ -41,113 +140,131 @@ function SessionsCell({ sessions }: { sessions: ForexSession[] }) {
           <span className={cn("fc-session-label", s.status === "active" && "fc-session-label--active")}>
             {s.label}
           </span>
-          <span className="fc-session-time">{s.status === "active" ? "Acik" : s.status === "soon" ? "Yaklasıyor" : "Kapali"}</span>
+          <span className="fc-session-time">{SESSION_STATUS_LABEL[s.status]}</span>
         </div>
       ))}
     </div>
   );
 }
 
-function VolatilityCell({ value, label }: { value: number; label: string }) {
-  const color = value >= 70 ? "var(--cc-rose)" : value >= 40 ? "#8b5cf6" : "var(--cc-teal)";
+function volatilityTone(value: number): "low" | "mid" | "high" {
+  if (value >= 65) return "high";
+  if (value >= 35) return "mid";
+  return "low";
+}
+
+function VolatilityMeter({ value, label }: { value: number; label: string }) {
+  const tone = volatilityTone(value);
+  const color =
+    tone === "high" ? "var(--cc-rose)" : tone === "mid" ? "var(--cc-gold)" : "var(--cc-teal)";
+
   return (
-    <div className="fc-volatility">
-      <span className="cc-pulse-label">FX Volatilite</span>
+    <div className="fc-volatility fc-volatility--meter">
       <div className="fc-vol-value-row">
-        <span className="fc-vol-big" style={{ color }}>{value}</span>
+        <span className={cn("fc-vol-big", `fc-vol-big--${tone}`)} style={{ color }}>
+          {value}
+        </span>
         <span className="fc-vol-sub">/100</span>
+        <span className={cn("fc-vol-mode", `fc-vol-mode--${tone}`)} style={{ color }}>
+          {label}
+        </span>
       </div>
       <div className="fc-vol-bar">
         <div className="fc-vol-fill" style={{ width: `${value}%`, background: color }} />
       </div>
-      <span className="fc-vol-label" style={{ color }}>{label}</span>
     </div>
   );
 }
 
 export function ForexPulseBar({ pulse }: Props) {
-  const pairs = [
-    { item: pulse.eurusd, isMain: true,  iconLabel: "€/$" },
-    { item: pulse.gbpusd, isMain: false, iconLabel: "£/$" },
-    { item: pulse.usdtry, isMain: false, iconLabel: null },
-    { item: pulse.usdjpy, isMain: false, iconLabel: null },
-  ];
+  const eurSpark = resolvePairSparkline(pulse.eurusd.changePct, pulse.eurusd.sparkline);
+  const gbpSpark = resolvePairSparkline(pulse.gbpusd.changePct, pulse.gbpusd.sparkline);
+  const trySpark = resolvePairSparkline(pulse.usdtry.changePct, pulse.usdtry.sparkline);
+  const jpySpark = resolvePairSparkline(pulse.usdjpy.changePct, pulse.usdjpy.sparkline);
+  const dxySpark = resolvePairSparkline(pulse.dxy.changePct, pulse.dxy.sparkline);
 
   return (
-    <div className="cc-pulse-bar-v2" role="region" aria-label="Forex piyasa metrikleri">
+    <div className="cc-pulse-bar-v2 fc-pulse-bar-v2" role="region" aria-label="Forex piyasa metrikleri">
+      <PulseCell
+        label={<PairIconLabel icon="€/$" text="EUR/USD" tone="eur" />}
+        value={fmtRate(pulse.eurusd.rate, pulse.eurusd.pair)}
+        valueClass="cc-pulse-value--btc"
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.eurusd.changePct))}>
+            {signed(pulse.eurusd.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={eurSpark} trend={trendFromSeries(eurSpark)} />}
+      />
 
-      {/* EUR/USD */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>€/$</div>
-          <span className="cc-pulse-label">EUR/USD</span>
-        </div>
-        <span className="cc-pulse-value cc-pulse-value--btc">{fmtRate(pulse.eurusd.rate, "EUR/USD")}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.eurusd.changePct) }}>
-          {signed(pulse.eurusd.changePct)}
-        </span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.eurusd.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<PairIconLabel icon="£/$" text="GBP/USD" tone="gbp" />}
+        value={fmtRate(pulse.gbpusd.rate, pulse.gbpusd.pair)}
+        valueClass="cc-pulse-value--eth"
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.gbpusd.changePct))}>
+            {signed(pulse.gbpusd.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={gbpSpark} trend={trendFromSeries(gbpSpark)} />}
+      />
 
-      {/* GBP/USD */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>£/$</div>
-          <span className="cc-pulse-label">GBP/USD</span>
-        </div>
-        <span className="cc-pulse-value">{fmtRate(pulse.gbpusd.rate, "GBP/USD")}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.gbpusd.changePct) }}>
-          {signed(pulse.gbpusd.changePct)}
-        </span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.gbpusd.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<PairIconLabel icon="₺" text="USD/TRY" tone="try" />}
+        value={fmtRate(pulse.usdtry.rate, pulse.usdtry.pair)}
+        sub={
+          pulse.usdtry.rate ? (
+            <span className={cn("cc-pulse-change", changeClass(pulse.usdtry.changePct))}>
+              {signed(pulse.usdtry.changePct)}
+            </span>
+          ) : (
+            <span className="cc-pulse-change cc-neutral">—</span>
+          )
+        }
+        hideSub={!pulse.usdtry.rate}
+        foot={pulse.usdtry.rate ? <PulseSpark series={trySpark} trend={trendFromSeries(trySpark)} /> : undefined}
+      />
 
-      {/* USD/TRY */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">USD/TRY</span>
-        <span className="cc-pulse-value">{fmtRate(pulse.usdtry.rate, "USD/TRY")}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.usdtry.changePct) }}>
-          {signed(pulse.usdtry.changePct)}
-        </span>
-      </div>
+      <PulseCell
+        label={<PairIconLabel icon="¥" text="USD/JPY" tone="jpy" />}
+        value={fmtRate(pulse.usdjpy.rate, pulse.usdjpy.pair)}
+        sub={
+          pulse.usdjpy.rate ? (
+            <span className={cn("cc-pulse-change", changeClass(pulse.usdjpy.changePct))}>
+              {signed(pulse.usdjpy.changePct)}
+            </span>
+          ) : (
+            <span className="cc-pulse-change cc-neutral">—</span>
+          )
+        }
+        hideSub={!pulse.usdjpy.rate}
+        foot={pulse.usdjpy.rate ? <PulseSpark series={jpySpark} trend={trendFromSeries(jpySpark)} /> : undefined}
+      />
 
-      {/* USD/JPY */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">USD/JPY</span>
-        <span className="cc-pulse-value">{fmtRate(pulse.usdjpy.rate, "USD/JPY")}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.usdjpy.changePct) }}>
-          {signed(pulse.usdjpy.changePct)}
-        </span>
-      </div>
+      <PulseCell
+        label={<PairIconLabel icon="DX" text="DXY Endeksi" tone="dxy" />}
+        value={pulse.dxy.value > 0 ? pulse.dxy.value.toFixed(2) : "—"}
+        valueClass="cc-pulse-value--btc"
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.dxy.changePct))}>
+            {signed(pulse.dxy.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={dxySpark} trend={trendFromSeries(dxySpark)} />}
+      />
 
-      {/* DXY */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">DXY Endeksi</span>
-        <span className="cc-pulse-value cc-pulse-value--btc">
-          {pulse.dxy.value.toFixed(2)}
-        </span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.dxy.changePct) }}>
-          {signed(pulse.dxy.changePct)}
-        </span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.dxy.sparkline} trend="down" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">Aktif Seans</span>}
+        value={<SessionsMeter sessions={pulse.sessions} />}
+        layout="meter"
+      />
 
-      {/* Aktif Seans */}
-      <div className="cc-pulse-cell">
-        <SessionsCell sessions={pulse.sessions} />
-      </div>
-
-      {/* FX Volatilite */}
-      <div className="cc-pulse-cell">
-        <VolatilityCell value={pulse.volatility.value} label={pulse.volatility.label} />
-      </div>
-
+      <PulseCell
+        label={<span className="cc-pulse-label">FX Volatilite</span>}
+        value={<VolatilityMeter value={pulse.volatility.value} label={pulse.volatility.label} />}
+        layout="meter"
+        className="cc-pulse-cell--last"
+      />
     </div>
   );
 }

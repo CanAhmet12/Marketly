@@ -1,6 +1,10 @@
 "use client";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
+import {
+  resolvePairSparkline,
+  trendFromSeries,
+} from "@/features/markets/forex/lib/forex-sparkline-utils";
 import type { CurrencyHeatLevel, CurrencyStrengthItem, ForexCurrencyHeatmapPayload } from "@/features/markets/forex/types";
 import { cn } from "@/lib/cn";
 
@@ -15,24 +19,30 @@ const CURRENCY_FLAGS: Record<string, string> = {
   AUD: "🇦🇺",
   NZD: "🇳🇿",
   CAD: "🇨🇦",
+  TRY: "🇹🇷",
 };
 
-function borderColor(level: CurrencyHeatLevel): string {
+function heatClass(level: CurrencyHeatLevel): string {
   switch (level) {
-    case "strong":    return "#8b5cf6";
-    case "mild-up":   return "rgba(139,92,246,0.4)";
-    case "neutral":   return "var(--cc-border)";
-    case "mild-down": return "rgba(239,68,68,0.4)";
-    case "weak":      return "var(--cc-rose)";
+    case "strong":
+      return "fc-seg-cell--strong";
+    case "mild-up":
+      return "fc-seg-cell--mild-up";
+    case "neutral":
+      return "cc-seg-cell--neutral";
+    case "mild-down":
+      return "fc-seg-cell--mild-down";
+    case "weak":
+      return "fc-seg-cell--weak";
   }
 }
 
-function changeColor(v: number): string {
-  if (v > 0.3)  return "#8b5cf6";
-  if (v > 0)    return "rgba(139,92,246,0.7)";
-  if (v < -0.3) return "var(--cc-rose)";
-  if (v < 0)    return "rgba(239,68,68,0.7)";
-  return "var(--cc-meta)";
+function changeTone(v: number) {
+  if (v > 0.3) return "fc-seg-change--strong-up";
+  if (v > 0) return "fc-seg-change--up";
+  if (v < -0.3) return "fc-seg-change--strong-down";
+  if (v < 0) return "fc-seg-change--down";
+  return "fc-seg-change--flat";
 }
 
 function signed(v: number) {
@@ -40,32 +50,35 @@ function signed(v: number) {
 }
 
 function CurrencyCell({ cur }: { cur: CurrencyStrengthItem }) {
-  const trend = cur.changePct > 0 ? "up" : cur.changePct < 0 ? "down" : "flat";
+  const spark = resolvePairSparkline(cur.changePct, cur.sparkline);
+  const trend = trendFromSeries(spark);
+
   return (
     <div
-      className="cc-seg-cell"
-      style={{ borderLeftColor: borderColor(cur.heatLevel) }}
+      className={cn("cc-seg-cell fc-seg-cell", heatClass(cur.heatLevel))}
       title={`${cur.code} — ${cur.name}: ${signed(cur.changePct)}`}
     >
       <div className="cc-seg-header">
-        <span className="cc-seg-icon" aria-hidden>{CURRENCY_FLAGS[cur.code] ?? "🌐"}</span>
+        <span className="cc-seg-icon" aria-hidden>
+          {CURRENCY_FLAGS[cur.code] ?? "🌐"}
+        </span>
         <span className="cc-seg-name">{cur.code}</span>
       </div>
-      <span className="cc-seg-change" style={{ color: changeColor(cur.changePct) }}>
-        {signed(cur.changePct)}
-      </span>
+      <span className={cn("cc-seg-change", changeTone(cur.changePct))}>{signed(cur.changePct)}</span>
       <div className="cc-seg-sparkline">
-        <MiniSparkline series={cur.sparkline} trend={trend} height={36} className="w-full" />
+        <MiniSparkline series={spark} trend={trend} height={28} className="w-full" />
       </div>
     </div>
   );
 }
 
 export function ForexCurrencyHeatmap({ currencies }: Props) {
+  if (!currencies.currencies.length) return null;
+
   return (
-    <div className="cc-section" role="region" aria-label="Para birimi guc haritasi">
-      <p className="cc-section-label" style={{ marginBottom: 12 }}>Para Birimi Gucu</p>
-      <div className="fc-currency-grid">
+    <div className="cc-section fc-heatmap-section" role="region" aria-label="Para birimi güç haritası">
+      <p className="cc-section-label cc-section-label--spaced">Para Birimi Gücü</p>
+      <div className="cc-seg-grid fc-seg-grid">
         {currencies.currencies.map((cur) => (
           <CurrencyCell key={cur.code} cur={cur} />
         ))}

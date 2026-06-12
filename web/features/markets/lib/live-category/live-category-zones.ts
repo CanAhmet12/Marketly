@@ -8,6 +8,10 @@ export type LiveCategoryZones = {
   screener: boolean;
   signals: boolean;
   bottomStrip: boolean;
+  /** Faz 5 — piyasa değeri treemap */
+  treemap: boolean;
+  /** Faz 5 — sinyal + mover istihbarat şeridi */
+  intelDeck: boolean;
 };
 
 export const LIVE_ZONES_ALL: LiveCategoryZones = {
@@ -19,6 +23,8 @@ export const LIVE_ZONES_ALL: LiveCategoryZones = {
   screener: true,
   signals: true,
   bottomStrip: true,
+  treemap: true,
+  intelDeck: true,
 };
 
 export const LIVE_ZONES_NONE: LiveCategoryZones = {
@@ -30,6 +36,8 @@ export const LIVE_ZONES_NONE: LiveCategoryZones = {
   screener: false,
   signals: false,
   bottomStrip: false,
+  treemap: false,
+  intelDeck: false,
 };
 
 export type LiveCategoryBuildResult<T> = {

@@ -25,6 +25,32 @@ import {
   FOREX_MOCK_BOTTOM,
   FOREX_MOCK_SCREENER,
 } from "@/features/markets/forex/data/forex-mock";
+
+function enrichForexMockMovers(raw: {
+  gainers: Omit<ForexMoverItem, "symbol">[];
+  losers: Omit<ForexMoverItem, "symbol">[];
+  active: Omit<ForexMoverItem, "symbol">[];
+}): ForexMoversPayload {
+  const withSymbol = (item: Omit<ForexMoverItem, "symbol">): ForexMoverItem => ({
+    ...item,
+    symbol: item.pair.replace("/", ""),
+  });
+
+  return {
+    gainers: raw.gainers.map(withSymbol),
+    losers: raw.losers.map(withSymbol),
+    volume: raw.active.map(withSymbol),
+    volatile: raw.gainers.map((item) => ({
+      ...withSymbol(item),
+      volatility: `${Math.abs(item.changePct).toFixed(2)}%`,
+    })),
+    active: raw.active.map(withSymbol),
+  };
+}
+import { buildForexTreemapCells } from "@/features/markets/forex/lib/build-forex-treemap";
+import { buildForexSignalsPayload } from "@/features/markets/forex/lib/build-forex-signals";
+import { filterForexAssets } from "@/features/markets/lib/live-category/live-category-shared";
+import type { ForexMoverItem, ForexMoversPayload } from "@/features/markets/forex/types";
 import {
   COMMODITY_MOCK_PULSE,
   COMMODITY_MOCK_REGIME,
@@ -170,14 +196,44 @@ export class MockMarketsRepository implements MarketsRepository {
   }
 
   getForexCategoryDashboard() {
+    const volumeByPair = Object.fromEntries(
+      FOREX_MOCK_MOVERS.active.map((m) => [m.pair, m.volume ?? "—"]),
+    );
+    const screenerAssets = FOREX_MOCK_SCREENER.assets.map((asset) => ({
+      ...asset,
+      symbol: asset.symbol ?? asset.pair.replace("/", ""),
+      volume: asset.volume ?? volumeByPair[asset.pair] ?? "—",
+    }));
+    const dashboard = this.getDashboardPayload();
+    const forexAssets = dashboard ? filterForexAssets(dashboard.assets) : [];
+    const signals = forexAssets.length
+      ? buildForexSignalsPayload(forexAssets)
+      : {
+          totalActiveSignals: 24,
+          bullPct: 58,
+          bearPct: 42,
+          marketBiasLabel: "Alış ağırlıklı",
+          topAssets: screenerAssets.slice(0, 6).map((a) => ({
+            symbol: a.symbol,
+            pair: a.pair,
+            activeSignals: 3,
+            bullPct: a.changePct >= 0 ? 62 : 38,
+            biasLabel: a.changePct >= 0 ? "Alış bias" : "Satış bias",
+            avgConfidence: 72,
+            dominantDirection: a.changePct >= 0 ? ("BUY" as const) : ("SELL" as const),
+          })),
+        };
+
     return {
-      pulse:      FOREX_MOCK_PULSE,
-      regime:     FOREX_MOCK_REGIME,
+      pulse: FOREX_MOCK_PULSE,
+      regime: FOREX_MOCK_REGIME,
       currencies: FOREX_MOCK_CURRENCIES,
-      panels:     FOREX_MOCK_PANELS,
-      movers:     FOREX_MOCK_MOVERS,
-      bottom:     FOREX_MOCK_BOTTOM,
-      screener:   FOREX_MOCK_SCREENER,
+      panels: FOREX_MOCK_PANELS,
+      movers: enrichForexMockMovers(FOREX_MOCK_MOVERS),
+      bottom: FOREX_MOCK_BOTTOM,
+      signals,
+      screener: { assets: screenerAssets },
+      treemap: { cells: buildForexTreemapCells(screenerAssets) },
     };
   }
 

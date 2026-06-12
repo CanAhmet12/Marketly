@@ -1,128 +1,193 @@
 "use client";
 
-import { memo, useState } from "react";
+import Link from "next/link";
+import { memo, useMemo, useState } from "react";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
 import { renderVirtualTableRows, useVirtualTableRows } from "@/features/markets/components/virtual-table-rows";
+import { formatForexTickerPrice } from "@/features/markets/forex/lib/map-forex-tickers";
+import { ForexScreenerRowActions } from "@/features/markets/forex/components/forex-screener-row-actions";
 import type { ForexScreenerAsset, ForexScreenerPayload } from "@/features/markets/forex/types";
+import { parseVolumeLabel } from "@/features/markets/lib/live-category/parse-volume-label";
 import { MARKETS_SCREENER_ROW_HEIGHT } from "@/hooks/use-virtual-table-rows";
 import { cn } from "@/lib/cn";
 
-type Props = { screener: ForexScreenerPayload };
+type Props = {
+  screener: ForexScreenerPayload;
+  isWatched?: (symbol: string) => boolean;
+  onToggleWatch?: (symbol: string) => void;
+  watchPending?: string | null;
+};
 
-type SortKey = "rank" | "changePct" | "pipChange" | "spread";
+type SortKey = "rank" | "changePct" | "pipChange" | "spread" | "volume";
 type FilterId = "all" | "major" | "minor" | "exotic" | "try";
 
+type ScreenerRowAsset = ForexScreenerAsset & { displayRank: number };
+
+const ANCHOR_PAIRS = new Set(["EUR/USD", "GBP/USD", "USD/JPY"]);
+
 const FILTER_CHIPS: { id: FilterId; label: string }[] = [
-  { id: "all",    label: "Tumu" },
-  { id: "major",  label: "Major" },
-  { id: "minor",  label: "Minor" },
+  { id: "all", label: "Tümü" },
+  { id: "major", label: "Major" },
+  { id: "minor", label: "Minor" },
   { id: "exotic", label: "Egzotik" },
-  { id: "try",    label: "TRY Pariteleri" },
+  { id: "try", label: "TRY Pariteleri" },
 ];
 
-const SESSION_BADGE_CLASS: Record<string, string> = {
-  LDN:    "fc-session-badge fc-session-badge--active",
-  NY:     "fc-session-badge fc-session-badge--active",
-  TKY:    "fc-session-badge fc-session-badge--active",
-  ALL:    "fc-session-badge fc-session-badge--active",
-  CLOSED: "fc-session-badge fc-session-badge--closed",
-};
-
-const SESSION_LABEL: Record<string, string> = {
-  LDN: "LDN", NY: "NY", TKY: "TKY", ALL: "ALL", CLOSED: "Kapali",
-};
-
-function signed(v: number) { return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`; }
-function signedPip(v: number) { return `${v > 0 ? "+" : ""}${v}`; }
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)"; if (v < 0) return "var(--cc-rose)"; return "var(--cc-meta)";
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
+
+function signedPip(v: number) {
+  return `${v > 0 ? "+" : ""}${Math.round(v)}`;
+}
+
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
+}
+
 function fmtRate(n: number, pair: string) {
-  if (pair.includes("JPY")) return n.toFixed(2);
-  if (pair.includes("TRY") || pair.includes("MXN") || pair.includes("ZAR")) return n.toFixed(4);
-  return n.toFixed(4);
+  if (!n) return "—";
+  return formatForexTickerPrice(n, pair.replace("/", ""));
 }
 
-export function ForexScreener({ screener }: Props) {
+function sortValue(asset: ForexScreenerAsset, key: SortKey): number {
+  switch (key) {
+    case "rank":
+      return asset.rank;
+    case "changePct":
+      return asset.changePct;
+    case "pipChange":
+      return asset.pipChange;
+    case "spread":
+      return asset.spread;
+    case "volume":
+      return parseVolumeLabel(asset.volume ?? "0");
+    default:
+      return 0;
+  }
+}
+
+export function ForexScreenerBoard({ screener, isWatched, onToggleWatch, watchPending }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<1 | -1>(1);
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) setSortDir((d) => (d === 1 ? -1 : 1));
-    else { setSortKey(key); setSortDir(key === "rank" ? 1 : -1); }
+    if (sortKey === key) {
+      setSortDir((d) => (d === 1 ? -1 : 1));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "rank" ? 1 : -1);
+    }
   }
 
-  const filtered = activeFilter === "all"     ? screener.assets :
-                   activeFilter === "try"      ? screener.assets.filter((a) => a.pair.includes("TRY")) :
-                   screener.assets.filter((a) => a.category === activeFilter);
+  const sorted = useMemo(() => {
+    const filtered =
+      activeFilter === "all"
+        ? screener.assets
+        : activeFilter === "try"
+          ? screener.assets.filter((a) => a.pair.includes("TRY"))
+          : screener.assets.filter((a) => a.category === activeFilter);
 
-  const sorted = [...filtered].sort((a, b) => {
-    let av: number, bv: number;
-    switch (sortKey) {
-      case "rank":      av = a.rank;       bv = b.rank;       break;
-      case "changePct": av = a.changePct;  bv = b.changePct;  break;
-      case "pipChange": av = a.pipChange;  bv = b.pipChange;  break;
-      case "spread":    av = a.spread;     bv = b.spread;     break;
-      default: return 0;
-    }
-    return (av - bv) * sortDir;
+    return [...filtered]
+      .sort((a, b) => (sortValue(a, sortKey) - sortValue(b, sortKey)) * sortDir)
+      .map((asset, index) => ({ ...asset, displayRank: index + 1 }));
+  }, [activeFilter, screener.assets, sortDir, sortKey]);
+
+  const vt = useVirtualTableRows({
+    count: sorted.length,
+    rowHeight: MARKETS_SCREENER_ROW_HEIGHT,
   });
 
-  const vt = useVirtualTableRows({ count: sorted.length, rowHeight: MARKETS_SCREENER_ROW_HEIGHT });
   const tableRows = renderVirtualTableRows({
     items: sorted,
     vt,
-    getKey: (a) => a.pair,
-    renderRow: (asset) => <ScreenerRow asset={asset} />,
+    getKey: (a) => a.symbol,
+    renderRow: (asset) => (
+      <ScreenerRow
+        asset={asset}
+        isWatched={isWatched}
+        onToggleWatch={onToggleWatch}
+        watchPending={watchPending}
+      />
+    ),
   });
 
-  function SortTh({ label, k }: { label: string; k: SortKey }) {
+  function SortTh({ label, k, align = "right" }: { label: string; k: SortKey; align?: "left" | "right" }) {
     const active = sortKey === k;
     return (
-      <th onClick={() => handleSort(k)} style={{ cursor: "pointer", userSelect: "none", textAlign: "right",
-        padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
-        borderBottom: "1px solid var(--cc-border-subtle)", whiteSpace: "nowrap", color: active ? "#8b5cf6" : undefined }}>
-        {label}{active ? (sortDir === 1 ? " ↑" : " ↓") : ""}
+      <th
+        className={cn(
+          "cc-screener-thead-th cc-screener-th--sortable",
+          align === "left" ? "cc-screener-th--left" : "cc-screener-th--right",
+          active && "cc-screener-th--active",
+        )}
+        onClick={() => handleSort(k)}
+        aria-sort={active ? (sortDir === 1 ? "ascending" : "descending") : "none"}
+      >
+        <span className="cc-screener-th-label">
+          {label}
+          {active ? (
+            <span className="cc-screener-th-sort" aria-hidden>
+              {sortDir === 1 ? "↑" : "↓"}
+            </span>
+          ) : null}
+        </span>
       </th>
     );
   }
 
   return (
-    <div className="cc-screener cc-section" role="region" aria-label="FX parite tarayici">
-      <div className="cc-zone-label">FX Parite Tarayici</div>
+    <div className="cc-screener cc-section fc-screener-board" role="region" aria-label="FX parite tarayıcı">
+      <div className="cc-zone-label">FX Parite Tarayıcı</div>
 
-      <div className="cc-screener-filter-row">
+      <div className="cc-screener-filter-row" role="group" aria-label="Parite filtresi">
         {FILTER_CHIPS.map((chip) => (
-          <button key={chip.id} type="button"
+          <button
+            key={chip.id}
+            type="button"
             className={cn("cc-screener-chip", activeFilter === chip.id && "cc-screener-chip--active")}
-            onClick={() => setActiveFilter(chip.id)} aria-pressed={activeFilter === chip.id}>
+            onClick={() => setActiveFilter(chip.id)}
+            aria-pressed={activeFilter === chip.id}
+          >
             {chip.label}
           </button>
         ))}
       </div>
 
-      <div ref={vt.scrollRef} className={cn("cc-screener-table-wrap", vt.enabled && "mkt-vt-scroll")} style={vt.scrollStyle}>
-        <table className="cc-screener-table" aria-label="Forex pariteleri" style={{ minWidth: 780 }}>
+      <div
+        ref={vt.scrollRef}
+        className={cn("cc-screener-table-wrap", vt.enabled && "mkt-vt-scroll")}
+        style={vt.scrollStyle}
+      >
+        <table className="cc-screener-table fc-screener-table" aria-label="Forex pariteleri">
+          <colgroup>
+            <col className="cc-screener-col-rank" />
+            <col className="cc-screener-col-asset" />
+            <col className="cc-screener-col-price" />
+            <col className="cc-screener-col-change" />
+            <col className="cc-screener-col-change" />
+            <col className="cc-screener-col-vol" />
+            <col className="cc-screener-col-change" />
+            <col className="cc-screener-col-spark" />
+            <col className="cc-screener-col-actions" />
+          </colgroup>
           <thead className={cn("cc-screener-thead", vt.enabled && "mkt-vt-sticky-thead")}>
             <tr>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: sortKey === "rank" ? "#8b5cf6" : undefined,
-                cursor: "pointer" }} onClick={() => handleSort("rank")}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Parite</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Bid / Ask</th>
+              <SortTh label="#" k="rank" align="left" />
+              <th className="cc-screener-thead-th cc-screener-th--left">Parite</th>
+              <th className="cc-screener-thead-th cc-screener-th--right">Bid / Ask</th>
               <SortTh label="Spread" k="spread" />
-              <SortTh label="Pip Degisim" k="pipChange" />
+              <SortTh label="Pip" k="pipChange" />
               <SortTh label="24s %" k="changePct" />
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Gun Araligi</th>
-              <th style={{ textAlign: "center", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Seans</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
+              <SortTh label="Hacim" k="volume" />
+              <th className="cc-screener-thead-th cc-screener-th--right">Grafik</th>
+              <th className="cc-screener-thead-th cc-screener-th--right cc-screener-thead-th--actions">
+                İşlem
+              </th>
             </tr>
           </thead>
           <tbody className="cc-screener-tbody" style={vt.tbodyStyle}>
@@ -134,60 +199,91 @@ export function ForexScreener({ screener }: Props) {
   );
 }
 
-const ScreenerRow = memo(function ScreenerRow({ asset }: { asset: ForexScreenerAsset }) {
-  const isFeatured = asset.pair === "EUR/USD";
-  const isActive = asset.session !== "CLOSED";
+/** @deprecated ForexScreenerBoard kullanın */
+export const ForexScreener = ForexScreenerBoard;
+
+const ScreenerRow = memo(function ScreenerRow({
+  asset,
+  isWatched,
+  onToggleWatch,
+  watchPending,
+}: {
+  asset: ScreenerRowAsset;
+  isWatched?: (symbol: string) => boolean;
+  onToggleWatch?: (symbol: string) => void;
+  watchPending?: string | null;
+}) {
+  const href = `/markets/${encodeURIComponent(asset.symbol)}`;
+  const isAnchor = ANCHOR_PAIRS.has(asset.pair);
+  const showActions = Boolean(onToggleWatch && isWatched);
+  const anchorClass =
+    asset.pair === "EUR/USD"
+      ? "fc-screener-row--eur"
+      : asset.pair === "GBP/USD"
+        ? "fc-screener-row--gbp"
+        : asset.pair === "USD/JPY"
+          ? "fc-screener-row--jpy"
+          : undefined;
 
   return (
-    <tr className={isFeatured ? "cc-screener-row--featured" : undefined}>
-      <td style={{ padding: "10px 12px" }}>
-        <span className="cc-screener-rank">{asset.rank}</span>
+    <tr className={cn(isAnchor && "cc-screener-row--featured", anchorClass)}>
+      <td className="cc-screener-td cc-screener-td--rank">
+        <span className="cc-screener-rank">{asset.displayRank}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span className="cc-screener-symbol" style={{ color: isFeatured ? "#8b5cf6" : undefined }}>
-            {asset.pair}
-          </span>
-          <span style={{ fontSize: 11, fontWeight: 600, padding: "1px 5px", borderRadius: 3,
-            background: "rgba(255,255,255,0.04)", color: "var(--cc-meta)", width: "fit-content",
-            textTransform: "uppercase", letterSpacing: "0.03em" }}>
-            {asset.category === "major" ? "Major" : asset.category === "minor" ? "Minor" : "Egzotik"}
-          </span>
+      <td className="cc-screener-td cc-screener-td--asset">
+        <div className="cc-screener-symbol-cell fc-screener-symbol-cell">
+          <span className="fc-screener-pair-badge">{asset.pair.split("/")[0]}</span>
+          <div className="cc-screener-symbol-copy">
+            <Link href={href} className="cc-screener-symbol-link">
+              <span className="cc-screener-symbol">{asset.pair}</span>
+            </Link>
+            <span className="cc-screener-name fc-screener-category">
+              {asset.category === "major" ? "Major" : asset.category === "minor" ? "Minor" : "Egzotik"}
+            </span>
+          </div>
         </div>
       </td>
-      <td style={{ padding: "10px 12px" }}>
+      <td className="cc-screener-td cc-screener-td--num">
         <div className="fc-bid-ask">
           <span className="fc-bid">{fmtRate(asset.bid, asset.pair)}</span>
           <span className="fc-ask">{fmtRate(asset.ask, asset.pair)}</span>
         </div>
       </td>
-      <td style={{ padding: "10px 12px", textAlign: "right" }}>
+      <td className="cc-screener-td cc-screener-td--num">
         <span className="fc-spread">{asset.spread.toFixed(1)}</span>
       </td>
-      <td style={{ padding: "10px 12px", textAlign: "right" }}>
-        <span className="cc-screener-change" style={{ color: changeColor(asset.pipChange) }}>
+      <td className="cc-screener-td cc-screener-td--num">
+        <span className={cn("cc-screener-change", changeClass(asset.pipChange))}>
           {signedPip(asset.pipChange)}
         </span>
       </td>
-      <td style={{ padding: "10px 12px", textAlign: "right" }}>
-        <span className="cc-screener-change" style={{ color: changeColor(asset.changePct) }}>
+      <td className="cc-screener-td cc-screener-td--num">
+        <span className={cn("cc-screener-change", changeClass(asset.changePct))}>
           {signed(asset.changePct)}
         </span>
       </td>
-      <td style={{ padding: "10px 12px", textAlign: "right" }}>
-        <span style={{ fontSize: 11, color: "var(--cc-text-secondary)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-          {fmtRate(asset.dayLow, asset.pair)} – {fmtRate(asset.dayHigh, asset.pair)}
-        </span>
+      <td className="cc-screener-td cc-screener-td--num">
+        <span className="cc-screener-vol">{asset.volume ?? "—"}</span>
       </td>
-      <td style={{ padding: "10px 12px", textAlign: "center" }}>
-        <span className={SESSION_BADGE_CLASS[asset.session] ?? "fc-session-badge fc-session-badge--closed"}>
-          {SESSION_LABEL[asset.session] ?? asset.session}
-        </span>
-      </td>
-      <td style={{ padding: "10px 12px" }}>
-        <div style={{ width: 72 }}>
+      <td className="cc-screener-td cc-screener-td--spark">
+        <div className="cc-screener-spark">
           <MiniSparkline series={asset.sparkline} trend={asset.trend} height={32} className="w-[72px]" />
         </div>
+      </td>
+      <td className="cc-screener-td cc-screener-td--actions">
+        {showActions ? (
+          <ForexScreenerRowActions
+            symbol={asset.symbol}
+            pair={asset.pair}
+            watched={isWatched!(asset.symbol)}
+            pending={watchPending === asset.symbol}
+            onToggleWatch={onToggleWatch!}
+          />
+        ) : (
+          <Link href={href} className="cc-screener-btn cc-screener-btn--pill cc-screener-btn--primary">
+            Detay
+          </Link>
+        )}
       </td>
     </tr>
   );

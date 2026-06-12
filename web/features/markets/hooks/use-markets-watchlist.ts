@@ -12,6 +12,7 @@ import {
   removeFromWatchlistDb,
 } from "@/features/markets/fetch-watchlist";
 import { useAuth } from "@/features/auth/use-auth";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 const STORAGE_KEY = "marketly-markets-watchlist";
 const PINNED_KEY = "marketly-markets-pinned";
@@ -129,6 +130,8 @@ export function useMarketsWatchlist(seedWatchlistIfEmpty?: readonly string[]) {
 
   const isWatched = useCallback((symbol: string) => watchlist.has(symbol), [watchlist]);
   const isPinned = useCallback((symbol: string) => pinned.has(symbol), [pinned]);
+
+  useRegisterPageLoad(!hydrated);
 
   return { watchlist, pinned, hydrated, pendingSymbol, toggleWatch, togglePin, isWatched, isPinned };
 }

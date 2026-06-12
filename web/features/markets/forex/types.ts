@@ -86,6 +86,7 @@ export type ForexCurrencyHeatmapPayload = {
    ================================ */
 
 export type ForexPairPanel = {
+  symbol: string;   /* "EURUSD" */
   pair: string;     /* "EUR/USD" */
   base: string;     /* "EUR" */
   quote: string;    /* "USD" */
@@ -110,15 +111,22 @@ export type ForexPairPanel = {
 
 export type ForexMoverItem = {
   pair: string;
+  symbol: string;
   changePct: number;
   pip?: number;
   volume?: string;
+  volatility?: string;
 };
 
 export type ForexMoversPayload = {
-  gainers:  ForexMoverItem[];
-  losers:   ForexMoverItem[];
-  active:   ForexMoverItem[];
+  gainers: ForexMoverItem[];
+  losers: ForexMoverItem[];
+  /** Hacim liderleri — intel deck */
+  volume: ForexMoverItem[];
+  /** En volatil — intel deck */
+  volatile: ForexMoverItem[];
+  /** @deprecated Intel deck kullan; geriye uyumluluk */
+  active: ForexMoverItem[];
 };
 
 /* ================================
@@ -162,6 +170,7 @@ export type ForexBottomStripPayload = {
 
 export type ForexScreenerAsset = {
   rank: number;
+  symbol: string;
   pair: string;
   category: "major" | "minor" | "exotic";
   bid: number;
@@ -174,8 +183,49 @@ export type ForexScreenerAsset = {
   session: "LDN" | "NY" | "TKY" | "ALL" | "CLOSED";
   sparkline: number[];
   trend: "up" | "down" | "flat";
+  volume?: string;
 };
 
 export type ForexScreenerPayload = {
   assets: ForexScreenerAsset[];
+};
+
+/* ================================
+   PAIR TREEMAP — Zone 2b
+   ================================ */
+
+export type ForexTreemapCell = {
+  rank: number;
+  symbol: string;
+  pair: string;
+  weightPct: number;
+  changePct: number;
+  volume: string;
+  sparkline: number[];
+};
+
+export type ForexTreemapPayload = {
+  cells: ForexTreemapCell[];
+};
+
+/* ================================
+   SIGNAL RAIL — Zone 5
+   ================================ */
+
+export type ForexSignalAsset = {
+  symbol: string;
+  pair: string;
+  activeSignals: number;
+  bullPct: number;
+  biasLabel: string;
+  avgConfidence?: number;
+  dominantDirection?: "BUY" | "SELL" | "HOLD";
+};
+
+export type ForexSignalStripPayload = {
+  totalActiveSignals: number;
+  bullPct: number;
+  bearPct: number;
+  marketBiasLabel: string;
+  topAssets: ForexSignalAsset[];
 };

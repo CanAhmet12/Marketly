@@ -38,6 +38,10 @@
   --cc-text-secondary:   var(--color-text-secondary);
   --cc-meta:             var(--color-meta);
 
+  --ms-spark-up:         var(--color-rise, #10b981);
+  --ms-spark-down:       var(--color-fall, #ef4444);
+  --ms-spark-flat:       var(--color-meta, #64748b);
+
   background: var(--cc-canvas);
   color: var(--cc-text);
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
@@ -78,6 +82,65 @@
 .forex-canvas .cc-pulse-cell-icon--eth {
   background: #6366f1;
   color: #fff;
+}
+
+/* TRY / JPY / DXY pulse ikonları */
+.fc-pulse-cell-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.fc-pulse-cell-icon--try {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.fc-pulse-cell-icon--jpy {
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--cc-text-secondary);
+}
+
+.fc-pulse-cell-icon--dxy {
+  background: var(--cc-gold-bg);
+  color: var(--cc-gold);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.forex-canvas .fc-pulse-bar-v2 .cc-pulse-cell--meter {
+  min-width: 148px;
+}
+
+.forex-canvas .fc-sessions--meter {
+  width: 100%;
+  gap: 5px;
+}
+
+.forex-canvas .fc-volatility--meter {
+  width: 100%;
+  gap: 6px;
+}
+
+.forex-canvas .fc-vol-mode {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.forex-canvas .fc-pulse-empty {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
 }
 
 .forex-canvas .cc-pulse-value--btc {
@@ -213,7 +276,7 @@
 }
 
 .fc-session-dot--closed {
-  background: rgba(255,255,255,0.12);
+  background: color-mix(in srgb, var(--cc-meta) 35%, transparent);
 }
 
 .fc-session-label {
@@ -394,4 +457,472 @@
   font-size: 11px;
   font-weight: 700;
   margin-top: 2px;
+}
+
+.forex-canvas .fc-asset-panel--jpy {
+  border-top-color: #0ea5e9;
+}
+
+.forex-canvas .fc-asset-panel--jpy .cc-asset-chart-wrap {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.05) 0%, transparent 80%);
+}
+
+.fc-asset-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.fc-asset-panel-icon--eur {
+  background: #8b5cf6;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.3);
+}
+
+.fc-asset-panel-icon--gbp {
+  background: #6366f1;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.25);
+}
+
+.fc-asset-panel-icon--jpy {
+  background: #0ea5e9;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+}
+
+.fc-asset-panel-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fc-asset-panel-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-asset-chart-empty {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  border-top: 1px solid var(--cc-border-subtle);
+  margin-top: 12px;
+}
+
+/* Treemap — majör parite tonları */
+.forex-canvas .fc-tmap-seg--eur { background: var(--cc-gold); }
+.forex-canvas .fc-tmap-seg--gbp { background: var(--cc-violet); }
+.forex-canvas .fc-tmap-seg--jpy { background: #0ea5e9; }
+
+.forex-canvas .fc-tmap-tile--eur { border-top: 2px solid var(--cc-gold); }
+.forex-canvas .fc-tmap-tile--gbp { border-top: 2px solid var(--cc-violet); }
+.forex-canvas .fc-tmap-tile--jpy { border-top: 2px solid #0ea5e9; }
+
+.fc-tmap-pair-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+.fc-tmap-kpi-pair {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+}
+
+/* ================================
+   PARÇA 5 — INTEL DECK + BOTTOM STRIP
+   ================================ */
+
+.forex-canvas .fc-intel-board-sub::before {
+  background: var(--cc-gold);
+}
+
+.forex-canvas .fc-intel-pair-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+  flex-shrink: 0;
+}
+
+.forex-canvas .fc-intel-row .cc-intel-row-val--violet {
+  color: var(--cc-gold);
+}
+
+.forex-canvas .fc-bottom-empty {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  padding: 8px 0;
+}
+
+.fc-watchlist-pair-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+  flex-shrink: 0;
+}
+
+.fc-cal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.fc-cal-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+}
+
+.fc-cal-bank {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-gold);
+}
+
+.fc-cal-impact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fc-cal-impact--high {
+  background: var(--cc-rose);
+}
+
+.fc-cal-impact--medium {
+  background: #f59e0b;
+}
+
+.fc-cal-impact--low {
+  background: var(--cc-meta);
+}
+
+.fc-commodity-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fc-commodity-unit {
+  font-size: 11px;
+  color: var(--cc-meta);
+}
+
+.fc-commodity-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+@media (min-width: 1100px) {
+  .forex-canvas .fc-bottom-strip--quad {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ================================
+   PARÇA 3 — REJİM + CURRENCY HEATMAP
+   ================================ */
+
+.forex-canvas .fc-regime-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cc-gold);
+}
+
+.forex-canvas .fc-regime-headline--usd {
+  color: var(--cc-gold);
+  text-shadow: 0 0 40px rgba(139, 92, 246, 0.25);
+}
+
+.forex-canvas .fc-regime-headline--risk-on {
+  color: var(--cc-teal);
+}
+
+.forex-canvas .fc-regime-headline--risk-off {
+  color: var(--cc-rose);
+}
+
+.forex-canvas .fc-regime-headline--range {
+  color: var(--cc-meta);
+}
+
+.forex-canvas .fc-regime-live-chip {
+  color: var(--cc-gold);
+  background: color-mix(in srgb, var(--cc-gold) 10%, transparent);
+  border-color: color-mix(in srgb, var(--cc-gold) 22%, transparent);
+}
+
+.forex-canvas .fc-regime-live-dot {
+  background: var(--cc-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.forex-canvas .fc-dom-bar-safe {
+  background: var(--cc-gold);
+}
+
+.forex-canvas .fc-dom-bar-risky {
+  background: var(--cc-teal);
+}
+
+.forex-canvas .fc-dom-bar-em {
+  background: rgba(167, 139, 250, 0.55);
+}
+
+.forex-canvas .fc-dom-legend-dot--safe {
+  background: var(--cc-gold);
+}
+
+.forex-canvas .fc-dom-legend-dot--risky {
+  background: var(--cc-teal);
+}
+
+.forex-canvas .fc-dom-legend-dot--em {
+  background: rgba(167, 139, 250, 0.55);
+}
+
+.forex-canvas .fc-seg-cell--strong {
+  border-left-color: var(--cc-gold);
+}
+
+.forex-canvas .fc-seg-cell--mild-up {
+  border-left-color: color-mix(in srgb, var(--cc-gold) 45%, transparent);
+}
+
+.forex-canvas .fc-seg-cell--mild-down {
+  border-left-color: color-mix(in srgb, var(--cc-rose) 45%, transparent);
+}
+
+.forex-canvas .fc-seg-cell--weak {
+  border-left-color: var(--cc-rose);
+}
+
+.forex-canvas .fc-seg-change--strong-up,
+.forex-canvas .fc-seg-change--up {
+  color: var(--cc-gold);
+}
+
+.forex-canvas .fc-seg-change--strong-down,
+.forex-canvas .fc-seg-change--down {
+  color: var(--cc-rose);
+}
+
+.forex-canvas .fc-seg-change--flat {
+  color: var(--cc-meta);
+}
+
+.forex-canvas .fc-seg-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 520px) {
+  .forex-canvas .fc-seg-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ================================
+   PARÇA 1 — TOOLBAR + TICKER + SKELETON
+   Kripto cc-* sistemi; violet kimlik override
+   ================================ */
+
+.forex-canvas .cc-toolbar-search .markets-search-wrap {
+  width: 100%;
+}
+
+.forex-canvas .cc-toolbar-search .markets-glass-25 {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--cc-border-subtle);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 8px 0;
+}
+
+.forex-canvas .cc-toolbar-search .markets-glass-25:focus-within {
+  border-bottom-color: color-mix(in srgb, var(--cc-gold) 35%, var(--cc-border-subtle));
+  outline: none;
+  box-shadow: none;
+}
+
+.forex-canvas .cc-toolbar-search input:focus,
+.forex-canvas .cc-toolbar-search input:focus-visible,
+.forex-canvas .cc-toolbar-search button:focus,
+.forex-canvas .cc-toolbar-search button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.forex-canvas .cc-toolbar-search .markets-glass-25.absolute {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: 8px;
+  padding: var(--sp-2, 8px);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 8%, transparent);
+}
+
+.forex-canvas .fc-ecosystem-nav__link:hover,
+.forex-canvas .cc-ecosystem-nav__link:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+/* Ticker — violet beam (--cc-gold = violet) */
+.forex-canvas .fc-ticker-strip {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 6%, transparent) 0%, transparent 58%),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 100%
+    );
+}
+
+.forex-canvas .fc-ticker-live-badge {
+  border-right: 1px solid var(--cc-border-subtle);
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.forex-canvas .fc-ticker-live-dot {
+  background: var(--cc-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.forex-canvas .fc-ticker-live-text {
+  color: var(--cc-gold);
+}
+
+.forex-canvas .fc-ticker-item__pair {
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.forex-canvas .fc-ticker-item:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 38%, var(--cc-border-subtle));
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--cc-gold) 10%, transparent);
+}
+
+/* Skeleton — FX hedef layout */
+.fc-skeleton-ticker-item {
+  width: 128px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.fc-skeleton-pulse {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--cc-border-subtle);
+}
+
+.fc-skeleton-pulse .cc-skeleton-pulse-cell {
+  flex: 1;
+  min-height: 108px;
+  border-right: 1px solid var(--cc-border-subtle);
+}
+
+.fc-skeleton-pulse .cc-skeleton-pulse-cell:last-child {
+  border-right: none;
+}
+
+.fc-skeleton-heatmap {
+  min-height: 180px;
+}
+
+.fc-skeleton-treemap {
+  min-height: 120px;
+}
+
+.fc-skeleton-signal-rail {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.fc-skeleton-signal-card {
+  flex: 0 0 clamp(360px, 46vw, 440px);
+  height: 158px;
+  border-radius: 10px;
+  animation: cc-shimmer 1.4s ease-in-out infinite;
+  background: var(--cc-surface-hover);
+}
+
+/* ================================
+   SIGNAL RAIL — violet override
+   ================================ */
+
+.forex-canvas .fc-signal-rail {
+  --cc-sig-rail-card-w: clamp(360px, 46vw, 440px);
+  --cc-sig-rail-card-min-h: 158px;
+}
+
+.forex-canvas .fc-signal-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--cc-canvas) 88%);
+}
+
+.forex-canvas .fc-signal-rail-bias-fill {
+  background: var(--cc-gold);
+}
+
+.forex-canvas .fc-signal-rail-skeleton-card {
+  background: var(--cc-surface-hover);
+  border: 1px solid var(--cc-border-subtle);
+}
+
+@media (max-width: 640px) {
+  .fc-skeleton-signal-card {
+    flex-basis: clamp(300px, 88vw, 360px);
+  }
 }

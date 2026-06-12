@@ -20,6 +20,7 @@ import type {
   CryptoSignalStripPayload,
   CryptoScreenerPayload,
   CryptoBottomStripPayload,
+  CryptoTreemapPayload,
 } from "@/features/markets/crypto/types";
 import type {
   BistPulseMetrics,
@@ -38,6 +39,8 @@ import type {
   ForexMoversPayload,
   ForexBottomStripPayload,
   ForexScreenerPayload,
+  ForexSignalStripPayload,
+  ForexTreemapPayload,
 } from "@/features/markets/forex/types";
 import type {
   CommodityPulseMetrics,
@@ -105,6 +108,8 @@ export type CryptoCategoryDashboard = {
   signals:    CryptoSignalStripPayload;
   screener:   CryptoScreenerPayload;
   bottomStrip: CryptoBottomStripPayload;
+  /** Faz 5 — mock/canlı; yoksa screener'dan türetilir */
+  treemap?:   CryptoTreemapPayload;
 };
 
 /** NASDAQ kategori sayfası için tam veri paketi */
@@ -134,10 +139,12 @@ export type ForexCategoryDashboard = {
   pulse:      ForexPulseMetrics;
   regime:     ForexMarketRegimePayload;
   currencies: ForexCurrencyHeatmapPayload;
-  panels:     { eurusd: ForexPairPanel; gbpusd: ForexPairPanel };
+  panels:     { eurusd: ForexPairPanel; gbpusd: ForexPairPanel; usdjpy: ForexPairPanel };
   movers:     ForexMoversPayload;
   bottom:     ForexBottomStripPayload;
+  signals:    ForexSignalStripPayload;
   screener:   ForexScreenerPayload;
+  treemap?:   ForexTreemapPayload;
 };
 
 /** BIST kategori sayfası için tam veri paketi */

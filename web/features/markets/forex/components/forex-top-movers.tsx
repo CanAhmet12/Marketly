@@ -1,44 +1,57 @@
 "use client";
 
+import Link from "next/link";
+
 import type { ForexMoverItem, ForexMoversPayload } from "@/features/markets/forex/types";
+import { cn } from "@/lib/cn";
 
 type Props = { movers: ForexMoversPayload };
 
-function signed(v: number) { return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`; }
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)";
-  if (v < 0) return "var(--cc-rose)";
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+}
+
+function dotColor(v: number) {
+  if (v > 0.3) return "var(--cc-gold)";
+  if (v > 0) return "color-mix(in srgb, var(--cc-gold) 55%, transparent)";
+  if (v < -0.3) return "var(--cc-rose)";
+  if (v < 0) return "color-mix(in srgb, var(--cc-rose) 55%, transparent)";
   return "var(--cc-meta)";
 }
-function dotColor(v: number) {
-  if (v > 0.3)  return "#8b5cf6";
-  if (v > 0)    return "rgba(139,92,246,0.5)";
-  if (v < -0.3) return "#ef4444";
-  if (v < 0)    return "rgba(239,68,68,0.5)";
-  return "#64748b";
+
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
 }
 
-type ColProps = { title: string; rows: ForexMoverItem[]; showVolume?: boolean };
-
-function MoverCol({ title, rows, showVolume = false }: ColProps) {
+function MoverCol({
+  title,
+  rows,
+  showVolume = false,
+}: {
+  title: string;
+  rows: readonly ForexMoverItem[];
+  showVolume?: boolean;
+}) {
   return (
     <div className="cc-movers-v2-col">
       <p className="cc-movers-v2-col-title">{title}</p>
       {rows.map((r, i) => (
-        <div key={r.pair} className="cc-movers-v2-row" style={{ cursor: "default" }}>
+        <Link
+          key={r.pair}
+          href={`/markets/${encodeURIComponent(r.symbol)}`}
+          className="cc-movers-v2-row"
+        >
           <span className="cc-movers-v2-num">{i + 1}</span>
           <span className="cc-movers-v2-dot" style={{ background: dotColor(r.changePct) }} aria-hidden />
-          <span className="cc-movers-v2-symbol" style={{ fontSize: 11 }}>{r.pair}</span>
+          <span className="cc-movers-v2-symbol">{r.pair}</span>
           {showVolume && r.volume ? (
-            <span className="cc-movers-v2-val" style={{ color: "var(--cc-text-secondary)", fontSize: 11 }}>
-              {r.volume}
-            </span>
+            <span className="cc-movers-v2-val cc-intel-row-val--muted">{r.volume}</span>
           ) : (
-            <span className="cc-movers-v2-val" style={{ color: changeColor(r.changePct) }}>
-              {signed(r.changePct)}
-            </span>
+            <span className={cn("cc-movers-v2-val", changeClass(r.changePct))}>{signed(r.changePct)}</span>
           )}
-        </div>
+        </Link>
       ))}
     </div>
   );
@@ -49,9 +62,9 @@ export function ForexTopMovers({ movers }: Props) {
     <div className="cc-movers-v2 cc-section" role="region" aria-label="Parite hareketlileri">
       <div className="cc-movers-v2-header">Parite Hareketlileri</div>
       <div className="cc-movers-cols">
-        <MoverCol title="Yukselenler"  rows={movers.gainers} />
-        <MoverCol title="Dusenler"     rows={movers.losers} />
-        <MoverCol title="En Aktif"     rows={movers.active} showVolume />
+        <MoverCol title="Yükselenler" rows={movers.gainers} />
+        <MoverCol title="Düşenler" rows={movers.losers} />
+        <MoverCol title="En Aktif" rows={movers.volume.length ? movers.volume : movers.active} showVolume />
       </div>
     </div>
   );
