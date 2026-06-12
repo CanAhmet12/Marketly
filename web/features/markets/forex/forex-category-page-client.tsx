@@ -9,9 +9,10 @@ import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets"
 import { useMarketsWatchlist } from "@/features/markets/hooks/use-markets-watchlist";
 import { buildForexDashboardFromAssets } from "@/features/markets/lib/live-category/build-forex-dashboard-from-assets";
 import { filterForexAssets } from "@/features/markets/lib/live-category/live-category-shared";
-import { MarketsPageClient } from "@/features/markets/markets-page-client";
+import { LIVE_ZONES_ALL } from "@/features/markets/lib/live-category/live-category-zones";
 import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 import { getMarketsRepository } from "@/features/markets/repository";
+import { MockMarketsRepository } from "@/features/markets/repository/mock-markets-repository";
 
 import { ForexBottomStrip } from "@/features/markets/forex/components/forex-bottom-strip";
 import { ForexCategoryPageSkeleton } from "@/features/markets/forex/components/forex-category-skeleton";
@@ -44,30 +45,43 @@ export function ForexCategoryPageClient() {
     buildForexDashboardFromAssets,
   );
 
+  const previewRepo = useMemo(
+    () => (!mockOn && !data && !isLoading ? new MockMarketsRepository() : null),
+    [mockOn, data, isLoading],
+  );
+  const effectiveData = data ?? previewRepo?.getForexCategoryDashboard() ?? null;
+  const isDesignPreview = !data && Boolean(effectiveData);
+  const effectiveZones = data ? zones : isDesignPreview ? LIVE_ZONES_ALL : zones;
+
   const repo = useMemo(() => getMarketsRepository(), []);
   const { assets: liveAssets } = useMarketAssetsLive();
   const dashboard = useMemo(() => repo.getDashboardPayload(), [repo]);
+  const previewDashboard = useMemo(() => previewRepo?.getDashboardPayload() ?? null, [previewRepo]);
   const { isWatched, toggleWatch, pendingSymbol } = useMarketsWatchlist(
-    mockOn ? repo.getWatchlistSeed() : undefined,
+    mockOn || isDesignPreview ? (previewRepo ?? repo).getWatchlistSeed() : undefined,
   );
 
   const forexAssets = useMemo(() => {
-    const pool = mockOn ? (dashboard?.assets ?? []) : liveAssets;
+    const pool = mockOn
+      ? (dashboard?.assets ?? [])
+      : data
+        ? liveAssets
+        : (previewDashboard?.assets ?? []);
     return filterForexAssets(pool);
-  }, [mockOn, dashboard?.assets, liveAssets]);
+  }, [mockOn, dashboard?.assets, liveAssets, data, previewDashboard?.assets]);
 
   const forexNewsIntel = useMemo(() => {
-    const bundle = repo.getMarketNewsroomBundle([], []);
+    const bundle = (previewRepo ?? repo).getMarketNewsroomBundle([], []);
     return bundle.items
       .filter((item) => item.newsCategory === "macro" || item.newsCategory === "local")
       .slice(0, 4);
-  }, [repo]);
+  }, [previewRepo, repo]);
 
   const forexBottomStrip = useMemo(() => {
-    if (!data) return null;
-    const calendar = repo.getEconomicCalendar().filter((row) => row.impact >= 2);
-    return mergeForexBottomStrip(data.bottom, calendar);
-  }, [data, repo]);
+    if (!effectiveData) return null;
+    const calendar = (previewRepo ?? repo).getEconomicCalendar().filter((row) => row.impact >= 2);
+    return mergeForexBottomStrip(effectiveData.bottom, calendar);
+  }, [effectiveData, previewRepo, repo]);
 
   if (isLoading) {
     return (
@@ -77,10 +91,21 @@ export function ForexCategoryPageClient() {
     );
   }
 
-  if (!data) {
+  if (!effectiveData) {
     if (!mockOn) {
       if (fetchError || !hasGlobalAssets) {
-        return <MarketsPageClient initialSegment="forex" />;
+        return (
+          <ForexCanvasShell>
+            <EmptyState
+              title="Canlı forex verisi yüklenemedi"
+              description="Kotasyonlar şu an alınamıyor. Bağlantınızı kontrol edin veya biraz sonra tekrar deneyin."
+              actionLabel="Piyasalar"
+              actionHref={MARKETS_HUB_PATH}
+              tone="market"
+              compact
+            />
+          </ForexCanvasShell>
+        );
       }
       return (
         <ForexCanvasShell>
@@ -111,6 +136,12 @@ export function ForexCategoryPageClient() {
 
   return (
     <ForexCanvasShell>
+      {isDesignPreview ? (
+        <div className="fc-preview-banner" role="status">
+          Tasarım önizlemesi — canlı kotasyon bağlandığında otomatik güncellenir
+        </div>
+      ) : null}
+
       {forexAssets.length > 0 ? (
         <>
           <ForexCategoryToolbar assets={forexAssets} />
@@ -119,74 +150,78 @@ export function ForexCategoryPageClient() {
         </>
       ) : null}
 
-      {zones.pulse ? <ForexPulseBar pulse={data.pulse} /> : null}
-      {zones.pulse ? <div className="cc-divider" aria-hidden /> : null}
+      {effectiveZones.pulse ? <ForexPulseBar pulse={effectiveData.pulse} /> : null}
+      {effectiveZones.pulse ? <div className="cc-divider" aria-hidden /> : null}
 
-      {(zones.regime || (zones.segments && data.currencies.currencies.length > 0)) ? (
+      {(effectiveZones.regime || (effectiveZones.segments && effectiveData.currencies.currencies.length > 0)) ? (
         <div
           className={
-            zones.segments && data.currencies.currencies.length > 0
+            effectiveZones.segments && effectiveData.currencies.currencies.length > 0
               ? "grid grid-cols-1 gap-8 min-[900px]:grid-cols-[1fr_minmax(0,380px)]"
               : "flex flex-col"
           }
         >
-          {zones.regime ? (
-            <ForexMarketRegime regime={data.regime} pulse={data.pulse} live={!mockOn} />
+          {effectiveZones.regime ? (
+            <ForexMarketRegime
+              regime={effectiveData.regime}
+              pulse={effectiveData.pulse}
+              live={!mockOn && !isDesignPreview}
+            />
           ) : null}
-          {zones.segments && data.currencies.currencies.length > 0 ? (
-            <ForexCurrencyHeatmap currencies={data.currencies} />
+          {effectiveZones.segments && effectiveData.currencies.currencies.length > 0 ? (
+            <ForexCurrencyHeatmap currencies={effectiveData.currencies} />
           ) : null}
         </div>
       ) : null}
-      {(zones.regime || zones.segments) ? <div className="cc-divider" aria-hidden /> : null}
+      {(effectiveZones.regime || effectiveZones.segments) ? <div className="cc-divider" aria-hidden /> : null}
 
-      {zones.panels ? (
+      {effectiveZones.panels ? (
         <>
           <ForexPairPanels
-            eurusd={data.panels.eurusd}
-            gbpusd={data.panels.gbpusd}
-            usdjpy={data.panels.usdjpy}
+            eurusd={effectiveData.panels.eurusd}
+            gbpusd={effectiveData.panels.gbpusd}
+            usdjpy={effectiveData.panels.usdjpy}
           />
           <div className="cc-divider" aria-hidden />
         </>
       ) : null}
 
-      {zones.treemap && data.screener.assets.length >= 4 ? (
+      {effectiveZones.treemap && effectiveData.screener.assets.length >= 4 ? (
         <>
-          <ForexPairTreemap screenerAssets={data.screener.assets} treemap={data.treemap} />
+          <ForexPairTreemap screenerAssets={effectiveData.screener.assets} treemap={effectiveData.treemap} />
           <div className="cc-divider" aria-hidden />
         </>
       ) : null}
 
-      {zones.intelDeck ? (
+      {effectiveZones.intelDeck ? (
         <>
-          <ForexIntelDeck movers={data.movers} />
+          <ForexIntelDeck movers={effectiveData.movers} />
           <div className="cc-divider" aria-hidden />
         </>
-      ) : zones.movers ? (
+      ) : effectiveZones.movers ? (
         <>
-          <ForexTopMovers movers={data.movers} />
+          <ForexTopMovers movers={effectiveData.movers} />
           <div className="cc-divider" aria-hidden />
         </>
       ) : null}
 
-      {zones.bottomStrip && forexBottomStrip ? (
+      {effectiveZones.bottomStrip && forexBottomStrip ? (
         <>
           <ForexBottomStrip strip={forexBottomStrip} newsIntel={forexNewsIntel} />
           <div className="cc-divider" aria-hidden />
         </>
       ) : null}
 
-      {zones.signals && data.signals.totalActiveSignals > 0 ? (
+      {effectiveZones.signals && effectiveData.signals.totalActiveSignals > 0 ? (
         <>
-          <ForexSignalStrip signals={data.signals} />
+          <ForexSignalStrip signals={effectiveData.signals} />
           <div className="cc-divider" aria-hidden />
         </>
       ) : null}
 
-      {zones.screener ? (
+      {effectiveZones.screener ? (
         <ForexScreenerBoard
-          screener={data.screener}
+          screener={effectiveData.screener}
           isWatched={isWatched}
           onToggleWatch={toggleWatch}
           watchPending={pendingSymbol}
