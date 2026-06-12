@@ -1,0 +1,181 @@
+/**
+ * FAZ F — Skeleton polish + catalog states
+ */
+
+/* Intel deck tiles */
+.sig-canvas__sk-deck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+@media (min-width: 640px) {
+  .sig-canvas__sk-deck {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.sig-canvas__sk-tile {
+  min-height: 4.25rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+/* Toolbar skeleton */
+.sig-canvas__sk-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sig-canvas__sk-toolbar-segments {
+  height: 38px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+.sig-canvas__sk-toolbar-row {
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--sig-text) 6%, transparent);
+}
+
+.sig-canvas__sk-toolbar-tabs {
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--sig-text) 6%, transparent);
+}
+
+/* Discovery rail skeleton — detaylı kartlar */
+.sig-canvas__sk-discovery-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.sig-canvas__sk-discovery-rail-head {
+  height: 24px;
+  width: min(200px, 48%);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--sig-text) 8%, transparent);
+}
+
+.sig-canvas__sk-discovery-rail-line {
+  height: 2px;
+  width: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sig-text) 5%, transparent);
+}
+
+.sig-canvas__sk-discovery-cards {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.sig-canvas__sk-discovery-card {
+  flex-shrink: 0;
+  width: clamp(260px, 20vw, 340px);
+  height: 10.5rem;
+  border-radius: 0.92rem;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+.sp-skeleton-stream__card--col {
+  width: clamp(580px, 72vw, 780px);
+  height: 18.5rem;
+}
+
+.sig-canvas__sk-refining {
+  opacity: 0.92;
+}
+
+/* Page states */
+.sig-canvas .sig-canvas__state {
+  margin: 1.25rem 0;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--sig-divider);
+  border-bottom: 1px solid var(--sig-divider);
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+  text-align: center;
+}
+
+.sig-canvas__state--compact {
+  margin: 0.75rem 0;
+  padding: 1.15rem 0.75rem;
+}
+
+.signals-catalog-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.65rem;
+  border-radius: 12px;
+  border: 1px solid var(--sig-divider);
+  background: color-mix(in srgb, var(--sig-mint) 8%, transparent);
+  color: var(--sig-mint-deep);
+}
+
+.signals-catalog-state__title {
+  margin: 0;
+  font-size: var(--type-content-title, 1rem);
+  font-family: var(--font-bold);
+  letter-spacing: -0.02em;
+  color: var(--sig-text);
+}
+
+.signals-catalog-state__desc {
+  margin: 0.45rem auto 0;
+  max-width: 36rem;
+  font-size: var(--type-meta, 0.8125rem);
+  line-height: 1.5;
+  color: var(--sig-meta);
+}
+
+.signals-catalog-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.signals-catalog-state__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 0.95rem;
+  border-radius: 9px;
+  border: 1px solid var(--sig-divider);
+  background: transparent;
+  font-size: var(--type-chip, 0.8125rem);
+  font-family: var(--font-bold);
+  color: var(--sig-text-2);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.signals-catalog-state__btn:hover {
+  background: color-mix(in srgb, var(--sig-text) 5%, transparent);
+  color: var(--sig-text);
+}
+
+.signals-catalog-state__btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fafafa;
+}
+
+.signals-catalog-state__btn--primary:hover {
+  background: var(--color-primary-hover, var(--color-primary));
+  color: #fafafa;
+}
+
+.sp-empty-wrap .sig-canvas__state {
+  margin-top: 0;
+}

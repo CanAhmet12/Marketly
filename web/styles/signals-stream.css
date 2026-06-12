@@ -1,0 +1,317 @@
+/**
+ * SİNYALLER — keşfet tarzı düz akış, kompakt yatay kartlar
+ */
+
+.sp-discovery-stream {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.35rem, 2.8vw, 2rem);
+  padding-bottom: var(--sp-6);
+}
+
+.sp-discovery-stream.dvr-surface {
+  background: transparent;
+  min-height: 0;
+}
+
+/* Bölüm — kutu yok, düz akış */
+.sp-stream-band {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.sp-stream-band::before,
+.sp-stream-band::after {
+  display: none !important;
+}
+
+.sp-stream-band__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.sp-stream-band__head .sp-stream-rail-head {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.sp-stream-band__see-all {
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 0 10px;
+  border: none;
+  background: none;
+  font-size: var(--sp-fs-caption, 0.8125rem);
+  font-family: var(--font-bold);
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sp-stream-band__see-all:hover {
+  color: var(--color-primary);
+}
+
+/* Piyasa rengi — sadece başlık vurgusu */
+.sp-stream-band--crypto .dvr-rail-series { color: var(--sp-market-crypto-mid); }
+.sp-stream-band--crypto .dvr-rail-label--signal { color: var(--sp-market-crypto); }
+.sp-stream-band--crypto .dvr-rail-label--signal::before { background: var(--sp-market-crypto-mid); }
+
+.sp-stream-band--bist .dvr-rail-series { color: var(--sp-market-bist-mid); }
+.sp-stream-band--bist .dvr-rail-label--signal { color: var(--sp-market-bist); }
+.sp-stream-band--bist .dvr-rail-label--signal::before { background: var(--sp-market-bist-mid); }
+
+.sp-stream-band--forex .dvr-rail-series { color: var(--sp-market-forex-mid); }
+.sp-stream-band--forex .dvr-rail-label--signal { color: var(--sp-market-forex); }
+.sp-stream-band--forex .dvr-rail-label--signal::before { background: var(--sp-market-forex-mid); }
+
+.sp-stream-band--commodity .dvr-rail-series { color: var(--sp-market-commodity-mid); }
+.sp-stream-band--commodity .dvr-rail-label--signal { color: var(--sp-market-commodity); }
+.sp-stream-band--commodity .dvr-rail-label--signal::before { background: var(--sp-market-commodity-mid); }
+
+.sp-stream-band--macro .dvr-rail-series { color: var(--sp-market-macro-mid); }
+.sp-stream-band--macro .dvr-rail-label--signal { color: var(--sp-market-macro); }
+.sp-stream-band--macro .dvr-rail-label--signal::before { background: var(--sp-market-macro-mid); }
+
+.sp-stream-band--featured .dvr-rail-series { color: var(--color-primary-dark); }
+
+/* Keşfet Tümü rail — tüm bantlar aynı kart boyutu */
+.sp-canvas .sp-discovery-stream .dvr-hscroll-wrap::after {
+  display: none !important;
+}
+
+/* Canlı kart — dar mod (mobil / tek sütun) */
+.sp-canvas .sp-discovery-stream:not(.sp-discovery-stream--full) {
+  --sig-live-card-w: clamp(340px, 94vw, 620px);
+  --dvr-sig-rail-card-w: var(--sig-live-card-w);
+}
+
+/* Tam genişlik ray — ~1.2 kart görünür, sıkışmayı önler */
+.sp-canvas .sp-discovery-stream--full,
+.sp-canvas .sig-canvas__discovery-rails.sp-discovery-stream--full {
+  --sig-live-card-w: clamp(580px, 72vw, 780px);
+  --dvr-sig-rail-card-w: var(--sig-live-card-w);
+}
+
+.sp-canvas .sp-discovery-stream .dvr-hscroll-wrap {
+  max-width: none;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-bottom: 1.85rem;
+}
+
+.sp-canvas .sp-discovery-stream .dvr-hscroll {
+  padding-block: 0.38rem 1.5rem;
+}
+
+.sp-canvas .sp-discovery-stream .dvr-hscroll.dvr-hscroll--sig-rail {
+  gap: 1.15rem !important;
+  scroll-padding-inline: 0 !important;
+  align-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .sp-canvas .sp-discovery-stream .dvr-hscroll.dvr-hscroll--sig-rail {
+    gap: 1.35rem !important;
+  }
+}
+
+.sp-canvas .sp-discovery-stream .dvr-sig-rail-item {
+  width: var(--dvr-sig-rail-card-w);
+  flex: 0 0 var(--dvr-sig-rail-card-w);
+}
+
+.sp-canvas .sp-discovery-stream .dvr-sig-rail-item > .sig-live-card {
+  width: var(--sig-live-card-w, var(--dvr-sig-rail-card-w));
+  min-height: 18.5rem;
+  height: auto;
+}
+
+.sp-canvas .sp-discovery-stream .dvr-sig-rail-item {
+  align-self: stretch;
+}
+
+.sp-canvas .sp-discovery-stream:not(.sp-discovery-stream--edge) .dvr-hscroll.dvr-hscroll--sig-rail {
+  scroll-padding-inline-end: max(12px, calc(100% - var(--dvr-sig-rail-card-w))) !important;
+  padding-inline-end: max(12px, calc(100% - var(--dvr-sig-rail-card-w)));
+}
+
+.sp-canvas .sp-related-rail {
+  --dvr-sig-rail-card-w: clamp(320px, 36vw, 400px);
+}
+
+.sp-canvas .sp-related-rail .dvr-sig-rail-item > .dvr-sig-rail-card {
+  min-height: 16.5rem;
+}
+
+/* Canlı kart — piyasa renkleri (piyasa sayfaları ile aynı token) */
+.sp-canvas .sig-live-card--market-crypto {
+  border-color: color-mix(in srgb, var(--sp-market-crypto-mid) 40%, var(--color-border));
+}
+.sp-canvas .sig-live-card--market-bist {
+  border-color: color-mix(in srgb, var(--sp-market-bist-mid) 40%, var(--color-border));
+}
+.sp-canvas .sig-live-card--market-forex {
+  border-color: color-mix(in srgb, var(--sp-market-forex-mid) 40%, var(--color-border));
+}
+.sp-canvas .sig-live-card--market-commodity {
+  border-color: color-mix(in srgb, var(--sp-market-commodity-mid) 40%, var(--color-border));
+}
+.sp-canvas .sig-live-card--market-macro {
+  border-color: color-mix(in srgb, var(--sp-market-macro-mid) 40%, var(--color-border));
+}
+
+.sp-canvas .sig-live-card--market-crypto .sig-live-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-crypto) 0%, var(--sp-market-crypto-mid) 72%, transparent 100%);
+}
+.sp-canvas .sig-live-card--market-bist .sig-live-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-bist) 0%, var(--sp-market-bist-mid) 72%, transparent 100%);
+}
+.sp-canvas .sig-live-card--market-forex .sig-live-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-forex) 0%, var(--sp-market-forex-mid) 72%, transparent 100%);
+}
+.sp-canvas .sig-live-card--market-commodity .sig-live-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-commodity) 0%, var(--sp-market-commodity-mid) 72%, transparent 100%);
+}
+.sp-canvas .sig-live-card--market-macro .sig-live-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-macro) 0%, var(--sp-market-macro-mid) 72%, transparent 100%);
+}
+
+/* Piyasa rengi — kart kenarlığı ve sol vurgu */
+.sp-canvas .dvr-sig-rail-card--market-crypto {
+  border-color: color-mix(in srgb, var(--sp-market-crypto-mid) 58%, var(--color-border));
+}
+.sp-canvas .dvr-sig-rail-card--market-bist {
+  border-color: color-mix(in srgb, var(--sp-market-bist-mid) 58%, var(--color-border));
+}
+.sp-canvas .dvr-sig-rail-card--market-forex {
+  border-color: color-mix(in srgb, var(--sp-market-forex-mid) 58%, var(--color-border));
+}
+.sp-canvas .dvr-sig-rail-card--market-commodity {
+  border-color: color-mix(in srgb, var(--sp-market-commodity-mid) 58%, var(--color-border));
+}
+.sp-canvas .dvr-sig-rail-card--market-macro {
+  border-color: color-mix(in srgb, var(--sp-market-macro-mid) 58%, var(--color-border));
+}
+
+.sp-canvas .dvr-sig-rail-card--market-crypto .dvr-sig-rail-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-crypto) 0%, var(--sp-market-crypto-mid) 72%, transparent 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sp-market-crypto-mid) 45%, transparent);
+}
+.sp-canvas .dvr-sig-rail-card--market-bist .dvr-sig-rail-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-bist) 0%, var(--sp-market-bist-mid) 72%, transparent 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sp-market-bist-mid) 45%, transparent);
+}
+.sp-canvas .dvr-sig-rail-card--market-forex .dvr-sig-rail-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-forex) 0%, var(--sp-market-forex-mid) 72%, transparent 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sp-market-forex-mid) 45%, transparent);
+}
+.sp-canvas .dvr-sig-rail-card--market-commodity .dvr-sig-rail-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-commodity) 0%, var(--sp-market-commodity-mid) 72%, transparent 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sp-market-commodity-mid) 45%, transparent);
+}
+.sp-canvas .dvr-sig-rail-card--market-macro .dvr-sig-rail-card__accent {
+  background: linear-gradient(180deg, var(--sp-market-macro) 0%, var(--sp-market-macro-mid) 72%, transparent 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sp-market-macro-mid) 45%, transparent);
+}
+
+@media (hover: hover) {
+  .sp-canvas .dvr-sig-rail-card--market-crypto:hover {
+    border-color: var(--sp-market-crypto-mid);
+    box-shadow:
+      var(--shadow-card-hover),
+      0 0 0 1px color-mix(in srgb, var(--sp-market-crypto-mid) 28%, transparent),
+      0 14px 36px color-mix(in srgb, var(--sp-market-crypto-mid) 12%, transparent);
+  }
+  .sp-canvas .dvr-sig-rail-card--market-bist:hover {
+    border-color: var(--sp-market-bist-mid);
+    box-shadow:
+      var(--shadow-card-hover),
+      0 0 0 1px color-mix(in srgb, var(--sp-market-bist-mid) 28%, transparent),
+      0 14px 36px color-mix(in srgb, var(--sp-market-bist-mid) 12%, transparent);
+  }
+  .sp-canvas .dvr-sig-rail-card--market-forex:hover {
+    border-color: var(--sp-market-forex-mid);
+    box-shadow:
+      var(--shadow-card-hover),
+      0 0 0 1px color-mix(in srgb, var(--sp-market-forex-mid) 28%, transparent),
+      0 14px 36px color-mix(in srgb, var(--sp-market-forex-mid) 12%, transparent);
+  }
+  .sp-canvas .dvr-sig-rail-card--market-commodity:hover {
+    border-color: var(--sp-market-commodity-mid);
+    box-shadow:
+      var(--shadow-card-hover),
+      0 0 0 1px color-mix(in srgb, var(--sp-market-commodity-mid) 28%, transparent),
+      0 14px 36px color-mix(in srgb, var(--sp-market-commodity-mid) 12%, transparent);
+  }
+  .sp-canvas .dvr-sig-rail-card--market-macro:hover {
+    border-color: var(--sp-market-macro-mid);
+    box-shadow:
+      var(--shadow-card-hover),
+      0 0 0 1px color-mix(in srgb, var(--sp-market-macro-mid) 28%, transparent),
+      0 14px 36px color-mix(in srgb, var(--sp-market-macro-mid) 12%, transparent);
+  }
+}
+
+/* Sidebar — düz panel, kutu yok */
+.sp-canvas .sp-sidebar-block {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-divider);
+  border-radius: 0;
+  padding: 14px 0;
+}
+
+.sp-canvas .sp-sidebar-block:last-child {
+  border-bottom: none;
+}
+
+.sp-canvas .sp-sidebar-block--pulse::before {
+  opacity: 0.45;
+}
+
+/* Related rail — düz */
+.sp-canvas .sp-related-rail {
+  margin-top: var(--sp-5);
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+
+.sdm-related-band .sp-related-rail {
+  border-top: 1px solid var(--color-divider);
+  padding-top: var(--sp-4);
+}
+
+/* Eski kutu stillerini devre dışı bırak */
+.sp-canvas .sp-market-section,
+.sp-canvas .sp-featured-rail,
+.sp-canvas .sp-market-sections {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (max-width: 720px) {
+  .sp-canvas .sp-discovery-stream {
+    --dvr-sig-rail-card-w: clamp(288px, 86vw, 400px);
+  }
+
+  .sp-stream-band__head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+}

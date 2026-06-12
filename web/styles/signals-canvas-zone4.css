@@ -1,0 +1,126 @@
+/**
+ * FAZ D — Discovery zone (tam genişlik piyasa rayları)
+ */
+
+.sig-canvas__discovery-zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+  padding-top: clamp(1rem, 1.75vw, 1.35rem);
+  border-top: 1px solid var(--sig-divider);
+}
+
+.sig-canvas__discovery-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: min(10rem, 38%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 90% at 6% 0%, color-mix(in srgb, var(--sig-buy) 9%, transparent), transparent 62%),
+    radial-gradient(ellipse 42% 70% at 88% 2%, color-mix(in srgb, var(--sig-amber) 7%, transparent), transparent 58%);
+  opacity: 0.7;
+}
+
+.sig-canvas__discovery-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+}
+
+.sig-canvas__discovery-kicker {
+  font-size: var(--type-overline, 0.6875rem);
+  font-family: var(--font-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sig-amber);
+}
+
+.sig-canvas__discovery-title {
+  margin: 0.12rem 0 0;
+  font-size: var(--type-subtitle, 0.9375rem);
+  font-family: var(--font-bold);
+  letter-spacing: -0.022em;
+  color: var(--sig-text);
+}
+
+.sig-canvas__discovery-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sig-amber) 22%, var(--sig-divider));
+  background: color-mix(in srgb, var(--sig-amber) 8%, transparent);
+  font-size: var(--type-caption-min, 0.75rem);
+  font-family: var(--font-bold);
+  color: var(--sig-amber-deep);
+}
+
+.sig-canvas__discovery-rails {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.85rem, 1.4vw, 1.1rem);
+}
+
+/* Tam genişlik stream — üst bölümden ayrım */
+.sp-stream-desktop-full .sig-canvas__discovery-zone {
+  padding-top: clamp(1.1rem, 1.9vw, 1.5rem);
+}
+
+/* Raylar arası ince ayırıcı */
+.sig-canvas__discovery-zone .sp-stream-band + .sp-stream-band {
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--sig-divider) 55%, transparent);
+}
+
+.sig-canvas__discovery-zone .sp-stream-band__head {
+  margin-bottom: 6px;
+}
+
+/* Skeleton */
+.sig-canvas__sk-discovery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.55rem;
+}
+
+.sig-canvas__sk-discovery-kicker {
+  width: 4.5rem;
+  height: 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 8%, transparent);
+}
+
+.sig-canvas__sk-discovery-title {
+  width: 7.5rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 10%, transparent);
+}
+
+.sig-canvas__sk-discovery-badge {
+  width: 4.75rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+.sig-canvas__sk-discovery-rails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sig-canvas__sk-discovery-rail {
+  height: 11.5rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sig-text) 6%, transparent);
+}

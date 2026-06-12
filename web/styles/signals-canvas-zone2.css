@@ -1,0 +1,545 @@
+/**
+ * FAZ B — Spotlight (Hero bento + Güven liderleri)
+ */
+
+/* ── Spotlight zone ── */
+.sig-canvas__spotlight-zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.sig-canvas__spotlight-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: min(14rem, 42%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 95% at 12% 0%, color-mix(in srgb, var(--sig-mint) 10%, transparent), transparent 62%),
+    radial-gradient(ellipse 48% 75% at 92% 4%, color-mix(in srgb, var(--sig-violet) 8%, transparent), transparent 58%);
+  opacity: 0.75;
+}
+
+.sig-canvas__spotlight-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+}
+
+.sig-canvas__spotlight-kicker {
+  font-size: var(--type-overline, 0.6875rem);
+  font-weight: var(--type-overline--weight, 700);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sig-violet);
+}
+
+.sig-canvas__spotlight-title {
+  margin: 0.12rem 0 0;
+  font-size: var(--type-subtitle, 0.9375rem);
+  line-height: var(--type-subtitle--leading, 1.42);
+  font-weight: var(--type-page--weight, 700);
+  letter-spacing: -0.022em;
+  color: var(--sig-text);
+}
+
+.sig-canvas__spotlight-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sig-violet) 22%, var(--sig-divider));
+  background: color-mix(in srgb, var(--sig-violet) 8%, transparent);
+  font-size: var(--type-caption-min, 0.75rem);
+  font-weight: var(--type-caption-min--weight, 600);
+  color: var(--sig-violet-deep);
+}
+
+/* ── Hero bento grid ── */
+.sig-canvas__hero-bento {
+  display: grid;
+  grid-template-columns: 1fr;
+  position: relative;
+  z-index: 1;
+  gap: 0;
+  padding-bottom: clamp(1rem, 1.75vw, 1.35rem);
+  border-bottom: 1px solid var(--sig-divider);
+}
+
+@media (min-width: 900px) {
+  .sig-canvas__hero-bento {
+    grid-template-columns: minmax(0, 1.72fr) minmax(228px, 0.68fr);
+  }
+
+  .sig-canvas__hero-main {
+    padding-right: clamp(0.9rem, 1.6vw, 1.35rem);
+    border-right: 1px solid var(--sig-divider);
+  }
+}
+
+/* ── Hero spotlight ── */
+.sig-canvas .sig-hero-spot {
+  position: relative;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+.sig-hero-spot__wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 88% 75% at 0% 0%, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 58%);
+  opacity: 0.85;
+}
+
+.sig-hero-spot__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-primary);
+}
+
+.sig-hero-spot__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.85rem, 1.5vw, 1.15rem);
+  padding: 0.35rem 0 0.5rem 1.1rem;
+}
+
+@media (min-width: 768px) {
+  .sig-hero-spot__inner {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    padding: 0.4rem 0 0.55rem 1.15rem;
+  }
+}
+
+.sig-hero-spot__badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sig-hero-spot__pick-pill,
+.sig-hero-spot__market,
+.sig-hero-spot__dir {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: var(--type-caption-min, 0.75rem);
+  font-family: var(--font-bold);
+  letter-spacing: 0.04em;
+}
+
+.sig-hero-spot__pick-pill {
+  color: var(--sig-mint-deep);
+  background: color-mix(in srgb, var(--sig-mint) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sig-mint) 22%, var(--sig-divider));
+}
+
+.sig-hero-spot__pick-pill--premium {
+  color: var(--sig-violet-deep);
+  background: color-mix(in srgb, var(--sig-violet) 10%, transparent);
+  border-color: color-mix(in srgb, var(--sig-violet) 22%, var(--sig-divider));
+}
+
+.sig-hero-spot__pick-pill--muted {
+  color: var(--sig-text-2);
+  background: color-mix(in srgb, var(--sig-text) 5%, transparent);
+  border-color: var(--sig-divider);
+}
+
+.sig-hero-spot__market {
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.sig-hero-spot__dir--buy {
+  color: var(--sig-buy-deep);
+  background: color-mix(in srgb, var(--sig-buy) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sig-buy) 24%, transparent);
+}
+
+.sig-hero-spot__dir--sell {
+  color: var(--sig-sell);
+  background: color-mix(in srgb, var(--sig-sell) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sig-sell) 24%, transparent);
+}
+
+.sig-hero-spot__dir--hold {
+  color: var(--sig-meta);
+  background: color-mix(in srgb, var(--sig-text) 6%, transparent);
+  border: 1px solid var(--sig-divider);
+}
+
+.sig-hero-spot--tone-crypto .sig-hero-spot__accent { background: #8b5cf6; }
+.sig-hero-spot--tone-crypto .sig-hero-spot__market { background: color-mix(in srgb, #8b5cf6 14%, #fff); color: #5b21b6; }
+.sig-hero-spot--tone-bist .sig-hero-spot__accent { background: var(--color-primary); }
+.sig-hero-spot--tone-bist .sig-hero-spot__market { background: var(--color-primary-light); color: var(--color-primary-dark); }
+.sig-hero-spot--tone-forex .sig-hero-spot__accent { background: #0ea5e9; }
+.sig-hero-spot--tone-forex .sig-hero-spot__market { background: color-mix(in srgb, #0ea5e9 14%, #fff); color: #0369a1; }
+.sig-hero-spot--tone-commodity .sig-hero-spot__accent { background: #f59e0b; }
+.sig-hero-spot--tone-commodity .sig-hero-spot__market { background: color-mix(in srgb, #f59e0b 16%, #fff); color: #92400e; }
+.sig-hero-spot--tone-macro .sig-hero-spot__accent { background: #64748b; }
+.sig-hero-spot--tone-macro .sig-hero-spot__market { background: color-mix(in srgb, #64748b 14%, #fff); color: #334155; }
+
+.sig-hero-spot__symbol-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sig-hero-spot__symbol {
+  font-size: clamp(1.35rem, 2.6vw, 1.65rem);
+  font-family: var(--font-bold);
+  letter-spacing: -0.038em;
+  line-height: 1.1;
+  color: var(--sig-text);
+}
+
+.sig-hero-spot__asset {
+  font-size: var(--type-meta, 0.8125rem);
+  color: var(--sig-meta);
+}
+
+.sig-hero-spot__headline {
+  margin: 0.35rem 0 0;
+  max-width: 36rem;
+  font-size: var(--type-meta, 0.8125rem);
+  line-height: 1.48;
+  color: var(--sig-text-2);
+}
+
+.sig-hero-spot__levels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.sig-hero-spot__level {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sig-text) 4%, transparent);
+  border: 1px solid var(--sig-divider);
+}
+
+.sig-hero-spot__level--target {
+  border-color: color-mix(in srgb, var(--sig-buy) 22%, var(--sig-divider));
+}
+
+.sig-hero-spot__level--stop {
+  border-color: color-mix(in srgb, var(--sig-sell) 22%, var(--sig-divider));
+}
+
+.sig-hero-spot__level-label {
+  font-size: var(--type-caption-min, 0.75rem);
+  font-family: var(--font-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sig-meta);
+}
+
+.sig-hero-spot__level-value {
+  font-size: var(--type-rail-body, 0.9375rem);
+  font-family: var(--font-bold);
+  color: var(--sig-text);
+}
+
+.sig-hero-spot__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.sig-hero-spot__stat {
+  font-size: var(--type-caption-min, 0.75rem);
+  color: var(--sig-meta);
+}
+
+.sig-hero-spot__stat strong {
+  font-family: var(--font-bold);
+  color: var(--sig-text);
+}
+
+.sig-hero-spot__accuracy--inline {
+  margin-top: 0.45rem;
+  max-width: 13rem;
+}
+
+.sig-hero-spot__right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  justify-content: space-between;
+}
+
+.sig-hero-spot__analyst {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.sig-hero-spot__avatar {
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+
+.sig-hero-spot__analyst-name {
+  display: block;
+  font-size: var(--type-creator, 0.875rem);
+  font-family: var(--font-bold);
+  color: var(--sig-text);
+  text-decoration: none;
+}
+
+.sig-hero-spot__analyst-name:hover {
+  color: var(--color-primary);
+}
+
+.sig-hero-spot__analyst-meta {
+  margin: 0.12rem 0 0;
+  font-size: var(--type-caption-min, 0.75rem);
+  color: var(--sig-meta);
+}
+
+.sig-hero-spot__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.sig-hero-spot__chip {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: var(--type-caption-min, 0.75rem);
+  font-family: var(--font-bold);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--sig-divider));
+  color: var(--sig-text-2);
+}
+
+.sig-hero-spot__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sig-hero-spot__cta {
+  padding: 0.48rem 0.95rem;
+  border-radius: 9px;
+  font-size: var(--type-chip, 0.8125rem);
+  font-family: var(--font-bold);
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sig-hero-spot__cta--primary {
+  background: var(--color-primary);
+  color: #fafafa;
+  border-color: var(--color-primary);
+}
+
+.sig-hero-spot__cta--secondary {
+  background: transparent;
+  color: var(--sig-mint-deep);
+  border-color: color-mix(in srgb, var(--sig-mint) 28%, var(--sig-divider));
+}
+
+.sig-hero-spot__cta--ghost {
+  background: transparent;
+  color: var(--sig-text-2);
+  border-color: var(--sig-divider);
+}
+
+@media (hover: hover) {
+  .sig-hero-spot__cta--primary:hover {
+    background: var(--color-primary-hover, var(--color-primary));
+  }
+
+  .sig-hero-spot__cta--secondary:hover {
+    background: color-mix(in srgb, var(--sig-mint) 8%, transparent);
+  }
+
+  .sig-hero-spot__cta--ghost:hover {
+    background: color-mix(in srgb, var(--sig-text) 5%, transparent);
+  }
+
+  .sig-hero-spot__symbol-btn:hover .sig-hero-spot__symbol {
+    color: var(--color-primary);
+  }
+}
+
+/* ── Leaderboard panel ── */
+.sig-canvas__spotlight-zone .sig-canvas__leaderboard {
+  padding: 0.15rem 0 0 clamp(0.9rem, 1.6vw, 1.35rem);
+}
+
+.sig-canvas__leaderboard-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.sig-canvas__leaderboard-kicker {
+  font-size: var(--type-overline, 0.6875rem);
+  font-family: var(--font-bold);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sig-violet);
+}
+
+.sig-canvas__leaderboard-title {
+  margin: 0;
+  font-size: var(--type-subtitle, 0.9375rem);
+  font-family: var(--font-bold);
+  letter-spacing: -0.02em;
+  color: var(--sig-text);
+}
+
+.sig-canvas__leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sig-canvas__leaderboard-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.48rem 0.35rem;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--sig-divider) 60%, transparent);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sig-canvas__leaderboard-rank {
+  font-size: var(--type-overline, 0.6875rem);
+  font-family: var(--font-bold);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--sig-meta) 80%, transparent);
+  min-width: 1.35rem;
+}
+
+.sig-canvas__leaderboard-row:nth-child(1) .sig-canvas__leaderboard-rank { color: var(--sig-amber-deep); }
+.sig-canvas__leaderboard-row:nth-child(2) .sig-canvas__leaderboard-rank { color: var(--sig-text-2); }
+.sig-canvas__leaderboard-row:nth-child(3) .sig-canvas__leaderboard-rank { color: color-mix(in srgb, var(--sig-amber) 72%, var(--sig-text-2)); }
+
+.sig-canvas__leaderboard-symbol {
+  font-size: var(--type-chip, 0.8125rem);
+  font-family: var(--font-bold);
+  color: var(--sig-text);
+  min-width: 3.25rem;
+}
+
+.sig-canvas__leaderboard-name {
+  display: block;
+  font-size: var(--type-creator, 0.875rem);
+  font-family: var(--font-bold);
+  color: var(--sig-text);
+}
+
+.sig-canvas__leaderboard-meta {
+  display: block;
+  font-size: var(--type-caption-min, 0.75rem);
+  color: var(--sig-meta);
+}
+
+.sig-canvas__leaderboard-pct {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: var(--type-caption-min, 0.75rem);
+  font-family: var(--font-bold);
+  color: var(--sig-mint-deep);
+  text-align: right;
+}
+
+.sig-canvas__leaderboard-row--tone-crypto { border-left: 2px solid #8b5cf6; padding-left: 0.5rem; }
+.sig-canvas__leaderboard-row--tone-bist { border-left: 2px solid var(--sig-mint); padding-left: 0.5rem; }
+.sig-canvas__leaderboard-row--tone-forex { border-left: 2px solid #0ea5e9; padding-left: 0.5rem; }
+.sig-canvas__leaderboard-row--tone-commodity { border-left: 2px solid var(--sig-amber); padding-left: 0.5rem; }
+.sig-canvas__leaderboard-row--tone-macro { border-left: 2px solid #64748b; padding-left: 0.5rem; }
+
+@media (hover: hover) {
+  .sig-canvas__leaderboard-row:hover {
+    background: color-mix(in srgb, var(--sig-violet) 7%, transparent);
+  }
+}
+
+@media (max-width: 899px) {
+  .sig-canvas__spotlight-zone .sig-canvas__hero-main {
+    padding-right: 0;
+    padding-bottom: 0.85rem;
+    border-right: none;
+    border-bottom: 1px solid var(--sig-divider);
+  }
+
+  .sig-canvas__spotlight-zone .sig-canvas__leaderboard {
+    padding: 0.85rem 0 0;
+  }
+}
+
+/* Skeleton */
+.sig-canvas__sk-spotlight-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.55rem;
+}
+
+.sig-canvas__sk-spotlight-kicker {
+  width: 4.5rem;
+  height: 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 8%, transparent);
+}
+
+.sig-canvas__sk-spotlight-title {
+  width: 6.5rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 10%, transparent);
+}
+
+.sig-canvas__sk-spotlight-badge {
+  width: 5rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+.sig-canvas__sk-hero {
+  min-height: 12rem;
+  border-radius: 8px;
+}

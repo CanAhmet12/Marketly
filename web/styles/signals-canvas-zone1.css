@@ -1,0 +1,288 @@
+/**
+ * FAZ A — Signals canvas shell + Intelligence strip
+ */
+
+.sig-canvas {
+  background: linear-gradient(
+    168deg,
+    var(--sig-bg) 0%,
+    color-mix(in srgb, var(--sig-bg) 72%, var(--color-bg-subtle, #030303) 28%) 48%,
+    var(--sig-bg) 100%
+  );
+}
+
+/* ── Intelligence zone ── */
+.sig-canvas__intel-zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.sig-canvas__intel-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    95deg,
+    color-mix(in srgb, var(--sig-mint) 9%, transparent) 0%,
+    transparent 38%,
+    color-mix(in srgb, var(--sig-violet) 7%, transparent) 62%,
+    transparent 100%
+  );
+  opacity: 0.55;
+}
+
+.sig-canvas__intel-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+}
+
+.sig-canvas__intel-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.sig-canvas__intel-kicker {
+  font-size: var(--type-overline, 0.6875rem);
+  font-weight: var(--type-overline--weight, 700);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.sig-canvas__intel-title {
+  margin: 0;
+  font-size: var(--type-subtitle, 0.9375rem);
+  line-height: var(--type-subtitle--leading, 1.42);
+  font-weight: var(--type-page--weight, 700);
+  letter-spacing: -0.022em;
+  color: var(--sig-text);
+}
+
+.sig-canvas__intel-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--sig-divider);
+  background: color-mix(in srgb, var(--sig-mint) 6%, transparent);
+  font-size: var(--type-caption-min, 0.75rem);
+  font-weight: var(--type-caption-min--weight, 600);
+  color: var(--sig-text-2);
+}
+
+.sig-canvas__intel-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sig-mint);
+  box-shadow: 0 0 10px var(--sig-mint-glow);
+  animation: sig-intel-pulse 2.2s ease-in-out infinite;
+}
+
+.sig-canvas__intel-pulse--live {
+  background: var(--sig-buy);
+  box-shadow: 0 0 10px var(--sig-buy-glow);
+}
+
+@keyframes sig-intel-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.88);
+  }
+}
+
+.sig-canvas__intel-zone .sig-canvas__deck {
+  position: relative;
+  z-index: 1;
+  gap: 0;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--sig-divider);
+}
+
+.sig-canvas__deck-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 4.5rem;
+  padding: 0.72rem 0.9rem 0.65rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.sig-canvas__deck-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 0;
+  opacity: 1;
+}
+
+.sig-canvas__deck-tile--active::before {
+  background: linear-gradient(90deg, var(--sig-mint), color-mix(in srgb, var(--sig-mint) 40%, transparent));
+}
+
+.sig-canvas__deck-tile--buy::before {
+  background: linear-gradient(90deg, var(--sig-buy), color-mix(in srgb, var(--sig-buy) 40%, transparent));
+}
+
+.sig-canvas__deck-tile--confidence::before {
+  background: linear-gradient(90deg, var(--sig-violet), color-mix(in srgb, var(--sig-violet) 40%, transparent));
+}
+
+.sig-canvas__deck-tile--peak::before {
+  background: linear-gradient(90deg, var(--sig-amber), color-mix(in srgb, var(--sig-amber) 40%, transparent));
+}
+
+@media (min-width: 640px) {
+  .sig-canvas__deck-tile:not(:last-child) {
+    border-right: 1px solid var(--sig-divider);
+  }
+}
+
+@media (max-width: 639px) {
+  .sig-canvas__deck-tile:nth-child(odd) {
+    border-right: 1px solid var(--sig-divider);
+  }
+
+  .sig-canvas__deck-tile:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--sig-divider);
+  }
+}
+
+@media (hover: hover) {
+  .sig-canvas__deck-tile:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.sig-canvas__deck-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--type-overline, 0.6875rem);
+  font-weight: var(--type-overline--weight, 700);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.sig-canvas__deck-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sig-canvas__deck-dot--buy {
+  background: var(--sig-buy);
+  box-shadow: 0 0 6px var(--sig-buy-glow);
+  animation: sig-intel-pulse 1.8s ease-in-out infinite;
+}
+
+.sig-canvas__deck-value {
+  margin-top: 0.2rem;
+  font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.048em;
+  line-height: 1;
+}
+
+.sig-canvas__deck-value--active { color: var(--sig-mint-deep); }
+.sig-canvas__deck-value--buy { color: var(--sig-buy-deep); }
+.sig-canvas__deck-value--confidence { color: var(--sig-violet-deep); }
+.sig-canvas__deck-value--peak { color: var(--sig-amber-deep); }
+
+.sig-canvas__deck-tile--active .sig-canvas__deck-kicker { color: var(--sig-mint); }
+.sig-canvas__deck-tile--buy .sig-canvas__deck-kicker { color: var(--sig-buy); }
+.sig-canvas__deck-tile--confidence .sig-canvas__deck-kicker { color: var(--sig-violet); }
+.sig-canvas__deck-tile--peak .sig-canvas__deck-kicker { color: var(--sig-amber); }
+
+.sig-canvas__deck-sub {
+  margin-top: 0.18rem;
+  font-size: var(--type-caption-min, 0.75rem);
+  line-height: var(--type-caption-min--leading, 1.35);
+  font-weight: var(--type-caption-min--weight, 600);
+  color: var(--sig-meta);
+}
+
+.sig-canvas__deck-meter {
+  margin-top: 0.35rem;
+  height: 3px;
+  width: min(5.5rem, 72%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sig-text) 8%, transparent);
+  overflow: hidden;
+}
+
+.sig-canvas__deck-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sig-violet), var(--sig-mint));
+  transition: width 0.4s ease;
+}
+
+/* Skeleton */
+.sig-canvas__sk-intel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.55rem;
+}
+
+.sig-canvas__sk-intel-kicker {
+  width: 5.5rem;
+  height: 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 8%, transparent);
+}
+
+.sig-canvas__sk-intel-title {
+  width: 7rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sig-text) 10%, transparent);
+}
+
+.sig-canvas__sk-intel-pill {
+  width: 5.5rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+/* Embed — deck alt boşluk */
+.sig-canvas--embed .sig-canvas__intel-zone .sig-canvas__deck {
+  padding-bottom: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-canvas__intel-pulse,
+  .sig-canvas__deck-dot--buy {
+    animation: none;
+  }
+}

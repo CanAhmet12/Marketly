@@ -1,0 +1,184 @@
+/**
+ * SIGNALS CANVAS — /signals
+ * Scoped root: .sig-canvas
+ */
+
+.sig-canvas--headless {
+  padding-top: 0.15rem;
+}
+
+.sig-canvas--headless .sig-canvas__inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.4vw, 1.1rem);
+}
+
+.sig-canvas__upper-band {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Raylar — sayfa kenarına hizalı tam genişlik scroll */
+.sig-canvas:not(.sig-canvas--embed) .sp-discovery-stream--edge .dvr-hscroll-wrap {
+  margin-inline: calc(-1 * var(--sig-pad));
+  width: calc(100% + 2 * var(--sig-pad));
+  max-width: none;
+}
+
+.sig-canvas .sp-discovery-stream--edge .dvr-hscroll.dvr-hscroll--sig-rail {
+  scroll-padding-inline: var(--sig-pad) !important;
+  padding-inline: var(--sig-pad);
+  scroll-padding-inline-end: var(--sig-pad) !important;
+  padding-inline-end: var(--sig-pad);
+}
+
+.sig-canvas {
+  --sig-bg: var(--color-bg);
+  --sig-surface: var(--color-surface);
+  --sig-border: var(--color-border);
+  --sig-divider: var(--color-divider);
+  --sig-text: var(--color-text);
+  --sig-text-2: var(--color-text-secondary);
+  --sig-meta: var(--color-meta);
+  --sig-mint: var(--color-primary);
+  --sig-mint-deep: var(--color-primary-dark, var(--color-primary));
+  --sig-mint-glow: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --sig-buy: var(--color-rise, #10b981);
+  --sig-buy-deep: color-mix(in srgb, var(--color-rise, #10b981) 82%, #000 18%);
+  --sig-buy-glow: color-mix(in srgb, var(--color-rise, #10b981) 14%, transparent);
+  --sig-sell: var(--color-fall, #ef4444);
+  --sig-violet: #8b5cf6;
+  --sig-violet-deep: #6d28d9;
+  --sig-amber: #f59e0b;
+  --sig-amber-deep: #d97706;
+  --sig-pad: clamp(0.65rem, 1.8vw, 1.1rem);
+  --sig-gap: clamp(0.85rem, 1.4vw, 1.25rem);
+  --sig-aside-w: clamp(17.5rem, 20vw, 21rem);
+  --sig-chrome-top: var(--chrome-top-offset, 3.5rem);
+
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100dvh - var(--sig-chrome-top));
+  background: var(--sig-bg);
+  color: var(--sig-text);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.sig-canvas__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
+.sig-canvas:not(.sig-canvas--embed) .sig-canvas__inner {
+  padding-left: var(--sig-pad);
+  padding-right: var(--sig-pad);
+}
+
+.sig-canvas--embed .sig-canvas__inner {
+  padding-bottom: 0;
+}
+
+/* Ambient */
+.sig-canvas__ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sig-canvas__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.5;
+  animation: sig-ambient-drift 18s ease-in-out infinite alternate;
+}
+
+.sig-canvas__orb--mint {
+  width: min(520px, 70vw);
+  height: min(420px, 55vw);
+  left: -8%;
+  top: -6%;
+}
+
+.sig-canvas__orb--signal {
+  width: min(480px, 62vw);
+  height: min(380px, 50vw);
+  right: -6%;
+  top: 12%;
+  animation-delay: -6s;
+  animation-duration: 22s;
+}
+
+.sig-canvas__orb--floor {
+  width: min(640px, 90vw);
+  height: min(280px, 35vw);
+  left: 20%;
+  bottom: -12%;
+  opacity: 0.32;
+  animation: sig-ambient-drift 26s ease-in-out infinite alternate-reverse;
+  animation-delay: -3s;
+}
+
+.sig-canvas__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--sig-text) 100%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--sig-text) 100%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 85% 65% at 50% 18%, black 0%, transparent 72%);
+}
+
+@keyframes sig-ambient-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(2%, 3%) scale(1.04);
+  }
+}
+
+/* Deck grid */
+.sig-canvas__deck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+@media (min-width: 640px) {
+  .sig-canvas__deck {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.sig-canvas__sk-deck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+@media (min-width: 640px) {
+  .sig-canvas__sk-deck {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.sig-canvas__sk-tile {
+  min-height: 4.25rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sig-text) 7%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-canvas__orb {
+    animation: none;
+  }
+}
