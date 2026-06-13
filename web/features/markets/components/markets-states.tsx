@@ -120,10 +120,9 @@ export function PriceAlertsPageSkeleton() {
 /** `/markets/category/[category]` SSR Suspense fallback */
 export function MarketsCategoryPageSkeleton() {
   return (
-    <div className="ms-page-wrapper ms-container-markets min-w-0 py-[var(--sp-4)]" aria-busy="true">
-      <div className="motion-shimmer mb-4 h-8 w-48 rounded bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-4 h-10 w-full max-w-2xl rounded-full bg-[var(--color-divider)]" />
-      <div className="motion-shimmer mb-6 h-24 rounded-2xl bg-[var(--color-divider)]" />
+    <div className="min-w-0" aria-busy="true">
+      <div className="motion-shimmer mb-4 h-20 w-full rounded-xl bg-[var(--color-divider)]" />
+      <div className="motion-shimmer mb-6 h-32 rounded-xl bg-[var(--color-divider)]" />
       <MarketsGridSkeleton count={6} />
     </div>
   );

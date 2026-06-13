@@ -1,20 +1,17 @@
 "use client";
 
 import { DISCOVER_VERTICAL_ROUTES } from "@/features/discover/routes";
+import { DiscoverTabIntro } from "@/features/discover/visual-reference/discover-tab-intro";
 import { cn } from "@/lib/cn";
 import { DiscoverLiveCard, DiscoverLiveCardCompact } from "./discover-live-card";
 import { DiscoverPulseCard, type PulseTier, type PulseVariant } from "./discover-pulse-card";
 import { DiscoverVideoCard } from "./discover-video-card";
-import {
-  DiscoverSignalTile,
-  DiscoverSignalFeedLine,
-  DiscoverSignalHeroCard,
-  DiscoverSignalIntelCard,
-  DiscoverSignalTapeRow,
-} from "./discover-signal-tile";
+import { DiscoverSignalTile, DiscoverSignalFeedLine } from "./discover-signal-tile";
+import { DiscoverSignalsTabPreview } from "@/features/discover/tab-previews/discover-signals-tab-preview";
+import { SIGNALS_DISCOVER_PREVIEW_LIMIT } from "@/features/signals/hooks/use-signals-discover-preview";
 import { DiscoverSignalRailCard } from "./discover-signal-rail-card";
 import { DiscoverCreatorCard } from "./discover-creator-strip";
-import { HScroll, Rail, RailHeader, RailSeeAll } from "./discover-vr-primitives";
+import { HScroll, Rail, RailHeader } from "./discover-vr-primitives";
 import {
   VR_LIVE_ITEMS,
   VR_PULSE_ITEMS,
@@ -395,13 +392,16 @@ export function CreatorRail({
   seriesKicker,
   creators = VR_CREATOR_ITEMS,
   hideSeeAll = false,
+  limit,
 }: {
   label?: string;
   seriesKicker?: string;
   creators?: VRCreatorItem[];
   hideSeeAll?: boolean;
+  limit?: number;
 }) {
   const row = creators.length > 0 ? creators : VR_CREATOR_ITEMS;
+  const visible = limit != null ? row.slice(0, limit) : row;
   return (
     <Rail
       label={label}
@@ -410,13 +410,36 @@ export function CreatorRail({
       accent="teal"
     >
       <HScroll>
-        {row.map((item, i) => (
+        {visible.map((item, i) => (
           <div key={item.id} className="dvr-creator-rail-item shrink-0">
             <DiscoverCreatorCard item={item} index={i} />
           </div>
         ))}
       </HScroll>
     </Rail>
+  );
+}
+
+/** Keşfet Tümü — üretici teaser bandı */
+export function CreatorBandRail({
+  label = "Analist ağı",
+  seriesKicker = "Üreticiler",
+  creators,
+  hideSeeAll = false,
+}: {
+  label?: string;
+  seriesKicker?: string;
+  creators?: VRCreatorItem[];
+  hideSeeAll?: boolean;
+}) {
+  return (
+    <CreatorRail
+      label={label}
+      seriesKicker={seriesKicker}
+      creators={creators}
+      hideSeeAll={hideSeeAll}
+      limit={6}
+    />
   );
 }
 
@@ -485,6 +508,7 @@ export function DiscoveryStream({ vm }: { vm: DiscoverViewModel }) {
   const pulse = vm.pulseItems;
   const vid = vm.videoItems;
   const signals = vm.signalItems.length > 0 ? vm.signalItems : VR_SIGNAL_ITEMS;
+  const creators = vm.creatorItems.length > 0 ? vm.creatorItems : VR_CREATOR_ITEMS;
   const compactLive = live.length > 2 ? live.slice(2) : VR_LIVE_ITEMS.slice(2);
 
   return (
@@ -497,6 +521,8 @@ export function DiscoveryStream({ vm }: { vm: DiscoverViewModel }) {
         variantFor={(_, i) => (i === 0 ? "breaking" : i === 2 ? "trending" : "default")}
       />
       <VideoRail label="Günün analizleri" items={vid.slice(0, 3)} peak />
+      <CreatorBandRail creators={creators} />
+      <SignalBandRail label="Analist sinyalleri" seriesKicker="Piyasa çağrıları" items={signals.slice(0, 6)} />
       <HotPulsePeakBand pulseItems={pulse} />
       <LiveCompactRail label="Canlı devam ediyor" items={compactLive} />
       <PulseRail
@@ -507,7 +533,6 @@ export function DiscoveryStream({ vm }: { vm: DiscoverViewModel }) {
         valley
         variantFor={(_, i) => (i % 4 === 0 ? "trending" : "default")}
       />
-      <SignalBandRail items={signals.slice(0, 4)} />
     </div>
   );
 }
@@ -518,17 +543,16 @@ export function LiveTabPreview({ vm }: { vm: DiscoverViewModel }) {
   const live = vm.liveItems.length > 0 ? vm.liveItems : VR_LIVE_ITEMS;
   const compactLive = live.length > 2 ? live.slice(2) : VR_LIVE_ITEMS.slice(2);
   return (
-    <div className="dvr-tab-stream dvr-tab-stream--live">
-      <div className="dvr-tab-intro dvr-tab-intro--live">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Canlı yayın</span>
-          <p className="dvr-tab-intro__line">Piyasayı anlık takip et, analist masalarına katıl</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${live.length} canlı yayın`}>
-          <span className="dvr-live-tab-dot" aria-hidden />
-          {live.length} yayın
-        </span>
-      </div>
+    <div className="dvr-tab-stream dvr-tab-stream--live dvr-tab-stream--tab-v2">
+      <DiscoverTabIntro
+        variant="live"
+        kicker="Canlı Yayınlar"
+        line="Piyasa masaları, analist yayınları ve sohbet akışı"
+        count={live.length}
+        countSuffix="yayın"
+        seeAllHref={DISCOVER_VERTICAL_ROUTES.live}
+        seeAllLabel="Tüm canlılar"
+      />
       <LiveRail items={live} peak />
       <LiveCompactRail
         label="Diğer canlılar"
@@ -542,17 +566,16 @@ export function LiveTabPreview({ vm }: { vm: DiscoverViewModel }) {
 export function PulseTabPreview({ vm }: { vm: DiscoverViewModel }) {
   const pulse = vm.pulseItems.length > 0 ? vm.pulseItems : VR_PULSE_ITEMS;
   return (
-    <div className="dvr-tab-stream dvr-tab-stream--pulse">
-      <div className="dvr-tab-intro dvr-tab-intro--pulse">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Pulse</span>
-          <p className="dvr-tab-intro__line">Piyasadaki kısa görüşler, trend başlıklar ve hızlı analizler</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${pulse.length} pulse içeriği`}>
-          <span className="dvr-tab-intro__pulse-mark" aria-hidden />
-          {pulse.length} klip
-        </span>
-      </div>
+    <div className="dvr-tab-stream dvr-tab-stream--pulse dvr-tab-stream--tab-v2">
+      <DiscoverTabIntro
+        variant="pulse"
+        kicker="Pulse"
+        line="Kısa format piyasa yorumları ve sıcak başlıklar"
+        count={pulse.length}
+        countSuffix="içerik"
+        seeAllHref={DISCOVER_VERTICAL_ROUTES.pulse}
+        seeAllLabel="Tüm pulse"
+      />
       <PulseRail
         label="Piyasada konuşulanlar"
         items={pulse.slice(0, 6)}
@@ -575,109 +598,28 @@ export function PulseTabPreview({ vm }: { vm: DiscoverViewModel }) {
 export function VideosTabPreview({ vm }: { vm: DiscoverViewModel }) {
   const vid = vm.videoItems.length > 0 ? vm.videoItems : VR_VIDEO_ITEMS;
   return (
-    <div className="dvr-tab-stream dvr-tab-stream--videos">
-      <div className="dvr-tab-intro dvr-tab-intro--videos">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Videolar</span>
-          <p className="dvr-tab-intro__line">Uzun format analizler ve piyasa derinliği</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${vid.length} video`}>
-          <span className="dvr-tab-intro__video-mark" aria-hidden />
-          {vid.length} video
-        </span>
-      </div>
+    <div className="dvr-tab-stream dvr-tab-stream--videos dvr-tab-stream--tab-v2">
+      <DiscoverTabIntro
+        variant="videos"
+        kicker="Videolar"
+        line="Günün analizleri ve uzun format içerikler"
+        count={vid.length}
+        countSuffix="video"
+        seeAllHref={DISCOVER_VERTICAL_ROUTES.videos}
+        seeAllLabel="Tüm videolar"
+      />
       <VideoRail label="Günün analizleri" items={vid.slice(0, 4)} peak />
     </div>
   );
 }
 
+/** Feed VM fallback — canlı tab client gerçek Supabase verisi kullanır */
 export function SignalsTabPreview({ vm }: { vm: DiscoverViewModel }) {
-  const signals = vm.signalItems.length > 0 ? vm.signalItems : VR_SIGNAL_ITEMS;
-  const featured = signals[0];
-  const intel = signals.slice(1, 5);
-  const buyCount = signals.filter((s) => s.direction === "BUY").length;
-  const sellCount = signals.filter((s) => s.direction === "SELL").length;
-  const holdCount = signals.filter((s) => s.direction === "HOLD").length;
-  const avgConf = Math.round(
-    signals.reduce((sum, s) => sum + s.confidence, 0) / Math.max(signals.length, 1),
+  const signals = (vm.signalItems.length > 0 ? vm.signalItems : VR_SIGNAL_ITEMS).slice(
+    0,
+    SIGNALS_DISCOVER_PREVIEW_LIMIT,
   );
-
-  return (
-    <div className="dvr-tab-stream dvr-tab-stream--signals dvr-tab-stream--signals-v2">
-      <div className="dvr-tab-intro dvr-tab-intro--signals">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Sinyaller</span>
-          <p className="dvr-tab-intro__line">Analist görüşleri, giriş–hedef–stop ve güven skorları</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${signals.length} aktif sinyal`}>
-          <span className="dvr-tab-intro__signal-mark" aria-hidden />
-          {signals.length} sinyal
-        </span>
-      </div>
-
-      <div className="dvr-sig-tab-stats" aria-label="Sinyal özeti">
-        <div className="dvr-sig-tab-stat dvr-sig-tab-stat--buy">
-          <span className="dvr-sig-tab-stat__value tabular-nums">{buyCount}</span>
-          <span className="dvr-sig-tab-stat__label">Al</span>
-        </div>
-        <div className="dvr-sig-tab-stat dvr-sig-tab-stat--sell">
-          <span className="dvr-sig-tab-stat__value tabular-nums">{sellCount}</span>
-          <span className="dvr-sig-tab-stat__label">Sat</span>
-        </div>
-        <div className="dvr-sig-tab-stat dvr-sig-tab-stat--hold">
-          <span className="dvr-sig-tab-stat__value tabular-nums">{holdCount}</span>
-          <span className="dvr-sig-tab-stat__label">Bekle</span>
-        </div>
-        <div className="dvr-sig-tab-stat dvr-sig-tab-stat--conf">
-          <span className="dvr-sig-tab-stat__value tabular-nums">%{avgConf}</span>
-          <span className="dvr-sig-tab-stat__label">Ort. güven</span>
-        </div>
-      </div>
-
-      {featured ? (
-        <section className="dvr-sig-tab-block dvr-sig-tab-block--hero" aria-label="Öne çıkan sinyal">
-          <div className="dvr-sig-tab-block__head">
-            <div className="dvr-sig-tab-block__copy">
-              <span className="dvr-sig-tab-block__kicker">Öne çıkan</span>
-              <h2 className="dvr-sig-tab-block__title">Günün sinyali</h2>
-            </div>
-            <RailSeeAll href={DISCOVER_VERTICAL_ROUTES.signals} label="Tüm sinyaller" />
-          </div>
-          <DiscoverSignalHeroCard item={featured} index={0} />
-        </section>
-      ) : null}
-
-      {intel.length > 0 ? (
-        <section className="dvr-sig-tab-block dvr-sig-tab-block--intel" aria-label="Güncel görüşler">
-          <div className="dvr-sig-tab-block__head">
-            <div className="dvr-sig-tab-block__copy">
-              <span className="dvr-sig-tab-block__kicker">Intel grid</span>
-              <h2 className="dvr-sig-tab-block__title">Güncel görüşler</h2>
-            </div>
-          </div>
-          <div className="dvr-sig-tab-intel-grid">
-            {intel.map((item, i) => (
-              <DiscoverSignalIntelCard key={item.id} item={item} index={i + 1} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="dvr-sig-tab-block dvr-sig-tab-block--tape" aria-label="Canlı sinyal akışı">
-        <div className="dvr-sig-tab-block__head">
-          <div className="dvr-sig-tab-block__copy">
-            <span className="dvr-sig-tab-block__kicker">Canlı akış</span>
-            <h2 className="dvr-sig-tab-block__title">Piyasa bandı</h2>
-          </div>
-        </div>
-        <div className="dvr-sig-tab-tape-list">
-          {signals.map((item, i) => (
-            <DiscoverSignalTapeRow key={item.id} item={item} index={i} />
-          ))}
-        </div>
-      </section>
-    </div>
-  );
+  return <DiscoverSignalsTabPreview items={signals} />;
 }
 
 /* ─── Tam sayfa içerikleri (bağımsız rotalar) ───────────────────────────── */
@@ -687,16 +629,6 @@ export function LiveFullPageContent({ vm }: { vm: DiscoverViewModel }) {
   const compactLive = live.length > 2 ? live.slice(2) : VR_LIVE_ITEMS.slice(2);
   return (
     <div className="dvr-vertical-stream dvr-vertical-stream--live">
-      <div className="dvr-tab-intro dvr-tab-intro--live dvr-vertical-page-band">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Canlı yayın</span>
-          <p className="dvr-tab-intro__line">Piyasayı anlık takip et, analist masalarına katıl</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${live.length} canlı yayın`}>
-          <span className="dvr-live-tab-dot" aria-hidden />
-          {live.length} yayın
-        </span>
-      </div>
       <LiveRail items={live} peak hideSeeAll />
       <LiveCompactRail
         label="Diğer canlı yayınlar"
@@ -723,16 +655,6 @@ export function PulseFullPageContent({ vm }: { vm: DiscoverViewModel }) {
   const pulse = vm.pulseItems.length > 0 ? vm.pulseItems : VR_PULSE_ITEMS;
   return (
     <div className="dvr-vertical-stream dvr-vertical-stream--pulse">
-      <div className="dvr-tab-intro dvr-tab-intro--pulse dvr-vertical-page-band">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Pulse</span>
-          <p className="dvr-tab-intro__line">Piyasadaki kısa görüşler, trend başlıklar ve hızlı analizler</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${pulse.length} pulse içeriği`}>
-          <span className="dvr-tab-intro__pulse-mark" aria-hidden />
-          {pulse.length} klip
-        </span>
-      </div>
       <PulseRail
         label="Piyasada konuşulanlar"
         items={pulse.slice(0, 6)}
@@ -775,16 +697,6 @@ export function VideosFullPageContent({ vm }: { vm: DiscoverViewModel }) {
   const vid = vm.videoItems.length > 0 ? vm.videoItems : VR_VIDEO_ITEMS;
   return (
     <div className="dvr-vertical-stream dvr-vertical-stream--videos">
-      <div className="dvr-tab-intro dvr-tab-intro--videos dvr-vertical-page-band">
-        <div className="dvr-tab-intro__copy">
-          <span className="dvr-tab-intro__kicker">Videolar</span>
-          <p className="dvr-tab-intro__line">Uzun format analizler ve piyasa derinliği</p>
-        </div>
-        <span className="dvr-tab-intro__count" aria-label={`${vid.length} video`}>
-          <span className="dvr-tab-intro__video-mark" aria-hidden />
-          {vid.length} video
-        </span>
-      </div>
       <VideoRail label="Günün analizleri" items={vid.slice(0, 4)} peak hideSeeAll />
       <section className="dvr-vertical-grid-section dvr-vertical-grid-section--videos" aria-label="Tüm videolar">
         <div className="dvr-vertical-grid-head">

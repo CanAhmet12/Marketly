@@ -9,6 +9,8 @@ import {
   enrichCreatorFromPosts,
   mapRecommendedToDirectoryRow,
 } from "@/features/creators/lib/map-creator-directory-row";
+import type { CreatorsSortId } from "@/features/creators/lib/creators-directory-config";
+import { mapCreatorsSortToRpc } from "@/features/creators/lib/creators-directory-config";
 import type { CreatorDirectoryPayload, CreatorDirectoryRow } from "@/features/creators/types";
 import { fetchDiscoverFeedPage } from "@/features/feed/fetch-home-feed";
 import { filterDiscoverPosts } from "@/features/feed/discover-feed-filters";
@@ -42,8 +44,9 @@ async function fetchCreatorsDirectoryFromRpc(
 export async function fetchCreatorsDirectory(
   client: SupabaseClient,
   userId: string | null,
+  sort: CreatorsSortId = "recommended",
 ): Promise<CreatorDirectoryPayload> {
-  const rpcRows = await fetchCreatorsDirectoryFromRpc(client, 48);
+  const rpcRows = await fetchCreatorsDirectoryFromRpc(client, 48, mapCreatorsSortToRpc(sort));
   if (rpcRows && rpcRows.length > 0) {
     return buildCreatorsDirectoryPayload(rpcRows);
   }

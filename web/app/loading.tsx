@@ -1,14 +1,8 @@
-import { DelayedSkeleton } from "@/components/states/delayed-skeleton";
-import { GenericPageContentSkeleton } from "@/components/states/generic-page-content-skeleton";
+import { MarketlyGlobalLoader } from "@/components/global-page-gate/marketly-global-loader";
 
-/**
- * P1-001: Global route transition — spinner yerine layout-aligned skeleton.
- * Dashboard/auth kendi loading.tsx dosyalarına sahip; bu kök fallback.
- */
+import "@/styles/global-page-gate.css";
+
+/** Route geçişi — kök fallback (client gate ile aynı logo animasyonu) */
 export default function Loading() {
-  return (
-    <DelayedSkeleton>
-      <GenericPageContentSkeleton />
-    </DelayedSkeleton>
-  );
+  return <MarketlyGlobalLoader mode="inline" />;
 }

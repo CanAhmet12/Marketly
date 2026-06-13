@@ -22,6 +22,12 @@ export function unifiedDirectionPillClass(d: ChannelSignal["direction"]): string
   return "bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] text-[var(--color-meta)]";
 }
 
+export function cryptoDirectionPillClass(d: ChannelSignal["direction"]): string {
+  if (d === "BUY") return "cd-signal-dir cd-signal-dir--buy";
+  if (d === "SELL") return "cd-signal-dir cd-signal-dir--sell";
+  return "cd-signal-dir cd-signal-dir--hold";
+}
+
 export function strategyTacticLabel(s: SignalStrategy): string {
   const m: Record<SignalStrategy, string> = { scalp: "Scalp", swing: "Swing", long: "Uzun vade" };
   return m[s];
@@ -51,9 +57,31 @@ export function formatSignalPrice(n: number | null, maxFrac = 4): string {
   return n.toLocaleString("tr-TR", { maximumFractionDigits: maxFrac });
 }
 
-export function SignalDirectionPill({ direction, className }: { direction: ChannelSignal["direction"]; className?: string }) {
+export function SignalDirectionPill({
+  direction,
+  className,
+  tone = "default",
+}: {
+  direction: ChannelSignal["direction"];
+  className?: string;
+  tone?: "default" | "crypto";
+}) {
+  if (tone === "crypto") {
+    return (
+      <span className={cn(cryptoDirectionPillClass(direction), className)}>
+        {direction}
+      </span>
+    );
+  }
+
   return (
-    <span className={cn("rounded-lg px-[var(--sp-2)] py-0.5 text-[11px] font-semibold uppercase tracking-wide", unifiedDirectionPillClass(direction), className)}>
+    <span
+      className={cn(
+        "rounded-lg px-[var(--sp-2)] py-0.5 text-[11px] font-semibold uppercase tracking-wide",
+        unifiedDirectionPillClass(direction),
+        className,
+      )}
+    >
       {direction}
     </span>
   );

@@ -14,9 +14,27 @@ export type SignalLifecyclePhase =
   | "closed_win"
   | "closed_loss";
 
+/** DB: win/loss · UI/RPC geçiş: TP/SL */
+export function normalizeSignalResult(result: string | null | undefined): string | null {
+  if (result == null || result === "") return null;
+  const r = result.trim().toLowerCase();
+  if (r === "win" || r === "tp") return "TP";
+  if (r === "loss" || r === "sl") return "SL";
+  return result;
+}
+
+export function isSignalWinResult(result: string | null | undefined): boolean {
+  return normalizeSignalResult(result) === "TP";
+}
+
+export function isSignalLossResult(result: string | null | undefined): boolean {
+  return normalizeSignalResult(result) === "SL";
+}
+
 export function signalStatusKey(s: Pick<ChannelSignal, "is_active" | "result">): SignalStatusKey {
-  if (s.result === "TP") return "tp";
-  if (s.result === "SL") return "sl";
+  const result = normalizeSignalResult(s.result);
+  if (result === "TP") return "tp";
+  if (result === "SL") return "sl";
   return s.is_active ? "open" : "closed";
 }
 
@@ -37,8 +55,9 @@ export function hashToUnit(id: string): number {
 }
 
 export function deriveSignalLifecycle(s: Pick<ChannelSignal, "id" | "is_active" | "result">): SignalLifecyclePhase {
-  if (s.result === "TP") return "closed_win";
-  if (s.result === "SL") return "stopped_out";
+  const result = normalizeSignalResult(s.result);
+  if (result === "TP") return "closed_win";
+  if (result === "SL") return "stopped_out";
   if (!s.is_active) return "expired";
   const u = hashToUnit(s.id);
   if (u < 0.2) return "open";

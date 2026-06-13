@@ -66,7 +66,7 @@ export function PlaylistPageClient({ playlistId, playingId }: Props) {
             title="Medya kütüphanesi hazırlanıyor"
             description="Canlı ortamda oynatma listeleri API’ye bağlandığında koleksiyon detayları burada açılacak."
             actionLabel="Keşfet"
-            actionHref="/discover?tab=videos"
+            actionHref="/videos"
             tone="neutral"
             compact
           />

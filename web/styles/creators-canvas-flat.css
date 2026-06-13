@@ -1,0 +1,458 @@
+/**
+ * CREATORS — Flat canvas (tek yüzey, tam genişlik, Discover/Home tonları)
+ * Scoped: .crt-canvas
+ */
+
+.crt-canvas {
+  --crt-max: 100%;
+  --crt-pad: clamp(0.65rem, 1.8vw, 1.1rem);
+  --crt-section-gap: clamp(1rem, 1.75vw, 1.35rem);
+  --crt-aside-w: clamp(17.5rem, 20vw, 21rem);
+
+  /* Home / Discover tipografi ölçeği */
+  --type-page: 1.5rem;
+  --type-page--leading: 1.16;
+  --type-page--weight: 700;
+  --type-subtitle: 0.9375rem;
+  --type-rail-body: 0.9375rem;
+  --type-rail-body--leading: 1.48;
+}
+
+.crt-canvas__inner {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-left: var(--crt-pad);
+  padding-right: var(--crt-pad);
+}
+
+.crt-canvas--headless .crt-canvas__inner {
+  gap: var(--crt-section-gap);
+  max-width: none;
+}
+
+/* ── Tipografi ── */
+.crt-canvas {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+.crt-canvas__deck-kicker {
+  font-size: var(--type-overline);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.crt-canvas__deck-value {
+  font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.crt-canvas__deck-tile--live .crt-canvas__deck-kicker { color: var(--crt-live); }
+.crt-canvas__deck-tile--live .crt-canvas__deck-value { color: var(--crt-live-deep); }
+.crt-canvas__deck-tile--total .crt-canvas__deck-kicker { color: var(--crt-mint); }
+.crt-canvas__deck-tile--total .crt-canvas__deck-value { color: var(--crt-mint-deep); }
+.crt-canvas__deck-tile--signal .crt-canvas__deck-kicker { color: var(--crt-violet); }
+.crt-canvas__deck-tile--signal .crt-canvas__deck-value { color: var(--crt-violet-deep); }
+.crt-canvas__deck-tile--peak .crt-canvas__deck-kicker { color: var(--crt-amber); }
+.crt-canvas__deck-tile--peak .crt-canvas__deck-value { color: var(--crt-amber-deep); }
+
+.crt-canvas .dvr-rail-label {
+  font-size: var(--type-content-title);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: var(--type-content-title--tracking, -0.024em);
+}
+
+.crt-canvas .dvr-rail-series {
+  font-size: var(--type-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.crt-canvas__screener-title {
+  font-size: var(--type-content-title);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: var(--type-content-title--tracking, -0.024em);
+}
+
+.crt-canvas__leaderboard-title {
+  font-size: var(--type-overline);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: var(--type-overline--tracking);
+  text-transform: uppercase;
+  color: var(--crt-violet);
+}
+
+/* ── Intelligence deck — tam genişlik şerit ── */
+.crt-canvas__deck {
+  gap: 0;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--crt-divider);
+}
+
+@media (min-width: 640px) {
+  .crt-canvas__deck {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.crt-canvas__deck-tile {
+  min-height: 4.25rem;
+  padding: 0.65rem 0.85rem 0.6rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+@media (min-width: 640px) {
+  .crt-canvas__deck-tile:not(:last-child) {
+    border-right: 1px solid var(--crt-divider);
+  }
+}
+
+@media (max-width: 639px) {
+  .crt-canvas__deck-tile:nth-child(odd) {
+    border-right: 1px solid var(--crt-divider);
+  }
+
+  .crt-canvas__deck-tile:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--crt-divider);
+  }
+}
+
+.crt-canvas__deck-tile--live,
+.crt-canvas__deck-tile--signal,
+.crt-canvas__deck-tile--peak,
+.crt-canvas__deck-tile--total {
+  background: transparent;
+}
+
+.crt-canvas__deck-tile::before {
+  width: 3px;
+  opacity: 0.9;
+  border-radius: 0;
+}
+
+@media (hover: hover) {
+  .crt-canvas__deck-tile:hover {
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* ── Body — tam genişlik grid (Home feed gibi) ── */
+.crt-canvas__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  width: 100%;
+}
+
+@media (min-width: 1120px) {
+  .crt-canvas__body {
+    grid-template-columns: minmax(0, 1fr) var(--crt-aside-w);
+    column-gap: clamp(1.25rem, 2vw, 2rem);
+    align-items: start;
+  }
+
+  /* Rail yüksekliği bitince alt bölüm tam genişlik */
+  .crt-canvas__stream-desktop-full {
+    grid-column: 1 / -1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .crt-canvas__stream-mobile-only {
+    display: none;
+  }
+}
+
+@media (max-width: 1119px) {
+  .crt-canvas__stream-desktop-col,
+  .crt-canvas__stream-desktop-full {
+    display: none;
+  }
+}
+
+.crt-canvas__main {
+  min-width: 0;
+  width: 100%;
+  padding-top: var(--crt-section-gap);
+}
+
+.crt-canvas__aside {
+  min-width: 0;
+  align-self: start;
+}
+
+@media (min-width: 1120px) {
+  .crt-canvas__aside {
+    border-left: 1px solid var(--crt-divider);
+    padding-left: clamp(0.85rem, 1.2vw, 1.15rem);
+  }
+}
+
+/* ── Hero bento — tam genişlik ── */
+.crt-canvas__hero-bento {
+  gap: 0;
+  padding-bottom: var(--crt-section-gap);
+  border-bottom: 1px solid var(--crt-divider);
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .crt-canvas__hero-bento {
+    grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.72fr);
+  }
+
+  .crt-canvas__hero-main {
+    padding-right: clamp(0.85rem, 1.5vw, 1.25rem);
+    border-right: 1px solid var(--crt-divider);
+  }
+}
+
+.crt-canvas__hero-main .crt-hero-spot,
+.crt-canvas .crt-hero-spot {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  margin-bottom: 0;
+}
+
+.crt-canvas__leaderboard {
+  padding: 0 0 0 clamp(0.85rem, 1.5vw, 1.25rem);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.crt-canvas__leaderboard-kicker {
+  color: var(--crt-violet);
+}
+
+.crt-canvas__leaderboard-row {
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--crt-divider) 65%, transparent);
+}
+
+.crt-canvas__leaderboard-row:hover {
+  background: color-mix(in srgb, var(--crt-violet) 8%, transparent);
+  border-color: transparent;
+}
+
+.crt-canvas__leaderboard-rank {
+  color: var(--crt-violet-deep);
+}
+
+.crt-canvas__leaderboard-acc {
+  color: var(--crt-mint-deep);
+}
+
+@media (max-width: 899px) {
+  .crt-canvas__hero-main {
+    padding-right: 0;
+    padding-bottom: 0.85rem;
+    border-right: none;
+    border-bottom: 1px solid var(--crt-divider);
+  }
+
+  .crt-canvas__leaderboard {
+    padding: 0.85rem 0 0;
+  }
+}
+
+/* ── Stream — renkli bölüm ayırıcıları ── */
+.crt-canvas__stream {
+  gap: var(--crt-section-gap);
+  width: 100%;
+}
+
+.crt-canvas .dvr-rail-section + .dvr-rail-section,
+.crt-canvas .dvr-rail-section + .crt-canvas__screener,
+.crt-canvas .crt-canvas__hero-bento + .dvr-rail-section {
+  border-top: 1px solid var(--crt-divider);
+  padding-top: var(--crt-section-gap);
+}
+
+.crt-canvas .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.85;
+}
+
+.crt-canvas .dvr-rail-label--teal { color: var(--color-primary-dark); }
+.crt-canvas .dvr-rail-label--live { color: var(--crt-live-deep); }
+.crt-canvas .dvr-rail-label--signal { color: var(--crt-violet-deep); }
+.crt-canvas .dvr-rail-label--peak { color: var(--crt-amber-deep); }
+
+/* ── Analist kartları — ghost ── */
+.crt-canvas .crt-analyst-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.crt-canvas .crt-analyst-card::before {
+  opacity: 0;
+}
+
+.crt-canvas .crt-analyst-card:hover {
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.crt-canvas .crt-analyst-card__metrics {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--crt-divider);
+  border-radius: 0;
+}
+
+.crt-canvas .crt-analyst-card__footer {
+  border-top: 1px solid var(--crt-divider);
+}
+
+.crt-canvas .crt-analyst-card__name {
+  font-size: var(--type-content-title);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: var(--type-content-title--tracking, -0.024em);
+}
+
+.crt-canvas .crt-analyst-card__metric-val {
+  font-size: var(--type-meta);
+  font-weight: var(--type-content-title--weight);
+  color: var(--crt-text);
+}
+
+.crt-canvas .crt-analyst-card__metric--acc .crt-analyst-card__metric-val {
+  color: var(--crt-mint-deep);
+}
+
+/* ── Screener — tam genişlik tablo ── */
+.crt-canvas__screener {
+  width: 100%;
+}
+
+.crt-canvas__screener-head {
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--crt-divider);
+  margin-bottom: 0;
+}
+
+.crt-canvas__screener-table {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.crt-canvas__screener-thead {
+  background: transparent;
+  border-bottom: 1px solid var(--crt-divider);
+}
+
+.crt-canvas__screener-row {
+  border-bottom: 1px solid color-mix(in srgb, var(--crt-divider) 70%, transparent);
+  border-radius: 0;
+}
+
+.crt-canvas__screener-row:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+/* ── Context rail ── */
+.crt-canvas__context-rail {
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  width: 100%;
+}
+
+.crt-canvas__ctx-panel + .crt-canvas__ctx-panel {
+  padding-top: 0.65rem;
+  margin-top: 0.65rem;
+  border-top: 1px solid var(--crt-divider);
+}
+
+.crt-canvas__ctx-title {
+  color: var(--crt-mist);
+}
+
+.crt-canvas__ctx-row {
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--crt-divider) 55%, transparent);
+}
+
+.crt-canvas__ctx-row:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+.crt-canvas__ctx-asset--active {
+  color: var(--color-primary-dark);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.crt-canvas__context-rail--mobile {
+  padding: 0.65rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--crt-divider);
+}
+
+/* ── Hero tipografi ── */
+.crt-canvas .crt-hero-spot__name {
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  letter-spacing: -0.035em;
+  color: var(--crt-text);
+}
+
+/* ── Renk wash — Discover/Home uyumu ── */
+.crt-canvas .crt-canvas__orb--mint { opacity: 0.42; }
+.crt-canvas .crt-canvas__orb--violet { opacity: 0.36; }
+.crt-canvas .crt-canvas__orb--amber { opacity: 0.26; }
+
+.crt-canvas .crt-canvas__grid {
+  opacity: 0.05;
+  mask-image: radial-gradient(ellipse 100% 80% at 50% 15%, black 0%, transparent 82%);
+}
+
+html[data-theme="dark"] .crt-canvas {
+  --crt-mint: var(--color-primary);
+  --crt-mint-deep: var(--color-primary-dark);
+  --crt-mint-wash: color-mix(in srgb, var(--color-primary) 12%, #0a0a0a 88%);
+  --crt-mint-glow: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+html[data-theme="light"] .crt-canvas {
+  --crt-mint: var(--color-primary);
+  --crt-mint-deep: var(--color-primary-dark);
+  --crt-mint-wash: color-mix(in srgb, var(--color-primary) 11%, var(--crt-canvas-base) 89%);
+}
+
+html[data-theme="dark"] .crt-canvas .crt-canvas__deck-tile,
+html[data-theme="dark"] .crt-canvas .crt-canvas__leaderboard,
+html[data-theme="dark"] .crt-canvas .crt-canvas__context-rail,
+html[data-theme="dark"] .crt-canvas .crt-canvas__screener-table {
+  box-shadow: none;
+}
+
+/* Nav kaldırıldı — gizli kalıntı */
+.crt-canvas__nav {
+  display: none;
+}

@@ -29,6 +29,10 @@ export type CommodityPulseMetrics = {
     value: number;    /* 0-100 */
     label: string;    /* "Guclu" | "Orta" | "Zayif" */
   };
+  volatility: {
+    value: number;
+    label: string;
+  };
 };
 
 /* ================================
@@ -107,12 +111,14 @@ export type CommodityMoverItem = {
   changePct: number;
   price?:    string;
   volume?:   string;
+  volatility?: string;
 };
 
 export type CommodityMoversPayload = {
   gainers: CommodityMoverItem[];
   losers:  CommodityMoverItem[];
   volume:  CommodityMoverItem[];
+  volatile?: CommodityMoverItem[];
 };
 
 /* ================================
@@ -172,4 +178,44 @@ export type CommodityScreenerAsset = {
 
 export type CommodityScreenerPayload = {
   assets: CommodityScreenerAsset[];
+};
+
+/* ================================
+   CLASS TREEMAP — Zone 2b
+   ================================ */
+
+export type CommodityTreemapCell = {
+  rank: number;
+  symbol: string;
+  name: string;
+  weightPct: number;
+  changePct: number;
+  volume: string;
+  sparkline: number[];
+};
+
+export type CommodityTreemapPayload = {
+  cells: CommodityTreemapCell[];
+};
+
+/* ================================
+   SIGNAL RAIL — Zone 5
+   ================================ */
+
+export type CommoditySignalAsset = {
+  symbol: string;
+  name: string;
+  activeSignals: number;
+  bullPct: number;
+  biasLabel: string;
+  avgConfidence?: number;
+  dominantDirection?: "BUY" | "SELL" | "HOLD";
+};
+
+export type CommoditySignalStripPayload = {
+  totalActiveSignals: number;
+  bullPct: number;
+  bearPct: number;
+  marketBiasLabel: string;
+  topAssets: CommoditySignalAsset[];
 };

@@ -8,6 +8,7 @@ import type { SettingsBundle, SettingsProfileSeed } from "@/features/social/repo
 import { getSocialRepository } from "@/features/social/repository";
 import { isMockDataEnabled } from "@/mock/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 const repo = () => getSocialRepository();
 
@@ -113,6 +114,8 @@ export function useSettingsPreferences(userId: string, profileSeed: SettingsProf
     getPersonalizationRepository().clearBehavioralMemory();
     setBundle(repo().resetSettings(userId));
   }, [userId]);
+
+  useRegisterPageLoad(!hydrated);
 
   return {
     bundle,

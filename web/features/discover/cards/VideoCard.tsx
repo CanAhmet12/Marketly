@@ -21,9 +21,11 @@ type Props = {
   engagement: HomeEngagementHandlers;
   index?: number;
   feedSurface?: "default" | "home";
+  /** Kanal profili — büyük thumb, sade meta (avatar yok) */
+  surface?: "discover" | "channel";
 };
 
-function VideoCardInner({ post, engagement, index = 0, feedSurface = "default" }: Props) {
+function VideoCardInner({ post, engagement, index = 0, feedSurface = "default", surface = "discover" }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
   const thumb = pickGridThumbnail(post);
   const title = gridCardTitle(post);
@@ -121,6 +123,34 @@ function VideoCardInner({ post, engagement, index = 0, feedSurface = "default" }
           </>
         }
       />
+    );
+  }
+
+  if (surface === "channel") {
+    return (
+      <article
+        className="ch-video-tile group flex w-full flex-col motion-entrance"
+        style={motionEntranceDelay(index)}
+      >
+        <div className="ch-video-tile__thumb relative aspect-video w-full overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-thumb-bg)] ring-1 ring-[color:var(--color-border)] transition-[transform,box-shadow] duration-200 ease-out group-hover:shadow-[0_8px_28px_rgba(0,0,0,0.14)] group-hover:-translate-y-0.5">
+          {thumbInner}
+        </div>
+        <div className="ch-video-tile__meta">
+          <Link
+            href={href}
+            className="ch-video-tile__title line-clamp-2 text-[15px] font-semibold leading-[1.4] tracking-[-0.01em] text-[var(--color-text)] transition-colors hover:text-[var(--color-primary)]"
+          >
+            {title}
+          </Link>
+          <p className="ch-video-tile__stats mt-1.5 text-[13px] font-medium leading-snug text-[var(--color-text-secondary)]">
+            {formatCompactCount(post.views_count || 0)} görüntülenme
+            <span className="mx-1.5 opacity-40" aria-hidden>
+              ·
+            </span>
+            {formatTimeAgo(post.created_at)}
+          </p>
+        </div>
+      </article>
     );
   }
 

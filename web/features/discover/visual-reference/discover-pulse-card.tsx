@@ -5,6 +5,7 @@ import { useState, memo, type ComponentType } from "react";
 import { RemoteCoverImage } from "@/components/ui/remote-cover-image";
 import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
+import { isDiscoverEagerThumb } from "@/lib/media/discover-media-loading";
 import { getCardTagTone } from "./discover-card-tones";
 import { formatViews, type VRPulseItem } from "./discover-visual-reference-data";
 import {
@@ -25,7 +26,7 @@ const PULSE_THUMBS: Record<string, ComponentType> = {
   "pulse-6": ThumbPulse6,
 };
 
-function PulseThumb({ item }: { item: VRPulseItem }) {
+function PulseThumb({ item, eager = false }: { item: VRPulseItem; eager?: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
   const Thumb = PULSE_THUMBS[item.id] ?? ThumbGeneric;
   const gid = item.id.replace(/[^a-z0-9-]/gi, "");
@@ -42,6 +43,7 @@ function PulseThumb({ item }: { item: VRPulseItem }) {
               src={url}
               className="dvr-pulse-thumb-photo absolute inset-0 z-0"
               sizes="(max-width: 640px) 52vw, 300px"
+              priority={eager}
               onFailed={() => setImgFailed(true)}
             />
           ) : (
@@ -49,8 +51,9 @@ function PulseThumb({ item }: { item: VRPulseItem }) {
               src={url}
               alt=""
               className="dvr-pulse-thumb-photo absolute inset-0 z-0 h-full w-full object-cover"
-              loading="lazy"
+              loading={eager ? "eager" : "lazy"}
               decoding="async"
+              fetchPriority={eager ? "high" : "auto"}
               onError={() => setImgFailed(true)}
             />
           )}
@@ -107,6 +110,7 @@ function DiscoverPulseCardInner({
   const isFeatured = tier === "featured";
   const tagTone = getCardTagTone(item.tag);
   const useOverlayLayout = !topicTile;
+  const eagerThumb = isDiscoverEagerThumb(index);
 
   const thumbClass = topicTile
     ? "dvr-pulse-thumb--topic-tile aspect-video w-full"
@@ -135,7 +139,7 @@ function DiscoverPulseCardInner({
       style={motionEntranceDelay(index)}
     >
       <div className={cn("dvr-pulse-media relative overflow-hidden rounded-xl", thumbClass)}>
-        <PulseThumb item={item} />
+        <PulseThumb item={item} eager={eagerThumb} />
 
         {variant === "breaking" ? (
           <div className="dvr-pulse-breaking-glow pointer-events-none absolute inset-0 z-2" aria-hidden />

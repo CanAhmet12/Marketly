@@ -76,6 +76,7 @@ export class SupabaseSignalsRepository implements SignalsRepository {
 
   getSignalThreadPack(signalId: string) {
     void signalId;
+    // Live: useSignalThreadPack hook
     return null;
   }
 

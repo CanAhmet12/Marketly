@@ -37,6 +37,12 @@ const nextConfig: NextConfig = {
       { source: "/studio/:path*", destination: "/hub/studio/:path*", permanent: true },
       { source: "/upload", destination: "/hub/upload", permanent: true },
       { source: "/hub/channel", destination: "/hub/profile", permanent: true },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "live" }], destination: "/live", permanent: false },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "pulse" }], destination: "/pulse", permanent: false },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "shorts" }], destination: "/pulse", permanent: false },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "videos" }], destination: "/videos", permanent: false },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "signals" }], destination: "/signals", permanent: false },
+      { source: "/discover", has: [{ type: "query", key: "tab", value: "creators" }], destination: "/creators", permanent: false },
     ];
   },
   images: {

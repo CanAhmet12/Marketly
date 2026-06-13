@@ -1,0 +1,523 @@
+/**
+ * BÖLÜM 3 — Discovery Rails (Canlı / Editör / Yükselen / İsabet)
+ * Referans: Discover live-peak-band, dvr-rail-header gradients, flat ghost kartlar
+ */
+
+/* Screener ayırıcı */
+.crt-canvas__discovery-zone + .crt-canvas__screener {
+  border-top: 1px solid var(--crt-divider);
+  padding-top: var(--crt-section-gap, 1.15rem);
+}
+
+/* ── Discovery zone wrapper ── */
+.crt-canvas__discovery-zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+  padding-top: var(--crt-section-gap, 1.15rem);
+  border-top: 1px solid var(--crt-divider);
+}
+
+.crt-canvas__discovery-zone--live-col {
+  padding-top: var(--crt-section-gap, 1.15rem);
+}
+
+@media (min-width: 1120px) {
+  .crt-canvas__discovery-zone--full .crt-v2-rail-item {
+    width: min(94vw, 26.5rem);
+  }
+
+  .crt-canvas__discovery-zone--full .crt-analyst-card {
+    min-height: 17.5rem;
+  }
+}
+
+.crt-canvas__discovery-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: min(10rem, 38%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 90% at 6% 0%, color-mix(in srgb, var(--crt-live) 9%, transparent), transparent 62%),
+    radial-gradient(ellipse 42% 70% at 88% 2%, color-mix(in srgb, var(--crt-amber) 7%, transparent), transparent 58%);
+  opacity: 0.7;
+}
+
+.crt-canvas__discovery-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+}
+
+.crt-canvas__discovery-kicker {
+  font-size: var(--type-overline);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crt-amber);
+}
+
+.crt-canvas__discovery-title {
+  margin: 0.12rem 0 0;
+  font-size: var(--type-subtitle);
+  line-height: var(--type-subtitle--leading, 1.42);
+  font-weight: var(--type-page--weight);
+  letter-spacing: -0.022em;
+  color: var(--crt-text);
+}
+
+.crt-canvas__discovery-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--crt-radius-pill, 999px);
+  border: 1px solid color-mix(in srgb, var(--crt-amber) 22%, var(--crt-divider));
+  background: color-mix(in srgb, var(--crt-amber) 8%, transparent);
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-amber-deep);
+}
+
+.crt-canvas__discovery-rails {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.85rem, 1.4vw, 1.1rem);
+}
+
+/* Zone içi raylar — dış border yok, ince ayırıcı */
+.crt-canvas__discovery-zone .dvr-rail-section {
+  margin-bottom: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.crt-canvas__discovery-zone .dvr-rail-section + .dvr-rail-section {
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--crt-divider) 55%, transparent);
+}
+
+/* Tam genişlik bleed scroll */
+.crt-canvas__discovery-zone .dvr-hscroll-wrap {
+  margin-inline: calc(-1 * var(--crt-pad, 0.85rem));
+  padding-inline: var(--crt-pad, 0.85rem);
+}
+
+.crt-canvas__discovery-zone .dvr-hscroll-wrap::after {
+  width: clamp(40px, 6vw, 64px);
+  background: linear-gradient(270deg, var(--crt-canvas-base, var(--color-bg)) 38%, transparent 100%);
+}
+
+/* ── Rail header — accent gradient çizgileri ── */
+.crt-canvas__discovery-rail .dvr-rail-series {
+  letter-spacing: 0.11em;
+}
+
+.crt-canvas__discovery-rail--live .dvr-rail-series { color: var(--crt-live); }
+.crt-canvas__discovery-rail--editor .dvr-rail-series { color: var(--crt-violet); }
+.crt-canvas__discovery-rail--rising .dvr-rail-series { color: var(--crt-amber); }
+.crt-canvas__discovery-rail--accuracy .dvr-rail-series { color: var(--crt-mint); }
+
+.crt-canvas__discovery-rail--live .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-live) 55%, transparent) 0%,
+    color-mix(in srgb, var(--crt-live) 18%, transparent) 42%,
+    transparent 100%
+  );
+}
+
+.crt-canvas__discovery-rail--editor .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-violet) 50%, transparent) 0%,
+    color-mix(in srgb, var(--crt-violet) 16%, transparent) 45%,
+    transparent 100%
+  );
+}
+
+.crt-canvas__discovery-rail--rising .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-amber) 52%, transparent) 0%,
+    color-mix(in srgb, var(--crt-amber) 15%, transparent) 44%,
+    transparent 100%
+  );
+}
+
+.crt-canvas__discovery-rail--accuracy .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-mint) 48%, transparent) 0%,
+    color-mix(in srgb, var(--crt-violet) 14%, transparent) 50%,
+    transparent 100%
+  );
+}
+
+/* ── HScroll — rail gap + snap ── */
+.crt-canvas__discovery-hscroll {
+  padding-bottom: 0.2rem;
+  scroll-padding-inline: var(--crt-pad, 0.85rem);
+}
+
+.crt-canvas__discovery-hscroll--live {
+  gap: 1.15rem !important;
+}
+
+.crt-canvas__discovery-hscroll--editor,
+.crt-canvas__discovery-hscroll--rising,
+.crt-canvas__discovery-hscroll--accuracy {
+  gap: 0.95rem !important;
+}
+
+@media (min-width: 900px) {
+  .crt-canvas__discovery-hscroll--live {
+    gap: 1.3rem !important;
+  }
+}
+
+/* ── Daha büyük rail kartları — tüm canvas ── */
+.crt-canvas .crt-v2-rail-item {
+  width: min(94vw, 24.5rem);
+}
+
+@media (min-width: 1120px) {
+  .crt-canvas .crt-v2-rail-item {
+    width: 21.5rem;
+  }
+}
+
+.crt-canvas .crt-analyst-card {
+  min-height: 17rem;
+}
+
+.crt-canvas .crt-analyst-card--featured {
+  min-height: 17.25rem;
+}
+
+.crt-canvas .crt-analyst-card__monogram {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 11px;
+  font-size: 1rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.crt-canvas .crt-analyst-card__name {
+  display: block;
+  text-decoration: none;
+  font-size: var(--type-content-title);
+  font-weight: var(--type-content-title--weight);
+  color: var(--crt-text);
+}
+
+.crt-canvas .crt-analyst-card__name:hover {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas .crt-analyst-card__handle {
+  font-size: var(--type-caption-min);
+}
+
+.crt-canvas .crt-analyst-card__inner {
+  padding: 0.95rem 0.95rem 0.95rem 1.05rem;
+  gap: 0.68rem;
+}
+
+/* Head — badge çakışması fix */
+.crt-canvas .crt-analyst-card__head {
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.crt-canvas .crt-analyst-card__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  min-width: 0;
+}
+
+.crt-canvas .crt-analyst-card__market {
+  align-self: flex-start;
+  margin-top: 0.12rem;
+}
+
+.crt-canvas .crt-analyst-card__badges {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.28rem;
+  max-width: 48%;
+}
+
+.crt-canvas .crt-analyst-card__status {
+  padding: 0.14rem 0.42rem;
+  border-radius: 6px;
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.crt-canvas .crt-analyst-card__status--pick {
+  color: var(--crt-violet-deep);
+  background: color-mix(in srgb, var(--crt-violet) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--crt-violet) 18%, transparent);
+}
+
+.crt-canvas .crt-analyst-card__status--rising {
+  color: var(--crt-amber-deep);
+  background: color-mix(in srgb, var(--crt-amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--crt-amber) 18%, transparent);
+}
+
+.crt-canvas .crt-analyst-card__ribbon {
+  display: none;
+}
+
+.crt-canvas .crt-analyst-card__footer {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.crt-canvas .crt-analyst-card__proof {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.crt-canvas .crt-analyst-card__actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.crt-canvas .crt-analyst-card__headline {
+  font-size: var(--type-meta);
+  line-height: 1.48;
+}
+
+.crt-canvas .crt-analyst-card__metric-val {
+  font-size: calc(var(--type-meta) + 0.02rem);
+}
+
+.crt-canvas .crt-analyst-card__profile {
+  font-size: var(--type-chip);
+  font-weight: var(--type-chip--weight);
+  color: var(--crt-text-2);
+  border-color: var(--crt-divider);
+}
+
+.crt-canvas .crt-analyst-card__profile:hover {
+  color: var(--crt-mint-deep);
+  border-color: color-mix(in srgb, var(--crt-mint) 28%, var(--crt-divider));
+  background: var(--crt-mint-wash);
+}
+
+/* ── Ghost kart polish — tüm raylar (discovery + öne çıkan) ── */
+.crt-canvas .crt-analyst-card__accent {
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  box-shadow: none;
+}
+
+.crt-canvas .crt-analyst-card__sheen {
+  opacity: 0.55;
+  height: 2px;
+}
+
+.crt-canvas .crt-analyst-card:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  transform: none;
+  box-shadow: none;
+}
+
+.crt-canvas .crt-analyst-card__headline {
+  font-size: var(--type-meta);
+  line-height: 1.48;
+  color: var(--crt-text-2);
+}
+
+.crt-canvas .crt-analyst-card__metric-lab {
+  font-size: var(--type-caption-min);
+  color: var(--crt-meta);
+}
+
+.crt-canvas .crt-v2-rail-item {
+  position: relative;
+}
+
+.crt-canvas .crt-v2-rail-item + .crt-v2-rail-item::before {
+  content: "";
+  position: absolute;
+  left: calc(-0.5 * var(--dvr-rail-gap, 0.75rem));
+  top: 0.45rem;
+  bottom: 0.45rem;
+  width: 1px;
+  background: color-mix(in srgb, var(--crt-divider) 70%, transparent);
+  pointer-events: none;
+}
+
+/* Featured / personalized rail — discovery ile aynı hscroll */
+.crt-canvas__discovery-rail--featured .dvr-rail-series,
+.crt-canvas__discovery-rail--personalized .dvr-rail-series {
+  color: var(--crt-mint);
+  letter-spacing: 0.11em;
+}
+
+.crt-canvas__discovery-rail--featured .dvr-rail-header::after,
+.crt-canvas__discovery-rail--personalized .dvr-rail-header::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-mint) 48%, transparent) 0%,
+    color-mix(in srgb, var(--crt-violet) 14%, transparent) 50%,
+    transparent 100%
+  );
+}
+
+.crt-canvas__discovery-hscroll--featured,
+.crt-canvas__discovery-hscroll--personalized {
+  gap: 1.1rem !important;
+  scroll-padding-inline: var(--crt-pad, 0.85rem);
+}
+
+/* Live rail — ilk kart nabız */
+.crt-canvas__discovery-rail--live .crt-v2-rail-item:first-child .crt-analyst-card--live {
+  background: color-mix(in srgb, var(--crt-live) 5%, transparent);
+}
+
+.crt-canvas__discovery-rail--live .crt-v2-rail-item:first-child .crt-analyst-card--live .crt-analyst-card__accent {
+  box-shadow: 0 0 12px var(--crt-live-glow);
+}
+
+.crt-canvas__discovery-rail--live .crt-analyst-card__live-pill {
+  color: var(--crt-live-deep);
+  background: var(--crt-live-wash);
+  border: 1px solid color-mix(in srgb, var(--crt-live) 22%, transparent);
+}
+
+/* Editor rail — seçki ribbon */
+.crt-canvas__discovery-rail--editor .crt-analyst-card--pick .crt-analyst-card__ribbon {
+  color: var(--crt-violet-deep);
+  background: color-mix(in srgb, var(--crt-violet) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--crt-violet) 20%, transparent);
+}
+
+/* Rising rail — amber accent */
+.crt-canvas__discovery-rail--rising .crt-analyst-card--rising .crt-analyst-card__accent {
+  background: var(--crt-amber);
+}
+
+.crt-canvas__discovery-rail--rising .crt-analyst-card__ribbon--rising {
+  color: var(--crt-amber-deep);
+  background: color-mix(in srgb, var(--crt-amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--crt-amber) 20%, transparent);
+}
+
+/* Accuracy rail — isabet metrik vurgusu */
+.crt-canvas__discovery-rail--accuracy .crt-analyst-card__metric--acc .crt-analyst-card__metric-val {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas__discovery-rail--accuracy .crt-v2-rail-item:first-child .crt-analyst-card__metric--acc .crt-analyst-card__metric-val {
+  font-size: calc(var(--type-meta) + 0.05rem);
+}
+
+/* Nav butonları — discovery */
+.crt-canvas__discovery-zone .dvr-hscroll-nav {
+  opacity: 0.55;
+}
+
+@media (hover: hover) {
+  .crt-canvas__discovery-zone .dvr-hscroll-wrap:hover .dvr-hscroll-nav {
+    opacity: 0.85;
+  }
+}
+
+/* Skeleton */
+.crt-canvas__sk-discovery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.crt-canvas__sk-discovery-kicker {
+  width: 4.25rem;
+  height: 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--crt-text) 8%, transparent);
+}
+
+.crt-canvas__sk-discovery-title {
+  width: 7.5rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--crt-text) 10%, transparent);
+}
+
+.crt-canvas__sk-discovery-badge {
+  width: 4.75rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--crt-text) 7%, transparent);
+}
+
+.crt-canvas__sk-discovery-rails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.crt-canvas__sk-discovery-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.crt-canvas__sk-discovery-rail-head {
+  width: 8rem;
+  height: 0.75rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--crt-text) 9%, transparent);
+}
+
+.crt-canvas__sk-discovery-rail-line {
+  height: 2px;
+  width: min(12rem, 55%);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--crt-text) 6%, transparent);
+}
+
+.crt-canvas__sk-discovery-cards {
+  display: flex;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.crt-canvas__sk-discovery-card {
+  flex: 0 0 min(72vw, 16rem);
+  height: 11.5rem;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--crt-text) 5%, transparent);
+}

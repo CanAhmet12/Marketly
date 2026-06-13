@@ -1,0 +1,825 @@
+/**
+ * CREATORS CANVAS — Premium polish (renk, tipografi, yerleşim)
+ * Scoped: .crt-canvas
+ */
+
+.crt-canvas {
+  /* Özel palet — editorial analyst terminal */
+  --crt-ink: #101114;
+  --crt-ink-soft: #2a2d35;
+  --crt-slate: #5e6472;
+  --crt-mist: #8b919e;
+
+  --crt-canvas-base: #f0eee8;
+  --crt-plate: rgba(255, 255, 255, 0.78);
+  --crt-plate-solid: #fcfbfa;
+  --crt-plate-border: color-mix(in srgb, #12141a 7%, transparent);
+
+  --crt-mint: #0f9d75;
+  --crt-mint-deep: #0b6b54;
+  --crt-mint-wash: color-mix(in srgb, #0f9d75 11%, #f0eee8 89%);
+  --crt-mint-glow: color-mix(in srgb, #0f9d75 16%, transparent);
+
+  --crt-live: #e4574a;
+  --crt-live-deep: #b83d32;
+  --crt-live-wash: color-mix(in srgb, #e4574a 9%, #fff 91%);
+  --crt-live-glow: color-mix(in srgb, #e4574a 18%, transparent);
+
+  --crt-violet: #6d5ce8;
+  --crt-violet-deep: #4f3fbf;
+  --crt-violet-wash: color-mix(in srgb, #6d5ce8 9%, #fff 91%);
+  --crt-violet-glow: color-mix(in srgb, #6d5ce8 14%, transparent);
+
+  --crt-amber: #c8861a;
+  --crt-amber-deep: #9a6610;
+  --crt-amber-wash: color-mix(in srgb, #c8861a 10%, #fff 90%);
+  --crt-amber-glow: color-mix(in srgb, #c8861a 14%, transparent);
+
+  --crt-forex: #1a8fc4;
+  --crt-crypto: #7c5ce6;
+  --crt-bist: var(--crt-mint);
+
+  --crt-bg: var(--crt-canvas-base);
+  --crt-surface: var(--crt-plate-solid);
+  --crt-border: var(--crt-plate-border);
+  --crt-divider: color-mix(in srgb, #0f1117 6.5%, transparent);
+  --crt-text: var(--crt-ink);
+  --crt-text-2: var(--crt-ink-soft);
+  --crt-meta: var(--crt-slate);
+
+  --crt-teal: var(--crt-mint);
+  --crt-teal-dim: var(--crt-mint-glow);
+  --crt-teal-glow: var(--crt-mint-wash);
+  --crt-signal: var(--crt-violet);
+  --crt-signal-glow: var(--crt-violet-wash);
+  --crt-peak: var(--crt-amber);
+  --crt-peak-glow: var(--crt-amber-wash);
+
+  --crt-radius: 12px;
+  --crt-radius-sm: 9px;
+  --crt-radius-pill: 999px;
+  --crt-pad: clamp(0.65rem, 1.35vw, 1rem);
+  --crt-gap: clamp(0.7rem, 1.25vw, 1rem);
+  --crt-max: 100%;
+  --crt-content-gap: clamp(1rem, 1.6vw, 1.35rem);
+
+  font-family: var(--font-sans);
+  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+  color-scheme: light;
+  background: var(--crt-canvas-base);
+  color: var(--crt-text);
+
+  /* DVR rail primitives — .dvr-surface yok, token köprüsü */
+  --dvr-bg: var(--crt-bg);
+  --dvr-bg-card: var(--crt-plate-solid);
+  --dvr-bg-card-hover: var(--color-surface-hover);
+  --dvr-card-plate: #ffffff;
+  --dvr-pad: var(--crt-pad);
+  --dvr-max: var(--crt-max);
+  --dvr-rail-gap: 0.85rem;
+  --dvr-border: var(--crt-border);
+  --dvr-border-soft: var(--crt-divider);
+  --dvr-text: var(--crt-ink);
+  --dvr-text-2: var(--crt-ink-soft);
+  --dvr-text-3: var(--crt-slate);
+  --dvr-text-muted: var(--crt-mist);
+  --dvr-teal: var(--crt-mint);
+  --dvr-teal-dim: var(--crt-mint-glow);
+  --dvr-teal-glow: var(--crt-mint-wash);
+  --dvr-surface: var(--crt-canvas-base);
+  --dvr-surface-soft: transparent;
+}
+
+/* Koyu tema — shell ile uyumlu editorial canvas */
+html[data-theme="dark"] .crt-canvas {
+  color-scheme: dark;
+
+  --crt-ink: rgba(238, 241, 245, 0.92);
+  --crt-ink-soft: rgba(168, 176, 189, 0.92);
+  --crt-slate: rgba(125, 134, 150, 0.9);
+  --crt-mist: rgba(154, 163, 178, 0.88);
+
+  --crt-canvas-base: #000000;
+  --crt-plate: color-mix(in srgb, #2dd4bf 7%, #080808 93%);
+  --crt-plate-solid: color-mix(in srgb, #2dd4bf 7%, #080808 93%);
+  --crt-plate-border: color-mix(in srgb, #ffffff 8%, transparent);
+
+  --crt-mint: #2dd4bf;
+  --crt-mint-deep: #5eead4;
+  --crt-mint-wash: color-mix(in srgb, #2dd4bf 12%, #0a0a0a 88%);
+  --crt-mint-glow: color-mix(in srgb, #2dd4bf 16%, transparent);
+
+  --crt-live: #f87171;
+  --crt-live-deep: #fca5a5;
+  --crt-live-wash: color-mix(in srgb, #ef4444 12%, #0a0a0a 88%);
+  --crt-live-glow: color-mix(in srgb, #ef4444 18%, transparent);
+
+  --crt-violet: #a78bfa;
+  --crt-violet-deep: #c4b5fd;
+  --crt-violet-wash: color-mix(in srgb, #8b5cf6 12%, #0a0a0a 88%);
+  --crt-violet-glow: color-mix(in srgb, #8b5cf6 14%, transparent);
+
+  --crt-amber: #fbbf24;
+  --crt-amber-deep: #fcd34d;
+  --crt-amber-wash: color-mix(in srgb, #f59e0b 12%, #0a0a0a 88%);
+  --crt-amber-glow: color-mix(in srgb, #f59e0b 14%, transparent);
+
+  --crt-forex: #38bdf8;
+  --crt-crypto: #a78bfa;
+
+  --crt-bg: var(--crt-canvas-base);
+  --crt-surface: var(--crt-plate-solid);
+  --crt-border: var(--crt-plate-border);
+  --crt-divider: color-mix(in srgb, #ffffff 8%, transparent);
+  --crt-text: var(--crt-ink);
+  --crt-text-2: var(--crt-ink-soft);
+  --crt-meta: var(--crt-slate);
+
+  --crt-teal: var(--crt-mint);
+  --crt-teal-dim: var(--crt-mint-glow);
+  --crt-teal-glow: var(--crt-mint-wash);
+  --crt-signal: var(--crt-violet);
+  --crt-signal-glow: var(--crt-violet-wash);
+  --crt-peak: var(--crt-amber);
+  --crt-peak-glow: var(--crt-amber-wash);
+
+  background: var(--crt-canvas-base);
+  color: var(--crt-text);
+
+  --dvr-bg: var(--crt-bg);
+  --dvr-bg-card: var(--crt-plate-solid);
+  --dvr-card-plate: var(--crt-plate-solid);
+  --dvr-border: var(--crt-border);
+  --dvr-border-soft: var(--crt-divider);
+  --dvr-text: var(--crt-ink);
+  --dvr-text-2: var(--crt-ink-soft);
+  --dvr-text-3: var(--crt-slate);
+  --dvr-text-muted: var(--crt-mist);
+  --dvr-teal: var(--crt-mint);
+  --dvr-teal-dim: var(--crt-mint-glow);
+  --dvr-teal-glow: var(--crt-mint-wash);
+  --dvr-surface: var(--crt-canvas-base);
+}
+
+html[data-theme="dark"] .crt-canvas .crt-canvas__grid {
+  opacity: 0.04;
+}
+
+html[data-theme="dark"] .crt-canvas .crt-canvas__orb {
+  opacity: 0.22;
+}
+
+html[data-theme="dark"] .crt-canvas .crt-canvas__deck-tile,
+html[data-theme="dark"] .crt-canvas .crt-canvas__nav,
+html[data-theme="dark"] .crt-canvas .crt-canvas__leaderboard,
+html[data-theme="dark"] .crt-canvas .crt-canvas__context-rail,
+html[data-theme="dark"] .crt-canvas .crt-canvas__screener-table {
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 5%, transparent),
+    0 8px 24px color-mix(in srgb, #000 28%, transparent);
+}
+
+.crt-canvas--headless {
+  padding-top: 0.35rem;
+}
+
+.crt-canvas--headless .crt-canvas__inner {
+  gap: var(--crt-content-gap);
+  width: 100%;
+}
+
+/* Ambient */
+.crt-canvas__ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.crt-canvas__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(68px);
+  opacity: 0.5;
+  animation: crt-orb-drift 20s ease-in-out infinite alternate;
+}
+
+.crt-canvas__orb--mint {
+  width: min(480px, 58vw);
+  height: min(360px, 44vw);
+  left: -6%;
+  top: 2%;
+  background: radial-gradient(circle, var(--crt-mint-glow) 0%, transparent 68%);
+}
+
+.crt-canvas__orb--violet {
+  width: min(420px, 52vw);
+  height: min(320px, 40vw);
+  right: -4%;
+  top: 18%;
+  background: radial-gradient(circle, var(--crt-violet-glow) 0%, transparent 70%);
+  animation-delay: -7s;
+  animation-duration: 24s;
+}
+
+.crt-canvas__orb--amber {
+  width: min(520px, 70vw);
+  height: min(220px, 28vw);
+  left: 28%;
+  bottom: 8%;
+  opacity: 0.28;
+  background: radial-gradient(ellipse, var(--crt-amber-glow) 0%, transparent 72%);
+  animation-direction: alternate-reverse;
+  animation-duration: 26s;
+}
+
+.crt-canvas__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.028;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--crt-ink) 100%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--crt-ink) 100%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 55% at 50% 12%, black 0%, transparent 74%);
+}
+
+@keyframes crt-orb-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(12px, -8px) scale(1.04);
+  }
+}
+
+.crt-canvas::before,
+.crt-canvas::after {
+  display: none;
+}
+
+/* Deck — cam plaka + renkli değerler */
+.crt-canvas__deck {
+  gap: 0.6rem;
+}
+
+.crt-canvas__deck-tile {
+  min-height: 4.75rem;
+  padding: 0.8rem 0.85rem 0.78rem 0.95rem;
+  background: var(--crt-plate);
+  backdrop-filter: blur(10px) saturate(1.08);
+  border: 1px solid var(--crt-plate-border);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 65%, transparent),
+    0 8px 22px color-mix(in srgb, #0a0c10 4%, transparent);
+}
+
+.crt-canvas__deck-tile--live {
+  background: linear-gradient(145deg, var(--crt-live-wash) 0%, var(--crt-plate) 58%);
+}
+
+.crt-canvas__deck-tile--signal {
+  background: linear-gradient(145deg, var(--crt-violet-wash) 0%, var(--crt-plate) 58%);
+}
+
+.crt-canvas__deck-tile--peak {
+  background: linear-gradient(145deg, var(--crt-amber-wash) 0%, var(--crt-plate) 58%);
+}
+
+.crt-canvas__deck-tile--total {
+  background: linear-gradient(145deg, var(--crt-mint-wash) 0%, var(--crt-plate) 58%);
+}
+
+.crt-canvas__deck-kicker {
+  font-size: var(--type-overline);
+  line-height: var(--type-overline--leading);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: var(--type-overline--tracking);
+  color: var(--crt-mist);
+}
+
+.crt-canvas__deck-value {
+  font-size: clamp(1.22rem, 2.1vw, 1.42rem);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.crt-canvas__deck-value--live {
+  color: var(--crt-live-deep);
+}
+
+.crt-canvas__deck-value--total {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas__deck-value--signal {
+  color: var(--crt-violet-deep);
+}
+
+.crt-canvas__deck-value--peak {
+  color: var(--crt-amber-deep);
+}
+
+.crt-canvas__deck-sub {
+  font-size: var(--type-caption-min);
+  line-height: var(--type-caption-min--leading);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-slate);
+}
+
+/* Nav — cam dock */
+.crt-canvas__nav {
+  padding: 0.62rem 0.72rem 0.75rem;
+  gap: 0.62rem;
+  background: color-mix(in srgb, var(--crt-plate-solid) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.14);
+  border: 1px solid var(--crt-plate-border);
+  border-radius: var(--crt-radius);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 55%, transparent),
+    0 12px 32px color-mix(in srgb, #0a0c10 5%, transparent);
+}
+
+.crt-canvas__nav-count {
+  font-size: var(--type-caption-min);
+  line-height: var(--type-caption-min--leading);
+  font-weight: var(--type-caption-min--weight);
+  letter-spacing: 0.02em;
+  color: var(--crt-slate);
+}
+
+.crt-canvas__nav-live {
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--crt-radius-pill);
+  background: var(--crt-live-wash);
+  border: 1px solid color-mix(in srgb, var(--crt-live) 20%, transparent);
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-live-deep);
+}
+
+.crt-canvas__nav-tab {
+  min-height: 2.125rem;
+  padding: 0.32rem 0.78rem;
+  font-size: var(--type-chip);
+  line-height: var(--type-chip--leading);
+  font-weight: var(--type-chip--weight);
+  letter-spacing: var(--type-chip--tracking);
+  border-radius: var(--crt-radius-pill);
+  background: color-mix(in srgb, var(--crt-plate-solid) 72%, transparent);
+}
+
+.crt-canvas__nav-tab--active {
+  color: var(--crt-mint-deep);
+  border-color: color-mix(in srgb, var(--crt-mint) 30%, var(--crt-border));
+  background: linear-gradient(180deg, var(--crt-mint-wash) 0%, color-mix(in srgb, var(--crt-plate-solid) 90%, transparent) 100%);
+  box-shadow: var(--shadow-chip-active);
+}
+
+.crt-canvas__search-input,
+.crt-canvas__sort,
+.crt-canvas__filter-btn,
+.crt-canvas__reset-btn {
+  min-height: 2.25rem;
+  font-size: var(--type-meta);
+  line-height: var(--type-meta--leading);
+  font-weight: var(--type-meta--weight);
+  border-radius: var(--crt-radius-sm);
+  background: var(--color-search-field-bg);
+  border-color: var(--color-search-border);
+}
+
+.crt-canvas__search-input:focus {
+  border-color: var(--color-search-border-focus);
+  box-shadow: var(--shadow-search-focus);
+}
+
+.crt-canvas__asset-chip {
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  letter-spacing: 0.03em;
+  border-radius: var(--crt-radius-pill);
+}
+
+.crt-canvas__asset-chip--active {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+  border-color: color-mix(in srgb, var(--crt-mint) 26%, var(--crt-border));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--crt-mint) 12%, transparent);
+}
+
+/* Hero + leaderboard */
+.crt-canvas__leaderboard {
+  background: var(--crt-plate);
+  backdrop-filter: blur(10px);
+  border-color: var(--crt-plate-border);
+}
+
+.crt-canvas__leaderboard-kicker {
+  font-size: var(--type-overline);
+  letter-spacing: var(--type-overline--tracking);
+  color: var(--crt-violet-deep);
+}
+
+.crt-canvas__leaderboard-title {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+  letter-spacing: var(--type-creator--tracking);
+}
+
+.crt-canvas__leaderboard-name {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+}
+
+/* Screener */
+.crt-canvas__screener-title {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+  letter-spacing: var(--type-creator--tracking);
+}
+
+.crt-canvas__screener-table {
+  background: var(--crt-plate);
+  backdrop-filter: blur(8px);
+  border-color: var(--crt-plate-border);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 50%, transparent),
+    0 10px 28px color-mix(in srgb, #0a0c10 4%, transparent);
+}
+
+.crt-canvas__screener-thead {
+  background: color-mix(in srgb, var(--crt-canvas-base) 65%, var(--crt-plate-solid));
+}
+
+.crt-canvas__screener-th {
+  font-size: var(--type-overline);
+  letter-spacing: var(--type-overline--tracking);
+  color: var(--crt-mist);
+}
+
+.crt-canvas__screener-name {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+  letter-spacing: var(--type-creator--tracking);
+}
+
+.crt-canvas__screener-handle {
+  font-size: var(--type-caption-min);
+  color: var(--crt-slate);
+}
+
+.crt-canvas__screener-row:hover {
+  background: color-mix(in srgb, var(--crt-mint) 5%, var(--crt-plate-solid));
+}
+
+.crt-canvas__screener-follow--active {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+  border-color: color-mix(in srgb, var(--crt-mint) 28%, var(--crt-border));
+}
+
+/* Context rail */
+.crt-canvas__context-rail {
+  background: var(--crt-plate);
+  backdrop-filter: blur(10px);
+  border-color: var(--crt-plate-border);
+}
+
+.crt-canvas__ctx-title {
+  font-size: var(--type-overline);
+  letter-spacing: var(--type-overline--tracking);
+  color: var(--crt-mist);
+}
+
+.crt-canvas__ctx-name {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+}
+
+.crt-canvas__ctx-asset--active {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+}
+
+/* Body layout */
+.crt-canvas__body {
+  gap: var(--crt-content-gap);
+}
+
+.crt-canvas__stream {
+  gap: var(--crt-content-gap);
+}
+
+.crt-canvas__screener-market--crypto {
+  color: var(--crt-crypto);
+  border-color: color-mix(in srgb, var(--crt-crypto) 24%, var(--crt-border));
+  background: color-mix(in srgb, var(--crt-crypto) 8%, var(--crt-plate-solid));
+}
+
+.crt-canvas__screener-market--bist {
+  color: var(--crt-bist);
+  border-color: color-mix(in srgb, var(--crt-bist) 24%, var(--crt-border));
+  background: var(--crt-mint-wash);
+}
+
+.crt-canvas__screener-market--forex {
+  color: var(--crt-forex);
+  border-color: color-mix(in srgb, var(--crt-forex) 24%, var(--crt-border));
+  background: color-mix(in srgb, var(--crt-forex) 8%, var(--crt-plate-solid));
+}
+
+.crt-canvas__screener-market--commodity {
+  color: var(--crt-amber-deep);
+  border-color: color-mix(in srgb, var(--crt-amber) 24%, var(--crt-border));
+  background: var(--crt-amber-wash);
+}
+
+.crt-canvas__hero-main .crt-hero-spot {
+  border-color: var(--crt-plate-border);
+  background: var(--crt-plate);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 50%, transparent),
+    0 14px 36px color-mix(in srgb, #0a0c10 5%, transparent);
+}
+
+/* Hero bento — editorial grid */
+.crt-canvas__hero-bento {
+  gap: clamp(0.75rem, 1.2vw, 0.95rem);
+}
+
+@media (min-width: 900px) {
+  .crt-canvas__hero-bento {
+    grid-template-columns: minmax(0, 1.6fr) minmax(268px, 0.82fr);
+    gap: clamp(0.8rem, 1.3vw, 1rem);
+  }
+}
+
+.crt-canvas__leaderboard-row:hover {
+  background: color-mix(in srgb, var(--crt-violet) 5%, var(--crt-plate-solid));
+  border-color: color-mix(in srgb, var(--crt-violet) 12%, transparent);
+}
+
+.crt-canvas__leaderboard-rank {
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-violet-deep);
+}
+
+.crt-canvas__leaderboard-acc {
+  font-size: var(--type-meta);
+  font-weight: var(--type-meta--weight);
+  color: var(--crt-mint-deep);
+}
+
+/* Rail başlıkları — özel accent renkleri */
+.crt-canvas .dvr-rail-label--teal {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas .dvr-rail-label--teal::before {
+  background: var(--crt-mint);
+}
+
+.crt-canvas .dvr-rail-header[data-rail-accent="teal"]::after {
+  background: linear-gradient(90deg, var(--crt-mint-glow), transparent 72%);
+}
+
+.crt-canvas .dvr-rail-label--live {
+  color: var(--crt-live-deep);
+}
+
+.crt-canvas .dvr-rail-live-dot {
+  background: var(--crt-live);
+  box-shadow: 0 0 8px var(--crt-live-glow);
+}
+
+.crt-canvas .dvr-rail-header[data-rail-accent="live"]::after {
+  background: linear-gradient(90deg, var(--crt-live-wash), transparent 72%);
+}
+
+.crt-canvas .dvr-rail-label--signal {
+  color: var(--crt-violet-deep);
+}
+
+.crt-canvas .dvr-rail-label--signal::before {
+  background: var(--crt-violet);
+}
+
+.crt-canvas .dvr-rail-header[data-rail-accent="signal"]::after {
+  background: linear-gradient(90deg, var(--crt-violet-wash), transparent 72%);
+}
+
+.crt-canvas .dvr-rail-label--peak {
+  color: var(--crt-amber-deep);
+}
+
+.crt-canvas .dvr-rail-label--peak::before {
+  background: var(--crt-amber);
+}
+
+.crt-canvas .dvr-rail-header[data-rail-accent="peak"]::after {
+  background: linear-gradient(90deg, var(--crt-amber-wash), transparent 72%);
+}
+
+.crt-canvas .dvr-rail-series {
+  font-size: var(--type-overline);
+  letter-spacing: var(--type-overline--tracking);
+  color: var(--crt-mist);
+}
+
+.crt-canvas .dvr-rail-see-all {
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-slate);
+}
+
+/* Analist kartları — cam plaka + özel tonlar */
+.crt-canvas .crt-analyst-card {
+  border-color: var(--crt-plate-border);
+  background: var(--crt-plate);
+  backdrop-filter: blur(8px) saturate(1.06);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 55%, transparent),
+    0 6px 20px color-mix(in srgb, #0a0c10 4%, transparent);
+}
+
+.crt-canvas .crt-analyst-card:hover {
+  border-color: color-mix(in srgb, var(--crt-mint) 26%, var(--crt-plate-border));
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 55%, transparent),
+    0 14px 32px color-mix(in srgb, var(--crt-mint) 10%, transparent);
+}
+
+.crt-canvas .crt-analyst-card__name {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+  letter-spacing: var(--type-creator--tracking);
+}
+
+.crt-canvas .crt-analyst-card__handle {
+  font-size: var(--type-caption-min);
+  color: var(--crt-slate);
+}
+
+.crt-canvas .crt-analyst-card__metrics {
+  background: color-mix(in srgb, var(--crt-canvas-base) 55%, var(--crt-plate-solid));
+  border-color: var(--crt-divider);
+}
+
+.crt-canvas .crt-analyst-card__live-pill {
+  color: var(--crt-live-deep);
+  background: var(--crt-live-wash);
+  border-color: color-mix(in srgb, var(--crt-live) 22%, transparent);
+}
+
+.crt-canvas .crt-analyst-card--tone-crypto .crt-analyst-card__accent { background: var(--crt-crypto); }
+.crt-canvas .crt-analyst-card--tone-crypto .crt-analyst-card__market {
+  color: var(--crt-violet-deep);
+  background: color-mix(in srgb, var(--crt-crypto) 10%, var(--crt-plate-solid));
+}
+
+.crt-canvas .crt-analyst-card--tone-bist .crt-analyst-card__accent { background: var(--crt-mint); }
+.crt-canvas .crt-analyst-card--tone-bist .crt-analyst-card__market {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+}
+
+.crt-canvas .crt-analyst-card--tone-forex .crt-analyst-card__accent { background: var(--crt-forex); }
+.crt-canvas .crt-analyst-card--tone-forex .crt-analyst-card__market {
+  color: color-mix(in srgb, var(--crt-forex) 82%, var(--crt-ink));
+  background: color-mix(in srgb, var(--crt-forex) 9%, var(--crt-plate-solid));
+}
+
+.crt-canvas .crt-analyst-card--tone-commodity .crt-analyst-card__accent { background: var(--crt-amber); }
+.crt-canvas .crt-analyst-card--tone-commodity .crt-analyst-card__market {
+  color: var(--crt-amber-deep);
+  background: var(--crt-amber-wash);
+}
+
+/* Hero spot — ton renkleri */
+.crt-canvas .crt-hero-spot--tone-crypto .crt-hero-spot__accent { background: var(--crt-crypto); }
+.crt-canvas .crt-hero-spot--tone-bist .crt-hero-spot__accent { background: var(--crt-mint); }
+.crt-canvas .crt-hero-spot--tone-forex .crt-hero-spot__accent { background: var(--crt-forex); }
+.crt-canvas .crt-hero-spot--tone-commodity .crt-hero-spot__accent { background: var(--crt-amber); }
+
+.crt-canvas .crt-hero-spot__live-pill {
+  color: var(--crt-live-deep);
+  background: var(--crt-live-wash);
+  border-color: color-mix(in srgb, var(--crt-live) 22%, transparent);
+}
+
+.crt-canvas .crt-hero-spot__name {
+  font-size: clamp(1.05rem, 1.8vw, 1.22rem);
+  font-weight: var(--type-content-title--weight);
+  letter-spacing: -0.03em;
+}
+
+.crt-canvas__nav-live-dot {
+  background: var(--crt-live);
+  box-shadow: 0 0 8px var(--crt-live-glow);
+}
+
+.crt-canvas__ctx-footer-link {
+  color: var(--crt-mint-deep);
+}
+
+/* HScroll — flex yedek (Tailwind sınıfı kaçarsa kartlar üst üste binmesin) */
+.crt-canvas .dvr-hscroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--dvr-rail-gap);
+  overflow-x: auto;
+}
+
+.crt-canvas .dvr-hscroll-wrap {
+  max-width: 100%;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.crt-canvas .dvr-hscroll-wrap::after {
+  background: linear-gradient(270deg, var(--crt-bg) 38%, transparent 100%);
+}
+
+.crt-canvas .crt-v2-rail-item {
+  flex: 0 0 auto;
+  width: min(88vw, 18rem);
+  min-width: min(88vw, 18rem);
+}
+
+@media (min-width: 1120px) {
+  .crt-canvas .crt-v2-rail-item {
+    width: 16.75rem;
+    min-width: 16.75rem;
+  }
+}
+
+.crt-canvas .crt-analyst-card {
+  height: auto;
+  min-height: 14rem;
+}
+
+.crt-canvas .crt-hero-spot__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.crt-canvas .crt-hero-spot__inner {
+  align-items: start;
+}
+
+.crt-canvas .crt-hero-spot__identity {
+  margin-bottom: 0;
+}
+
+.crt-canvas .crt-hero-spot__accuracy--inline {
+  margin-top: 0;
+  max-width: 100%;
+}
+
+/* Metin — tema token'ına bağlı (light/dark otomatik) */
+.crt-canvas .crt-hero-spot__name,
+.crt-canvas .crt-analyst-card__name,
+.crt-canvas .crt-canvas__leaderboard-name,
+.crt-canvas .crt-canvas__ctx-name,
+.crt-canvas .crt-canvas__screener-name {
+  color: var(--crt-text);
+}
+
+.crt-canvas .crt-hero-spot__handle,
+.crt-canvas .crt-analyst-card__handle,
+.crt-canvas .crt-analyst-card__headline,
+.crt-canvas .crt-analyst-card__metric-val,
+.crt-canvas .crt-analyst-card__proof,
+.crt-canvas .crt-canvas__leaderboard-handle,
+.crt-canvas .crt-canvas__ctx-meta,
+.crt-canvas .dvr-sig-conf {
+  color: var(--crt-text-2);
+}
+
+.crt-canvas .crt-analyst-card__metric-lab,
+.crt-canvas .crt-hero-spot__tier-pill,
+.crt-canvas .crt-hero-spot__market,
+.crt-canvas .dvr-rail-series {
+  color: var(--crt-meta);
+}
+
+.crt-canvas .crt-hero-spot,
+.crt-canvas .crt-analyst-card {
+  color: var(--crt-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-canvas__orb {
+    animation: none;
+  }
+}

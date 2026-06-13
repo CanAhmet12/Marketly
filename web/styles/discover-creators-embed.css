@@ -1,0 +1,37 @@
+/**
+ * Keşfet → Üreticiler tab — /creators analist rayı dilinin embed kapsamı
+ */
+@import "./creators-canvas-zone1.css";
+@import "./creators-v2.css";
+@import "./creators-analyst-avatar.css";
+
+.dsc-hub-tab--creators.crt-canvas--discover-embed {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.dsc-hub-tab--creators .crt-canvas__intel-zone {
+  margin: 0 var(--dvr-pad, 12px);
+  border-radius: 12px;
+}
+
+.dsc-hub-tab--creators .crt-v2-rail-item {
+  width: min(72vw, 15.25rem);
+}
+
+@media (min-width: 1120px) {
+  .dsc-hub-tab--creators .crt-v2-rail-item {
+    width: 15rem;
+  }
+}
+
+.dsc-hub-tab--creators .crt-analyst-card {
+  min-height: 12.75rem;
+}
+
+.dsc-hub-tab--creators .crt-canvas__discovery-zone {
+  padding-inline: var(--dvr-pad, 12px);
+}

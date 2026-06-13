@@ -44,7 +44,7 @@ export function HomeFeedCreatorSuggestions({ creators, viewerId }: Props) {
           </li>
         ))}
       </ul>
-      <Link href="/discover?tab=creators" className="hv-ref-creator-suggest__more">
+      <Link href="/creators" className="hv-ref-creator-suggest__more">
         Tüm creator&apos;ları gör →
       </Link>
     </section>

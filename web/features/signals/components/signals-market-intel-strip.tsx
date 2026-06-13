@@ -51,9 +51,17 @@ export function SignalsMarketIntelStrip({
           ? "sp-bias-value--sell"
           : "";
 
+    const hotSymbols = intel.analystConcentrationTop.slice(0, 3);
+    const tickerText = [intel.momentumLabel, intel.themeAcceleration].filter(Boolean).join(" · ");
+
     return (
-      <div className={cn("sp-intel-strip sp-intel-strip--compact", className)}>
+      <div className={cn("sp-intel-strip sp-intel-strip--compact sp-intel-strip--v2 sp-intel-strip--alive", className)}>
         <div className="sp-intel-strip-inner">
+          <span className="sp-intel-strip__live-badge">
+            <span className="sp-intel-strip__live-dot" aria-hidden />
+            Canlı pazar
+          </span>
+
           <div className="sp-bias-section">
             <span className="sp-bias-label">Piyasa biası</span>
             <span className={cn("sp-bias-value", biasClass)}>{biasLabelCompact(intel.marketBias)}</span>
@@ -80,6 +88,32 @@ export function SignalsMarketIntelStrip({
               <span className="sp-dist-count">({holdCount})</span>
             </span>
           </div>
+
+          {hotSymbols.length > 0 ? (
+            <div className="sp-intel-hot-chips" aria-label="Yoğun semboller">
+              {hotSymbols.map((t) => (
+                <span key={t.symbol} className="sp-intel-hot-chip">
+                  {t.symbol}
+                  <span className="sp-intel-hot-chip__pct">%{t.sharePct}</span>
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {tickerText ? (
+            <div className="sp-intel-ticker-wrap">
+              <div className="sp-intel-ticker" aria-live="polite">
+                <span className="sp-intel-ticker__label">Nabız</span>
+                <div className="sp-intel-ticker__track">
+                  <span className="sp-intel-ticker__text">
+                    {tickerText}
+                    <span aria-hidden> · </span>
+                    {tickerText}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="sp-update-section">
             <span className="sp-update-dot" aria-hidden />

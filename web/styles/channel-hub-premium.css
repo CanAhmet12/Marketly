@@ -12,6 +12,13 @@
   background: var(--color-bg);
 }
 
+.hp-canvas--embedded-channel .hp-body {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  gap: 0;
+}
+
 .hp-canvas--embedded-channel > .ch-canvas {
   flex: 1;
   min-width: 0;
@@ -65,12 +72,24 @@
 }
 
 .hp-canvas--embedded-channel .ch-cover-fade {
+  height: 40px;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    color-mix(in srgb, var(--color-bg) 40%, transparent) 55%,
     var(--color-bg) 100%
   );
+}
+
+.hp-canvas--embedded-channel .ch-avatar-wrap {
+  margin-top: 0;
+  padding-top: 18px;
+}
+
+.hp-canvas--embedded-channel .ch-avatar {
+  border-width: 4px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--hp-zone-1) 25%, var(--ch-border)),
+    0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .hp-canvas--embedded-channel .ch-name {
@@ -118,10 +137,17 @@
 }
 
 .hp-canvas--embedded-channel .ch-btn--follow,
-.hp-canvas--embedded-channel .ch-btn--following {
+.hp-canvas--embedded-channel .ch-btn--following,
+.hp-canvas--embedded-channel .ch-btn--primary {
   color: var(--hp-zone-1);
   border-color: color-mix(in srgb, var(--hp-zone-1) 35%, var(--ch-border));
   background: color-mix(in srgb, var(--hp-zone-1) 8%, transparent);
+}
+
+.hp-canvas--embedded-channel .ch-btn--primary {
+  color: #fff;
+  background: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 80%, #000);
 }
 
 .hp-canvas--embedded-channel .ch-btn--follow:hover,

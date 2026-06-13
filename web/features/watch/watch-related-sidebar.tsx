@@ -110,7 +110,7 @@ export function WatchRelatedSidebar({ related, isLoading, playlistId = null, ass
           title="Benzer video yok"
           description="Şimdilik öneri bulunamadı. Keşfet'ten yeni içerikler bulabilirsin."
           actionLabel="Keşfet"
-          actionHref="/discover?tab=videos"
+          actionHref="/videos"
           tone="neutral"
           compact
         />

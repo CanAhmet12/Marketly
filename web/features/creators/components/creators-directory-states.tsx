@@ -40,7 +40,7 @@ export function CreatorsDirectoryState({ variant, onRetry }: Props) {
   const { title, desc } = COPY[variant];
 
   return (
-    <div className="creators-directory-state" role="status">
+    <div className="creators-directory-state crt-canvas__state" role="status">
       <div className="creators-directory-state__icon" aria-hidden>
         {variant === "error" ? (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
@@ -69,7 +69,7 @@ export function CreatorsDirectoryState({ variant, onRetry }: Props) {
           </button>
         ) : null}
         {variant === "empty" || variant === "live-empty" || variant === "rising-empty" ? (
-          <Link href="/discover?tab=creators" className="creators-directory-state__btn creators-directory-state__btn--primary">
+          <Link href="/discover" className="creators-directory-state__btn creators-directory-state__btn--primary">
             Keşfet’e git
           </Link>
         ) : null}

@@ -47,7 +47,7 @@ export function ChannelRecommendationRail({ viewerId, channelUserId, specialties
     <div className="ch-recommend-rail-wrap">
       <div className="ch-related-rail">
         <div className="ch-related-rail-head">
-          <span className="ch-related-rail-title">Keşfet</span>
+          <span className="ch-related-rail-title">Benzer üreticiler</span>
           <Link href="/creators" className="ch-related-rail-more">
             Tüm üreticiler →
           </Link>

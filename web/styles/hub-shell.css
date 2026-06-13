@@ -433,6 +433,17 @@
   animation: none;
 }
 
+.hb-shell--profile-view .hb-page,
+.hb-shell--profile-view .hp-canvas--embedded-channel,
+.hb-shell--profile-view .hp-canvas--embedded-channel .hp-body,
+.hb-shell--profile-view .hp-canvas--embedded-channel .ch-canvas,
+.hb-shell--profile-view .ch-content-area,
+.hb-shell--profile-view .ch-tab-body {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
 /* Studio / upload — hub içinde gömülü */
 .hb-studio-embed.studio-shell {
   min-height: 0;

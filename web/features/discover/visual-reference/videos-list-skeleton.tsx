@@ -7,7 +7,6 @@ type Props = {
 export function VideosListSkeleton({ inline = false }: Props) {
   const grid = (
     <div className="dvr-vertical-stream dvr-vertical-stream--videos" aria-hidden>
-      <div className="dvr-skeleton-tab-intro dvr-skeleton-tab-intro--videos" />
       <div className="dvr-skeleton-rail dvr-skeleton-rail--peak">
         <div className="dvr-skeleton-rail-head">
           <div className="dvr-skeleton-line dvr-skeleton-line--accent" aria-hidden />

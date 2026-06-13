@@ -1,1 +1,5 @@
-export { inferMarketAssetCategory, setAssetCategoryCache } from "@/lib/asset-category-cache";
+export {
+  inferMarketAssetCategory,
+  normalizeAssetCategory,
+  setAssetCategoryCache,
+} from "@/lib/asset-category-cache";

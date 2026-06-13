@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
+import { SignalDetailMetricsStrip } from "@/features/signals/components/signal-detail-metrics-strip";
 import { SignalDetailArchiveOutcomeStrip } from "@/features/signals/components/signal-detail-intel-panels";
 import { SignalDiscussionPanel } from "@/features/signals/components/signal-discussion-panel";
 import type { SignalDetailExtension } from "@/features/signals/lib/signal-detail-types";
@@ -31,10 +32,13 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
   const timeline = filterHonestTimelineEvents(intel?.timeline ?? [])
     .slice(-3)
     .reverse();
+  const watchers = Math.max(1, row.community_copies_24h + Math.floor(row.copies_count / 8));
 
   return (
     <div className="sdm-primary">
-      <section className="sdm-panel-block sdm-thesis-block">
+      <SignalDetailMetricsStrip row={row} watchers={watchers} />
+
+      <section className="sdm-zone sdm-thesis-block">
         <div className="sdm-thesis-block__head">
           <h3 className="sdm-panel-block__title">Neden bu çağrı?</h3>
           <span className="sdm-thesis-block__grade">{thesisGradeLabel(row.thesis_grade)}</span>
@@ -42,7 +46,7 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
         <p className="sdm-thesis-body">{thesisBody}</p>
       </section>
 
-      <section className="sdm-visual-card" aria-label="Fiyat grafiği">
+      <section className="sdm-zone sdm-visual-zone" aria-label="Fiyat grafiği">
         <div className="sdm-visual-card__top">
           {!locked && pnl != null ? (
             <div className="sdm-pnl-badge">
@@ -72,7 +76,7 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
       </div>
 
       {timeline.length > 0 ? (
-        <section className="sdm-panel-block">
+        <section className="sdm-zone">
           <h3 className="sdm-panel-block__title">Doğrulanan gelişmeler</h3>
           <ol className="sdm-timeline-mini">
             {timeline.map((ev, i) => (
@@ -88,7 +92,7 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
         </section>
       ) : null}
 
-      <section className="sdm-discussion-wrap">
+      <section className="sdm-zone sdm-discussion-wrap">
         <SignalDiscussionPanel
           pack={threadPack}
           symbol={row.symbol}

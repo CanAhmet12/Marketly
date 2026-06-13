@@ -35,17 +35,19 @@ export function RemoteCoverImage({
   }
 
   return (
-    <Image
-      src={url}
-      alt={alt}
-      fill
-      sizes={sizes}
-      priority={priority}
-      className={cn("object-cover", className)}
-      onError={() => {
-        setFailed(true);
-        onFailed?.();
-      }}
-    />
+    <div className={cn("relative block size-full overflow-hidden", className)}>
+      <Image
+        src={url}
+        alt={alt}
+        fill
+        sizes={sizes}
+        priority={priority}
+        className="object-cover"
+        onError={() => {
+          setFailed(true);
+          onFailed?.();
+        }}
+      />
+    </div>
   );
 }

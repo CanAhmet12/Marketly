@@ -70,6 +70,33 @@ html[data-theme="dark"] .markets-fluid-scope .markets-glass-25 {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.markets-fluid-scope .markets-search-wrap input:focus,
+.markets-fluid-scope .markets-search-wrap input:focus-visible,
+.markets-fluid-scope .markets-search-wrap button:focus,
+.markets-fluid-scope .markets-search-wrap button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.markets-fluid-scope .markets-search-wrap .markets-glass-25:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Tüm piyasa arama yüzeyleri — yeşil odak çerçevesi kapalı */
+.markets-search-wrap input:focus,
+.markets-search-wrap input:focus-visible,
+.markets-search-wrap button:focus,
+.markets-search-wrap button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.markets-search-wrap .markets-glass-25:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Arama odağı: tuval hafif kararır (yalnızca piyasalar sütunu) */
 .markets-fluid-scope .markets-search-dim {
   position: relative;

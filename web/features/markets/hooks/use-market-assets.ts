@@ -23,8 +23,8 @@ export function useMarketAssetsLive() {
     enabled,
     networkMode: "always",
     refetchOnMount: "always",
-    staleTime: 30_000,        // 30 saniye — Price API'nin kripto güncelleme hızı
-    refetchInterval: 60_000,  // 60 saniyede otomatik yenile
+    staleTime: 30_000,
+    refetchInterval: 60_000,
     retry: 2,
   });
 

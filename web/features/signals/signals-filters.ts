@@ -10,18 +10,44 @@ export type SignalFiltersState = {
   minConfidence: number;
 };
 
-export const SIGNAL_CHIP_OPTIONS: { id: SignalFilterChipId; label: string }[] = [
+/** Piyasa segmenti — yalnızca toolbar `sp-segment-nav` */
+export const SIGNAL_MARKET_CHIP_IDS = new Set<SignalFilterChipId>([
+  "crypto",
+  "stocks",
+  "forex",
+  "commodity",
+  "index",
+]);
+
+/** Strateji / kalite — bağlam paneli hızlı filtreleri */
+export const SIGNAL_STRATEGY_CHIP_OPTIONS: { id: SignalFilterChipId; label: string }[] = [
   { id: "high_conf", label: "Yüksek güven" },
   { id: "premium_catalog", label: "Premium" },
   { id: "scalp", label: "Scalp" },
   { id: "swing", label: "Swing" },
   { id: "long", label: "Uzun vade" },
+];
+
+export const SIGNAL_CHIP_OPTIONS: { id: SignalFilterChipId; label: string }[] = [
+  ...SIGNAL_STRATEGY_CHIP_OPTIONS,
   { id: "crypto", label: "Kripto" },
   { id: "stocks", label: "Hisseler" },
   { id: "index", label: "Endeks" },
   { id: "forex", label: "Forex" },
   { id: "commodity", label: "Emtia" },
 ];
+
+export function isMarketFilterChip(id: SignalFilterChipId): boolean {
+  return SIGNAL_MARKET_CHIP_IDS.has(id);
+}
+
+export function countStrategyChips(chips: Set<SignalFilterChipId>): number {
+  return [...chips].filter((id) => !isMarketFilterChip(id)).length;
+}
+
+export function chipsKeepingMarketOnly(chips: Set<SignalFilterChipId>): Set<SignalFilterChipId> {
+  return new Set([...chips].filter(isMarketFilterChip));
+}
 
 export const SIGNAL_DIRECTION_OPTIONS: { id: SignalDirectionFilter; label: string }[] = [
   { id: "all", label: "Tümü" },

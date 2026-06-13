@@ -81,7 +81,7 @@ export type BistSectorPayload = {
    ================================ */
 
 export type BistIndexPanel = {
-  symbol: "BIST100" | "BIST30";
+  symbol: "BIST100" | "BIST30" | "BISTBANK";
   name: string;
   value: number;
   changePercent: number;
@@ -106,12 +106,14 @@ export type BistMoverItem = {
   change: number;
   price?: string;
   volume?: string;
+  volatility?: string;
 };
 
 export type BistMoversPayload = {
   gainers:  BistMoverItem[];
   losers:   BistMoverItem[];
   volume:   BistMoverItem[];
+  volatile?: BistMoverItem[];
 };
 
 /* ================================
@@ -170,4 +172,55 @@ export type BistScreenerAsset = {
 
 export type BistScreenerPayload = {
   assets: BistScreenerAsset[];
+};
+
+export type BistScreenerCategory =
+  | "bankacilik"
+  | "holding"
+  | "sanayi"
+  | "ulasim"
+  | "enerji"
+  | "perakende"
+  | "insaat"
+  | "teknoloji"
+  | "diger";
+
+/* ================================
+   SECTOR TREEMAP — Zone 2b
+   ================================ */
+
+export type BistTreemapCell = {
+  rank: number;
+  symbol: string;
+  name: string;
+  weightPct: number;
+  changePct: number;
+  marketCap: string;
+  sparkline: number[];
+};
+
+export type BistTreemapPayload = {
+  cells: BistTreemapCell[];
+};
+
+/* ================================
+   SIGNAL RAIL — Zone 5
+   ================================ */
+
+export type BistSignalAsset = {
+  symbol: string;
+  name: string;
+  activeSignals: number;
+  bullPct: number;
+  biasLabel: string;
+  avgConfidence?: number;
+  dominantDirection?: "BUY" | "SELL" | "HOLD";
+};
+
+export type BistSignalStripPayload = {
+  totalActiveSignals: number;
+  bullPct: number;
+  bearPct: number;
+  marketBiasLabel: string;
+  topAssets: BistSignalAsset[];
 };

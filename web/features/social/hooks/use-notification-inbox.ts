@@ -13,6 +13,7 @@ import {
   markNotificationReadRemote,
   markAllNotificationsReadRemote,
 } from "@/features/notifications/fetch-notifications";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 const repo = () => getSocialRepository();
 
@@ -25,6 +26,7 @@ export function useNotificationInbox(userId: string | undefined) {
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [hydrated, setHydrated] = useState(false);
   const [liveNotifs, setLiveNotifs] = useState<NotificationItem[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
   const liveMode = !isMockDataEnabled() && isSupabaseConfigured();
 
   useEffect(() => {
@@ -36,8 +38,22 @@ export function useNotificationInbox(userId: string | undefined) {
 
   // Canlı modda Supabase'den bildirim çek
   useEffect(() => {
-    if (!userId || !liveMode) return;
-    fetchNotifications(getSupabaseBrowserClient(), userId).then(setLiveNotifs);
+    if (!userId || !liveMode) {
+      setLiveLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLiveLoading(true);
+    fetchNotifications(getSupabaseBrowserClient(), userId)
+      .then((rows) => {
+        if (!cancelled) setLiveNotifs(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setLiveLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [userId, liveMode]);
 
   const base = useMemo(
@@ -79,6 +95,8 @@ export function useNotificationInbox(userId: string | undefined) {
       setOverrides(repo().getNotificationReadOverrides());
     }
   }, [userId, liveMode]);
+
+  useRegisterPageLoad(!hydrated || liveLoading);
 
   return { rows, filter, setFilter, unreadCount, markRead, markAllRead, overrides, hydrated };
 }

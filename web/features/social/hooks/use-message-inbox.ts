@@ -12,6 +12,7 @@ import {
   fetchMessages,
   sendMessageRemote,
 } from "@/features/messages/fetch-conversations";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 const repo = () => getSocialRepository();
 
@@ -20,6 +21,8 @@ export function useMessageInbox(userId: string | undefined, conversationId: stri
   const [hydrated, setHydrated] = useState(false);
   const [liveConvs, setLiveConvs] = useState<Conversation[]>([]);
   const [liveMsgs, setLiveMsgs] = useState<Message[]>([]);
+  const [convsLoading, setConvsLoading] = useState(false);
+  const [msgsLoading, setMsgsLoading] = useState(false);
   const liveMode = !isMockDataEnabled() && isSupabaseConfigured();
 
   useEffect(() => {
@@ -28,14 +31,42 @@ export function useMessageInbox(userId: string | undefined, conversationId: stri
 
   // Canlı modda: conversation listesini çek
   useEffect(() => {
-    if (!userId || !liveMode) return;
-    fetchConversations(getSupabaseBrowserClient(), userId).then(setLiveConvs);
+    if (!userId || !liveMode) {
+      setConvsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setConvsLoading(true);
+    fetchConversations(getSupabaseBrowserClient(), userId)
+      .then((rows) => {
+        if (!cancelled) setLiveConvs(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setConvsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [userId, liveMode, version]);
 
   // Canlı modda: mesajları çek
   useEffect(() => {
-    if (!conversationId || !liveMode) return;
-    fetchMessages(getSupabaseBrowserClient(), conversationId).then(setLiveMsgs);
+    if (!conversationId || !liveMode) {
+      setMsgsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setMsgsLoading(true);
+    fetchMessages(getSupabaseBrowserClient(), conversationId)
+      .then((rows) => {
+        if (!cancelled) setLiveMsgs(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setMsgsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [conversationId, liveMode, version]);
 
   useEffect(() => {
@@ -73,6 +104,8 @@ export function useMessageInbox(userId: string | undefined, conversationId: stri
     },
     [userId, conversationId, liveMode],
   );
+
+  useRegisterPageLoad(!hydrated || convsLoading || msgsLoading);
 
   return { conversations, messages, send, hydrated, version };
 }

@@ -28,6 +28,7 @@ import type { MarketAssetView, MarketLensId, MarketSegmentId } from "@/features/
 import { emptyMarketsIntelligenceSurface } from "@/features/markets/types/markets-intelligence";
 import { getMarketsRepository } from "@/features/markets/repository";
 import { isMockDataEnabled } from "@/mock/config";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 export type MarketsPageClientProps = {
   /** `/markets/category/...` gibi rotalar için başlangıç segmenti */
@@ -110,6 +111,8 @@ export function MarketsPageClient({ initialSegment }: MarketsPageClientProps = {
     const t = window.setTimeout(() => setLoading(false), 480);
     return () => window.clearTimeout(t);
   }, [mockOn]);
+
+  useRegisterPageLoad(loading);
 
   const watchlistEmpty = segment === "watchlist" && hydrated && watchlist.size === 0;
   const showSkeleton = loading && mockOn;

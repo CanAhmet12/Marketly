@@ -1,71 +1,82 @@
 "use client";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
-import type { BistSectorItem, BistSectorPayload } from "@/features/markets/bist/types";
+import {
+  exaggerateSpark,
+  resolveBistSparkline,
+  signedPct,
+  trendFromSeries,
+} from "@/features/markets/bist/lib/bist-sparkline-utils";
+import type { BistHeatLevel, BistSectorItem, BistSectorPayload } from "@/features/markets/bist/types";
 import { cn } from "@/lib/cn";
 
 type Props = { sectors: BistSectorPayload };
 
 const SECTOR_ICONS: Record<string, string> = {
   bankacilik: "🏦",
-  holding:    "🏢",
-  sanayi:     "⚙️",
-  ulasim:     "✈️",
-  enerji:     "⚡",
-  perakende:  "🛒",
-  insaat:     "🏗️",
-  teknoloji:  "💻",
+  holding: "🏢",
+  sanayi: "⚙️",
+  ulasim: "✈️",
+  enerji: "⚡",
+  perakende: "🛒",
+  insaat: "🏗️",
+  teknoloji: "💻",
 };
 
-function changeColor(v: number) {
-  if (v > 2)  return "var(--cc-teal)";
-  if (v > 0)  return "rgba(34,197,94,0.7)";
-  if (v < -2) return "var(--cc-rose)";
-  if (v < 0)  return "rgba(239,68,68,0.7)";
-  return "var(--cc-meta)";
-}
-
-function heatBorderColor(level: BistSectorItem["heatLevel"]) {
+function heatClass(level: BistHeatLevel): string {
   switch (level) {
-    case "hot-strong":  return "var(--cc-teal)";
-    case "hot-mild":    return "rgba(34,197,94,0.4)";
-    case "neutral":     return "var(--cc-border)";
-    case "cold-mild":   return "rgba(239,68,68,0.4)";
-    case "cold-strong": return "var(--cc-rose)";
+    case "hot-strong":
+      return "bc-seg-cell--hot-strong";
+    case "hot-mild":
+      return "bc-seg-cell--hot-mild";
+    case "neutral":
+      return "cc-seg-cell--neutral";
+    case "cold-mild":
+      return "bc-seg-cell--cold-mild";
+    case "cold-strong":
+      return "bc-seg-cell--cold-strong";
   }
 }
 
-function signed(v: number) {
-  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+function changeTone(v: number) {
+  if (v > 1) return "bc-seg-change--strong-up";
+  if (v > 0) return "bc-seg-change--up";
+  if (v < -1) return "bc-seg-change--strong-down";
+  if (v < 0) return "bc-seg-change--down";
+  return "bc-seg-change--flat";
 }
 
 function SectorCell({ sec }: { sec: BistSectorItem }) {
-  const trend = sec.changePercent > 0 ? "up" : sec.changePercent < 0 ? "down" : "flat";
+  const spark = resolveBistSparkline(sec.changePercent, sec.sparkline);
+  const boosted = exaggerateSpark(spark);
+  const trend = trendFromSeries(boosted);
+
   return (
     <div
-      className="cc-seg-cell"
-      style={{ borderLeftColor: heatBorderColor(sec.heatLevel) }}
-      title={`${sec.name}: ${signed(sec.changePercent)} — ${sec.leader}`}
+      className={cn("cc-seg-cell bc-seg-cell", heatClass(sec.heatLevel))}
+      title={`${sec.name}: ${signedPct(sec.changePercent)} — ${sec.leader}`}
     >
       <div className="cc-seg-header">
-        <span className="cc-seg-icon" aria-hidden>{SECTOR_ICONS[sec.id] ?? "●"}</span>
+        <span className="cc-seg-icon" aria-hidden>
+          {SECTOR_ICONS[sec.id] ?? "●"}
+        </span>
         <span className="cc-seg-name">{sec.name}</span>
       </div>
-      <span className="cc-seg-change" style={{ color: changeColor(sec.changePercent) }}>
-        {signed(sec.changePercent)}
-      </span>
+      <span className={cn("cc-seg-change", changeTone(sec.changePercent))}>{signedPct(sec.changePercent)}</span>
       <div className="cc-seg-sparkline">
-        <MiniSparkline series={sec.sparkline} trend={trend} height={36} className="w-full" />
+        <MiniSparkline series={boosted} trend={trend} height={28} className="w-full" />
       </div>
     </div>
   );
 }
 
 export function BistSectorPerformance({ sectors }: Props) {
+  if (!sectors.sectors.length) return null;
+
   return (
-    <div className="cc-section" role="region" aria-label="Sektor performansi">
-      <p className="cc-section-label" style={{ marginBottom: 12 }}>Sektor Performansi</p>
-      <div className="bc-sector-grid">
+    <div className="cc-section bc-heatmap-section" role="region" aria-label="BIST sektör performansı">
+      <p className="cc-section-label cc-section-label--spaced">Sektör Performansı</p>
+      <div className="cc-seg-grid bc-seg-grid">
         {sectors.sectors.map((sec) => (
           <SectorCell key={sec.id} sec={sec} />
         ))}

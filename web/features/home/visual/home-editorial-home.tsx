@@ -69,20 +69,36 @@ export function HomeEditorialHome() {
 
   useEffect(() => {
     if (chipParam === "videos") {
-      router.replace("/discover?tab=videos", { scroll: false });
+      router.replace("/videos", { scroll: false });
       return;
     }
     if (chipParam === "live") {
-      router.replace("/discover?tab=live", { scroll: false });
+      router.replace("/live", { scroll: false });
       return;
     }
     if (chipParam === "pulse" || chipParam === "shorts") {
-      router.replace("/discover?tab=pulse", { scroll: false });
+      router.replace("/pulse", { scroll: false });
       return;
     }
     if (chipParam && isLegacyHomeToDiscoverChip(chipParam)) {
       const tab = legacyChipToDiscoverTab(chipParam);
-      router.replace(tab === "trending" ? "/discover" : `/discover?tab=${tab}`, { scroll: false });
+      if (tab === "trending") {
+        router.replace("/discover", { scroll: false });
+        return;
+      }
+      if (tab === "signals") {
+        router.replace("/signals", { scroll: false });
+        return;
+      }
+      if (tab === "live") {
+        router.replace("/live", { scroll: false });
+        return;
+      }
+      if (tab === "pulse" || tab === "videos") {
+        router.replace(tab === "pulse" ? "/pulse" : "/videos", { scroll: false });
+        return;
+      }
+      router.replace("/discover", { scroll: false });
     }
   }, [chipParam, router]);
 

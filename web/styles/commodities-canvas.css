@@ -38,6 +38,10 @@
   --cc-text-secondary:   var(--color-text-secondary);
   --cc-meta:             var(--color-meta);
 
+  --ms-spark-up:         var(--color-rise, #10b981);
+  --ms-spark-down:       var(--color-fall, #ef4444);
+  --ms-spark-flat:       var(--color-meta, #64748b);
+
   background: var(--cc-canvas);
   color: var(--cc-text);
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
@@ -310,3 +314,543 @@
   min-width: 38px;
   text-align: right;
 }
+
+/* ================================
+   PARÇA 1 — TOOLBAR / TICKER / SKELETON
+   ================================ */
+
+.commodities-canvas .cm-preview-banner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+  color: var(--cc-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.commodities-canvas .cc-toolbar-search button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.commodities-canvas .cc-toolbar-search .markets-glass-25.absolute {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: 8px;
+  padding: var(--sp-2, 8px);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 8%, transparent);
+}
+
+.commodities-canvas .cm-ecosystem-nav__link:hover,
+.commodities-canvas .cc-ecosystem-nav__link:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+.commodities-canvas .cm-ticker-strip {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 6%, transparent) 0%, transparent 58%),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 100%
+    );
+}
+
+.commodities-canvas .cm-ticker-live-badge {
+  border-right: 1px solid var(--cc-border-subtle);
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.commodities-canvas .cm-ticker-live-dot {
+  background: var(--cc-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.commodities-canvas .cm-ticker-live-text {
+  color: var(--cc-gold);
+}
+
+.commodities-canvas .cm-ticker-item__label {
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.commodities-canvas .cm-ticker-item:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 38%, var(--cc-border-subtle));
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--cc-gold) 10%, transparent);
+}
+
+.cm-skeleton-ticker-item {
+  width: 128px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.cm-skeleton-pulse {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--cc-border-subtle);
+}
+
+.cm-skeleton-pulse .cc-skeleton-pulse-cell {
+  flex: 1;
+  min-height: 108px;
+  border-right: 1px solid var(--cc-border-subtle);
+}
+
+.cm-skeleton-pulse .cc-skeleton-pulse-cell:last-child {
+  border-right: none;
+}
+
+.cm-skeleton-heatmap {
+  min-height: 180px;
+}
+
+.cm-skeleton-treemap {
+  min-height: 120px;
+}
+
+.cm-skeleton-signal-rail {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.cm-skeleton-signal-card {
+  flex: 0 0 clamp(360px, 46vw, 440px);
+  height: 158px;
+  border-radius: 10px;
+  animation: cc-shimmer 1.4s ease-in-out infinite;
+  background: var(--cc-surface-hover);
+}
+
+@media (max-width: 640px) {
+  .cm-skeleton-signal-card {
+    flex-basis: clamp(300px, 88vw, 360px);
+  }
+}
+
+/* ================================
+   PARÇA 2 — PULSE v2
+   ================================ */
+
+.commodities-canvas .cm-pulse-bar-v2 {
+  border-bottom-color: color-mix(in srgb, var(--cc-gold) 18%, var(--cc-border-subtle));
+}
+
+.commodities-canvas .cm-pulse-unit {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  margin-right: 6px;
+}
+
+.cm-pulse-cell-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.cm-pulse-cell-icon--oil {
+  background: #c2410c;
+  color: #fff;
+}
+
+.cm-pulse-cell-icon--gas {
+  background: #78716c;
+  color: #fff;
+}
+
+.cm-pulse-cell-icon--copper {
+  background: #b45309;
+  color: #fff;
+}
+
+.cm-volatility--meter,
+.cm-trend-score--meter {
+  width: 100%;
+}
+
+.cm-vol-value-row,
+.cm-trend-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.cm-vol-big,
+.cm-trend-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cm-vol-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.cm-vol-mode {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.cm-vol-bar,
+.cm-trend-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.cm-vol-fill,
+.cm-trend-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ================================
+   PARÇA 3 — REJİM + HEATMAP
+   ================================ */
+
+.commodities-canvas .cm-regime-section .cc-regime-headline--gold {
+  color: #f97316;
+}
+
+.commodities-canvas .cm-regime-headline--energy {
+  color: #ea580c;
+}
+
+.commodities-canvas .cm-regime-headline--agri {
+  color: var(--cc-teal);
+}
+
+.commodities-canvas .cm-regime-headline--mixed {
+  color: var(--cc-meta);
+}
+
+.commodities-canvas .cm-regime-live-chip {
+  border-color: color-mix(in srgb, var(--cc-gold) 35%, var(--cc-border));
+  color: var(--cc-gold);
+}
+
+.commodities-canvas .cm-regime-live-dot {
+  background: var(--cc-gold);
+}
+
+.commodities-canvas .cm-dom-bar-metal {
+  background: #f97316;
+}
+
+.commodities-canvas .cm-dom-bar-energy {
+  background: #ea580c;
+}
+
+.commodities-canvas .cm-dom-bar-agri {
+  background: var(--cc-teal);
+}
+
+.commodities-canvas .cm-dom-legend-dot--metal { background: #f97316; }
+.commodities-canvas .cm-dom-legend-dot--energy { background: #ea580c; }
+.commodities-canvas .cm-dom-legend-dot--agri { background: var(--cc-teal); }
+
+.commodities-canvas .cm-seg-cell--hot-strong {
+  border-left-color: #f97316;
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+}
+
+.commodities-canvas .cm-seg-cell--hot-mild {
+  border-left-color: color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.commodities-canvas .cm-seg-cell--cold-mild {
+  border-left-color: color-mix(in srgb, var(--cc-rose) 55%, transparent);
+}
+
+.commodities-canvas .cm-seg-cell--cold-strong {
+  border-left-color: var(--cc-rose);
+  background: color-mix(in srgb, var(--cc-rose) 6%, var(--cc-surface));
+}
+
+.commodities-canvas .cm-seg-change--strong-up { color: #f97316; }
+.commodities-canvas .cm-seg-change--up { color: color-mix(in srgb, var(--cc-gold) 75%, var(--cc-text)); }
+.commodities-canvas .cm-seg-change--down { color: color-mix(in srgb, var(--cc-rose) 75%, var(--cc-text)); }
+.commodities-canvas .cm-seg-change--strong-down { color: var(--cc-rose); }
+.commodities-canvas .cm-seg-change--flat { color: var(--cc-meta); }
+
+.commodities-canvas .cm-seg-grid {
+  gap: 8px;
+}
+
+/* ================================
+   PARÇA 4 — 3 PANEL + TREEMAP
+   ================================ */
+
+.commodities-canvas .cm-asset-panels {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .commodities-canvas .cm-asset-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.commodities-canvas .cm-asset-panel--oil {
+  border-top-color: #c2410c;
+}
+
+.cm-asset-panel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.cm-asset-panel-icon--gold {
+  background: #f97316;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.3);
+}
+
+.cm-asset-panel-icon--silver {
+  background: #ea580c;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(234, 88, 12, 0.25);
+}
+
+.cm-asset-panel-icon--oil {
+  background: #c2410c;
+  color: #fff;
+  font-size: 16px;
+}
+
+.cm-asset-panel-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cm-asset-panel-meta {
+  font-size: 11px;
+  color: var(--cc-meta);
+}
+
+.cm-asset-chart-empty {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  border-radius: 8px;
+  background: var(--cc-surface-raised);
+}
+
+.commodities-canvas .cm-tmap-seg--gold { background: #f97316; }
+.commodities-canvas .cm-tmap-seg--silver { background: #ea580c; }
+.commodities-canvas .cm-tmap-seg--oil { background: #c2410c; }
+
+.commodities-canvas .cm-tmap-tile--gold { border-top: 2px solid #f97316; }
+.commodities-canvas .cm-tmap-tile--silver { border-top: 2px solid #ea580c; }
+.commodities-canvas .cm-tmap-tile--oil { border-top: 2px solid #c2410c; }
+
+.cm-tmap-symbol-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 12%, var(--cc-surface));
+  color: var(--cc-gold);
+}
+
+.cm-tmap-kpi-symbol {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+}
+
+/* ================================
+   PARÇA 5 — INTEL DECK + BOTTOM STRIP
+   ================================ */
+
+.commodities-canvas .cm-intel-board .cc-intel-board-sub::before {
+  background: var(--cc-gold);
+}
+
+.cm-intel-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.commodities-canvas .cm-intel-row .cc-intel-row-val--violet {
+  color: var(--cc-gold);
+}
+
+.commodities-canvas .cm-bottom-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1100px) {
+  .commodities-canvas .cm-bottom-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.cm-bottom-empty {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  padding: 12px 0;
+}
+
+.cm-watchlist-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.cm-cal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.cm-cal-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-gold);
+}
+
+.cm-cal-impact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cm-cal-impact--high { background: var(--cc-rose); }
+.cm-cal-impact--medium { background: #f59e0b; }
+.cm-cal-impact--low { background: var(--cc-meta); }
+
+.commodities-canvas .cm-bottom-panel--corr {
+  min-width: 0;
+}
+
+.cm-skeleton-bottom-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 1100px) {
+  .cm-skeleton-bottom-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.cm-skeleton-bottom-strip .cc-skeleton-bottom-panel {
+  min-height: 160px;
+}
+
+
+.commodities-canvas .cm-signal-rail {
+  --cc-sig-rail-card-w: clamp(360px, 46vw, 440px);
+  --cc-sig-rail-card-min-h: 158px;
+}
+
+.commodities-canvas .cm-signal-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--cc-canvas) 88%);
+}
+
+.commodities-canvas .cm-signal-rail-bias-fill {
+  background: var(--cc-gold);
+}
+
+.commodities-canvas .cm-signal-rail-skeleton-card {
+  background: var(--cc-surface-hover);
+  border: 1px solid var(--cc-border-subtle);
+}
+
+.cm-screener-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.cm-screener-category {
+  font-size: 11px;
+  color: var(--cc-meta);
+}
+
+.cm-screener-price-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.commodities-canvas .cm-screener-row--gold {
+  border-left-color: #f97316;
+}
+
+.commodities-canvas .cm-screener-row--silver {
+  border-left-color: #ea580c;
+}
+
+.commodities-canvas .cm-screener-row--oil {
+  border-left-color: #c2410c;
+}
+
+.commodities-canvas .cm-screener-row--gold .cc-screener-symbol {
+  color: #f97316;
+}
+
+.commodities-canvas .cm-screener-board .cc-screener-th--active {
+  color: var(--cc-gold);
+}
+
+@media (max-width: 640px) {
+  .commodities-canvas .cm-signal-rail {
+    --cc-sig-rail-card-w: clamp(300px, 88vw, 360px);
+  }
+}
+

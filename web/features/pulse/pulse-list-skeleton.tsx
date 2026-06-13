@@ -7,7 +7,6 @@ type Props = {
 export function PulseListSkeleton({ inline = false }: Props) {
   const grid = (
     <div className="dvr-vertical-stream dvr-vertical-stream--pulse" aria-hidden>
-      <div className="dvr-skeleton-tab-intro dvr-skeleton-tab-intro--pulse" />
       <div className="dvr-skeleton-rail dvr-skeleton-rail--peak">
         <div className="dvr-skeleton-rail-head">
           <div className="dvr-skeleton-line dvr-skeleton-line--accent" aria-hidden />

@@ -41,7 +41,7 @@ export function SignalDetailArchiveOutcomeStrip({ row }: { row: SignalsFeedRow }
         ? "Stop ile kapanış — risk çerçevesi korundu"
         : "Pasif / süre sonu — arşiv özetine taşındı";
   return (
-    <div className="rounded-[12px] border border-[var(--ms-border-hairline)] bg-[color-mix(in_srgb,var(--color-text)_3%,var(--ms-card-surface))] px-[var(--sp-3)] py-[var(--sp-2)]">
+    <div className="sdm-archive-strip">
       <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-meta)]">Arşiv özeti</p>
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">{signalStatusLabel(key)}</span>

@@ -1,38 +1,57 @@
 "use client";
 
+import Link from "next/link";
+
 import type { CommodityMoverItem, CommodityMoversPayload } from "@/features/markets/commodities/types";
+import { cn } from "@/lib/cn";
 
 type Props = { movers: CommodityMoversPayload };
 
-function signed(v: number) { return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`; }
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)"; if (v < 0) return "var(--cc-rose)"; return "var(--cc-meta)";
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
+
 function dotColor(v: number) {
-  if (v > 0.5)  return "#f97316";
-  if (v > 0)    return "rgba(249,115,22,0.5)";
-  if (v < -0.5) return "#ef4444";
-  if (v < 0)    return "rgba(239,68,68,0.5)";
-  return "#64748b";
+  if (v > 0.3) return "var(--cc-gold)";
+  if (v > 0) return "color-mix(in srgb, var(--cc-gold) 55%, transparent)";
+  if (v < -0.3) return "var(--cc-rose)";
+  if (v < 0) return "color-mix(in srgb, var(--cc-rose) 55%, transparent)";
+  return "var(--cc-meta)";
 }
 
-type ColProps = { title: string; rows: CommodityMoverItem[]; showVolume?: boolean };
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
+}
 
-function MoverCol({ title, rows, showVolume = false }: ColProps) {
+function MoverCol({
+  title,
+  rows,
+  showVolume = false,
+}: {
+  title: string;
+  rows: readonly CommodityMoverItem[];
+  showVolume?: boolean;
+}) {
   return (
     <div className="cc-movers-v2-col">
       <p className="cc-movers-v2-col-title">{title}</p>
       {rows.map((r, i) => (
-        <div key={r.symbol} className="cc-movers-v2-row" style={{ cursor: "default" }}>
+        <Link
+          key={r.symbol}
+          href={`/markets/${encodeURIComponent(r.symbol)}`}
+          className="cc-movers-v2-row"
+        >
           <span className="cc-movers-v2-num">{i + 1}</span>
           <span className="cc-movers-v2-dot" style={{ background: dotColor(r.changePct) }} aria-hidden />
-          <span className="cc-movers-v2-symbol" style={{ fontSize: 11 }}>{r.symbol}</span>
+          <span className="cc-movers-v2-symbol">{r.name}</span>
           {showVolume && r.volume ? (
-            <span className="cc-movers-v2-val" style={{ color: "var(--cc-text-secondary)", fontSize: 11 }}>{r.volume}</span>
+            <span className="cc-movers-v2-val cc-intel-row-val--muted">{r.volume}</span>
           ) : (
-            <span className="cc-movers-v2-val" style={{ color: changeColor(r.changePct) }}>{signed(r.changePct)}</span>
+            <span className={cn("cc-movers-v2-val", changeClass(r.changePct))}>{signed(r.changePct)}</span>
           )}
-        </div>
+        </Link>
       ))}
     </div>
   );
@@ -43,9 +62,9 @@ export function CommoditiesTopMovers({ movers }: Props) {
     <div className="cc-movers-v2 cc-section" role="region" aria-label="Emtia hareketlileri">
       <div className="cc-movers-v2-header">Emtia Hareketlileri</div>
       <div className="cc-movers-cols">
-        <MoverCol title="Yukselenler"    rows={movers.gainers} />
-        <MoverCol title="Dusenler"       rows={movers.losers} />
-        <MoverCol title="Hacim Liderleri" rows={movers.volume} showVolume />
+        <MoverCol title="Yükselenler" rows={movers.gainers} />
+        <MoverCol title="Düşenler" rows={movers.losers} />
+        <MoverCol title="Hacim liderleri" rows={movers.volume} showVolume />
       </div>
     </div>
   );

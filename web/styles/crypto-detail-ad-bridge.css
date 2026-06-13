@@ -1,0 +1,299 @@
+/**
+ * CRYPTO DETAIL × AD-CANVAS — /markets/BTC
+ * THYAO iskeleti + kripto bileşenleri köprüsü
+ */
+
+.ad-canvas.crypto-detail-ad {
+  --cd-accent: var(--ad-accent, #f59e0b);
+  --cd-accent-dim: color-mix(in srgb, var(--ad-accent) 65%, transparent);
+  --cd-accent-bg: var(--ad-accent-bg, rgba(245, 158, 11, 0.07));
+  --cd-text: var(--ad-text, var(--color-text));
+  --cd-text-secondary: var(--ad-text-secondary, var(--color-text-secondary));
+  --cd-meta: var(--ad-meta, var(--color-meta));
+}
+
+/* —— Canlı akış şeridi —— */
+.crypto-detail-ad .cd-live-beam {
+  position: relative;
+  margin: 0 0 14px;
+  min-height: 28px;
+  overflow: hidden;
+}
+
+.crypto-detail-ad .cd-live-beam-track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.crypto-detail-ad .cd-live-beam-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ad-accent) 35%, var(--color-divider)) 18%,
+    color-mix(in srgb, var(--ad-accent) 70%, #fff) 50%,
+    color-mix(in srgb, var(--ad-accent) 35%, var(--color-divider)) 82%,
+    transparent 100%
+  );
+  animation: cd-live-beam-breathe 2.4s ease-in-out infinite;
+}
+
+.crypto-detail-ad .cd-live-beam-scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ad-accent) 90%, #fff),
+    transparent
+  );
+  filter: blur(0.5px);
+  animation: cd-live-beam-scan 3.2s ease-in-out infinite;
+}
+
+.crypto-detail-ad .cd-live-beam-glow {
+  position: absolute;
+  top: -8px;
+  left: 12%;
+  width: 76%;
+  height: 20px;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    color-mix(in srgb, var(--ad-accent) 14%, transparent) 0%,
+    transparent 72%
+  );
+  animation: cd-live-beam-breathe 2.4s ease-in-out infinite;
+}
+
+.crypto-detail-ad .cd-live-beam-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  padding: 10px 0 2px;
+  min-height: 28px;
+}
+
+.crypto-detail-ad .cd-live-beam-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ad-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ad-accent) 75%, transparent);
+  animation: cd-live-pulse 1.8s ease-in-out infinite;
+}
+
+.crypto-detail-ad .cd-live-beam-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ad-accent);
+}
+
+.crypto-detail-ad .cd-live-beam-sep {
+  color: var(--cd-meta);
+  font-size: 11px;
+}
+
+.crypto-detail-ad .cd-live-beam-symbol {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--cd-text);
+}
+
+.crypto-detail-ad .cd-live-beam-caption {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+@keyframes cd-live-beam-scan {
+  0% {
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(320%);
+    opacity: 0;
+  }
+}
+
+@keyframes cd-live-beam-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crypto-detail-ad .cd-live-beam-line,
+  .crypto-detail-ad .cd-live-beam-scan,
+  .crypto-detail-ad .cd-live-beam-glow,
+  .crypto-detail-ad .cd-live-beam-dot {
+    animation: none;
+  }
+}
+
+/* Sticky ticker — ad-canvas uyumu */
+.crypto-detail-ad .cd-sticky-ticker-shell {
+  background: var(--color-bg);
+  border-bottom-color: var(--color-divider);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* Hero — ad-canvas ritmi */
+.crypto-detail-ad .cd-hero-unified {
+  padding-top: 0;
+  margin-bottom: 4px;
+}
+
+.crypto-detail-ad .cd-hero-badge--category {
+  color: var(--ad-accent);
+}
+
+.crypto-detail-ad .cd-hero-live-chip,
+.crypto-detail-ad .cd-intel-pill--gold {
+  color: var(--ad-accent);
+  border-color: color-mix(in srgb, var(--ad-accent) 35%, transparent);
+}
+
+.crypto-detail-ad .cd-btn--primary,
+.crypto-detail-ad .cd-btn--hero-primary {
+  background: var(--ad-accent);
+  border-color: var(--ad-accent);
+}
+
+/* Grafik — ad-section içinde */
+.crypto-detail-ad .ad-chart-section {
+  margin-bottom: 0;
+}
+
+.crypto-detail-ad .cd-chart-workbench--ad {
+  margin-top: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.crypto-detail-ad .cd-chart-toolbar--ad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-ad .cd-chart-zone-sub--ad {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ad-meta);
+}
+
+.crypto-detail-ad .cd-chart-tf-btn--active {
+  color: var(--ad-accent);
+  border-color: color-mix(in srgb, var(--ad-accent) 45%, transparent);
+}
+
+.crypto-detail-ad .cd-chart-stage {
+  border-top: 2px solid var(--ad-accent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ad-accent) 5%, transparent) 0%,
+    transparent 70%
+  );
+  border-radius: 0 0 12px 12px;
+}
+
+.crypto-detail-ad .cd-chart-compare-chip--active {
+  color: var(--ad-accent);
+  border-color: color-mix(in srgb, var(--ad-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--ad-accent) 10%, transparent);
+}
+
+/* Bölüm içi kripto paneller */
+.crypto-detail-ad .ad-section .cd-signal-hub,
+.crypto-detail-ad .ad-section .cd-news-macro,
+.crypto-detail-ad .ad-section .cd-community-v3,
+.crypto-detail-ad .ad-section .cd-discovery-rail,
+.crypto-detail-ad .ad-section .cd-stats-tmap {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+
+.crypto-detail-ad .ad-section + .ad-section,
+.crypto-detail-ad .ad-main-grid + .ad-section {
+  margin-top: 16px;
+}
+
+/* Sağ rail — ad-sidebar içinde cd-rail blokları */
+.crypto-detail-ad .ad-sidebar .cd-rail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-block {
+  border-top: 2px solid var(--ad-accent);
+  padding-top: 14px;
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-block-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ad-meta);
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-block--accent {
+  border-top-color: color-mix(in srgb, var(--ad-accent) 55%, transparent);
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-vote-btn--bull.is-active,
+.crypto-detail-ad .ad-sidebar .cd-rail-sentiment-fill--bull {
+  background: var(--ad-up, #10b981);
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-vote-btn--bear.is-active,
+.crypto-detail-ad .ad-sidebar .cd-rail-sentiment-fill--bear {
+  background: var(--ad-down, #ef4444);
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-inline-link,
+.crypto-detail-ad .ad-sidebar .cd-rail-chip--segment,
+.crypto-detail-ad .ad-sidebar .cd-rail-quick-chip:hover {
+  color: var(--ad-accent);
+}
+
+.crypto-detail-ad .ad-sidebar .cd-rail-chip--active {
+  border-color: color-mix(in srgb, var(--ad-accent) 40%, transparent);
+  color: var(--ad-accent);
+}

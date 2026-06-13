@@ -321,3 +321,524 @@
   color: var(--cc-meta);
   white-space: nowrap;
 }
+
+/* ================================
+   PARÇA 1 — TOOLBAR / TICKER / SKELETON
+   ================================ */
+
+.nasdaq-canvas .nq-preview-banner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+  color: var(--cc-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nasdaq-canvas .cc-toolbar-search button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.nasdaq-canvas .cc-toolbar-search .markets-glass-25.absolute {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: 8px;
+  padding: var(--sp-2, 8px);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 8%, transparent);
+}
+
+.nasdaq-canvas .nq-ecosystem-nav__link:hover,
+.nasdaq-canvas .cc-ecosystem-nav__link:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+.nasdaq-canvas .nq-ticker-strip {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 6%, transparent) 0%, transparent 58%),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 100%
+    );
+}
+
+.nasdaq-canvas .nq-ticker-live-badge {
+  border-right: 1px solid var(--cc-border-subtle);
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.nasdaq-canvas .nq-ticker-live-dot {
+  background: var(--cc-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.nasdaq-canvas .nq-ticker-live-text {
+  color: var(--cc-gold);
+}
+
+.nasdaq-canvas .nq-ticker-item__label {
+  letter-spacing: 0.01em;
+}
+
+/* ================================
+   PARÇA 2 — PULSE v2
+   ================================ */
+
+.nasdaq-canvas .nq-pulse-bar-v2 {
+  border-bottom-color: color-mix(in srgb, var(--cc-gold) 18%, var(--cc-border-subtle));
+}
+
+.nq-pulse-cell-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.nq-pulse-cell-icon--spx {
+  background: #0e7490;
+  color: #fff;
+}
+
+.nq-pulse-cell-icon--vix {
+  background: var(--cc-surface-raised);
+  color: var(--cc-text-secondary);
+  border: 1px solid var(--cc-border-subtle);
+}
+
+.nq-pulse-volume {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cc-text);
+}
+
+.nq-mood-meter,
+.nq-mood-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.nq-mood-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.nq-mood-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.nq-mood-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.nq-mood-label {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.nq-mood-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.nq-mood-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.nq-fed-pivot--meter {
+  width: 100%;
+}
+
+/* ================================
+   PARÇA 3 — REJİM + HEATMAP
+   ================================ */
+
+.nasdaq-canvas .nq-regime-headline--rally {
+  color: #06b6d4;
+}
+
+.nasdaq-canvas .nq-regime-headline--growth {
+  color: #0891b2;
+}
+
+.nasdaq-canvas .nq-regime-headline--correction {
+  color: var(--cc-rose);
+}
+
+.nasdaq-canvas .nq-regime-headline--mixed {
+  color: var(--cc-meta);
+}
+
+.nasdaq-canvas .nq-regime-live-chip {
+  border-color: color-mix(in srgb, var(--cc-gold) 35%, var(--cc-border));
+  color: var(--cc-gold);
+}
+
+.nasdaq-canvas .nq-regime-live-dot {
+  background: var(--cc-gold);
+}
+
+.nasdaq-canvas .nq-dom-bar-tech {
+  background: #06b6d4;
+}
+
+.nasdaq-canvas .nq-dom-bar-health {
+  background: #0891b2;
+}
+
+.nasdaq-canvas .nq-dom-bar-other {
+  background: var(--cc-meta);
+}
+
+.nasdaq-canvas .nq-dom-legend-dot--tech { background: #06b6d4; }
+.nasdaq-canvas .nq-dom-legend-dot--health { background: #0891b2; }
+.nasdaq-canvas .nq-dom-legend-dot--other { background: var(--cc-meta); }
+
+.nasdaq-canvas .nq-seg-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 800px) {
+  .nasdaq-canvas .nq-seg-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.nasdaq-canvas .nq-seg-cell--hot-strong {
+  border-left-color: #06b6d4;
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+}
+
+.nasdaq-canvas .nq-seg-cell--hot-mild {
+  border-left-color: color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.nasdaq-canvas .nq-seg-cell--cold-mild {
+  border-left-color: color-mix(in srgb, var(--cc-rose) 55%, transparent);
+}
+
+.nasdaq-canvas .nq-seg-cell--cold-strong {
+  border-left-color: var(--cc-rose);
+  background: color-mix(in srgb, var(--cc-rose) 6%, var(--cc-surface));
+}
+
+.nasdaq-canvas .nq-seg-change--strong-up { color: #06b6d4; }
+.nasdaq-canvas .nq-seg-change--up { color: color-mix(in srgb, var(--cc-gold) 75%, var(--cc-text)); }
+.nasdaq-canvas .nq-seg-change--down { color: color-mix(in srgb, var(--cc-rose) 75%, var(--cc-text)); }
+.nasdaq-canvas .nq-seg-change--strong-down { color: var(--cc-rose); }
+.nasdaq-canvas .nq-seg-change--flat { color: var(--cc-meta); }
+
+.nq-earnings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.nq-skeleton-signal-rail {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.nq-skeleton-signal-card {
+  flex: 0 0 clamp(360px, 46vw, 440px);
+  height: 158px;
+  border-radius: 10px;
+  animation: cc-shimmer 1.4s ease-in-out infinite;
+  background: var(--cc-surface-hover);
+}
+
+@media (max-width: 640px) {
+  .nq-skeleton-signal-card {
+    flex-basis: clamp(300px, 88vw, 360px);
+  }
+}
+
+.nq-screener-sector {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.nasdaq-canvas .nq-screener-row--msft {
+  border-left: 2px solid #0891b2;
+}
+
+.nasdaq-canvas .nq-skeleton-pulse .cc-skeleton-pulse-cell:nth-child(odd) {
+  background: linear-gradient(
+    90deg,
+    var(--cc-surface-raised) 0%,
+    color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface-raised)) 50%,
+    var(--cc-surface-raised) 100%
+  );
+}
+
+/* ================================
+   PARÇA 3 — REGIME + HEATMAP (skeleton)
+   ================================ */
+
+.nasdaq-canvas .nq-skeleton-heatmap {
+  min-height: 280px;
+}
+
+/* ================================
+   PARÇA 4 — 3 PANEL + TREEMAP
+   ================================ */
+
+.nasdaq-canvas .nq-asset-panels {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .nasdaq-canvas .nq-asset-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nq-asset-panel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.nq-asset-panel-icon--ndx {
+  background: #06b6d4;
+  color: #000;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.3);
+}
+
+.nq-asset-panel-icon--comp {
+  background: #0891b2;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(8, 145, 178, 0.25);
+}
+
+.nq-asset-panel-icon--spx {
+  background: #0e7490;
+  color: #fff;
+}
+
+.nq-asset-panel-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nq-asset-panel-meta {
+  font-size: 11px;
+  color: var(--cc-meta);
+}
+
+.nasdaq-canvas .nq-asset-panel--spx {
+  border-top-color: #0e7490;
+}
+
+.nq-asset-chart-empty {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  border-radius: 8px;
+  background: var(--cc-surface-raised);
+}
+
+.nasdaq-canvas .nq-tmap-seg--mega { background: #06b6d4; }
+.nasdaq-canvas .nq-tmap-seg--large { background: #0891b2; }
+
+.nasdaq-canvas .nq-tmap-tile--mega { border-top: 2px solid #06b6d4; }
+.nasdaq-canvas .nq-tmap-tile--large { border-top: 2px solid #0891b2; }
+
+.nq-tmap-symbol-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 12%, var(--cc-surface));
+  color: var(--cc-gold);
+}
+
+.nq-tmap-kpi-symbol {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+}
+
+/* ================================
+   PARÇA 5 — INTEL DECK + BOTTOM STRIP
+   ================================ */
+
+.nasdaq-canvas .nq-intel-board .cc-intel-board-sub::before {
+  background: var(--cc-gold);
+}
+
+.nq-intel-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.nasdaq-canvas .nq-intel-row .cc-intel-row-val--violet {
+  color: var(--cc-gold);
+}
+
+.nasdaq-canvas .nq-bottom-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1100px) {
+  .nasdaq-canvas .nq-bottom-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.nq-bottom-empty {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  padding: 8px 0;
+}
+
+.nq-watchlist-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.nq-earnings-row--link {
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+  border-radius: 6px;
+  margin: 0 -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.nq-earnings-row--link:hover {
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.nq-cal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nq-cal-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+}
+
+.nq-cal-impact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nq-cal-impact--high { background: var(--cc-rose); }
+.nq-cal-impact--medium { background: var(--cc-gold); }
+.nq-cal-impact--low { background: var(--cc-meta); }
+
+/* ================================
+   PARÇA 6 — SIGNAL RAIL + SCREENER
+   ================================ */
+
+.nasdaq-canvas .nq-signal-rail {
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 4%, var(--cc-surface)) 0%, var(--cc-surface) 100%);
+}
+
+.nasdaq-canvas .nq-signal-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--cc-surface));
+}
+
+.nasdaq-canvas .nq-signal-rail-bias-fill {
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+}
+
+.nasdaq-canvas .nq-signal-rail-skeleton-card {
+  background: linear-gradient(
+    90deg,
+    var(--cc-surface-raised) 0%,
+    color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface-raised)) 50%,
+    var(--cc-surface-raised) 100%
+  );
+}
+
+.nq-screener-symbol-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 12%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.nasdaq-canvas .nq-screener-row--nvda {
+  border-left: 2px solid #06b6d4;
+}
+
+.nasdaq-canvas .nq-screener-row--nvda .cc-screener-symbol {
+  color: #06b6d4;
+}
+
+.nasdaq-canvas .nq-screener-row--aapl .cc-screener-symbol {
+  color: var(--cc-text);
+}
+
+.nasdaq-canvas .nq-screener-board .cc-screener-th--active {
+  color: #06b6d4;
+}
+
+@media (max-width: 900px) {
+  .nasdaq-canvas .nq-signal-rail {
+    border-radius: 8px;
+  }
+}

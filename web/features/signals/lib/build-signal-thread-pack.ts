@@ -1,23 +1,11 @@
 import type { SignalThreadPack } from "@/features/signals/community/types";
+import type { SignalThreadPackRpc } from "@/features/signals/fetch-signal-thread-pack";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
-
-type ThreadPackRpc = {
-  signal_id?: string;
-  comment_count?: number;
-  reply_count?: number;
-  copies_24h?: number;
-  likes_count?: number;
-  copies_count?: number;
-  bullish_count?: number;
-  bearish_count?: number;
-  creator_replied?: boolean;
-  last_activity_at?: string;
-};
 
 /** Gerçek metriklerden thread paketi — mock hash yok */
 export function buildSignalThreadPackFromRow(
   row: SignalsFeedRow,
-  rpc?: ThreadPackRpc | null,
+  rpc?: SignalThreadPackRpc | null,
 ): SignalThreadPack {
   const copies24h = rpc?.copies_24h ?? row.community_copies_24h ?? 0;
   const likes = rpc?.likes_count ?? row.likes_count ?? 0;

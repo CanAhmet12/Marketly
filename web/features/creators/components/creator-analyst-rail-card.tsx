@@ -2,21 +2,18 @@
 
 import Link from "next/link";
 
+import { CreatorAnalystAvatar } from "@/features/creators/components/creator-analyst-avatar";
 import { CreatorContentMixBar } from "@/features/creators/components/creator-content-mix-bar";
 import { useCreatorFollowAction } from "@/features/creators/hooks/use-creator-follow-action";
 import { buildContentMixSegments } from "@/features/creators/lib/creator-content-mix";
 import {
   accuracyBand,
-  creatorPrimaryHref,
+  creatorProfileHref,
   formatProofLine,
   getAnalystAccentTone,
   MARKET_LABELS,
   tierLabel,
 } from "@/features/creators/lib/creator-analyst-meta";
-import {
-  avatarColorFromCreatorId,
-  initialsFromDisplayName,
-} from "@/features/creators/lib/map-creator-to-vr";
 import type { CreatorDirectoryRow } from "@/features/creators/types";
 import { formatCompactCount } from "@/lib/format-compact-count";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
@@ -42,9 +39,8 @@ export function CreatorAnalystRailCard({ creator, index = 0, featured = false }:
   const { isFollowing, isPending, toggle } = useCreatorFollowAction(creator.id);
   const tone = getAnalystAccentTone(creator);
   const accBand = accuracyBand(creator.signalAccuracy);
-  const href = creatorPrimaryHref(creator);
-  const initial = initialsFromDisplayName(creator.displayName);
-  const color = avatarColorFromCreatorId(creator.id);
+  const profileHref = creatorProfileHref(creator);
+  const liveHref = creator.isLive && creator.liveHref ? creator.liveHref : null;
   const headline =
     creator.latestHeadline?.trim() ||
     creator.specialties[0]?.slice(0, 72) ||
@@ -65,9 +61,11 @@ export function CreatorAnalystRailCard({ creator, index = 0, featured = false }:
       )}
       style={motionEntranceDelay(index)}
     >
-      {creator.editorPick ? <span className="crt-analyst-card__ribbon">Seçki</span> : null}
-      {creator.rising && !creator.editorPick ? <span className="crt-analyst-card__ribbon crt-analyst-card__ribbon--rising">↑ Yükselen</span> : null}
-      <Link href={href} className="absolute inset-0 z-0 rounded-[inherit]" aria-label={creator.displayName} />
+      <Link
+        href={profileHref}
+        className="absolute inset-0 z-0 rounded-[inherit]"
+        aria-label={`${creator.displayName} profili`}
+      />
       <div className="crt-analyst-card__glow" aria-hidden />
       <div className="crt-analyst-card__accent" aria-hidden />
       <div className="crt-analyst-card__sheen" aria-hidden />
@@ -75,25 +73,25 @@ export function CreatorAnalystRailCard({ creator, index = 0, featured = false }:
       <div className="crt-analyst-card__inner">
         <div className="crt-analyst-card__head">
           <div className="crt-analyst-card__identity">
-            <span
-              className="crt-analyst-card__monogram"
-              style={{ background: `linear-gradient(145deg, ${color}ee, ${color}99)` }}
-              aria-hidden
-            >
-              {initial}
-            </span>
-            <div className="min-w-0">
-              <div className="crt-analyst-card__symbol-row">
-                <p className="crt-analyst-card__name truncate">{creator.displayName}</p>
-                <span className={cn("crt-analyst-card__market", `crt-analyst-card__market--${tone}`)}>
-                  {MARKET_LABELS[tone]}
-                </span>
-              </div>
+            <CreatorAnalystAvatar creator={creator} variant="rail" href={profileHref} />
+            <div className="crt-analyst-card__copy min-w-0">
+              <Link href={profileHref} className="crt-analyst-card__name truncate relative z-2">
+                {creator.displayName}
+              </Link>
               <p className="crt-analyst-card__handle truncate">{creator.handle}</p>
+              <span className={cn("crt-analyst-card__market", `crt-analyst-card__market--${tone}`)}>
+                {MARKET_LABELS[tone]}
+              </span>
             </div>
           </div>
 
           <div className="crt-analyst-card__badges shrink-0">
+            {creator.editorPick ? (
+              <span className="crt-analyst-card__status crt-analyst-card__status--pick">Seçki</span>
+            ) : null}
+            {creator.rising && !creator.editorPick ? (
+              <span className="crt-analyst-card__status crt-analyst-card__status--rising">↑ Yükselen</span>
+            ) : null}
             {creator.isLive ? (
               <span className="crt-analyst-card__live-pill">
                 <LivePulse />
@@ -148,8 +146,15 @@ export function CreatorAnalystRailCard({ creator, index = 0, featured = false }:
         <div className="crt-analyst-card__footer">
           <span className="crt-analyst-card__proof truncate">{formatProofLine(creator)}</span>
           <div className="crt-analyst-card__actions">
-            {creator.isLive ? (
-              <Link href={href} className="crt-analyst-card__watch" onClick={(e) => e.stopPropagation()}>
+            <Link
+              href={profileHref}
+              className="crt-analyst-card__profile"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Profil
+            </Link>
+            {liveHref ? (
+              <Link href={liveHref} className="crt-analyst-card__watch" onClick={(e) => e.stopPropagation()}>
                 İzle
               </Link>
             ) : null}

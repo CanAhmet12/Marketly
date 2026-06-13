@@ -1,0 +1,49 @@
+/**
+ * Creator analyst portraits — SafeAvatar shell (scoped)
+ */
+
+.crt-analyst-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--crt-text, #0a0a0a) 6%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--crt-text, #0a0a0a) 12%, transparent);
+}
+
+.crt-analyst-avatar--rail {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 11px;
+}
+
+.crt-analyst-avatar--hero {
+  width: clamp(3.25rem, 5vw, 3.75rem);
+  height: clamp(3.25rem, 5vw, 3.75rem);
+  border-radius: 16px;
+}
+
+.crt-analyst-avatar--screener,
+.crt-canvas__dir-avatar {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 11px;
+}
+
+.crt-analyst-avatar--leaderboard,
+.crt-canvas__leaderboard-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9px;
+}
+
+.crt-analyst-avatar--context,
+.crt-canvas__ctx-avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 8px;
+}
+
+.crt-analyst-avatar__img {
+  display: block;
+}

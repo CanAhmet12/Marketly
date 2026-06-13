@@ -33,6 +33,8 @@ type Props = {
   discoverVariant?: "hero" | null;
   /** Keşfet: 9:16 — `featured` çift vitrin, `medium` ana ızgara, `rail` kompakt şerit */
   discoverTier?: DiscoverPulseTier | null;
+  /** Kanal profili — büyük thumb, sade meta */
+  surface?: "discover" | "channel";
 };
 
 function PulseDiscoverFrame({
@@ -192,6 +194,7 @@ function PulseCardInner({
   feedSurface = "default",
   discoverVariant = null,
   discoverTier = null,
+  surface = "discover",
 }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
   const thumb = pickGridThumbnail(post);
@@ -320,6 +323,42 @@ function PulseCardInner({
           </>
         }
       />
+    );
+  }
+
+  if (surface === "channel") {
+    const durSec = pickDurationSeconds(post);
+    const durLabel = durSec ? formatDurationBadge(durSec) : null;
+
+    return (
+      <article
+        className="ch-pulse-tile group flex w-full flex-col motion-entrance"
+        style={motionEntranceDelay(index)}
+      >
+        <div className="ch-pulse-tile__thumb relative aspect-[9/16] w-full overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-thumb-bg)] ring-1 ring-[color:var(--color-border)] transition-[transform,box-shadow] duration-200 ease-out group-hover:shadow-[0_8px_28px_rgba(0,0,0,0.14)] group-hover:-translate-y-0.5">
+          {thumbBlock}
+          {durLabel ? (
+            <span className="absolute bottom-2 right-2 z-[2] rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white">
+              {durLabel}
+            </span>
+          ) : null}
+        </div>
+        <div className="ch-pulse-tile__meta">
+          <Link
+            href={href}
+            className="ch-pulse-tile__title line-clamp-2 text-[14px] font-semibold leading-[1.4] text-[var(--color-text)] transition-colors hover:text-[var(--color-primary)]"
+          >
+            {title}
+          </Link>
+          <p className="ch-pulse-tile__stats mt-1.5 text-[12px] font-medium text-[var(--color-text-secondary)]">
+            {formatCompactCount(post.views_count || 0)} görüntülenme
+            <span className="mx-1.5 opacity-40" aria-hidden>
+              ·
+            </span>
+            {formatTimeAgo(post.created_at)}
+          </p>
+        </div>
+      </article>
     );
   }
 

@@ -1,132 +1,173 @@
 "use client";
 
 import Link from "next/link";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
 import { renderVirtualTableRows, useVirtualTableRows } from "@/features/markets/components/virtual-table-rows";
-import type { BistScreenerAsset, BistScreenerPayload } from "@/features/markets/bist/types";
+import { BistScreenerRowActions } from "@/features/markets/bist/components/bist-screener-row-actions";
+import type {
+  BistScreenerAsset,
+  BistScreenerCategory,
+  BistScreenerPayload,
+} from "@/features/markets/bist/types";
+import { parseVolumeLabel } from "@/features/markets/lib/live-category/parse-volume-label";
 import { MARKETS_SCREENER_ROW_HEIGHT } from "@/hooks/use-virtual-table-rows";
 import { cn } from "@/lib/cn";
 
-type Props = { screener: BistScreenerPayload };
+type Props = {
+  screener: BistScreenerPayload;
+  isWatched?: (symbol: string) => boolean;
+  onToggleWatch?: (symbol: string) => void;
+  watchPending?: string | null;
+};
 
 type SortKey = "rank" | "changeDay" | "changeWeek" | "volume" | "marketCap";
+type FilterId = "all" | BistScreenerCategory;
 
-const FILTER_CHIPS = [
-  { id: "all",        label: "Tumu" },
-  { id: "bankacilik", label: "Bankacilik" },
-  { id: "holding",    label: "Holding" },
-  { id: "sanayi",     label: "Sanayi" },
-  { id: "ulasim",     label: "Ulasim" },
-  { id: "enerji",     label: "Enerji" },
-] as const;
+type ScreenerRowAsset = BistScreenerAsset & { displayRank: number };
 
-type FilterId = (typeof FILTER_CHIPS)[number]["id"];
+const ANCHOR_SYMBOLS = new Set(["THYAO", "GARAN", "ASELS", "KCHOL"]);
 
-const FILTER_MAP: Record<FilterId, string[]> = {
-  all:        [],
-  bankacilik: ["GARAN", "ISCTR", "AKBNK", "YKBNK"],
-  holding:    ["KCHOL", "SAHOL", "DOHOL"],
-  sanayi:     ["EREGL", "ARCLK", "VESTL"],
-  ulasim:     ["THYAO", "TOASO", "FROTO"],
-  enerji:     ["TUPRS", "ODAS"],
+const FILTER_CHIPS: { id: FilterId; label: string }[] = [
+  { id: "all", label: "Tümü" },
+  { id: "bankacilik", label: "Bankacılık" },
+  { id: "holding", label: "Holding" },
+  { id: "sanayi", label: "Sanayi" },
+  { id: "ulasim", label: "Ulaşım" },
+  { id: "enerji", label: "Enerji" },
+];
+
+const SECTOR_LABEL: Record<BistScreenerCategory, string> = {
+  bankacilik: "Bankacılık",
+  holding: "Holding",
+  sanayi: "Sanayi",
+  ulasim: "Ulaşım",
+  enerji: "Enerji",
+  perakende: "Perakende",
+  insaat: "İnşaat",
+  teknoloji: "Teknoloji",
+  diger: "Diğer",
 };
+
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+}
+
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
+}
 
 function fmtTL(n: number) {
   if (n >= 1000) return n.toLocaleString("tr-TR", { maximumFractionDigits: 0 });
   return n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function signed(v: number) {
-  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+function sortValue(asset: BistScreenerAsset, key: SortKey): number {
+  switch (key) {
+    case "rank":
+      return asset.rank;
+    case "changeDay":
+      return asset.changeDay;
+    case "changeWeek":
+      return asset.changeWeek;
+    case "volume":
+      return parseVolumeLabel(asset.volume ?? "0");
+    case "marketCap":
+      return parseVolumeLabel(asset.marketCap ?? "0");
+    default:
+      return 0;
+  }
 }
 
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)";
-  if (v < 0) return "var(--cc-rose)";
-  return "var(--cc-meta)";
+function anchorClass(symbol: string): string | undefined {
+  const key = symbol.toUpperCase();
+  if (key === "THYAO") return "bc-screener-row--thyao";
+  if (key === "GARAN") return "bc-screener-row--garan";
+  if (key === "ASELS") return "bc-screener-row--asels";
+  return undefined;
 }
 
-function parseVol(s: string) {
-  const n = parseFloat(s.replace(/[^0-9.]/g, ""));
-  if (s.includes("TRL")) return n * 1e12;
-  if (s.includes("MLRD")) return n * 1e9;
-  if (s.includes("MLN")) return n * 1e6;
-  return n;
+function sectorLabel(sector: string): string {
+  if (sector in SECTOR_LABEL) return SECTOR_LABEL[sector as BistScreenerCategory];
+  return sector;
 }
 
-export function BistScreener({ screener }: Props) {
+export function BistScreenerBoard({ screener, isWatched, onToggleWatch, watchPending }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<1 | -1>(1);
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) setSortDir((d) => (d === 1 ? -1 : 1));
-    else { setSortKey(key); setSortDir(key === "rank" ? 1 : -1); }
+    if (sortKey === key) {
+      setSortDir((d) => (d === 1 ? -1 : 1));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "rank" ? 1 : -1);
+    }
   }
 
-  const filtered = activeFilter === "all"
-    ? screener.assets
-    : screener.assets.filter((a) => FILTER_MAP[activeFilter].includes(a.symbol));
+  const sorted = useMemo(() => {
+    const filtered =
+      activeFilter === "all"
+        ? screener.assets
+        : screener.assets.filter((a) => a.sector === activeFilter);
 
-  const sorted = [...filtered].sort((a, b) => {
-    let av: number, bv: number;
-    switch (sortKey) {
-      case "rank":       av = a.rank;                    bv = b.rank;                    break;
-      case "changeDay":  av = a.changeDay;               bv = b.changeDay;               break;
-      case "changeWeek": av = a.changeWeek;              bv = b.changeWeek;              break;
-      case "volume":     av = parseVol(a.volume);        bv = parseVol(b.volume);        break;
-      case "marketCap":  av = parseVol(a.marketCap);     bv = parseVol(b.marketCap);     break;
-      default: return 0;
-    }
-    return (av - bv) * sortDir;
+    return [...filtered]
+      .sort((a, b) => (sortValue(a, sortKey) - sortValue(b, sortKey)) * sortDir)
+      .map((asset, index) => ({ ...asset, displayRank: index + 1 }));
+  }, [activeFilter, screener.assets, sortDir, sortKey]);
+
+  const vt = useVirtualTableRows({
+    count: sorted.length,
+    rowHeight: MARKETS_SCREENER_ROW_HEIGHT,
   });
 
-  const vt = useVirtualTableRows({ count: sorted.length, rowHeight: MARKETS_SCREENER_ROW_HEIGHT });
   const tableRows = renderVirtualTableRows({
     items: sorted,
     vt,
     getKey: (a) => a.symbol,
-    renderRow: (asset) => <ScreenerRow asset={asset} />,
+    renderRow: (asset) => (
+      <ScreenerRow
+        asset={asset}
+        isWatched={isWatched}
+        onToggleWatch={onToggleWatch}
+        watchPending={watchPending}
+      />
+    ),
   });
 
-  function SortTh({ label, k }: { label: string; k: SortKey }) {
+  function SortTh({ label, k, align = "right" }: { label: string; k: SortKey; align?: "left" | "right" }) {
     const active = sortKey === k;
     return (
       <th
-        style={{
-          color: active ? "var(--cc-gold)" : undefined,
-          cursor: "pointer",
-          userSelect: "none",
-          textAlign: "right",
-          padding: "8px 12px",
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.07em",
-          textTransform: "uppercase",
-          borderBottom: "1px solid var(--cc-border-subtle)",
-          whiteSpace: "nowrap",
-        }}
+        className={cn(
+          "cc-screener-thead-th cc-screener-th--sortable",
+          align === "left" ? "cc-screener-th--left" : "cc-screener-th--right",
+          active && "cc-screener-th--active",
+        )}
         onClick={() => handleSort(k)}
         aria-sort={active ? (sortDir === 1 ? "ascending" : "descending") : "none"}
       >
-        {label}{active ? (sortDir === 1 ? " ↑" : " ↓") : ""}
+        <span className="cc-screener-th-label">
+          {label}
+          {active ? (
+            <span className="cc-screener-th-sort" aria-hidden>
+              {sortDir === 1 ? "↑" : "↓"}
+            </span>
+          ) : null}
+        </span>
       </th>
     );
   }
 
   return (
-    <div className="cc-screener cc-section" role="region" aria-label="BIST tarayici">
-      <div className="cc-zone-label">
-        BIST Tarama
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--cc-meta)", fontWeight: 500 }}>
-          Son guncelleme: 17:40:12
-        </span>
-      </div>
+    <div className="cc-screener cc-section bc-screener-board" role="region" aria-label="BIST hisse tarayıcı">
+      <div className="cc-zone-label">BIST Tarayıcı</div>
 
-      {/* Filter chips */}
-      <div className="cc-screener-filter-row" role="group" aria-label="Sektor filtresi">
+      <div className="cc-screener-filter-row" role="group" aria-label="Sektör filtresi">
         {FILTER_CHIPS.map((chip) => (
           <button
             key={chip.id}
@@ -140,20 +181,36 @@ export function BistScreener({ screener }: Props) {
         ))}
       </div>
 
-      {/* Table */}
-      <div ref={vt.scrollRef} className={cn("cc-screener-table-wrap", vt.enabled && "mkt-vt-scroll")} style={vt.scrollStyle}>
-        <table className="cc-screener-table" aria-label="BIST hisseleri">
+      <div
+        ref={vt.scrollRef}
+        className={cn("cc-screener-table-wrap", vt.enabled && "mkt-vt-scroll")}
+        style={vt.scrollStyle}
+      >
+        <table className="cc-screener-table bc-screener-table" aria-label="BIST hisseler">
+          <colgroup>
+            <col className="cc-screener-col-rank" />
+            <col className="cc-screener-col-asset" />
+            <col className="cc-screener-col-price" />
+            <col className="cc-screener-col-change" />
+            <col className="cc-screener-col-change" />
+            <col className="cc-screener-col-vol" />
+            <col className="cc-screener-col-vol" />
+            <col className="cc-screener-col-spark" />
+            <col className="cc-screener-col-actions" />
+          </colgroup>
           <thead className={cn("cc-screener-thead", vt.enabled && "mkt-vt-sticky-thead")}>
             <tr>
-              <th style={{ textAlign: "left", cursor: "pointer", userSelect: "none", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: sortKey === "rank" ? "var(--cc-gold)" : undefined }}
-                onClick={() => handleSort("rank")}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Senet / Sirket</th>
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)", whiteSpace: "nowrap" }}>Fiyat (TL)</th>
-              <SortTh label="Gunluk %" k="changeDay" />
-              <SortTh label="Haftalik %" k="changeWeek" />
+              <SortTh label="#" k="rank" align="left" />
+              <th className="cc-screener-thead-th cc-screener-th--left">Hisse</th>
+              <th className="cc-screener-thead-th cc-screener-th--right">Fiyat (TL)</th>
+              <SortTh label="Gün %" k="changeDay" />
+              <SortTh label="Hafta %" k="changeWeek" />
               <SortTh label="Hacim" k="volume" />
-              <SortTh label="Piyasa Degeri" k="marketCap" />
-              <th style={{ textAlign: "right", padding: "8px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", borderBottom: "1px solid var(--cc-border-subtle)", color: "var(--cc-meta)" }}>Grafik</th>
+              <SortTh label="Piyasa Değeri" k="marketCap" />
+              <th className="cc-screener-thead-th cc-screener-th--right">Grafik</th>
+              <th className="cc-screener-thead-th cc-screener-th--right cc-screener-thead-th--actions">
+                İşlem
+              </th>
             </tr>
           </thead>
           <tbody className="cc-screener-tbody" style={vt.tbodyStyle}>
@@ -165,49 +222,74 @@ export function BistScreener({ screener }: Props) {
   );
 }
 
-const ScreenerRow = memo(function ScreenerRow({ asset }: { asset: BistScreenerAsset }) {
+/** @deprecated BistScreenerBoard kullanın */
+export const BistScreener = BistScreenerBoard;
+
+const ScreenerRow = memo(function ScreenerRow({
+  asset,
+  isWatched,
+  onToggleWatch,
+  watchPending,
+}: {
+  asset: ScreenerRowAsset;
+  isWatched?: (symbol: string) => boolean;
+  onToggleWatch?: (symbol: string) => void;
+  watchPending?: string | null;
+}) {
   const href = `/markets/${encodeURIComponent(asset.symbol)}`;
-  const isFeatured = asset.rank === 1;
+  const isFeatured = ANCHOR_SYMBOLS.has(asset.symbol.toUpperCase());
+  const showActions = Boolean(onToggleWatch && isWatched);
 
   return (
-    <tr className={isFeatured ? "cc-screener-row--featured" : undefined}>
-      <td style={{ padding: "10px 12px" }}>
-        <span className="cc-screener-rank">{asset.rank}</span>
+    <tr className={cn(isFeatured && "cc-screener-row--featured", anchorClass(asset.symbol))}>
+      <td className="cc-screener-td cc-screener-td--rank">
+        <span className="cc-screener-rank">{asset.displayRank}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <td className="cc-screener-td cc-screener-td--asset">
+        <div className="cc-screener-symbol-cell bc-screener-symbol-cell">
+          <span className="bc-screener-symbol-badge">{asset.symbol.slice(0, 2)}</span>
+          <div className="cc-screener-symbol-copy">
             <Link href={href} className="cc-screener-symbol-link">
               <span className="cc-screener-symbol">{asset.symbol}</span>
             </Link>
-            <span className="bc-screener-sector">{asset.sector}</span>
+            <span className="bc-screener-sector">{sectorLabel(asset.sector)}</span>
           </div>
-          <span className="cc-screener-name">{asset.name}</span>
         </div>
       </td>
-      <td style={{ padding: "10px 12px" }}>
+      <td className="cc-screener-td cc-screener-td--num">
         <span className="cc-screener-price">{fmtTL(asset.price)}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
-        <span className="cc-screener-change" style={{ color: changeColor(asset.changeDay) }}>
-          {signed(asset.changeDay)}
-        </span>
+      <td className="cc-screener-td cc-screener-td--num">
+        <span className={cn("cc-screener-change", changeClass(asset.changeDay))}>{signed(asset.changeDay)}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
-        <span className="cc-screener-change" style={{ color: changeColor(asset.changeWeek) }}>
-          {signed(asset.changeWeek)}
-        </span>
+      <td className="cc-screener-td cc-screener-td--num">
+        <span className={cn("cc-screener-change", changeClass(asset.changeWeek))}>{signed(asset.changeWeek)}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
+      <td className="cc-screener-td cc-screener-td--num">
         <span className="cc-screener-vol">{asset.volume}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
+      <td className="cc-screener-td cc-screener-td--num">
         <span className="cc-screener-mcap">{asset.marketCap}</span>
       </td>
-      <td style={{ padding: "10px 12px" }}>
+      <td className="cc-screener-td cc-screener-td--spark">
         <div className="cc-screener-spark">
           <MiniSparkline series={asset.sparkline} trend={asset.trend} height={32} className="w-[72px]" />
         </div>
+      </td>
+      <td className="cc-screener-td cc-screener-td--actions">
+        {showActions ? (
+          <BistScreenerRowActions
+            symbol={asset.symbol}
+            name={asset.name}
+            watched={isWatched!(asset.symbol)}
+            pending={watchPending === asset.symbol}
+            onToggleWatch={onToggleWatch!}
+          />
+        ) : (
+          <Link href={href} className="cc-screener-btn cc-screener-btn--pill cc-screener-btn--primary">
+            Detay
+          </Link>
+        )}
       </td>
     </tr>
   );

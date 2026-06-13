@@ -18,6 +18,7 @@ export function PulsePageClient() {
       feedError={feedError}
       onFeedRetry={refetchFeed}
       pageTone="pulse"
+      headless
     >
       {feedLoading ? <PulseListSkeleton inline /> : <PulseFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

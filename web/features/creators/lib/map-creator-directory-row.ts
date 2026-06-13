@@ -10,6 +10,7 @@ import {
 } from "@/features/feed/feed-display";
 import { liveHrefForPostId } from "@/features/live/live-href";
 import type { RecommendedCreatorCard } from "@/features/home/types";
+import { resolveCreatorAvatarUrl } from "@/features/creators/lib/resolve-creator-avatar";
 import type { CreatorContentFormat, CreatorDirectoryRow } from "@/features/creators/types";
 import type { MockProfileRow } from "@/mock/fixtures/profiles";
 
@@ -86,7 +87,7 @@ export function mapRecommendedToDirectoryRow(
     username,
     displayName: c.name,
     handle: parseHandle(c.handle),
-    avatarUrl: c.avatar_url,
+    avatarUrl: resolveCreatorAvatarUrl(c.avatar_url),
     bio: c.bio,
     tier: c.tier ?? "free",
     verified: c.verified,
@@ -122,7 +123,7 @@ export function mapMockProfileToDirectoryRow(
     username: p.username,
     displayName: p.full_name?.trim() || p.username,
     handle: `@${p.username}`,
-    avatarUrl: p.avatar_url,
+    avatarUrl: resolveCreatorAvatarUrl(p.avatar_url),
     bio: p.bio,
     tier: p.tier,
     verified: p.verified,

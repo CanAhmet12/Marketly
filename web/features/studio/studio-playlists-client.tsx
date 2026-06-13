@@ -14,6 +14,7 @@ import { useAuth } from "@/features/auth/use-auth";
 import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
 import { formatCompactCount } from "@/lib/format-compact-count";
 import { getStudioRepository } from "@/features/studio/repository";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 export function StudioPlaylistsClient() {
   const { user } = useAuth();
@@ -23,11 +24,28 @@ export function StudioPlaylistsClient() {
   const mockOn = isMockDataEnabled();
   const liveMode = !mockOn && isSupabaseConfigured();
   const [livePlaylists, setLivePlaylists] = useState<StudioPlaylistItem[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
-    if (!ownerId || !liveMode) return;
-    fetchStudioPlaylists(getSupabaseBrowserClient(), ownerId).then(setLivePlaylists);
+    if (!ownerId || !liveMode) {
+      setLiveLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLiveLoading(true);
+    fetchStudioPlaylists(getSupabaseBrowserClient(), ownerId)
+      .then((rows) => {
+        if (!cancelled) setLivePlaylists(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setLiveLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [ownerId, liveMode]);
+
+  useRegisterPageLoad(liveLoading);
 
   const playlists = useMemo(() => {
     if (!ownerId) return [];

@@ -6,21 +6,21 @@
 /* ─── Tipografi & ritim tokenları ─────────────────────────────────────────── */
 .ch-canvas {
   --font-bold: var(--font-sans);
-  --ch-type-base: 14px;
-  --ch-type-sm: 12px;
-  --ch-type-xs: 11px;
-  --ch-type-2xs: 10px;
-  --ch-type-eyebrow: 10px;
-  --ch-type-name: clamp(20px, 3vw, 26px);
-  --ch-type-stat: 16px;
-  --ch-lh-tight: 1.12;
-  --ch-lh-snug: 1.35;
-  --ch-lh-body: 1.55;
+  --ch-type-base: 15px;
+  --ch-type-sm: 13px;
+  --ch-type-xs: 12px;
+  --ch-type-2xs: 11px;
+  --ch-type-eyebrow: 12px;
+  --ch-type-name: clamp(22px, 3.2vw, 28px);
+  --ch-type-stat: 15px;
+  --ch-lh-tight: 1.15;
+  --ch-lh-snug: 1.4;
+  --ch-lh-body: 1.6;
   --ch-track-tight: -0.03em;
-  --ch-track-caps: 0.1em;
+  --ch-track-caps: 0.08em;
   --ch-space-page-x: 24px;
-  --ch-space-page-y: 28px;
-  --ch-space-section: 40px;
+  --ch-space-page-y: 24px;
+  --ch-space-section: 32px;
   --ch-space-hero-gap: 16px;
   font-family: var(--font-sans);
   font-size: var(--ch-type-base);
@@ -49,6 +49,11 @@
   padding-right: var(--ch-space-page-x);
 }
 
+.ch-hero-head {
+  gap: var(--ch-space-hero-gap);
+}
+
+/* legacy */
 .ch-hero-row {
   gap: var(--ch-space-hero-gap);
 }
@@ -86,7 +91,7 @@
 }
 
 .ch-bio {
-  font-size: var(--ch-type-sm);
+  font-size: 15px;
   line-height: var(--ch-lh-body);
 }
 

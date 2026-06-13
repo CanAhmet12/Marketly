@@ -5,6 +5,7 @@ import { useState, memo, type ComponentType } from "react";
 import { RemoteCoverImage } from "@/components/ui/remote-cover-image";
 import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
+import { isDiscoverEagerThumb } from "@/lib/media/discover-media-loading";
 import { getCardTagTone } from "./discover-card-tones";
 import { formatViewers, type VRLiveItem } from "./discover-visual-reference-data";
 import {
@@ -79,7 +80,15 @@ const LIVE_THUMBS: Record<string, ComponentType> = {
   "live-6": ThumbLive6,
 };
 
-function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?: "rail" | "compact" }) {
+function LiveThumbLayer({
+  item,
+  variant = "rail",
+  eager = false,
+}: {
+  item: VRLiveItem;
+  variant?: "rail" | "compact";
+  eager?: boolean;
+}) {
   const [imgFailed, setImgFailed] = useState(false);
   const rail = variant === "rail";
   const url = item.thumb?.trim() ?? "";
@@ -96,6 +105,7 @@ function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?
               src={url}
               className="absolute inset-0 z-0"
               sizes={rail ? "(max-width: 640px) 88vw, 640px" : "(max-width: 640px) 72vw, 480px"}
+              priority={eager}
               onFailed={() => setImgFailed(true)}
             />
           ) : (
@@ -103,8 +113,9 @@ function LiveThumbLayer({ item, variant = "rail" }: { item: VRLiveItem; variant?
               src={url}
               alt=""
               className="absolute inset-0 z-0 h-full w-full object-cover"
-              loading="lazy"
+              loading={eager ? "eager" : "lazy"}
               decoding="async"
+              fetchPriority={eager ? "high" : "auto"}
               onError={() => setImgFailed(true)}
             />
           )}
@@ -140,6 +151,7 @@ function DiscoverLiveCardInner({
 }) {
   const hostLiveRing = item.heat === "high" || (item.chatPerMin != null && item.chatPerMin >= 50);
   const tagTone = getCardTagTone(item.tag);
+  const eagerThumb = isDiscoverEagerThumb(index);
 
   return (
     <article
@@ -153,7 +165,7 @@ function DiscoverLiveCardInner({
       style={motionEntranceDelay(index)}
     >
       <div className="dvr-live-media dvr-live-media--rail relative w-full overflow-hidden rounded-2xl">
-        <LiveThumbLayer item={item} variant="rail" />
+        <LiveThumbLayer item={item} variant="rail" eager={eagerThumb} />
         <div className="dvr-live-tone-wash pointer-events-none absolute inset-0 z-2" aria-hidden />
         <div className="dvr-live-media-glint pointer-events-none absolute inset-0 z-2" aria-hidden />
         <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-2" aria-hidden />
@@ -212,6 +224,7 @@ function DiscoverLiveCardCompactInner({
 }) {
   const hostLiveRing = item.heat === "high" || (item.chatPerMin != null && item.chatPerMin >= 50);
   const tagTone = getCardTagTone(item.tag);
+  const eagerThumb = isDiscoverEagerThumb(index);
 
   return (
     <article
@@ -226,7 +239,7 @@ function DiscoverLiveCardCompactInner({
       style={motionEntranceDelay(index)}
     >
       <div className="dvr-live-media dvr-live-media--compact relative w-full overflow-hidden rounded-xl">
-        <LiveThumbLayer item={item} variant="compact" />
+        <LiveThumbLayer item={item} variant="compact" eager={eagerThumb} />
         <div className="dvr-live-tone-wash pointer-events-none absolute inset-0 z-2" aria-hidden />
         <div className="dvr-live-media-glint pointer-events-none absolute inset-0 z-2" aria-hidden />
         <div className="dvr-live-broadcast-veil pointer-events-none absolute inset-0 z-2" aria-hidden />

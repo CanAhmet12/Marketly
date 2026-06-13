@@ -1,12 +1,13 @@
-/** Keşfet hub + bağımsız dikey keşif rotaları */
-export const DISCOVER_HUB_PATH = "/discover";
+export {
+  DISCOVER_HUB_PATH,
+  DISCOVER_VERTICAL_ROUTES,
+  type DiscoverVerticalRouteKey,
+} from "@/features/discover/lib/discover-route-constants";
 
-export const DISCOVER_VERTICAL_ROUTES = {
-  live: "/live",
-  pulse: "/pulse",
-  videos: "/videos",
-  signals: "/signals",
-  creators: "/creators",
-} as const;
-
-export type DiscoverVerticalRouteKey = keyof typeof DISCOVER_VERTICAL_ROUTES;
+export {
+  DISCOVER_HUB_TAB_ROUTES,
+  DISCOVER_TAB_REDIRECTS,
+  buildDiscoverHubTabUrl,
+  discoverHubTabFromHref,
+  resolveDiscoverTabRedirect,
+} from "@/features/discover/lib/discover-hub-routes";

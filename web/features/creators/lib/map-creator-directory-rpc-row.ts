@@ -1,4 +1,6 @@
+import { resolveCreatorAvatarUrl } from "@/features/creators/lib/resolve-creator-avatar";
 import { liveHrefForPostId } from "@/features/live/live-href";
+import { pulseHrefForPostId } from "@/features/pulse/pulse-href";
 import type { CreatorContentFormat, CreatorDirectoryRow } from "@/features/creators/types";
 
 export type CreatorsDirectoryRpcRow = {
@@ -54,8 +56,8 @@ function contentHref(row: CreatorsDirectoryRpcRow): string | null {
   if (!row.latest_post_id) return null;
   const type = row.latest_type ?? "post";
   if (type === "live") return liveHrefForPostId(row.latest_post_id);
-  if (type === "video") return `/video/${row.latest_post_id}`;
-  if (type === "pulse" || type === "short") return `/pulse/${row.latest_post_id}`;
+  if (type === "video") return `/watch/${row.latest_post_id}`;
+  if (type === "pulse" || type === "short") return pulseHrefForPostId(row.latest_post_id);
   return `/post/${row.latest_post_id}`;
 }
 
@@ -79,38 +81,43 @@ function buildAssetTags(row: CreatorsDirectoryRpcRow): string[] {
   return tag ? [tag] : [];
 }
 
-function buildSpecialties(row: CreatorsDirectoryRpcRow): string[] {
+function buildSpecialties(row: CreatorsDirectoryRpcRow, assetTags: string[]): string[] {
   const accuracy = row.signal_accuracy ?? 0;
   const count = row.signal_count ?? 0;
   const parts: string[] = [];
+  const asset = assetTags[0];
+  if (asset) parts.push(asset);
   if (accuracy > 0) parts.push(`%${Math.round(accuracy)} isabet`);
   if (count > 0) parts.push(`${count} sinyal`);
   return parts.length > 0 ? [parts.join(" · ")] : [];
+}
+
+function pickContentThumbnail(row: CreatorsDirectoryRpcRow): string | null {
+  if (row.is_live) {
+    return row.live_thumbnail?.trim() || row.latest_thumbnail?.trim() || row.cover_url?.trim() || null;
+  }
+  return row.latest_thumbnail?.trim() || row.cover_url?.trim() || null;
 }
 
 export function mapCreatorsDirectoryRpcRow(row: CreatorsDirectoryRpcRow): CreatorDirectoryRow {
   const username = row.username?.trim() || row.id.slice(0, 8);
   const formatCounts = buildFormatCounts(row);
   const assetTags = buildAssetTags(row);
-  const thumb =
-    row.live_thumbnail?.trim() ||
-    row.latest_thumbnail?.trim() ||
-    row.cover_url?.trim() ||
-    row.avatar_url?.trim() ||
-    null;
+  const thumb = pickContentThumbnail(row);
+  const displayName = row.full_name?.trim() || username;
 
   return {
     id: row.id,
     username,
-    displayName: row.full_name?.trim() || username,
+    displayName,
     handle: parseHandle(row.username, row.id),
-    avatarUrl: row.avatar_url ?? null,
+    avatarUrl: resolveCreatorAvatarUrl(row.avatar_url),
     bio: row.bio ?? null,
     tier: row.tier ?? "free",
     verified: Boolean(row.verified),
     followerCount: row.follower_count ?? 0,
     signalAccuracy: row.signal_accuracy ?? null,
-    specialties: buildSpecialties(row),
+    specialties: buildSpecialties(row, assetTags),
     assetTags,
     contentFormats: buildContentFormats(formatCounts),
     formatCounts,

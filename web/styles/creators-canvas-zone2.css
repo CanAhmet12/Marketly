@@ -1,0 +1,440 @@
+/**
+ * BÖLÜM 2 — Spotlight (Hero + Liderler + Kişiselleştirme)
+ * Referans: Discover deep-prestige, Signals featured-rail, Markets flat hero
+ */
+
+/* ── Spotlight zone ── */
+.crt-canvas__spotlight-zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.crt-canvas__spotlight-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: min(14rem, 42%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 95% at 12% 0%, color-mix(in srgb, var(--crt-mint) 10%, transparent), transparent 62%),
+    radial-gradient(ellipse 48% 75% at 92% 4%, color-mix(in srgb, var(--crt-violet) 8%, transparent), transparent 58%);
+  opacity: 0.75;
+}
+
+.crt-canvas__spotlight-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+}
+
+.crt-canvas__spotlight-kicker {
+  font-size: var(--type-overline);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crt-violet);
+}
+
+.crt-canvas__spotlight-title {
+  margin: 0.12rem 0 0;
+  font-size: var(--type-subtitle);
+  line-height: var(--type-subtitle--leading, 1.42);
+  font-weight: var(--type-page--weight);
+  letter-spacing: -0.022em;
+  color: var(--crt-text);
+}
+
+.crt-canvas__spotlight-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--crt-radius-pill, 999px);
+  border: 1px solid color-mix(in srgb, var(--crt-violet) 22%, var(--crt-divider));
+  background: color-mix(in srgb, var(--crt-violet) 8%, transparent);
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-violet-deep);
+}
+
+/* ── Hero bento grid ── */
+.crt-canvas__spotlight-zone .crt-canvas__hero-bento {
+  position: relative;
+  z-index: 1;
+  gap: 0;
+  padding-bottom: var(--crt-section-gap, 1.15rem);
+  border-bottom: 1px solid var(--crt-divider);
+}
+
+@media (min-width: 900px) {
+  .crt-canvas__spotlight-zone .crt-canvas__hero-bento {
+    grid-template-columns: minmax(0, 1.72fr) minmax(228px, 0.68fr);
+  }
+
+  .crt-canvas__spotlight-zone .crt-canvas__hero-main {
+    padding-right: clamp(0.9rem, 1.6vw, 1.35rem);
+    border-right: 1px solid var(--crt-divider);
+  }
+}
+
+/* ── Hero spotlight — flat prestige ── */
+.crt-canvas .crt-hero-spot {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+.crt-canvas .crt-hero-spot__wash {
+  background: radial-gradient(ellipse 88% 75% at 0% 0%, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 58%);
+  opacity: 0.85;
+}
+
+.crt-canvas .crt-hero-spot__accent {
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+}
+
+.crt-canvas .crt-hero-spot__inner {
+  padding: 0.35rem 0 0.5rem 1.1rem;
+  gap: clamp(0.85rem, 1.5vw, 1.15rem);
+}
+
+@media (min-width: 768px) {
+  .crt-canvas .crt-hero-spot__inner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    padding: 0.4rem 0 0.55rem 1.15rem;
+  }
+}
+
+.crt-canvas .crt-hero-spot__monogram {
+  width: clamp(3.25rem, 5vw, 3.75rem);
+  height: clamp(3.25rem, 5vw, 3.75rem);
+  border-radius: 16px;
+  font-size: 1.15rem;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--crt-text) 14%, transparent);
+}
+
+.crt-canvas .crt-hero-spot__name {
+  font-size: clamp(1.2rem, 2.4vw, 1.48rem);
+  font-weight: var(--type-page--weight);
+  letter-spacing: -0.038em;
+  line-height: 1.12;
+  color: var(--crt-text);
+}
+
+.crt-canvas .crt-hero-spot__handle {
+  font-size: var(--type-meta);
+  color: var(--crt-meta);
+}
+
+.crt-canvas .crt-hero-spot__headline {
+  margin: 0.45rem 0 0;
+  max-width: 36rem;
+  font-size: var(--type-meta);
+  line-height: 1.48;
+  color: var(--crt-text-2);
+}
+
+.crt-canvas .crt-hero-spot__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.crt-canvas .crt-hero-spot__stat {
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  letter-spacing: 0.02em;
+  color: var(--crt-meta);
+}
+
+.crt-canvas .crt-hero-spot__stat strong {
+  font-weight: var(--type-content-title--weight);
+  color: var(--crt-text);
+}
+
+.crt-canvas .crt-hero-spot__stat--acc strong {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas .crt-hero-spot__live-pill {
+  color: var(--crt-live-deep);
+  background: var(--crt-live-wash);
+  border: 1px solid color-mix(in srgb, var(--crt-live) 24%, transparent);
+}
+
+.crt-canvas .crt-hero-spot__pick-pill {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+  border: 1px solid color-mix(in srgb, var(--crt-mint) 22%, transparent);
+}
+
+.crt-canvas .crt-hero-spot__accuracy--inline {
+  margin-top: 0.45rem;
+  max-width: 13rem;
+}
+
+.crt-canvas .crt-hero-spot__chip {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--crt-divider));
+  color: var(--crt-text-2);
+}
+
+.crt-canvas .crt-hero-spot__identity .crt-analyst-avatar:hover {
+  transform: translateY(-1px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.crt-canvas .crt-hero-spot__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.crt-canvas .crt-hero-spot__cta {
+  padding: 0.48rem 0.95rem;
+  border-radius: var(--crt-radius-sm, 9px);
+  font-size: var(--type-chip);
+  font-weight: var(--type-chip--weight);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.crt-canvas .crt-hero-spot__cta--profile {
+  background: var(--color-primary);
+  color: #fafafa;
+}
+
+.crt-canvas .crt-hero-spot__cta--live {
+  background: transparent;
+  color: var(--crt-live-deep);
+  border: 1px solid color-mix(in srgb, var(--crt-live) 28%, var(--crt-divider));
+}
+
+@media (hover: hover) {
+  .crt-canvas .crt-hero-spot__cta--profile:hover {
+    background: var(--color-primary-hover, var(--color-primary));
+  }
+
+  .crt-canvas .crt-hero-spot__cta--live:hover {
+    background: var(--crt-live-wash);
+  }
+}
+
+.crt-canvas .crt-hero-spot__follow {
+  padding: 0.48rem 0.95rem;
+  border-radius: var(--crt-radius-sm, 9px);
+  font-size: var(--type-chip);
+  font-weight: var(--type-chip--weight);
+  background: transparent;
+  border-color: var(--crt-divider);
+  color: var(--crt-text-2);
+}
+
+.crt-canvas .crt-hero-spot__follow--active {
+  color: var(--crt-mint-deep);
+  background: var(--crt-mint-wash);
+  border-color: color-mix(in srgb, var(--crt-mint) 28%, var(--crt-divider));
+}
+
+/* ── Leaderboard panel ── */
+.crt-canvas__spotlight-zone .crt-canvas__leaderboard {
+  padding: 0.15rem 0 0 clamp(0.9rem, 1.6vw, 1.35rem);
+}
+
+.crt-canvas__leaderboard-kicker {
+  color: var(--crt-violet);
+}
+
+.crt-canvas__leaderboard-title {
+  color: var(--crt-text);
+}
+
+.crt-canvas__leaderboard-row {
+  padding: 0.48rem 0.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--crt-divider) 60%, transparent);
+}
+
+.crt-canvas__leaderboard-rank {
+  font-size: var(--type-overline);
+  font-weight: var(--type-overline--weight);
+  letter-spacing: 0.04em;
+  color: var(--crt-mist);
+}
+
+.crt-canvas__leaderboard-row:nth-child(1) .crt-canvas__leaderboard-rank {
+  color: var(--crt-amber-deep);
+}
+
+.crt-canvas__leaderboard-row:nth-child(2) .crt-canvas__leaderboard-rank {
+  color: var(--crt-slate);
+}
+
+.crt-canvas__leaderboard-row:nth-child(3) .crt-canvas__leaderboard-rank {
+  color: color-mix(in srgb, var(--crt-amber) 72%, var(--crt-slate));
+}
+
+.crt-canvas__leaderboard-mono {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: #fff;
+}
+
+.crt-canvas__leaderboard-name {
+  font-size: var(--type-creator);
+  font-weight: var(--type-creator--weight);
+  color: var(--crt-text);
+}
+
+.crt-canvas__leaderboard-meta {
+  font-size: var(--type-caption-min);
+  color: var(--crt-meta);
+}
+
+.crt-canvas__leaderboard-pct {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: var(--type-caption-min);
+  font-weight: var(--type-caption-min--weight);
+  color: var(--crt-mint-deep);
+  text-align: right;
+}
+
+.crt-canvas__leaderboard-row:hover {
+  background: color-mix(in srgb, var(--crt-violet) 7%, transparent);
+}
+
+/* Tone accent — sol şerit */
+.crt-canvas__leaderboard-row--tone-crypto { border-left: 2px solid var(--crt-crypto); }
+.crt-canvas__leaderboard-row--tone-bist { border-left: 2px solid var(--crt-mint); }
+.crt-canvas__leaderboard-row--tone-forex { border-left: 2px solid var(--crt-forex); }
+.crt-canvas__leaderboard-row--tone-commodity { border-left: 2px solid var(--crt-amber); }
+
+@media (max-width: 899px) {
+  .crt-canvas__spotlight-zone .crt-canvas__hero-main {
+    padding-right: 0;
+    padding-bottom: 0.85rem;
+    border-right: none;
+    border-bottom: 1px solid var(--crt-divider);
+  }
+
+  .crt-canvas__spotlight-zone .crt-canvas__leaderboard {
+    padding: 0.85rem 0 0;
+  }
+}
+
+/* ── Kişiselleştirme zone ── */
+.crt-canvas__personalized-zone {
+  position: relative;
+  width: 100%;
+  padding-top: var(--crt-section-gap, 1.15rem);
+  border-top: 1px solid var(--crt-divider);
+}
+
+.crt-canvas__personalized-zone::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--crt-mint) 35%, transparent) 0%,
+    color-mix(in srgb, var(--crt-violet) 20%, transparent) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.crt-canvas__personalized-zone--affinity::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  width: 3px;
+  height: 2.5rem;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, var(--crt-mint), var(--crt-violet));
+  pointer-events: none;
+}
+
+.crt-canvas__personalized-zone .dvr-rail-series {
+  color: var(--crt-mint);
+  letter-spacing: 0.12em;
+}
+
+.crt-canvas__personalized-zone--affinity .dvr-rail-label--teal {
+  color: var(--crt-mint-deep);
+}
+
+.crt-canvas__personalized-zone .dvr-rail-header::after {
+  background: linear-gradient(90deg, var(--crt-mint-glow), transparent 72%);
+}
+
+.crt-canvas__personalized-zone--affinity .crt-v2-rail-item:first-child .crt-analyst-card__accent {
+  box-shadow: 0 0 14px var(--crt-mint-glow);
+}
+
+/* Öne çıkan ray — discovery ile aynı tam genişlik scroll */
+.crt-canvas__personalized-zone .dvr-hscroll-wrap {
+  margin-inline: calc(-1 * var(--crt-pad, 0.85rem));
+  padding-inline: var(--crt-pad, 0.85rem);
+}
+
+.crt-canvas__personalized-zone .dvr-hscroll-wrap::after {
+  width: clamp(40px, 6vw, 64px);
+  background: linear-gradient(270deg, var(--crt-canvas-base, var(--color-bg)) 38%, transparent 100%);
+}
+
+.crt-canvas__personalized-zone .dvr-hscroll-nav {
+  opacity: 0.55;
+}
+
+@media (hover: hover) {
+  .crt-canvas__personalized-zone .dvr-hscroll-wrap:hover .dvr-hscroll-nav {
+    opacity: 0.85;
+  }
+}
+
+/* Skeleton */
+.crt-canvas__sk-spotlight-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.crt-canvas__sk-spotlight-kicker {
+  width: 4.5rem;
+  height: 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--crt-text) 8%, transparent);
+}
+
+.crt-canvas__sk-spotlight-title {
+  width: 6.5rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--crt-text) 10%, transparent);
+}
+
+.crt-canvas__sk-spotlight-badge {
+  width: 5rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--crt-text) 7%, transparent);
+}

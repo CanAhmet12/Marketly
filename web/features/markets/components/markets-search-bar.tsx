@@ -119,14 +119,21 @@ export function MarketsSearchBar({
         Piyasa ara
       </label>
       <div className="markets-glass-25 flex items-center gap-[var(--sp-2)] rounded-full px-[var(--sp-4)] py-[var(--sp-2)]">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0 text-[var(--color-meta)]" aria-hidden>
-          <path
-            d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-            stroke="currentColor"
-            strokeWidth="1.75"
-          />
-          <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-        </svg>
+        <button
+          type="button"
+          className="shrink-0 rounded-full p-0.5 text-[var(--color-meta)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:outline-none"
+          aria-label="Aramaya odaklan"
+          onClick={() => inputRef.current?.focus()}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+              stroke="currentColor"
+              strokeWidth="1.75"
+            />
+            <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
+        </button>
         <input
           ref={inputRef}
           id={listId}
@@ -139,7 +146,7 @@ export function MarketsSearchBar({
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Sembol, coin, hisse veya konu ara..."
-          className="min-w-0 flex-1 bg-transparent text-[14px] font-semibold text-[var(--color-text)] outline-none placeholder:text-[var(--color-meta)]"
+          className="min-w-0 flex-1 bg-transparent text-[14px] font-semibold text-[var(--color-text)] outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 placeholder:text-[var(--color-meta)]"
           autoComplete="off"
           aria-autocomplete="list"
         />

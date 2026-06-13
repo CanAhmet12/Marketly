@@ -5,6 +5,7 @@ import { useState, memo, type ComponentType } from "react";
 import { RemoteCoverImage } from "@/components/ui/remote-cover-image";
 import { cn } from "@/lib/cn";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
+import { isDiscoverEagerThumb } from "@/lib/media/discover-media-loading";
 import { getCardTagTone } from "./discover-card-tones";
 import { formatViews, type VRVideoItem } from "./discover-visual-reference-data";
 import {
@@ -22,7 +23,7 @@ const VIDEO_THUMBS: Record<string, ComponentType> = {
   "vid-6": ThumbVideo6,
 };
 
-function VideoThumb({ item, prestige }: { item: VRVideoItem; prestige?: boolean }) {
+function VideoThumb({ item, prestige, eager = false }: { item: VRVideoItem; prestige?: boolean; eager?: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
   const Thumb = VIDEO_THUMBS[item.id] ?? ThumbGeneric;
   const url = item.thumb?.trim() ?? "";
@@ -38,6 +39,7 @@ function VideoThumb({ item, prestige }: { item: VRVideoItem; prestige?: boolean 
               src={url}
               className="dvr-video-thumb-photo absolute inset-0 z-0"
               sizes="(max-width: 640px) 72vw, 420px"
+              priority={eager}
               onFailed={() => setImgFailed(true)}
             />
           ) : (
@@ -45,8 +47,9 @@ function VideoThumb({ item, prestige }: { item: VRVideoItem; prestige?: boolean 
               src={url}
               alt=""
               className="dvr-video-thumb-photo absolute inset-0 z-0 h-full w-full object-cover"
-              loading="lazy"
+              loading={eager ? "eager" : "lazy"}
               decoding="async"
+              fetchPriority={eager ? "high" : "auto"}
               onError={() => setImgFailed(true)}
             />
           )}
@@ -93,6 +96,7 @@ function DiscoverVideoCardInner({
   const hotViews = item.views >= 30000;
   const tagTone = getCardTagTone(item.tag);
   const useOverlayLayout = !topicTile;
+  const eagerThumb = isDiscoverEagerThumb(index);
 
   return (
     <article
@@ -113,7 +117,7 @@ function DiscoverVideoCardInner({
           topicTile ? "aspect-video" : "dvr-video-media--rail",
         )}
       >
-        <VideoThumb item={item} prestige={prestige} />
+        <VideoThumb item={item} prestige={prestige} eager={eagerThumb} />
 
         {prestige ? (
           <div className="dvr-video-prestige-glow pointer-events-none absolute inset-0 z-2" aria-hidden />

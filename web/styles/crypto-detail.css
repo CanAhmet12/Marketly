@@ -1,0 +1,3372 @@
+/**
+ * CRYPTO DETAIL — /markets/[symbol] (category: crypto)
+ * Bölüm 1: Kimlik & Komut Şeridi (Hero Command Strip)
+ * Prefix: cd-* — crypto-canvas (--cc-gold) ile hizalı
+ */
+
+/* ================================
+   CANVAS SHELL
+   ================================ */
+
+.crypto-detail-canvas {
+  --cd-accent: var(--cc-gold, #f59e0b);
+  --cd-accent-dim: var(--cc-gold-dim, rgba(245, 158, 11, 0.65));
+  --cd-accent-bg: var(--cc-gold-bg, rgba(245, 158, 11, 0.07));
+  --cd-accent-border: color-mix(in srgb, var(--cd-accent) 28%, var(--cc-border-subtle, var(--color-divider)));
+  --cd-surface: var(--cc-surface, var(--color-surface));
+  --cd-text: var(--cc-text, var(--color-text));
+  --cd-text-secondary: var(--cc-text-secondary, var(--color-text-secondary));
+  --cd-meta: var(--cc-meta, var(--color-meta));
+  --cd-border-subtle: var(--cc-border-subtle, var(--color-divider));
+
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+  isolation: isolate;
+}
+
+.crypto-detail-canvas > .ms-container-markets {
+  position: relative;
+  z-index: 1;
+}
+
+/* Alt bölümler (2–8) geçişi — mevcut ad-* grid uyumu */
+.crypto-detail-canvas .ad-main-grid {
+  margin-top: 8px;
+}
+
+/* ================================
+   BREADCRUMB
+   ================================ */
+
+.crypto-detail-canvas .cd-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cd-meta);
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-back {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cd-meta);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-back:hover {
+  background: color-mix(in srgb, var(--cd-accent) 8%, var(--cd-surface));
+  border-color: var(--cd-accent-border);
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-breadcrumb-back:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cd-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-sep {
+  color: color-mix(in srgb, var(--cd-text) 12%, transparent);
+  user-select: none;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-sep--muted {
+  color: color-mix(in srgb, var(--cd-text) 18%, transparent);
+}
+
+.crypto-detail-canvas .cd-breadcrumb-symbol {
+  font-weight: 800;
+  color: var(--cd-accent);
+  letter-spacing: -0.02em;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-name {
+  color: var(--cd-text-secondary);
+  max-width: 20ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-current {
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-breadcrumb-link {
+  color: var(--cd-accent);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+/* ================================
+   HERO — Bölüm 1
+   ================================ */
+
+.crypto-detail-canvas .cd-hero {
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.crypto-detail-canvas .cd-live-banner {
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cd-accent) 24%, var(--cd-border-subtle));
+  background: color-mix(in srgb, var(--cd-accent) 8%, var(--cd-surface));
+  color: var(--cd-accent-dim);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.crypto-detail-canvas .cd-hero-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 280px);
+  gap: 24px 32px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .crypto-detail-canvas .cd-hero-shell {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.crypto-detail-canvas .cd-hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-hero-identity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-hero-logo-wrap {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cd-accent) 10%, var(--cd-surface));
+  border: 1px solid var(--cd-accent-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #000 4%, transparent);
+}
+
+.crypto-detail-canvas .cd-hero-logo.cc-symbol-icon {
+  border-radius: 12px;
+}
+
+.crypto-detail-canvas .cd-hero-meta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.crypto-detail-canvas .cd-hero-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.crypto-detail-canvas .cd-hero-badge--category {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  border: 1px solid var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-hero-badge--session {
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 5%, transparent);
+  border: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-hero-live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--cd-accent);
+  background: color-mix(in srgb, var(--cd-accent) 12%, transparent);
+  border: 1px solid var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-hero-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cd-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cd-accent) 80%, transparent);
+  animation: cd-live-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes cd-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.88);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crypto-detail-canvas .cd-hero-live-dot {
+    animation: none;
+  }
+}
+
+.crypto-detail-canvas .cd-hero-name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-hero-symbol {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-hero-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cd-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(100%, 28ch);
+}
+
+.crypto-detail-canvas .cd-hero-session {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--cd-text-secondary);
+  max-width: 56ch;
+}
+
+/* Intel pills */
+.crypto-detail-canvas .cd-intel-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-intel-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cd-text) 8%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crypto-detail-canvas .cd-intel-pill--gold {
+  color: var(--cd-accent-dim);
+  border-color: var(--cd-accent-border);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-intel-pill--bull {
+  color: var(--cc-teal, var(--color-rise));
+  border-color: color-mix(in srgb, var(--cc-teal, #10b981) 24%, transparent);
+  background: color-mix(in srgb, var(--cc-teal, #10b981) 8%, transparent);
+}
+
+.crypto-detail-canvas .cd-intel-pill--bear {
+  color: var(--cc-rose, var(--color-fall));
+  border-color: color-mix(in srgb, var(--cc-rose, #ef4444) 24%, transparent);
+  background: color-mix(in srgb, var(--cc-rose, #ef4444) 8%, transparent);
+}
+
+.crypto-detail-canvas .cd-intel-pill--muted {
+  color: var(--cd-meta);
+}
+
+/* Actions */
+.crypto-detail-canvas .cd-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.crypto-detail-canvas .cd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cd-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.crypto-detail-canvas .cd-btn:active {
+  transform: scale(0.98);
+}
+
+.crypto-detail-canvas .cd-btn--ghost {
+  background: color-mix(in srgb, var(--cd-text) 5%, transparent);
+  border-color: color-mix(in srgb, var(--cd-text) 10%, transparent);
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-btn--ghost:hover {
+  background: color-mix(in srgb, var(--cd-text) 9%, transparent);
+}
+
+.crypto-detail-canvas .cd-btn--active {
+  background: var(--cd-accent-bg);
+  border-color: var(--cd-accent);
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-btn--primary {
+  background: var(--cd-accent);
+  border-color: var(--cd-accent);
+  color: #0a0a0a;
+}
+
+.crypto-detail-canvas .cd-btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.crypto-detail-canvas .cd-btn--link {
+  background: transparent;
+  border-color: transparent;
+  color: var(--cd-accent);
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.crypto-detail-canvas .cd-btn--link:hover {
+  text-decoration: underline;
+}
+
+/* Price column */
+.crypto-detail-canvas .cd-hero-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .crypto-detail-canvas .cd-hero-price-col {
+    align-items: flex-start;
+    padding-top: 4px;
+    border-top: 1px solid var(--cd-border-subtle);
+  }
+}
+
+.crypto-detail-canvas .cd-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  gap: 4px;
+  width: 100%;
+}
+
+.crypto-detail-canvas .cd-price-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-price-value {
+  font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-price-change-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crypto-detail-canvas .cd-price-change {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-price-window {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cd-meta);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cd-text) 5%, transparent);
+}
+
+.crypto-detail-canvas .cd-hero-spark-wrap {
+  width: min(100%, 220px);
+  height: 44px;
+}
+
+@media (max-width: 860px) {
+  .crypto-detail-canvas .cd-hero-spark-wrap {
+    width: min(100%, 280px);
+  }
+}
+
+.crypto-detail-canvas .cd-hero-spark path[fill="none"] {
+  stroke: var(--cd-accent);
+  stroke-width: 2;
+}
+
+.crypto-detail-canvas .cd-divider {
+  height: 1px;
+  margin: 18px 0 0;
+  background: var(--cd-border-subtle);
+}
+
+/* Metrics strip */
+.crypto-detail-canvas .cd-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  padding-top: 4px;
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-metrics-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .crypto-detail-canvas .cd-metrics-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-metric--bordered {
+  padding-left: 14px;
+  border-left: 1px solid var(--cd-border-subtle);
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-metric:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .crypto-detail-canvas .cd-metric--bordered {
+    padding-left: 14px;
+    border-left: 1px solid var(--cd-border-subtle);
+  }
+}
+
+@media (max-width: 520px) {
+  .crypto-detail-canvas .cd-metric:nth-child(odd) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .crypto-detail-canvas .cd-metric:nth-child(even) {
+    padding-left: 14px;
+    border-left: 1px solid var(--cd-border-subtle);
+  }
+}
+
+.crypto-detail-canvas .cd-metric-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-metric-value {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-metric-value--gold {
+  color: var(--cd-accent);
+}
+
+/* ================================
+   SKELETON — Bölüm 1
+   ================================ */
+
+.crypto-detail-canvas .cd-skeleton-block {
+  border-radius: 8px;
+  animation: cd-shimmer 1.4s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--cc-surface-raised, var(--color-bg-elevated)) 0%,
+    color-mix(in srgb, var(--cd-accent) 10%, var(--cc-surface-raised, var(--color-bg-elevated))) 50%,
+    var(--cc-surface-raised, var(--color-bg-elevated)) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes cd-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crypto-detail-canvas .cd-skeleton-block {
+    animation: none;
+    background: var(--cc-surface-raised, var(--color-bg-elevated));
+  }
+}
+
+.crypto-detail-canvas .cd-skeleton-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.crypto-detail-canvas .cd-skeleton-pill-sm {
+  width: 120px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.crypto-detail-canvas .cd-skeleton-title {
+  width: min(180px, 60%);
+  height: 32px;
+  margin-top: 4px;
+}
+
+.crypto-detail-canvas .cd-skeleton-subtitle {
+  width: min(240px, 80%);
+  height: 14px;
+}
+
+.crypto-detail-canvas .cd-skeleton-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-skeleton-pill {
+  width: 88px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.crypto-detail-canvas .cd-skeleton-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crypto-detail-canvas .cd-skeleton-btn {
+  width: 92px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.crypto-detail-canvas .cd-skeleton-price {
+  width: 180px;
+  height: 40px;
+}
+
+.crypto-detail-canvas .cd-skeleton-change {
+  width: 100px;
+  height: 18px;
+}
+
+.crypto-detail-canvas .cd-skeleton-spark {
+  width: 200px;
+  height: 44px;
+  margin-top: 8px;
+}
+
+.crypto-detail-canvas .cd-skeleton-metric-label {
+  width: 64px;
+  height: 10px;
+}
+
+.crypto-detail-canvas .cd-skeleton-metric-value {
+  width: 72px;
+  height: 16px;
+}
+
+.crypto-detail-canvas .cd-hero--skeleton .cd-hero-shell {
+  pointer-events: none;
+}
+
+.crypto-detail-canvas .cd-metrics-strip--skeleton .cd-metric--skeleton {
+  padding: 12px 0;
+}
+
+.crypto-detail-canvas .cd-breadcrumb-skeleton {
+  width: 280px;
+  height: 14px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
+
+/* ================================
+   BÖLÜM 2 — GRAFİK TERMİNALİ
+   ================================ */
+
+.crypto-detail-canvas .cd-chart-workbench {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-chart-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-chart-head-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.crypto-detail-canvas .cd-chart-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-chart-stat em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-chart-stat strong {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-chart-tf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cd-text) 4%, transparent);
+  border: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-chart-tf-btn {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cd-meta);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.crypto-detail-canvas .cd-chart-tf-btn:hover {
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-chart-tf-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cd-accent) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.crypto-detail-canvas .cd-chart-tf-btn--active {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  border-color: var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-chart-panel {
+  border-radius: 12px;
+  border: 1px solid var(--cd-border-subtle);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cd-accent) 6%, var(--cd-surface)) 0%,
+    var(--cd-surface) 42%
+  );
+  overflow: hidden;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-chart-panel-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 0;
+}
+
+.crypto-detail-canvas .cd-chart-source {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-chart-error {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-rose, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-chart-viewport {
+  position: relative;
+  width: 100%;
+  min-height: 360px;
+  overflow: hidden;
+}
+
+.crypto-detail-canvas .cd-chart-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--cd-accent) 8%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: cd-shimmer 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.crypto-detail-canvas .cd-chart-svg {
+  display: block;
+  width: 100%;
+}
+
+.crypto-detail-canvas .cd-chart-svg--loading {
+  opacity: 0.45;
+}
+
+.crypto-detail-canvas .cd-chart-axis-label {
+  fill: var(--cd-meta);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-chart-tooltip {
+  position: absolute;
+  top: 10px;
+  left: 58px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--cd-accent-border);
+  background: color-mix(in srgb, var(--cd-surface) 92%, #000);
+  backdrop-filter: blur(8px);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text-secondary);
+  pointer-events: none;
+  max-width: calc(100% - 70px);
+}
+
+.crypto-detail-canvas .cd-chart-tooltip-time {
+  color: var(--cd-accent);
+  font-weight: 800;
+}
+
+.crypto-detail-canvas .cd-chart-compare-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+}
+
+.crypto-detail-canvas .cd-chart-compare-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-chart-compare-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-chart-compare-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-subtle);
+  background: transparent;
+  color: var(--cd-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.crypto-detail-canvas .cd-chart-compare-chip:hover {
+  border-color: color-mix(in srgb, var(--cc-violet, #a78bfa) 35%, var(--cd-border-subtle));
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-chart-compare-chip--active {
+  color: var(--cc-violet, #a78bfa);
+  border-color: color-mix(in srgb, var(--cc-violet, #a78bfa) 45%, transparent);
+  background: color-mix(in srgb, var(--cc-violet, #a78bfa) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-chart-compare-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-skeleton-chart {
+  min-height: 360px;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .crypto-detail-canvas .cd-chart-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .crypto-detail-canvas .cd-chart-tf-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .crypto-detail-canvas .cd-chart-tf-btn {
+    flex: 1 1 auto;
+    text-align: center;
+    padding-inline: 8px;
+  }
+
+  .crypto-detail-canvas .cd-chart-tooltip {
+    left: 10px;
+    right: 10px;
+    max-width: none;
+  }
+}
+
+/* ================================
+   BÖLÜM 3 — PİYASA İSTİHBARAT MATRİSİ
+   ================================ */
+
+.crypto-detail-canvas .cd-stats-matrix {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-stats-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-stats-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+  max-width: 62ch;
+}
+
+.crypto-detail-canvas .cd-stats-source {
+  color: var(--cd-accent-dim);
+  font-weight: 700;
+}
+
+.crypto-detail-canvas .cd-stats-loading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-subtle);
+  background: color-mix(in srgb, var(--cd-text) 4%, transparent);
+}
+
+.crypto-detail-canvas .cd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--cd-border-subtle);
+  background: var(--cd-border-subtle);
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .crypto-detail-canvas .cd-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-stat-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--cd-surface);
+  transition: background 0.12s;
+}
+
+.crypto-detail-canvas .cd-stat-cell--wide {
+  grid-column: span 2;
+}
+
+.crypto-detail-canvas .cd-stat-cell--loading {
+  opacity: 0.88;
+}
+
+.crypto-detail-canvas .cd-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-stat-value {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-stat-value--gold {
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-stat-value--accent {
+  color: var(--cc-violet, #a78bfa);
+}
+
+.crypto-detail-canvas .cd-stat-value--muted {
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-stat-hint {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--cd-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-skeleton-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--cd-border-subtle);
+  min-height: 220px;
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-skeleton-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .crypto-detail-canvas .cd-skeleton-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-skeleton-stat-cell {
+  min-height: 72px;
+  background: var(--cd-surface);
+}
+
+/* ================================
+   BÖLÜM 4 — SİNYAL KOMUTA MERKEZİ
+   ================================ */
+
+.crypto-detail-canvas .cd-signal-hub {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-signal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-signal-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+  max-width: 62ch;
+}
+
+.crypto-detail-canvas .cd-signal-variance {
+  color: var(--cd-accent-dim);
+  font-weight: 700;
+}
+
+.crypto-detail-canvas .cd-signal-all-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 4px 0;
+}
+
+.crypto-detail-canvas .cd-signal-all-link:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-signal-command-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--cd-border-subtle);
+  background: var(--cd-border-subtle);
+  margin-bottom: 14px;
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-signal-command-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .crypto-detail-canvas .cd-signal-command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-signal-command-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 11px 12px;
+  background: var(--cd-surface);
+}
+
+.crypto-detail-canvas .cd-signal-command-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-command-value {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-signal-command-cell--bull .cd-signal-command-value {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-signal-command-cell--bear .cd-signal-command-value {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-signal-command-cell--gold .cd-signal-command-value {
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-signal-command-cell--muted .cd-signal-command-value {
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-signal-command-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-intel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 860px) {
+  .crypto-detail-canvas .cd-signal-intel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crypto-detail-canvas .cd-signal-consensus-panel,
+.crypto-detail-canvas .cd-signal-conf-panel,
+.crypto-detail-canvas .cd-signal-analyst-panel {
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 12px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--cd-text) 2.5%, var(--cd-surface));
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-signal-panel-title {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-gauge-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-pct {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-pct--bull {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-signal-gauge-pct--bear {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-signal-gauge-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--cd-border-subtle);
+  overflow: hidden;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-fill--bull {
+  background: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-signal-gauge-fill--bear {
+  background: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-signal-gauge-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 34px;
+  text-align: right;
+}
+
+.crypto-detail-canvas .cd-signal-gauge-tag--bull {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-signal-gauge-tag--bear {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-signal-consensus-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+@media (max-width: 520px) {
+  .crypto-detail-canvas .cd-signal-consensus-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-signal-consensus-stats dt {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+  margin-bottom: 2px;
+}
+
+.crypto-detail-canvas .cd-signal-consensus-stats dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-signal-split-badge {
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  border: 1px solid var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-signal-hub-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 11px;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-signal-hub-meta em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--cd-meta);
+  margin-right: 4px;
+}
+
+.crypto-detail-canvas .cd-signal-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-signal-conf-stack {
+  display: flex;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cd-border-subtle);
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-signal-conf-fill {
+  height: 100%;
+  min-width: 4px;
+}
+
+.crypto-detail-canvas .cd-signal-conf-fill--high {
+  background: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-signal-conf-fill--mid {
+  background: color-mix(in srgb, var(--cd-accent) 55%, var(--cd-text-secondary));
+}
+
+.crypto-detail-canvas .cd-signal-conf-fill--low {
+  background: color-mix(in srgb, var(--cd-text) 22%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-conf-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-signal-conf-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.crypto-detail-canvas .cd-signal-conf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.crypto-detail-canvas .cd-signal-conf-label {
+  flex: 1;
+  color: var(--cd-text-secondary);
+  font-weight: 500;
+}
+
+.crypto-detail-canvas .cd-signal-conf-count {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.crypto-detail-canvas .cd-signal-analyst-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.crypto-detail-canvas .cd-signal-analyst-row + .cd-signal-analyst-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.crypto-detail-canvas .cd-signal-analyst-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-signal-analyst-verified {
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-meta {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-bias {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.crypto-detail-canvas .cd-signal-analyst-bias--bull {
+  color: var(--cc-up, var(--color-rise));
+  background: color-mix(in srgb, var(--cc-up, var(--color-rise)) 12%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-bias--bear {
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 12%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-analyst-bias--mixed {
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 12px;
+  background: var(--cd-surface);
+}
+
+.crypto-detail-canvas .cd-signal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.crypto-detail-canvas .cd-signal-table th {
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+  border-bottom: 1px solid var(--cd-border-subtle);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--cd-text) 3%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-signal-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--cd-border-subtle);
+  vertical-align: middle;
+}
+
+.crypto-detail-canvas .cd-signal-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.crypto-detail-canvas .cd-signal-table-row--inactive {
+  opacity: 0.72;
+}
+
+.crypto-detail-canvas .cd-signal-table-analyst {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  color: var(--cd-text);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-signal-table-analyst:hover {
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-signal-table-analyst span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.crypto-detail-canvas .cd-signal-table-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--cd-text-secondary);
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-signal-table-num--up {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-signal-table-num--down {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-signal-table-conf {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-signal-dir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.crypto-detail-canvas .cd-signal-dir--buy {
+  color: var(--cc-up, var(--color-rise));
+  background: color-mix(in srgb, var(--cc-up, var(--color-rise)) 14%, transparent);
+  border-color: color-mix(in srgb, var(--cc-up, var(--color-rise)) 28%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-dir--sell {
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 14%, transparent);
+  border-color: color-mix(in srgb, var(--cc-down, var(--color-fall)) 28%, transparent);
+}
+
+.crypto-detail-canvas .cd-signal-dir--hold {
+  color: var(--cd-meta);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+  border-color: var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-signal-grade {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-signal-table-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--cd-text-secondary);
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-signal-table-strategy {
+  font-size: 10px;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-table-dash {
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-signal-empty {
+  margin: 0;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--cd-meta);
+  border: 1px dashed var(--cd-border-subtle);
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* ================================
+   BÖLÜM 5 — BAĞLAM ŞERİDİ (SIDE RAIL)
+   ================================ */
+
+.crypto-detail-canvas .cd-rail {
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .crypto-detail-canvas .cd-rail-inner {
+    position: sticky;
+    top: calc(var(--chrome-top-offset, 0px) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.crypto-detail-canvas .cd-rail-block {
+  border: 1px solid var(--cd-border-subtle);
+  border-top: 2px solid var(--cd-accent);
+  border-radius: 12px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--cd-text) 2.5%, var(--cd-surface));
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-rail-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-rail-block-title {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-rail-block-head .cd-rail-block-title {
+  margin-bottom: 0;
+}
+
+.crypto-detail-canvas .cd-rail-context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-rail-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-subtle);
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 4%, transparent);
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-rail-chip--active {
+  color: var(--cd-accent);
+  border-color: var(--cd-accent-border);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-rail-chip--segment {
+  color: var(--cd-accent-dim);
+}
+
+.crypto-detail-canvas .cd-rail-chip--segment:hover {
+  color: var(--cd-accent);
+  border-color: var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-rail-hint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.crypto-detail-canvas .cd-rail-hint-list li {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-rail-vote-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cd-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cd-border-subtle);
+  margin-bottom: 8px;
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-fill {
+  height: 100%;
+  min-width: 2px;
+  transition: width 0.3s ease;
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-fill--bull {
+  background: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-fill--bear {
+  background: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-pcts {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-pct {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-pct--bull {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-rail-sentiment-pct--bear {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-rail-vote-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-rail-vote-btn {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--cd-border-subtle);
+  background: var(--cd-surface);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.crypto-detail-canvas .cd-rail-vote-btn--bull {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-rail-vote-btn--bull.is-active,
+.crypto-detail-canvas .cd-rail-vote-btn--bull:hover {
+  border-color: color-mix(in srgb, var(--cc-up, var(--color-rise)) 35%, transparent);
+  background: color-mix(in srgb, var(--cc-up, var(--color-rise)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-rail-vote-btn--bear {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-rail-vote-btn--bear.is-active,
+.crypto-detail-canvas .cd-rail-vote-btn--bear:hover {
+  border-color: color-mix(in srgb, var(--cc-down, var(--color-fall)) 35%, transparent);
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-rail-analyst-note {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-rail-analyst-note strong {
+  color: var(--cd-text-secondary);
+  font-weight: 800;
+}
+
+.crypto-detail-canvas .cd-rail-inline-link,
+.crypto-detail-canvas .cd-rail-inline-btn {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-rail-inline-link:hover,
+.crypto-detail-canvas .cd-rail-inline-btn:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-rail-signal-list,
+.crypto-detail-canvas .cd-rail-creator-list,
+.crypto-detail-canvas .cd-rail-peer-list,
+.crypto-detail-canvas .cd-rail-alert-list,
+.crypto-detail-canvas .cd-rail-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.crypto-detail-canvas .cd-rail-signal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-rail-signal-list li + li .cd-rail-signal-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-rail-signal-analyst {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-rail-signal-conf {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-rail-creator-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-rail-creator-list li + li .cd-rail-creator-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-rail-creator-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-rail-creator-verified {
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-rail-creator-role {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cd-meta);
+  flex-shrink: 0;
+}
+
+.crypto-detail-canvas .cd-rail-peer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-rail-peer-list li + li .cd-rail-peer-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-rail-peer-symbol {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-rail-peer-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+  text-align: right;
+}
+
+.crypto-detail-canvas .cd-rail-theme-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.crypto-detail-canvas .cd-rail-theme-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--cd-text-secondary);
+  border: 1px solid var(--cd-border-subtle);
+  background: color-mix(in srgb, var(--cd-text) 3%, transparent);
+}
+
+.crypto-detail-canvas .cd-rail-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+}
+
+.crypto-detail-canvas .cd-rail-alert-list li + li .cd-rail-alert-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-rail-alert-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-rail-alert-remove {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-down, var(--color-fall));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.crypto-detail-canvas .cd-rail-link {
+  display: block;
+  padding: 6px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-rail-link-list li + li .cd-rail-link {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-rail-link:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-rail-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cd-meta);
+}
+
+/* ================================
+   BÖLÜM 6 — HABER & MAKRO BAĞLAM
+   ================================ */
+
+.crypto-detail-canvas .cd-news-macro {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-news-macro-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-news-macro-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+  max-width: 68ch;
+}
+
+.crypto-detail-canvas .cd-news-macro-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.crypto-detail-canvas .cd-news-macro-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-news-macro-link:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-news-macro-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-news-macro-theme {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--cd-accent-dim);
+  border: 1px solid var(--cd-accent-border);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-news-macro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 12px;
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-news-macro-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crypto-detail-canvas .cd-news-panel,
+.crypto-detail-canvas .cd-macro-panel {
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 12px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--cd-text) 2.5%, var(--cd-surface));
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-news-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-news-panel-icon {
+  color: var(--cd-accent-dim);
+}
+
+.crypto-detail-canvas .cd-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.crypto-detail-canvas .cd-news-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cd-border-subtle);
+  background: var(--cd-surface);
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-news-card:hover {
+  border-color: var(--cd-accent-border);
+  background: color-mix(in srgb, var(--cd-accent) 4%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-news-card--featured {
+  border-color: color-mix(in srgb, var(--cd-accent) 35%, var(--cd-border-subtle));
+  background: color-mix(in srgb, var(--cd-accent) 5%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-news-card--high {
+  border-left: 3px solid var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-news-card--medium {
+  border-left: 3px solid var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-news-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-news-cat {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cd-accent-dim);
+}
+
+.crypto-detail-canvas .cd-news-source,
+.crypto-detail-canvas .cd-news-time {
+  font-weight: 600;
+}
+
+.crypto-detail-canvas .cd-news-dot {
+  opacity: 0.35;
+}
+
+.crypto-detail-canvas .cd-news-impact {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-news-headline {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-news-card--featured .cd-news-headline {
+  font-size: 15px;
+}
+
+.crypto-detail-canvas .cd-news-sentiment {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.crypto-detail-canvas .cd-news-sentiment--up {
+  color: var(--cc-up, var(--color-rise));
+  background: color-mix(in srgb, var(--cc-up, var(--color-rise)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-news-sentiment--down {
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-news-sentiment--mixed {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-news-sentiment--neutral {
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-macro-event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.crypto-detail-canvas .cd-macro-event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-macro-event-list li + li .cd-macro-event-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-macro-event-icon {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.crypto-detail-canvas .cd-macro-event-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.crypto-detail-canvas .cd-macro-event-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-macro-event-meta {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-macro-event-hint {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-macro-impact {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: var(--cd-meta);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-macro-impact--high {
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 10%, transparent);
+}
+
+.crypto-detail-canvas .cd-macro-impact--mid {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-news-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cd-meta);
+  padding: 8px 0;
+}
+
+/* Calendar type badges — crypto detail scope */
+.crypto-detail-canvas .cc-cal-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.crypto-detail-canvas .cc-cal-type--macro {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cc-cal-type--etf {
+  color: #60a5fa;
+  background: color-mix(in srgb, #60a5fa 12%, transparent);
+}
+
+.crypto-detail-canvas .cc-cal-type--unlock {
+  color: #c084fc;
+  background: color-mix(in srgb, #c084fc 12%, transparent);
+}
+
+.crypto-detail-canvas .cc-cal-type--fork {
+  color: #34d399;
+  background: color-mix(in srgb, #34d399 12%, transparent);
+}
+
+.crypto-detail-canvas .cc-cal-type--listing {
+  color: #fb7185;
+  background: color-mix(in srgb, #fb7185 12%, transparent);
+}
+
+/* ================================
+   BÖLÜM 7 — TOPLULUK & TEZ KATMANI
+   ================================ */
+
+.crypto-detail-canvas .cd-community-hub {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-community-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--cd-text);
+  max-width: 62ch;
+}
+
+.crypto-detail-canvas .cd-community-head-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-community-head-link:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-community-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--cd-border-subtle);
+  background: var(--cd-border-subtle);
+  margin-bottom: 10px;
+}
+
+@media (max-width: 960px) {
+  .crypto-detail-canvas .cd-community-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .crypto-detail-canvas .cd-community-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.crypto-detail-canvas .cd-community-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--cd-surface);
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-metric-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-metric-value {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-community-metric--bull .cd-community-metric-value {
+  color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-community-metric--bear .cd-community-metric-value {
+  color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-community-metric--gold .cd-community-metric-value {
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-community-metric--muted .cd-community-metric-value {
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-debate-bar {
+  display: flex;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cd-border-subtle);
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-community-debate-fill {
+  height: 100%;
+  min-width: 2px;
+}
+
+.crypto-detail-canvas .cd-community-debate-fill--bull {
+  background: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-community-debate-fill--bear {
+  background: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-community-premium-hint {
+  margin: 0 0 12px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  border: 1px solid var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-community-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--cd-border-subtle);
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.crypto-detail-canvas .cd-community-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.crypto-detail-canvas .cd-community-tab {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-meta);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: -1px;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.crypto-detail-canvas .cd-community-tab:hover {
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-tab--active {
+  color: var(--cd-accent);
+  border-bottom-color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-community-panel {
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-empty {
+  margin: 0;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--cd-meta);
+  border: 1px dashed var(--cd-border-subtle);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.crypto-detail-canvas .cd-community-thesis-list,
+.crypto-detail-canvas .cd-community-feed-list,
+.crypto-detail-canvas .cd-community-quote-list,
+.crypto-detail-canvas .cd-community-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.crypto-detail-canvas .cd-community-thesis-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-thesis-list li + li .cd-community-thesis-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-community-thesis-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crypto-detail-canvas .cd-community-thesis-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-community-trending {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  vertical-align: middle;
+}
+
+.crypto-detail-canvas .cd-community-thesis-meta {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-stance {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.crypto-detail-canvas .cd-community-stance--bull {
+  color: var(--cc-up, var(--color-rise));
+  background: color-mix(in srgb, var(--cc-up, var(--color-rise)) 12%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-stance--bear {
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 12%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-stance--mixed {
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-community-stance--neutral {
+  color: var(--cd-text-secondary);
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-feed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0 12px 10px;
+  text-decoration: none;
+  border-left: 2px solid var(--cd-border-subtle);
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-feed-list li + li .cd-community-feed-row {
+  margin-top: 2px;
+}
+
+.crypto-detail-canvas .cd-community-feed--bull {
+  border-left-color: var(--cc-up, var(--color-rise));
+}
+
+.crypto-detail-canvas .cd-community-feed--bear {
+  border-left-color: var(--cc-down, var(--color-fall));
+}
+
+.crypto-detail-canvas .cd-community-feed-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 4px;
+}
+
+.crypto-detail-canvas .cd-community-feed-author {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-community-verified {
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-community-live {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: var(--cc-down, var(--color-fall));
+  background: color-mix(in srgb, var(--cc-down, var(--color-fall)) 12%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-feed-kind,
+.crypto-detail-canvas .cd-community-feed-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-feed-content {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-feed-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-feed-tags {
+  color: var(--cd-accent-dim);
+}
+
+.crypto-detail-canvas .cd-community-media-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.crypto-detail-canvas .cd-community-media-card {
+  flex: 0 0 min(200px, 72vw);
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cd-surface);
+  text-decoration: none;
+  transition: border-color 0.12s;
+}
+
+.crypto-detail-canvas .cd-community-media-card:hover {
+  border-color: var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-community-media-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-media-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-media-kind {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--cd-accent);
+  background: color-mix(in srgb, var(--cd-surface) 88%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-media-duration {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #fff;
+  background: color-mix(in srgb, #000 55%, transparent);
+}
+
+.crypto-detail-canvas .cd-community-media-body {
+  padding: 10px;
+}
+
+.crypto-detail-canvas .cd-community-media-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--cd-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.crypto-detail-canvas .cd-community-media-creator,
+.crypto-detail-canvas .cd-community-media-views {
+  margin: 4px 0 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crypto-detail-canvas .cd-community-narrative-block {
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--cd-text) 2.5%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-community-narrative-label {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-narrative-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-quote-row {
+  display: block;
+  padding: 10px 0;
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-community-quote-list li + li .cd-community-quote-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-community-quote-row blockquote {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-community-quote-row cite {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-community-timeline-row {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-community-timeline li + li .cd-community-timeline-row {
+  border-top: 1px solid var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-community-timeline-kind {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: var(--cd-accent);
+  background: var(--cd-accent-bg);
+  height: fit-content;
+}
+
+.crypto-detail-canvas .cd-community-timeline-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.crypto-detail-canvas .cd-community-timeline-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-community-timeline-detail {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-timeline-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-narrative-foot p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-community-narrative-foot p + p {
+  margin-top: 6px;
+}
+
+.crypto-detail-canvas .cd-community-peer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crypto-detail-canvas .cd-community-peer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--cd-border-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-text);
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-community-peer-chip span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-community-peer-chip:hover {
+  border-color: var(--cd-accent-border);
+  color: var(--cd-accent);
+}
+
+/* ================================
+   BÖLÜM 8 — KEŞİF & PEER RAIL
+   ================================ */
+
+.crypto-detail-canvas .cd-discovery-rail {
+  padding: 0;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-discovery-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-discovery-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--cd-text-secondary);
+  max-width: 62ch;
+}
+
+.crypto-detail-canvas .cd-discovery-head-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.crypto-detail-canvas .cd-discovery-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-discovery-link:hover {
+  text-decoration: underline;
+}
+
+.crypto-detail-canvas .cd-discovery-segment-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--cd-accent-border);
+  border-radius: 12px;
+  background: var(--cd-accent-bg);
+}
+
+.crypto-detail-canvas .cd-discovery-segment-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.crypto-detail-canvas .cd-discovery-segment-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-discovery-segment-change {
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-discovery-segment-leader {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cd-text-secondary);
+  text-decoration: none;
+}
+
+.crypto-detail-canvas .cd-discovery-segment-leader strong {
+  color: var(--cd-accent);
+  font-weight: 800;
+}
+
+.crypto-detail-canvas .cd-discovery-segment-leader:hover {
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-discovery-theme-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.crypto-detail-canvas .cd-discovery-theme-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-discovery-theme-symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-discovery-theme-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-subtle);
+  color: var(--cd-text);
+  text-decoration: none;
+  background: var(--cd-surface);
+}
+
+.crypto-detail-canvas .cd-discovery-theme-chip:hover {
+  border-color: var(--cd-accent-border);
+  color: var(--cd-accent);
+}
+
+.crypto-detail-canvas .cd-discovery-block-title {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-discovery-peer-block,
+.crypto-detail-canvas .cd-discovery-video-block {
+  margin-bottom: 14px;
+}
+
+.crypto-detail-canvas .cd-discovery-video-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-discovery-video-head .cd-discovery-block-title {
+  margin-bottom: 0;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-scroll,
+.crypto-detail-canvas .cd-discovery-video-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-card {
+  flex: 0 0 min(168px, 62vw);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px;
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 12px;
+  background: var(--cd-surface);
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-card:hover {
+  border-color: var(--cd-accent-border);
+  background: color-mix(in srgb, var(--cd-accent) 4%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-discovery-peer-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-symbol {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cd-text);
+}
+
+.crypto-detail-canvas .cd-discovery-peer-name {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cd-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-price {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cd-text-secondary);
+}
+
+.crypto-detail-canvas .cd-discovery-peer-change {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-spark {
+  height: 28px;
+}
+
+.crypto-detail-canvas .cd-discovery-peer-corr,
+.crypto-detail-canvas .cd-discovery-peer-mcap {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-discovery-peer-corr {
+  color: var(--cd-accent-dim);
+}
+
+.crypto-detail-canvas .cd-discovery-video-card {
+  flex: 0 0 min(220px, 72vw);
+  border: 1px solid var(--cd-border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cd-surface);
+  text-decoration: none;
+  transition: border-color 0.12s;
+}
+
+.crypto-detail-canvas .cd-discovery-video-card:hover {
+  border-color: var(--cd-accent-border);
+}
+
+.crypto-detail-canvas .cd-discovery-video-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: color-mix(in srgb, var(--cd-text) 6%, transparent);
+}
+
+.crypto-detail-canvas .cd-discovery-video-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-discovery-video-kind {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--cd-accent);
+  background: color-mix(in srgb, var(--cd-surface) 88%, transparent);
+}
+
+.crypto-detail-canvas .cd-discovery-video-duration {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #fff;
+  background: color-mix(in srgb, #000 55%, transparent);
+}
+
+.crypto-detail-canvas .cd-discovery-video-title {
+  margin: 0;
+  padding: 10px 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--cd-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.crypto-detail-canvas .cd-discovery-video-creator,
+.crypto-detail-canvas .cd-discovery-video-views {
+  margin: 4px 10px 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cd-meta);
+}
+
+.crypto-detail-canvas .cd-discovery-video-views {
+  padding-bottom: 10px;
+}
+
+.crypto-detail-canvas .cd-discovery-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.crypto-detail-canvas .cd-discovery-foot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--cd-accent-border);
+  background: var(--cd-accent-bg);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-accent);
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.crypto-detail-canvas .cd-discovery-foot-btn:hover {
+  background: color-mix(in srgb, var(--cd-accent) 14%, var(--cd-surface));
+}
+
+.crypto-detail-canvas .cd-discovery-foot-btn--ghost {
+  background: var(--cd-surface);
+  color: var(--cd-text-secondary);
+  border-color: var(--cd-border-subtle);
+}
+
+.crypto-detail-canvas .cd-discovery-foot-btn--ghost:hover {
+  color: var(--cd-text);
+  border-color: var(--cd-accent-border);
+}

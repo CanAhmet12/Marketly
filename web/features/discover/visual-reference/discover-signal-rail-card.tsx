@@ -78,32 +78,55 @@ function SignalPriceTape({ position }: { position: number }) {
 function DiscoverSignalRailCardInner({
   item,
   index = 0,
+  onSelect,
+  hideDirection = false,
 }: {
   item: VRSignalItem;
   index?: number;
+  /** Katalog tıklaması — Link yerine programatik açılış */
+  onSelect?: () => void;
+  hideDirection?: boolean;
 }) {
   const dir = signalDirMeta(item.direction);
-  const market = MARKET_META[getSignalMarketTone(item.symbol)];
+  const market = MARKET_META[item.marketTone ?? getSignalMarketTone(item.symbol)];
 
   return (
     <article
       className={cn(
         "dvr-sig-rail-card group relative z-0 motion-entrance",
         `dvr-sig-rail-card--${dir.cls}`,
+        `dvr-sig-rail-card--market-${market.cls}`,
         `dvr-sig-rail-card--status-${item.signalStatus}`,
+        onSelect && "cursor-pointer",
       )}
       style={motionEntranceDelay(index)}
+      onClick={onSelect ? () => onSelect() : undefined}
+      onKeyDown={
+        onSelect
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect();
+              }
+            }
+          : undefined
+      }
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      aria-label={onSelect ? `${item.symbol} sinyali` : undefined}
     >
-      <Link
-        href={item.href}
-        className="absolute inset-0 z-0 rounded-[inherit]"
-        aria-label={`${item.symbol} sinyali`}
-      />
+      {!onSelect ? (
+        <Link
+          href={item.href}
+          className="absolute inset-0 z-10 rounded-[inherit]"
+          aria-label={`${item.symbol} sinyali`}
+        />
+      ) : null}
 
       <div className="dvr-sig-rail-card__glow" aria-hidden />
       <div className="dvr-sig-rail-card__accent" aria-hidden />
 
-      <div className="relative z-1 flex h-full min-h-0 flex-col gap-3 p-4 sm:gap-3.5 sm:p-[1.15rem]">
+      <div className="relative z-1 flex h-full min-h-0 flex-col gap-3 p-4 pointer-events-none sm:gap-3.5 sm:p-[1.15rem]">
         <div className="dvr-sig-rail-card__head">
           <div className="min-w-0 flex-1">
             <div className="dvr-sig-rail-card__symbol-row">
@@ -115,10 +138,12 @@ function DiscoverSignalRailCardInner({
             <p className="dvr-sig-rail-card__asset truncate">{item.assetName}</p>
           </div>
           <div className="dvr-sig-rail-card__badges shrink-0">
-            <span className={cn("dvr-sig-rail-card__dir", `dvr-sig-rail-card__dir--${dir.cls}`)}>
-              <DirGlyph direction={item.direction} />
-              {dir.short}
-            </span>
+            {!hideDirection ? (
+              <span className={cn("dvr-sig-rail-card__dir", `dvr-sig-rail-card__dir--${dir.cls}`)}>
+                <DirGlyph direction={item.direction} />
+                {dir.short}
+              </span>
+            ) : null}
             <span className="dvr-sig-rail-card__tf tabular-nums">{item.timeframe}</span>
           </div>
         </div>

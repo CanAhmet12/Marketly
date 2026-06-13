@@ -108,7 +108,7 @@
 }
 
 .ch-canvas[data-channel-zone] .ch-tab--active {
-  color: var(--ch-text);
+  color: var(--ch-zone-1);
   border-bottom-color: var(--ch-zone-1);
 }
 

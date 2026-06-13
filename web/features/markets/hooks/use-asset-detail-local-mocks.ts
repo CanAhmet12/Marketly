@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
+
 import {
   readAlertsForSymbol,
   writeAlertsForSymbol,
@@ -46,6 +48,8 @@ export function useAssetDetailLocalMocks(symbol: string) {
       setHydrated(true);
     });
   }, [u]);
+
+  useRegisterPageLoad(!hydrated);
 
   const togglePortfolio = useCallback(() => {
     setInPortfolio(() => {

@@ -13,6 +13,7 @@ import { useStudioLocalMutations } from "@/features/studio/use-studio-local-muta
 import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
 import { getStudioRepository } from "@/features/studio/repository";
 import { isMockDataEnabled } from "@/mock/config";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 function scheduleLabel(iso: string) {
   return new Date(iso).toLocaleString("tr-TR", {
@@ -32,11 +33,28 @@ export function StudioScheduledClient() {
 
   const liveMode = !mockOn && isSupabaseConfigured();
   const [liveScheduled, setLiveScheduled] = useState<StudioScheduledItem[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
-    if (!ownerId || !liveMode) return;
-    fetchStudioScheduled(getSupabaseBrowserClient(), ownerId).then(setLiveScheduled);
+    if (!ownerId || !liveMode) {
+      setLiveLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLiveLoading(true);
+    fetchStudioScheduled(getSupabaseBrowserClient(), ownerId)
+      .then((rows) => {
+        if (!cancelled) setLiveScheduled(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setLiveLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [ownerId, liveMode]);
+
+  useRegisterPageLoad(liveLoading);
 
   const rows = useMemo(() => {
     if (!ownerId) return [];

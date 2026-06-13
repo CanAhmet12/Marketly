@@ -25,8 +25,8 @@ export type NasdaqPulseMetrics = {
     label: string;               /* "Risk-On" | "Notr" | "Risk-Off" */
   };
   fedPivot: {
-    value: number;               /* 0-100 */
-    label: string;               /* "Yaklasan" | "Uzak" | "Belirsiz" */
+    value: number;
+    label: string;
   };
 };
 
@@ -104,12 +104,14 @@ export type NasdaqMoverItem = {
   changePct: number;
   price?:    string;
   volume?:   string;
+  volatility?: string;
 };
 
 export type NasdaqMoversPayload = {
   gainers: NasdaqMoverItem[];
   losers:  NasdaqMoverItem[];
   volume:  NasdaqMoverItem[];
+  volatile?: NasdaqMoverItem[];
 };
 
 /* ================================
@@ -168,4 +170,44 @@ export type NasdaqScreenerAsset = {
 
 export type NasdaqScreenerPayload = {
   assets: NasdaqScreenerAsset[];
+};
+
+/* ================================
+   SECTOR TREEMAP — Zone 2b
+   ================================ */
+
+export type NasdaqTreemapCell = {
+  rank: number;
+  symbol: string;
+  name: string;
+  weightPct: number;
+  changePct: number;
+  marketCap: string;
+  sparkline: number[];
+};
+
+export type NasdaqTreemapPayload = {
+  cells: NasdaqTreemapCell[];
+};
+
+/* ================================
+   SIGNAL RAIL — Zone 5
+   ================================ */
+
+export type NasdaqSignalAsset = {
+  symbol: string;
+  name: string;
+  activeSignals: number;
+  bullPct: number;
+  biasLabel: string;
+  avgConfidence?: number;
+  dominantDirection?: "BUY" | "SELL" | "HOLD";
+};
+
+export type NasdaqSignalStripPayload = {
+  totalActiveSignals: number;
+  bullPct: number;
+  bearPct: number;
+  marketBiasLabel: string;
+  topAssets: NasdaqSignalAsset[];
 };

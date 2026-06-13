@@ -9,6 +9,11 @@ export function getAnalystAccentTone(row: CreatorDirectoryRow): AnalystAccentTon
   return getCardTagTone(tag);
 }
 
+export function creatorProfileHref(row: CreatorDirectoryRow): string {
+  return row.channelHref;
+}
+
+/** Canlı yayın veya kanal — içerik odaklı CTA */
 export function creatorPrimaryHref(row: CreatorDirectoryRow): string {
   if (row.isLive && row.liveHref) return row.liveHref;
   return row.channelHref;

@@ -127,7 +127,7 @@ function actionsFor(variant: Variant, onRetry?: () => void, loginHref?: string):
       return [{ label: "Giriş yap", href: loginHref ?? "/auth/login", primary: true }];
     case "following-empty":
       return [
-        { label: "Creator keşfet", href: "/discover?tab=creators", primary: true },
+        { label: "Creator keşfet", href: "/creators", primary: true },
         { label: "Keşfet", href: "/discover" },
       ];
     case "filtered":

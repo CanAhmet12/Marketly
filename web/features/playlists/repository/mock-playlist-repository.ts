@@ -112,10 +112,10 @@ function resolvePost(pid: string): MockPostLike | null {
 function integrationLinks(pl: StudioPlaylistItem, topSymbol: string | null): PlaylistIntegrationLink[] {
   const enc = encodeURIComponent(pl.ownerId);
   const out: PlaylistIntegrationLink[] = [
-    { kind: "discover", label: "Keşfet akışı", href: "/discover?tab=videos" },
+    { kind: "discover", label: "Keşfet akışı", href: "/videos" },
     { kind: "discussion", label: "Tartışmalar", href: `/channel/${enc}?tab=discussions` },
     { kind: "room", label: "Üretici odaları", href: `/channel/${enc}?tab=rooms` },
-    { kind: "signal", label: "Sinyal keşfi", href: "/discover?tab=signals" },
+    { kind: "signal", label: "Sinyal keşfi", href: "/signals" },
     { kind: "subscription", label: "Abonelikler", href: "/subscriptions" },
     { kind: "close_friends", label: "Yakın çevre", href: "/close-friends" },
     { kind: "notifications", label: "Bildirimler", href: "/notifications" },

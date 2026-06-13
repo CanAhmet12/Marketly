@@ -1,121 +1,260 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
 import type { CommodityPulseMetrics } from "@/features/markets/commodities/types";
+import {
+  formatCommodityPulsePrice,
+} from "@/features/markets/commodities/lib/commodity-pulse-utils";
+import {
+  exaggerateSpark,
+  resolveCommoditySparkline,
+  trendFromSeries,
+} from "@/features/markets/commodities/lib/commodity-sparkline-utils";
 import { cn } from "@/lib/cn";
 
 type Props = { pulse: CommodityPulseMetrics };
 
-function fmtPrice(n: number, unit: string) {
-  if (unit === "c/bu") return `${n.toFixed(0)}`;
-  if (unit === "$/oz" && n >= 1000) return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-  if (unit === "$/bbl" || unit === "$/lb") return `$${n.toFixed(2)}`;
-  if (unit === "$/mmbtu") return `$${n.toFixed(2)}`;
-  return `$${n.toFixed(2)}`;
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
 
-function signed(v: number) { return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`; }
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)"; if (v < 0) return "var(--cc-rose)"; return "var(--cc-meta)";
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
 }
 
-function TrendScoreCell({ value, label }: { value: number; label: string }) {
-  const color = value >= 70 ? "#f97316" : value >= 45 ? "rgba(249,115,22,0.7)" : "var(--cc-meta)";
+type PulseCellProps = {
+  label: ReactNode;
+  value: ReactNode;
+  valueClass?: string;
+  sub?: ReactNode;
+  subClass?: string;
+  foot?: ReactNode;
+  className?: string;
+  hideSub?: boolean;
+  layout?: "default" | "meter";
+};
+
+function PulseCell({
+  label,
+  value,
+  valueClass,
+  sub,
+  subClass,
+  foot,
+  className,
+  hideSub,
+  layout = "default",
+}: PulseCellProps) {
+  const isMeter = layout === "meter";
+
   return (
-    <div className="cm-trend-score">
-      <span className="cc-pulse-label">Emtia Trendi</span>
+    <div className={cn("cc-pulse-cell", isMeter && "cc-pulse-cell--meter", className)}>
+      <div className="cc-pulse-cell__top">{label}</div>
+      {isMeter ? (
+        <div className="cc-pulse-cell__main">{value}</div>
+      ) : (
+        <div className="cc-pulse-cell__body">
+          <div className={cn("cc-pulse-cell__value", valueClass)}>{value}</div>
+          {!hideSub ? (
+            <div className={cn("cc-pulse-cell__sub", subClass, !sub && "cc-pulse-cell__sub--empty")}>
+              {sub ?? "\u00A0"}
+            </div>
+          ) : null}
+        </div>
+      )}
+      {!isMeter ? (
+        <div className="cc-pulse-cell__foot">{foot ?? <span className="cc-pulse-foot-spacer" aria-hidden />}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function CommodityIconLabel({
+  icon,
+  text,
+  tone,
+}: {
+  icon: string;
+  text: string;
+  tone: "gold" | "silver" | "oil" | "gas" | "copper";
+}) {
+  const iconClass =
+    tone === "gold"
+      ? "cc-pulse-cell-icon cc-pulse-cell-icon--btc"
+      : tone === "silver"
+        ? "cc-pulse-cell-icon cc-pulse-cell-icon--eth"
+        : cn("cm-pulse-cell-icon", `cm-pulse-cell-icon--${tone}`);
+
+  return (
+    <div className="cc-pulse-cell-header">
+      <div className={iconClass}>{icon}</div>
+      <span className="cc-pulse-label">{text}</span>
+    </div>
+  );
+}
+
+function PulseSpark({ series, trend }: { series: number[]; trend: "up" | "down" | "flat" }) {
+  const boosted = exaggerateSpark(series);
+  return (
+    <div className="cc-pulse-spark-wrap">
+      <MiniSparkline series={boosted} trend={trend} height={34} className="cc-pulse-spark" />
+    </div>
+  );
+}
+
+function volatilityTone(value: number): "low" | "mid" | "high" {
+  if (value >= 65) return "high";
+  if (value >= 38) return "mid";
+  return "low";
+}
+
+function VolatilityMeter({ value, label }: { value: number; label: string }) {
+  const tone = volatilityTone(value);
+  const color =
+    tone === "high" ? "var(--cc-rose)" : tone === "mid" ? "var(--cc-gold)" : "var(--cc-teal)";
+
+  return (
+    <div className="cm-volatility cm-volatility--meter">
+      <div className="cm-vol-value-row">
+        <span className={cn("cm-vol-big", `cm-vol-big--${tone}`)} style={{ color }}>
+          {value}
+        </span>
+        <span className="cm-vol-sub">/100</span>
+        <span className={cn("cm-vol-mode", `cm-vol-mode--${tone}`)} style={{ color }}>
+          {label}
+        </span>
+      </div>
+      <div className="cm-vol-bar">
+        <div className="cm-vol-fill" style={{ width: `${value}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+function TrendScoreMeter({ value, label }: { value: number; label: string }) {
+  const color = value >= 70 ? "#f97316" : value >= 45 ? "rgba(249,115,22,0.75)" : "var(--cc-meta)";
+
+  return (
+    <div className="cm-trend-score cm-trend-score--meter">
       <div className="cm-trend-value-row">
-        <span className="cm-trend-big" style={{ color }}>{value}</span>
+        <span className="cm-trend-big" style={{ color }}>
+          {value}
+        </span>
         <span className="cm-trend-sub">/100</span>
+        <span className="cm-trend-label" style={{ color }}>
+          {label}
+        </span>
       </div>
       <div className="cm-trend-bar">
         <div className="cm-trend-fill" style={{ width: `${value}%`, background: color }} />
       </div>
-      <span className="cm-trend-label" style={{ color }}>{label}</span>
     </div>
   );
 }
 
 export function CommoditiesPulseBar({ pulse }: Props) {
-  const items = [
-    { item: pulse.altin,    isMain: true,  icon: "Au",  showSpark: true  },
-    { item: pulse.gumus,    isMain: false, icon: "Ag",  showSpark: true  },
-    { item: pulse.petrol,   isMain: false, icon: null,  showSpark: false },
-    { item: pulse.dogalgaz, isMain: false, icon: null,  showSpark: false },
-    { item: pulse.bakir,    isMain: false, icon: null,  showSpark: false },
-    { item: pulse.bugday,   isMain: false, icon: null,  showSpark: false },
-  ];
+  const altinSpark = resolveCommoditySparkline(pulse.altin.changePct, pulse.altin.sparkline);
+  const gumusSpark = resolveCommoditySparkline(pulse.gumus.changePct, pulse.gumus.sparkline);
+  const endeksSpark = resolveCommoditySparkline(pulse.endeks.changePct, pulse.endeks.sparkline);
 
   return (
-    <div className="cc-pulse-bar-v2" role="region" aria-label="Emtia piyasa metrikleri">
+    <div className="cc-pulse-bar-v2 cm-pulse-bar-v2" role="region" aria-label="Emtia piyasa metrikleri">
+      <PulseCell
+        label={<CommodityIconLabel icon="Au" text="ALTIN" tone="gold" />}
+        value={formatCommodityPulsePrice(pulse.altin.price, pulse.altin.unit)}
+        valueClass="cc-pulse-value--btc"
+        sub={
+          <>
+            <span className="cm-pulse-unit">{pulse.altin.unit}</span>
+            <span className={cn("cc-pulse-change", changeClass(pulse.altin.changePct))}>
+              {signed(pulse.altin.changePct)}
+            </span>
+          </>
+        }
+        foot={<PulseSpark series={altinSpark} trend={trendFromSeries(altinSpark)} />}
+      />
 
-      {/* ALTIN */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>Au</div>
-          <span className="cc-pulse-label">ALTIN</span>
-        </div>
-        <span className="cc-pulse-value cc-pulse-value--btc">{fmtPrice(pulse.altin.price, pulse.altin.unit)}</span>
-        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.altin.unit}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.altin.changePct) }}>{signed(pulse.altin.changePct)}</span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.altin.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<CommodityIconLabel icon="Ag" text="GÜMÜŞ" tone="silver" />}
+        value={formatCommodityPulsePrice(pulse.gumus.price, pulse.gumus.unit)}
+        valueClass="cc-pulse-value--eth"
+        sub={
+          <>
+            <span className="cm-pulse-unit">{pulse.gumus.unit}</span>
+            <span className={cn("cc-pulse-change", changeClass(pulse.gumus.changePct))}>
+              {signed(pulse.gumus.changePct)}
+            </span>
+          </>
+        }
+        foot={<PulseSpark series={gumusSpark} trend={trendFromSeries(gumusSpark)} />}
+      />
 
-      {/* GUMUS */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>Ag</div>
-          <span className="cc-pulse-label">GUMUS</span>
-        </div>
-        <span className="cc-pulse-value">{fmtPrice(pulse.gumus.price, pulse.gumus.unit)}</span>
-        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.gumus.unit}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.gumus.changePct) }}>{signed(pulse.gumus.changePct)}</span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.gumus.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<CommodityIconLabel icon="🛢" text="PETROL WTI" tone="oil" />}
+        value={formatCommodityPulsePrice(pulse.petrol.price, pulse.petrol.unit)}
+        sub={
+          <>
+            <span className="cm-pulse-unit">{pulse.petrol.unit}</span>
+            <span className={cn("cc-pulse-change", changeClass(pulse.petrol.changePct))}>
+              {signed(pulse.petrol.changePct)}
+            </span>
+          </>
+        }
+      />
 
-      {/* PETROL */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">PETROL WTI</span>
-        <span className="cc-pulse-value">{fmtPrice(pulse.petrol.price, pulse.petrol.unit)}</span>
-        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.petrol.unit}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.petrol.changePct) }}>{signed(pulse.petrol.changePct)}</span>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">DOĞALGAZ</span>}
+        value={formatCommodityPulsePrice(pulse.dogalgaz.price, pulse.dogalgaz.unit)}
+        sub={
+          <>
+            <span className="cm-pulse-unit">{pulse.dogalgaz.unit}</span>
+            <span className={cn("cc-pulse-change", changeClass(pulse.dogalgaz.changePct))}>
+              {signed(pulse.dogalgaz.changePct)}
+            </span>
+          </>
+        }
+      />
 
-      {/* DOGALGAZ */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">DOGALGAZ</span>
-        <span className="cc-pulse-value" style={{ fontSize: 16 }}>{fmtPrice(pulse.dogalgaz.price, pulse.dogalgaz.unit)}</span>
-        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.dogalgaz.unit}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.dogalgaz.changePct) }}>{signed(pulse.dogalgaz.changePct)}</span>
-      </div>
+      <PulseCell
+        label={<CommodityIconLabel icon="Cu" text="BAKIR" tone="copper" />}
+        value={formatCommodityPulsePrice(pulse.bakir.price, pulse.bakir.unit)}
+        sub={
+          <>
+            <span className="cm-pulse-unit">{pulse.bakir.unit}</span>
+            <span className={cn("cc-pulse-change", changeClass(pulse.bakir.changePct))}>
+              {signed(pulse.bakir.changePct)}
+            </span>
+          </>
+        }
+      />
 
-      {/* BAKIR */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">BAKIR</span>
-        <span className="cc-pulse-value" style={{ fontSize: 16 }}>{fmtPrice(pulse.bakir.price, pulse.bakir.unit)}</span>
-        <span style={{ fontSize: 11, color: "var(--cc-meta)" }}>{pulse.bakir.unit}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.bakir.changePct) }}>{signed(pulse.bakir.changePct)}</span>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">{pulse.endeks.label}</span>}
+        value={pulse.endeks.value.toFixed(1)}
+        valueClass="cc-pulse-value--btc"
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.endeks.changePct))}>
+            {signed(pulse.endeks.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={endeksSpark} trend={trendFromSeries(endeksSpark)} />}
+      />
 
-      {/* Emtia Endeksi */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">Emtia Endeksi</span>
-        <span className="cc-pulse-value cc-pulse-value--btc" style={{ fontSize: 16 }}>{pulse.endeks.value.toFixed(1)}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.endeks.changePct) }}>{signed(pulse.endeks.changePct)}</span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.endeks.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">Emtia Volatilite</span>}
+        layout="meter"
+        value={<VolatilityMeter value={pulse.volatility.value} label={pulse.volatility.label} />}
+      />
 
-      {/* Emtia Trend Puani */}
-      <div className="cc-pulse-cell">
-        <TrendScoreCell value={pulse.trendScore.value} label={pulse.trendScore.label} />
-      </div>
-
+      <PulseCell
+        label={<span className="cc-pulse-label">Emtia Trendi</span>}
+        layout="meter"
+        value={<TrendScoreMeter value={pulse.trendScore.value} label={pulse.trendScore.label} />}
+      />
     </div>
   );
 }

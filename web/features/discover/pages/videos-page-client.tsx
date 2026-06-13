@@ -18,6 +18,7 @@ export function VideosPageClient() {
       feedError={feedError}
       onFeedRetry={refetchFeed}
       pageTone="videos"
+      headless
     >
       {feedLoading ? <VideosListSkeleton inline /> : <VideosFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

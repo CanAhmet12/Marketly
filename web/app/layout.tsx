@@ -19,8 +19,8 @@ const inter = Inter({
 const siteUrl = getSiteUrl();
 
 export const viewport: Viewport = {
-  themeColor: "#0f9d75",
-  colorScheme: "light dark",
+  themeColor: "#000000",
+  colorScheme: "dark light",
   viewportFit: "cover",
 };
 
@@ -44,14 +44,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" data-theme="light" className={`${inter.variable} min-h-dvh`} suppressHydrationWarning>
+    <html lang="tr" data-theme="dark" className={`${inter.variable} min-h-dvh`} suppressHydrationWarning>
       <body className={`${inter.className} min-h-dvh font-sans antialiased`}>
         {/* Inline: next/script chunk’ına bağlı kalmadan tema (ChunkLoadError / stale hash riskini azaltır) */}
         <script
           id="marketly-theme-init"
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('marketly-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}})();",
+              "(function(){try{var t=localStorage.getItem('marketly-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}})();",
           }}
         />
         <Providers>{children}</Providers>

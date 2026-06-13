@@ -125,6 +125,8 @@ export type VRSignalItem = {
   signalStatusLabel: string;
   /** Stop ↔ hedef arasında fiyat konumu (0–100) */
   pricePosition: number;
+  /** Sinyal kataloğu — piyasa tonu (kart rozeti + kenarlık) */
+  marketTone?: "crypto" | "bist" | "forex" | "commodity" | "macro";
 };
 
 export type VRMiniSignal = {

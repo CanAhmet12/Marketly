@@ -129,6 +129,7 @@ export function AppShell({ children }: Props) {
         )}
       >
         <div
+          data-chrome-top-spacer
           className="shrink-0 motion-safe:transition-[height] motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none"
           style={{ height: chromeVisible ? "var(--chrome-top-offset)" : 0 }}
           aria-hidden

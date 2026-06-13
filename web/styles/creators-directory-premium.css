@@ -3,8 +3,6 @@
  */
 
 .crt-canvas {
-  background: var(--color-bg);
-  color: var(--color-text);
   min-height: calc(100dvh - var(--chrome-top-offset, 3.5rem));
 }
 

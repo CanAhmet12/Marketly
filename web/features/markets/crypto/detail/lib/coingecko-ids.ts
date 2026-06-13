@@ -1,0 +1,45 @@
+/** Sembol → CoinGecko API id (mobil AssetDetailScreen ile hizalı) */
+export const COINGECKO_ID_BY_SYMBOL: Record<string, string> = {
+  BTC: "bitcoin",
+  ETH: "ethereum",
+  SOL: "solana",
+  BNB: "binancecoin",
+  XRP: "ripple",
+  ADA: "cardano",
+  DOGE: "dogecoin",
+  AVAX: "avalanche-2",
+  DOT: "polkadot",
+  LINK: "chainlink",
+  UNI: "uniswap",
+  LTC: "litecoin",
+  ATOM: "cosmos",
+  MATIC: "matic-network",
+  POL: "matic-network",
+  NEAR: "near",
+  SHIB: "shiba-inu",
+  ARB: "arbitrum",
+  OP: "optimism",
+  TRX: "tron",
+  XLM: "stellar",
+  INJ: "injective-protocol",
+  SUI: "sui",
+  TIA: "celestia",
+  PEPE: "pepe",
+  BONK: "bonk",
+  WIF: "dogwifcoin",
+  FET: "fetch-ai",
+  RENDER: "render-token",
+  AAVE: "aave",
+  MKR: "maker",
+  APT: "aptos",
+  SEI: "sei-network",
+  TON: "the-open-network",
+  HBAR: "hedera-hashgraph",
+  FIL: "filecoin",
+  ICP: "internet-computer",
+};
+
+export function resolveCoingeckoId(symbol: string): string | null {
+  const key = symbol.trim().toUpperCase().replace(/USDT$|USD$/, "");
+  return COINGECKO_ID_BY_SYMBOL[key] ?? null;
+}

@@ -190,8 +190,25 @@ function buildDiscussions(symbol: string): AssetDiscussionItem[] {
     const inText = p.content.toUpperCase().includes(u) || (p.title ?? "").toUpperCase().includes(u);
     return inTag || inText;
   });
-  const picked = (posts.length >= 4 ? posts : [...posts, ...MOCK_POST_SOURCES.filter((p) => p.type === "post")]).slice(0, 6);
-  return picked.slice(0, 6).map((p) => {
+  const picked = (() => {
+    const seen = new Set<string>();
+    const merged: typeof posts = [];
+    for (const p of posts) {
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      merged.push(p);
+    }
+    if (merged.length < 4) {
+      for (const p of MOCK_POST_SOURCES.filter((item) => item.type === "post")) {
+        if (merged.length >= 6) break;
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        merged.push(p);
+      }
+    }
+    return merged.slice(0, 6);
+  })();
+  return picked.map((p) => {
     const prof = MOCK_PROFILE_BY_ID[p.user_id];
     const h = hashStr(`${u}-d-${p.id}`);
     const sentiment: AssetDiscussionItem["sentiment"] = (["bullish", "bearish", "neutral"] as const)[h % 3];

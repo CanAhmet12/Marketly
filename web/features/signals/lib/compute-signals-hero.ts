@@ -1,3 +1,4 @@
+import { isSignalLossResult, isSignalWinResult } from "@/features/signals/domain/signal-meta";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import type { SignalsHeroPayload } from "@/features/signals/types";
 
@@ -16,8 +17,8 @@ export function computeSignalsHero(rows: SignalsFeedRow[]): SignalsHeroPayload {
   const sellCount = active.filter((r) => r.direction === "SELL").length;
   const holdCount = active.filter((r) => r.direction === "HOLD").length;
   const avgConfidence = active.length ? active.reduce((s, r) => s + r.confidence, 0) / active.length : 0;
-  const closed = rows.filter((r) => r.result === "TP" || r.result === "SL");
-  const tp = closed.filter((r) => r.result === "TP").length;
+  const closed = rows.filter((r) => isSignalWinResult(r.result) || isSignalLossResult(r.result));
+  const tp = closed.filter((r) => isSignalWinResult(r.result)).length;
   const successRate = closed.length ? Math.round((tp / closed.length) * 100) : null;
   const pool = active.filter((r) => r.direction === "BUY" || r.direction === "SELL");
   const lastStrong = pool.length ? [...pool].sort((a, b) => b.confidence - a.confidence)[0]! : null;

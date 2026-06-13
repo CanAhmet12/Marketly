@@ -12,8 +12,10 @@ export type CreatorsSortId = (typeof CREATOR_SORT_OPTIONS)[number]["id"];
 
 export const CREATOR_VIEW_TABS = [
   { id: "all", label: "Tümü" },
-  { id: "live", label: "Canlı" },
+  { id: "live", label: "Canlı", liveDot: true },
+  { id: "editor", label: "Editör" },
   { id: "rising", label: "Yükselen" },
+  { id: "accuracy", label: "İsabet" },
 ] as const;
 
 export type CreatorsViewTab = (typeof CREATOR_VIEW_TABS)[number]["id"];
@@ -43,6 +45,22 @@ export type CreatorSpecialtyId = (typeof CREATOR_SPECIALTY_PRESETS)[number]["id"
 export function normalizeCreatorsSort(raw: string | null): CreatorsSortId {
   if (raw && CREATOR_SORT_OPTIONS.some((o) => o.id === raw)) return raw as CreatorsSortId;
   return "recommended";
+}
+
+/** UI sort → `get_creators_directory` p_sort */
+export function mapCreatorsSortToRpc(sort: CreatorsSortId): string {
+  switch (sort) {
+    case "live":
+      return "live_first";
+    case "rising":
+      return "rising";
+    case "followers":
+      return "followers";
+    case "accuracy":
+      return "accuracy";
+    default:
+      return "recommended";
+  }
 }
 
 export function normalizeCreatorsViewTab(raw: string | null): CreatorsViewTab {

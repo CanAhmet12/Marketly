@@ -22,6 +22,7 @@ import { cn } from "@/lib/cn";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 const STEPS = [
   { id: "identity", label: "Piyasa kimliği" },
@@ -95,6 +96,8 @@ export function OnboardingSetupClient() {
       setCreatorsLoaded(true);
     });
   }, []);
+
+  useRegisterPageLoad(!isInitialized || !creatorsLoaded);
 
   const catalog = useMemo(() => buildOnboardingCatalog(creatorOptions), [creatorOptions]);
 

@@ -1,73 +1,120 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 
+import { HScroll } from "@/features/discover/visual-reference/discover-vr-primitives";
 import type { CryptoSignalStripPayload } from "@/features/markets/crypto/types";
+import { SignalsLiveRailCard } from "@/features/signals/components/signals-live-rail-card";
+import { SignalsEngagementProvider } from "@/features/signals/contexts/signals-engagement-context";
+import { useSignalsCatalog } from "@/features/signals/hooks/use-signals-catalog";
+import { mapFeedRowToLiveCardItem } from "@/features/signals/lib/map-feed-row-to-live-card";
+import { resolveSignalAssetCategory } from "@/features/signals/lib/resolve-signal-asset-category";
+import { getSignalsRepository } from "@/features/signals/repository";
+import { isMockDataEnabled } from "@/mock/config";
 
 type Props = {
   signals: CryptoSignalStripPayload;
+  useMockCatalog?: boolean;
 };
 
-export function CryptoSignalStrip({ signals }: Props) {
+function CryptoSignalRailSkeleton() {
   return (
-    <div className="cc-signal-strip cc-section" role="region" aria-label="Sinyal istihbaratı">
-      <div className="cc-signal-strip-header">
-        <div className="cc-zone-label" style={{ marginBottom: 0 }}>
-          Sinyal istihbaratı
-          <Link href="/signals" className="cc-zone-label-link">
-            Tüm sinyaller →
-          </Link>
-        </div>
-      </div>
+    <div className="cc-signal-rail-scroll cc-signal-rail-scroll--loading" aria-hidden>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="cc-signal-rail-skeleton-card" />
+      ))}
+    </div>
+  );
+}
 
-      {/* Meta bar */}
-      <div className="cc-signal-strip-meta">
-        <span style={{ color: "var(--cc-text-secondary)", fontWeight: 700 }}>
-          {signals.totalActiveSignals} aktif sinyal
-        </span>
-        <span style={{ color: "var(--cc-meta)" }}>·</span>
-        <span style={{ color: "var(--cc-teal)", fontWeight: 700 }}>
-          Bull {signals.bullPct}%
-        </span>
-        <span style={{ color: "var(--cc-rose)", fontWeight: 700 }}>
-          Bear {signals.bearPct}%
-        </span>
-        <span style={{ color: "var(--cc-meta)" }}>·</span>
-        <span>{signals.marketBiasLabel}</span>
+export function CryptoSignalStrip({ signals, useMockCatalog = false }: Props) {
+  const router = useRouter();
+  const mockOn = isMockDataEnabled();
+  const catalogFromMock = mockOn || useMockCatalog;
+  const { rows: liveRows, isLoading } = useSignalsCatalog({ scope: "live", sort: "trending" });
 
-        {/* Bias bar */}
-        <div className="cc-signal-bias-bar">
-          <div
-            className="cc-signal-bias-fill"
-            style={{ width: `${Math.min(100, Math.max(8, signals.bullPct))}%` }}
-          />
-        </div>
-      </div>
+  const items = useMemo(() => {
+    const pool = catalogFromMock ? getSignalsRepository().getFeedRows() : liveRows;
+    const priority = new Set(signals.topAssets.map((asset) => asset.symbol));
 
-      {/* Asset rows */}
-      <div className="cc-signal-rows" style={{ marginTop: 12 }}>
-        {signals.topAssets.map((asset) => (
-          <Link
-            key={asset.symbol}
-            href={`/signals?asset=${encodeURIComponent(asset.symbol)}`}
-            className={asset.symbol === "BTC" ? "cc-signal-row cc-signal-row--btc" : "cc-signal-row"}
-            aria-label={`${asset.symbol} sinyallerine git`}
-          >
-            <span className="cc-signal-row-symbol">{asset.symbol}</span>
-            <span className="cc-signal-row-count">{asset.activeSignals} sinyal</span>
-            <div className="cc-signal-row-bar">
+    const cryptoRows = pool
+      .filter((row) => resolveSignalAssetCategory(row) === "crypto")
+      .sort((a, b) => {
+        const aPriority = priority.has(a.symbol) ? 0 : 1;
+        const bPriority = priority.has(b.symbol) ? 0 : 1;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        return b.confidence - a.confidence;
+      })
+      .slice(0, 14);
+
+    return cryptoRows.map(mapFeedRowToLiveCardItem);
+  }, [catalogFromMock, liveRows, signals.topAssets]);
+
+  if (!signals.totalActiveSignals && items.length === 0) return null;
+
+  const showSkeleton = !catalogFromMock && isLoading && items.length === 0;
+
+  return (
+    <SignalsEngagementProvider>
+      <section className="cc-section cc-signal-rail" role="region" aria-label="Sinyal istihbaratı">
+        <div className="cc-signal-rail-head">
+          <div className="cc-zone-label cc-zone-label--flush">
+            Sinyal istihbaratı
+            <Link href="/signals" className="cc-zone-label-link">
+              Tüm sinyaller →
+            </Link>
+          </div>
+
+          <div className="cc-signal-rail-meta">
+            <span className="cc-signal-rail-meta-stat">
+              <span className="cc-signal-rail-meta-k">Aktif</span>
+              <span className="cc-signal-rail-meta-v">{signals.totalActiveSignals}</span>
+            </span>
+            <span className="cc-signal-rail-meta-divider" aria-hidden />
+            <span className="cc-signal-rail-meta-stat cc-signal-rail-meta-stat--bull">
+              <span className="cc-signal-rail-meta-k">Bull</span>
+              <span className="cc-signal-rail-meta-v">{signals.bullPct}%</span>
+            </span>
+            <span className="cc-signal-rail-meta-stat cc-signal-rail-meta-stat--bear">
+              <span className="cc-signal-rail-meta-k">Bear</span>
+              <span className="cc-signal-rail-meta-v">{signals.bearPct}%</span>
+            </span>
+            {signals.marketBiasLabel && signals.marketBiasLabel !== "—" ? (
+              <>
+                <span className="cc-signal-rail-meta-divider" aria-hidden />
+                <span className="cc-signal-rail-meta-note">{signals.marketBiasLabel}</span>
+              </>
+            ) : null}
+            <div className="cc-signal-rail-bias-bar" aria-hidden>
               <div
-                className="cc-signal-row-bar-fill"
-                style={{ width: `${Math.min(100, Math.max(4, asset.bullPct))}%` }}
+                className="cc-signal-rail-bias-fill"
+                style={{ width: `${Math.min(100, Math.max(8, signals.bullPct))}%` }}
               />
             </div>
-            <span className="cc-signal-row-pct">
-              {asset.bullPct}% bull
-            </span>
-            <span className="cc-signal-row-label">{asset.biasLabel}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
+          </div>
+        </div>
+
+        {showSkeleton ? (
+          <CryptoSignalRailSkeleton />
+        ) : items.length > 0 ? (
+          <HScroll className="cc-signal-rail-scroll dvr-hscroll--sig-rail">
+            {items.map((item, index) => (
+              <div key={item.id} className="cc-signal-rail-item shrink-0">
+                <div className="cc-signal-rail-card-wrap">
+                  <SignalsLiveRailCard
+                    item={item}
+                    index={index}
+                    layout="rail-horizontal"
+                    onSelect={() => router.push(item.href)}
+                  />
+                </div>
+              </div>
+            ))}
+          </HScroll>
+        ) : null}
+      </section>
+    </SignalsEngagementProvider>
   );
 }

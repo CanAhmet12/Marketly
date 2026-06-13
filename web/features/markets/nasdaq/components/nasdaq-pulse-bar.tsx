@@ -1,136 +1,182 @@
 "use client";
 
-import { useId } from "react";
+import type { ReactNode } from "react";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
+import { formatNasdaqIndexPrice } from "@/features/markets/nasdaq/lib/nasdaq-pulse-utils";
+import {
+  exaggerateSpark,
+  resolveNasdaqSparkline,
+  trendFromSeries,
+} from "@/features/markets/nasdaq/lib/nasdaq-sparkline-utils";
 import type { NasdaqPulseMetrics } from "@/features/markets/nasdaq/types";
 import { cn } from "@/lib/cn";
 
 type Props = { pulse: NasdaqPulseMetrics };
 
-function fmtIndex(n: number) {
-  return n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+function signed(v: number) {
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
 
-function signed(v: number) { return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`; }
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)"; if (v < 0) return "var(--cc-rose)"; return "var(--cc-meta)";
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
 }
 
-function MarketMoodGauge({ value, label }: { value: number; label: string }) {
-  const id = useId().replace(/:/g, "");
-  const r = 20; const cx = 28; const cy = 28;
-  const pct = Math.min(100, Math.max(0, value)) / 100;
-  const startAngle = Math.PI;
-  const endAngle = startAngle - pct * Math.PI;
-  const x1 = cx + r * Math.cos(startAngle);
-  const y1 = cy + r * Math.sin(startAngle);
-  const x2 = cx + r * Math.cos(endAngle);
-  const y2 = cy + r * Math.sin(endAngle);
-  const largeArc = pct > 0.5 ? 1 : 0;
-  const color = value >= 60 ? "#06b6d4" : value >= 40 ? "#64748b" : "#ef4444";
-  const bandLabel = value >= 70 ? "Risk-On" : value >= 50 ? "Normal" : value >= 30 ? "Temkinli" : "Risk-Off";
+type PulseCellProps = {
+  label: ReactNode;
+  value: ReactNode;
+  valueClass?: string;
+  sub?: ReactNode;
+  foot?: ReactNode;
+  layout?: "default" | "meter";
+};
+
+function PulseCell({ label, value, valueClass, sub, foot, layout = "default" }: PulseCellProps) {
+  const isMeter = layout === "meter";
+  return (
+    <div className={cn("cc-pulse-cell", isMeter && "cc-pulse-cell--meter")}>
+      <div className="cc-pulse-cell__top">{label}</div>
+      {isMeter ? (
+        <div className="cc-pulse-cell__main">{value}</div>
+      ) : (
+        <div className="cc-pulse-cell__body">
+          <div className={cn("cc-pulse-cell__value", valueClass)}>{value}</div>
+          <div className={cn("cc-pulse-cell__sub", !sub && "cc-pulse-cell__sub--empty")}>{sub ?? "\u00A0"}</div>
+        </div>
+      )}
+      {!isMeter ? (
+        <div className="cc-pulse-cell__foot">{foot ?? <span className="cc-pulse-foot-spacer" aria-hidden />}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function IndexIconLabel({ icon, text, tone }: { icon: string; text: string; tone: "ndx" | "comp" | "spx" | "vix" }) {
+  const iconClass =
+    tone === "ndx"
+      ? "cc-pulse-cell-icon cc-pulse-cell-icon--btc"
+      : tone === "comp"
+        ? "cc-pulse-cell-icon cc-pulse-cell-icon--eth"
+        : cn("nq-pulse-cell-icon", `nq-pulse-cell-icon--${tone}`);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span className="cc-pulse-label">Piyasa Ruh Hali</span>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <svg width="56" height="32" viewBox="0 0 56 32" aria-hidden style={{ overflow: "visible" }}>
-          <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none"
-            stroke="rgba(255,255,255,0.08)" strokeWidth="3.5" strokeLinecap="round" />
-          {pct > 0 && (
-            <path d={`M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 0 ${x2.toFixed(2)} ${y2.toFixed(2)}`}
-              fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" />
-          )}
-          <circle cx={x2.toFixed(2)} cy={y2.toFixed(2)} r="3" fill={color} />
-        </svg>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{value}</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color, marginTop: 1 }}>{bandLabel}</div>
-        </div>
+    <div className="cc-pulse-cell-header">
+      <div className={iconClass}>{icon}</div>
+      <span className="cc-pulse-label">{text}</span>
+    </div>
+  );
+}
+
+function PulseSpark({ series, trend }: { series: number[]; trend: "up" | "down" | "flat" }) {
+  const boosted = exaggerateSpark(series);
+  return (
+    <div className="cc-pulse-spark-wrap">
+      <MiniSparkline series={boosted} trend={trend} height={34} className="cc-pulse-spark" />
+    </div>
+  );
+}
+
+function MoodMeter({ value, label }: { value: number; label: string }) {
+  const color = value >= 70 ? "#06b6d4" : value >= 45 ? "rgba(6,182,212,0.75)" : "var(--cc-meta)";
+  return (
+    <div className="nq-mood-meter">
+      <div className="nq-mood-value-row">
+        <span className="nq-mood-big" style={{ color }}>
+          {value}
+        </span>
+        <span className="nq-mood-sub">/100</span>
+        <span className="nq-mood-label" style={{ color }}>
+          {label}
+        </span>
+      </div>
+      <div className="nq-mood-bar">
+        <div className="nq-mood-fill" style={{ width: `${value}%`, background: color }} />
       </div>
     </div>
   );
 }
 
-function FedPivotBar({ value, label }: { value: number; label: string }) {
+function FedPivotMeter({ value, label }: { value: number; label: string }) {
   return (
-    <div className="nq-fed-pivot">
-      <span className="cc-pulse-label">Fed Pivot</span>
+    <div className="nq-fed-pivot nq-fed-pivot--meter">
       <div className="nq-fed-value-row">
-        <span className="nq-fed-big" style={{ color: "#06b6d4" }}>{value}</span>
+        <span className="nq-fed-big">{value}</span>
         <span className="nq-fed-sub">/100</span>
+        <span className="nq-fed-label">{label}</span>
       </div>
       <div className="nq-fed-bar">
         <div className="nq-fed-fill" style={{ width: `${value}%` }} />
       </div>
-      <span className="nq-fed-label">{label}</span>
     </div>
   );
 }
 
 export function NasdaqPulseBar({ pulse }: Props) {
+  const ndxSpark = resolveNasdaqSparkline(pulse.ndx.changePct, pulse.ndx.sparkline);
+  const compSpark = resolveNasdaqSparkline(pulse.composite.changePct, pulse.composite.sparkline);
+  const spxSpark = resolveNasdaqSparkline(pulse.sp500.changePct, pulse.sp500.sparkline);
+
   return (
-    <div className="cc-pulse-bar-v2" role="region" aria-label="NASDAQ piyasa metrikleri">
+    <div className="cc-pulse-bar-v2 nq-pulse-bar-v2" role="region" aria-label="NASDAQ piyasa metrikleri">
+      <PulseCell
+        label={<IndexIconLabel icon="NDX" text="NASDAQ 100" tone="ndx" />}
+        value={formatNasdaqIndexPrice(pulse.ndx.value)}
+        valueClass="cc-pulse-value--btc"
+        sub={<span className={cn("cc-pulse-change", changeClass(pulse.ndx.changePct))}>{signed(pulse.ndx.changePct)}</span>}
+        foot={<PulseSpark series={ndxSpark} trend={trendFromSeries(ndxSpark)} />}
+      />
 
-      {/* NDX */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--btc" style={{ fontSize: 11, fontWeight: 700 }}>NDX</div>
-          <span className="cc-pulse-label">NASDAQ 100</span>
-        </div>
-        <span className="cc-pulse-value cc-pulse-value--btc">{fmtIndex(pulse.ndx.value)}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.ndx.changePct) }}>{signed(pulse.ndx.changePct)}</span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.ndx.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<IndexIconLabel icon="NAS" text="COMPOSITE" tone="comp" />}
+        value={formatNasdaqIndexPrice(pulse.composite.value)}
+        valueClass="cc-pulse-value--eth"
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.composite.changePct))}>
+            {signed(pulse.composite.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={compSpark} trend={trendFromSeries(compSpark)} />}
+      />
 
-      {/* Composite */}
-      <div className="cc-pulse-cell">
-        <div className="cc-pulse-cell-header">
-          <div className="cc-pulse-cell-icon cc-pulse-cell-icon--eth" style={{ fontSize: 11, fontWeight: 700 }}>NAS</div>
-          <span className="cc-pulse-label">Composite</span>
-        </div>
-        <span className="cc-pulse-value">{fmtIndex(pulse.composite.value)}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.composite.changePct) }}>{signed(pulse.composite.changePct)}</span>
-        <div className="cc-pulse-sparkline">
-          <MiniSparkline series={pulse.composite.sparkline} trend="up" height={30} className="w-full" />
-        </div>
-      </div>
+      <PulseCell
+        label={<IndexIconLabel icon="SPX" text="S&P 500" tone="spx" />}
+        value={formatNasdaqIndexPrice(pulse.sp500.value)}
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.sp500.changePct))}>
+            {signed(pulse.sp500.changePct)}
+          </span>
+        }
+        foot={<PulseSpark series={spxSpark} trend={trendFromSeries(spxSpark)} />}
+      />
 
-      {/* S&P 500 */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">S&P 500</span>
-        <span className="cc-pulse-value">{fmtIndex(pulse.sp500.value)}</span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.sp500.changePct) }}>{signed(pulse.sp500.changePct)}</span>
-      </div>
+      <PulseCell
+        label={<IndexIconLabel icon="VIX" text="VIX" tone="vix" />}
+        value={pulse.vix.value ? pulse.vix.value.toFixed(2) : "—"}
+        sub={
+          <span className={cn("cc-pulse-change", changeClass(pulse.vix.changePct))}>
+            {signed(pulse.vix.changePct)}
+          </span>
+        }
+      />
 
-      {/* VIX */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">VIX</span>
-        <span className="cc-pulse-value" style={{ color: pulse.vix.value < 20 ? "var(--cc-teal)" : pulse.vix.value > 30 ? "var(--cc-rose)" : "var(--cc-text)" }}>
-          {pulse.vix.value.toFixed(2)}
-        </span>
-        <span className="cc-pulse-change" style={{ color: changeColor(pulse.vix.changePct) }}>{signed(pulse.vix.changePct)}</span>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">Toplam Hacim</span>}
+        value={<span className="nq-pulse-volume">{pulse.totalVolume}</span>}
+      />
 
-      {/* Toplam Hacim */}
-      <div className="cc-pulse-cell">
-        <span className="cc-pulse-label">Toplam Hacim</span>
-        <span className="cc-pulse-value" style={{ fontSize: 16 }}>{pulse.totalVolume}</span>
-      </div>
+      <PulseCell
+        label={<span className="cc-pulse-label">Piyasa Ruh Hali</span>}
+        layout="meter"
+        value={<MoodMeter value={pulse.marketMood.value} label={pulse.marketMood.label} />}
+      />
 
-      {/* Piyasa Ruh Hali */}
-      <div className="cc-pulse-cell">
-        <MarketMoodGauge value={pulse.marketMood.value} label={pulse.marketMood.label} />
-      </div>
-
-      {/* Fed Pivot */}
-      <div className="cc-pulse-cell">
-        <FedPivotBar value={pulse.fedPivot.value} label={pulse.fedPivot.label} />
-      </div>
-
+      <PulseCell
+        label={<span className="cc-pulse-label">Fed Pivot</span>}
+        layout="meter"
+        value={<FedPivotMeter value={pulse.fedPivot.value} label={pulse.fedPivot.label} />}
+      />
     </div>
   );
 }

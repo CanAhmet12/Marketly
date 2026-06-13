@@ -8,11 +8,13 @@ export type CryptoPulseMetrics = {
     change24h: number;
     /** Formatlanmış market cap: "$1.32T" */
     marketCapLabel: string;
+    sparkline?: number[];
   };
   eth: {
     price: number;
     change24h: number;
     marketCapLabel: string;
+    sparkline?: number[];
   };
   /** "54.3%" */
   btcDominance: string;
@@ -32,6 +34,8 @@ export type CryptoPulseMetrics = {
   };
   /** 0–100; >75 = altcoin season */
   altcoinSeasonIndex: number;
+  /** 24s hacim sparkline */
+  volumeSparkline?: number[];
 };
 
 export type CryptoRegimePayload = {
@@ -47,10 +51,14 @@ export type CryptoRegimePayload = {
   stablecoinFlowLabel: string;
   btcDominanceNumeric: number;
   ethDominanceNumeric: number;
+  /** 24s BTC dominans değişimi — yoksa gösterilmez */
+  btcDominanceChange24h?: number | null;
+  momentumLabel?: string;
+  momentumSubLabel?: string;
 };
 
 export type CryptoAnchorAsset = {
-  symbol: "BTC" | "ETH";
+  symbol: "BTC" | "ETH" | "SOL";
   name: string;
   price: number;
   change24h: number;
@@ -67,6 +75,7 @@ export type CryptoDashboardPhase1 = {
   regime: CryptoRegimePayload;
   btc: CryptoAnchorAsset;
   eth: CryptoAnchorAsset;
+  sol: CryptoAnchorAsset;
 };
 
 /* ================================
@@ -101,6 +110,7 @@ export type CryptoSegmentItem = {
   leader: string;
   heatLevel: CryptoHeatLevel;
   barPct: number;
+  sparkline?: number[];
 };
 
 export type CryptoSegmentsPayload = {
@@ -116,6 +126,11 @@ export type CryptoSignalAsset = {
   activeSignals: number;
   bullPct: number;
   biasLabel: string;
+  /** Ortalama tez gücü 0–100 */
+  avgConfidence?: number;
+  /** Baskın yön — canlı/mock genişletme */
+  dominantDirection?: "BUY" | "SELL" | "HOLD";
+  assetName?: string;
 };
 
 export type CryptoSignalStripPayload = {
@@ -145,6 +160,24 @@ export type CryptoScreenerAsset = {
 
 export type CryptoScreenerPayload = {
   assets: CryptoScreenerAsset[];
+};
+
+/* ================================
+   TREEMAP — Faz 5
+   ================================ */
+
+export type CryptoTreemapCell = {
+  symbol: string;
+  name: string;
+  weightPct: number;
+  change24h: number;
+  marketCap: string;
+  sparkline: number[];
+  rank: number;
+};
+
+export type CryptoTreemapPayload = {
+  cells: CryptoTreemapCell[];
 };
 
 /* ================================

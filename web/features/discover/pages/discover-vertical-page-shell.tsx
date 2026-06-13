@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
-import { DISCOVER_HUB_PATH } from "@/features/discover/routes";
+import { useNudgeLazyMediaWhenReady } from "@/hooks/use-nudge-lazy-media-when-ready";
 import type { DiscoverViewModel } from "@/features/discover/visual-reference/discover-view-model-adapter";
 import { DiscoverErrorBanner } from "@/features/discover/visual-reference/discover-error-banner";
 import { MarketAtmosphereStack } from "@/features/discover/visual-reference/discover-market-strip";
@@ -19,6 +19,8 @@ type Props = {
   onFeedRetry?: () => void;
   liveDot?: boolean;
   pageTone?: "live" | "pulse" | "videos" | "signals" | "creators";
+  /** Başlık / intro chrome yok — doğrudan içerik */
+  headless?: boolean;
 };
 
 export function DiscoverVerticalPageShell({
@@ -31,35 +33,42 @@ export function DiscoverVerticalPageShell({
   onFeedRetry,
   liveDot = false,
   pageTone,
+  headless = false,
 }: Props) {
+  useNudgeLazyMediaWhenReady(!feedLoading, pageTone ?? title);
+
   return (
     <div
       className={cn(
         "dvr-surface dvr-surface--vertical-page",
         pageTone && `dvr-surface--${pageTone}-page`,
+        headless && "dvr-surface--headless",
       )}
       aria-busy={feedLoading}
     >
       {feedLoading ? <span className="sr-only">{title} yükleniyor.</span> : null}
+      {headless ? <h1 className="sr-only">{title}</h1> : null}
 
-      <header className="dvr-top-chrome">
-        <div className="dvr-market-atmosphere">
-          <MarketAtmosphereStack tickers={viewModel.marketTickers} />
-        </div>
+      {!headless ? (
+        <header className="dvr-top-chrome">
+          <div className="dvr-market-atmosphere">
+            <MarketAtmosphereStack tickers={viewModel.marketTickers} />
+          </div>
 
-        <div className="dvr-vertical-page-head">
-          <div className="dvr-vertical-page-head__row">
-            <Link href={DISCOVER_HUB_PATH} className="dvr-vertical-back">
-              ← Keşfet
-            </Link>
+          <div className="dvr-vertical-page-head">
+            <div className="dvr-vertical-page-head__row">
+              <Link href="/discover" className="dvr-vertical-back">
+                ← Keşfet
+              </Link>
+            </div>
+            <div className="dvr-vertical-page-head__title-row">
+              {liveDot ? <span className="dvr-vertical-live-dot dvr-live-tab-dot" aria-hidden /> : null}
+              <h1 className="dvr-vertical-page-title">{title}</h1>
+            </div>
+            <p className="dvr-vertical-page-desc">{description}</p>
           </div>
-          <div className="dvr-vertical-page-head__title-row">
-            {liveDot ? <span className="dvr-vertical-live-dot dvr-live-tab-dot" aria-hidden /> : null}
-            <h1 className="dvr-vertical-page-title">{title}</h1>
-          </div>
-          <p className="dvr-vertical-page-desc">{description}</p>
-        </div>
-      </header>
+        </header>
+      ) : null}
 
       {feedError && onFeedRetry ? (
         <DiscoverErrorBanner

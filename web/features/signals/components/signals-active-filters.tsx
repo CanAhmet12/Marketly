@@ -5,6 +5,7 @@ import {
   SIGNAL_CHIP_OPTIONS,
   SIGNAL_DIRECTION_OPTIONS,
   SIGNAL_SORT_OPTIONS,
+  isMarketFilterChip,
   type SignalFiltersState,
 } from "@/features/signals/signals-filters";
 
@@ -35,6 +36,7 @@ function buildActiveItems(filters: SignalFiltersState, focusAsset?: string | nul
   }
 
   for (const chipId of filters.chips) {
+    if (isMarketFilterChip(chipId)) continue;
     const label = SIGNAL_CHIP_OPTIONS.find((o) => o.id === chipId)?.label ?? chipId;
     const nextChips = new Set(filters.chips);
     nextChips.delete(chipId);

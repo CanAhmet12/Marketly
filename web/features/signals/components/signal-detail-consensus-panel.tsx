@@ -44,7 +44,7 @@ export function SignalDetailConsensusPanel({
   );
 
   return (
-    <section className={cn("sdm-panel-block sdm-consensus-block", className)} aria-label={`${symbol} piyasa görüşü`}>
+    <section className={cn("sdm-zone sdm-consensus-block", className)} aria-label={`${symbol} piyasa görüşü`}>
       <h3 className="sdm-panel-block__title">{title}</h3>
       <p className="sdm-consensus-block__headline">{narrative.headline}</p>
       <p className="sdm-panel-block__meta">{narrative.sampleLine}</p>

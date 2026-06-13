@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "@/features/auth/use-auth";
-import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
+import { fetchSignalsFeed, type SignalsFeedQuery } from "@/features/signals/fetch-signals-feed";
 import { useSignalRecommendations } from "@/features/signals/hooks/use-signal-recommendations";
 import { getSignalRecommendationsCache } from "@/features/signals/signal-recommendations-cache";
 import { fetchAnalystLeaderboardFromRpc } from "@/features/signals/fetch-signals-rpc";
@@ -23,7 +23,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isMockDataEnabled } from "@/mock/config";
 
-export function useSignalsCatalog() {
+export function useSignalsCatalog(feedQuery: SignalsFeedQuery = {}) {
   const { user } = useAuth();
   const mounted = useClientMounted();
   const mockOn = isMockDataEnabled();
@@ -33,9 +33,20 @@ export function useSignalsCatalog() {
   const userId = user?.id ?? null;
   const { rev: recRev } = useSignalRecommendations();
 
-  const feedQuery = useQuery({
-    queryKey: [...queryKeys.signalsFeed(), userId ?? "anon"] as const,
-    queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient(), 120, userId),
+  const assetKey = feedQuery.asset?.trim().toUpperCase() || "";
+  const directionKey = feedQuery.direction ?? "all";
+  const sortKey = feedQuery.sort ?? "trending";
+  const scopeKey = feedQuery.scope ?? "live";
+
+  const feedQueryState = useQuery({
+    queryKey: [...queryKeys.signalsFeed(), userId ?? "anon", scopeKey, assetKey, directionKey, sortKey] as const,
+    queryFn: () =>
+      fetchSignalsFeed(getSupabaseBrowserClient(), 120, userId, {
+        asset: assetKey || null,
+        direction: directionKey,
+        sort: sortKey,
+        scope: scopeKey,
+      }),
     enabled: supabaseOn,
     staleTime: 60_000,
   });
@@ -47,9 +58,9 @@ export function useSignalsCatalog() {
     staleTime: 120_000,
   });
 
-  const rows = mockOn ? repo.getFeedRows() : (feedQuery.data ?? []);
-  const isLoading = supabaseOn && feedQuery.isFetching && rows.length === 0;
-  const isError = supabaseOn && feedQuery.isError;
+  const rows = mockOn ? repo.getFeedRows() : (feedQueryState.data ?? []);
+  const isLoading = supabaseOn && feedQueryState.isFetching && rows.length === 0;
+  const isError = supabaseOn && feedQueryState.isError;
 
   const hero = useMemo(() => computeSignalsHero(rows), [rows]);
 
@@ -72,7 +83,7 @@ export function useSignalsCatalog() {
     return buildLiveSignalsMarketplaceRails(rows, recs);
   }, [rows, mockOn, pSnap.affinity, recRev, userId]);
 
-  const query = feedQuery;
+  const query = feedQueryState;
 
   return {
     rows,

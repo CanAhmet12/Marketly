@@ -1,36 +1,22 @@
 "use client";
 
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
+import { SegmentBadge } from "@/features/markets/crypto/components/crypto-editorial-icons";
+import {
+  resolveSegmentSparkline,
+  trendFromSeries,
+} from "@/features/markets/crypto/lib/crypto-sparkline-utils";
 import type { CryptoSegmentItem, CryptoSegmentsPayload } from "@/features/markets/crypto/types";
+import { cn } from "@/lib/cn";
 
 type Props = { segments: CryptoSegmentsPayload };
 
-const SEGMENT_ICONS: Record<string, string> = {
-  l1:     "🔥",
-  defi:   "💧",
-  l2:     "⚡",
-  ai:     "🤖",
-  meme:   "💣",
-  gaming: "🎮",
-  stablecoin: "🟡",
-  rwa:    "🏠",
-};
-
-const SPARKLINES: Record<string, number[]> = {
-  l1:     [3.1, 4.2, 3.8, 5.0, 4.6, 5.5, 5.84],
-  defi:   [1.8, 2.4, 2.1, 2.8, 3.0, 3.1, 3.21],
-  l2:     [0.8, 1.1, 0.9, 1.3, 1.2, 1.5, 1.47],
-  ai:     [0.3, 0.6, 0.5, 0.7, 0.8, 0.9, 0.88],
-  meme:   [-1.2, -2.0, -1.8, -2.5, -3.1, -3.4, -3.61],
-  gaming: [-0.4, -0.8, -0.6, -1.0, -1.1, -1.2, -1.22],
-};
-
-function changeColor(v: number) {
-  if (v > 2)  return "var(--cc-teal)";
-  if (v > 0)  return "var(--cc-teal-muted)";
-  if (v < -2) return "var(--cc-rose)";
-  if (v < 0)  return "var(--cc-rose-muted)";
-  return "var(--cc-meta)";
+function changeTone(v: number) {
+  if (v > 2) return "cc-seg-change--strong-up";
+  if (v > 0) return "cc-seg-change--up";
+  if (v < -2) return "cc-seg-change--strong-down";
+  if (v < 0) return "cc-seg-change--down";
+  return "cc-seg-change--flat";
 }
 
 function signed(v: number) {
@@ -38,23 +24,23 @@ function signed(v: number) {
 }
 
 function SegmentCell({ seg }: { seg: CryptoSegmentItem }) {
-  const spark = SPARKLINES[seg.id] ?? [0, seg.change24h];
-  const trend = seg.change24h > 0 ? "up" : seg.change24h < 0 ? "down" : "flat";
+  const spark = resolveSegmentSparkline(seg.change24h, seg.sparkline);
+  const trend = trendFromSeries(spark);
 
   const heatClass =
-    seg.heatLevel === "hot-strong"  ? "cc-seg-cell--hot-strong"  :
-    seg.heatLevel === "hot-mild"    ? "cc-seg-cell--hot-mild"    :
+    seg.heatLevel === "hot-strong" ? "cc-seg-cell--hot-strong" :
+    seg.heatLevel === "hot-mild" ? "cc-seg-cell--hot-mild" :
     seg.heatLevel === "cold-strong" ? "cc-seg-cell--cold-strong" :
-    seg.heatLevel === "cold-mild"   ? "cc-seg-cell--cold-mild"   :
+    seg.heatLevel === "cold-mild" ? "cc-seg-cell--cold-mild" :
     "cc-seg-cell--neutral";
 
   return (
-    <div className={`cc-seg-cell ${heatClass}`}>
+    <div className={cn("cc-seg-cell", heatClass)}>
       <div className="cc-seg-header">
-        <span className="cc-seg-icon" aria-hidden>{SEGMENT_ICONS[seg.id] ?? "●"}</span>
+        <SegmentBadge id={seg.id} />
         <span className="cc-seg-name">{seg.name}</span>
       </div>
-      <span className="cc-seg-change" style={{ color: changeColor(seg.change24h) }}>
+      <span className={cn("cc-seg-change", changeTone(seg.change24h))}>
         {signed(seg.change24h)}
       </span>
       <div className="cc-seg-sparkline">
@@ -67,7 +53,7 @@ function SegmentCell({ seg }: { seg: CryptoSegmentItem }) {
 export function CryptoSegmentHeatmap({ segments }: Props) {
   return (
     <div className="cc-section" role="region" aria-label="Piyasa ısı haritası">
-      <p className="cc-section-label" style={{ marginBottom: 12 }}>Piyasa Isı Haritası</p>
+      <p className="cc-section-label cc-section-label--spaced">Segment Performansı</p>
       <div className="cc-seg-grid">
         {segments.segments.map((seg) => (
           <SegmentCell key={seg.id} seg={seg} />

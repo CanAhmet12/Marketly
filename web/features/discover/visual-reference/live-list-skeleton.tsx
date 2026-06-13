@@ -7,7 +7,6 @@ type Props = {
 export function LiveListSkeleton({ inline = false }: Props) {
   const grid = (
     <div className="dvr-vertical-stream dvr-vertical-stream--live" aria-hidden>
-      <div className="dvr-skeleton-tab-intro" />
       <div className="dvr-skeleton-rail dvr-skeleton-rail--peak">
         <div className="dvr-skeleton-rail-head">
           <div className="dvr-skeleton-line dvr-skeleton-line--accent" aria-hidden />

@@ -19,10 +19,10 @@ export function HomeFeedDiscoverNudge({ postCount }: Props) {
         <Link href="/discover" className="hv-ref-feed-nudge__btn hv-ref-feed-nudge__btn--primary">
           Keşfet
         </Link>
-        <Link href="/discover?tab=signals" className="hv-ref-feed-nudge__btn">
+        <Link href="/signals" className="hv-ref-feed-nudge__btn">
           Sinyaller
         </Link>
-        <Link href="/discover?tab=creators" className="hv-ref-feed-nudge__btn">
+        <Link href="/creators" className="hv-ref-feed-nudge__btn">
           Creator&apos;lar
         </Link>
       </div>

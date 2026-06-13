@@ -9,7 +9,6 @@ import { ChannelRecommendationRail } from "@/features/channel/components/channel
 import { ChannelWriteGateNotice } from "@/features/channel/components/channel-write-gate-notice";
 import { fmtCount, tierChip } from "@/features/channel/channel-display-helpers";
 import type { ChannelProfile, ChannelTabId, FollowState } from "@/features/channel/types";
-import { ChannelMarketCommunityInset } from "@/features/markets/components/channel-market-community-inset";
 import { analystBadgeLabelTr } from "@/features/signals/intelligence/badge-labels";
 import type { AnalystReputationProfile } from "@/features/signals/intelligence/types";
 import { hubPremiumKicker } from "@/features/hub/lib/hub-premium-zone";
@@ -38,7 +37,6 @@ type Props = {
   onFollowClick: () => void;
   onOpenFollowList: (kind: "followers" | "following") => void;
   channelAnalystReputation: AnalystReputationProfile | null;
-  channelAssetTags: string[];
   tabs: TabDef[];
   tab: ChannelTabId;
   tabCounts: Partial<Record<ChannelTabId, number>>;
@@ -67,7 +65,6 @@ export function ChannelHero({
   onFollowClick,
   onOpenFollowList,
   channelAnalystReputation,
-  channelAssetTags,
   tabs,
   tab,
   tabCounts,
@@ -85,17 +82,18 @@ export function ChannelHero({
         </div>
       ) : null}
 
-      <div className="ch-cover">
-        {profile.cover_url?.trim() ? (
-          <img src={profile.cover_url} alt="" className="ch-cover-img" />
-        ) : (
-          <div className="ch-cover-gradient" />
-        )}
-        <div className="ch-cover-fade" />
-      </div>
+      <div className="ch-profile-header">
+        <div className="ch-cover">
+          {profile.cover_url?.trim() ? (
+            <img src={profile.cover_url} alt="" className="ch-cover-img" />
+          ) : (
+            <div className="ch-cover-gradient" />
+          )}
+          <div className="ch-cover-fade" />
+        </div>
 
-      <div className="ch-hero">
-        <div className="ch-hero-row">
+        <div className="ch-hero">
+          <div className="ch-hero-head">
           <div className="ch-avatar-wrap">
             <img src={avatarSrc} alt="" className="ch-avatar" />
           </div>
@@ -112,7 +110,7 @@ export function ChannelHero({
             </div>
 
             <div className="ch-handle-row">
-              <span>{handle}</span>
+              <span className="ch-handle">{handle}</span>
               {profile.strategy_style ? (
                 <>
                   <span className="ch-handle-sep">·</span>
@@ -122,7 +120,7 @@ export function ChannelHero({
               {profile.location ? (
                 <>
                   <span className="ch-handle-sep">·</span>
-                  <span>{profile.location}</span>
+                  <span className="ch-location">{profile.location}</span>
                 </>
               ) : null}
             </div>
@@ -138,127 +136,127 @@ export function ChannelHero({
                 ))}
               </div>
             ) : null}
+          </div>
 
-            <div className="ch-stats-row">
-              <button
-                type="button"
-                className="ch-stat ch-stat--clickable"
-                onClick={() => onOpenFollowList("followers")}
-                aria-label={`${fmtCount(followersShown)} takipçi — listeyi aç`}
-              >
-                <span className="ch-stat-value">{fmtCount(followersShown)}</span>
-                <span className="ch-stat-label">Takipçi</span>
-              </button>
-              <button
-                type="button"
-                className="ch-stat ch-stat--clickable"
-                onClick={() => onOpenFollowList("following")}
-                aria-label={`${fmtCount(followingShown)} takip — listeyi aç`}
-              >
-                <span className="ch-stat-value">{fmtCount(followingShown)}</span>
-                <span className="ch-stat-label">Takip</span>
-              </button>
-              {profile.total_views ? (
-                <div className="ch-stat">
-                  <span className="ch-stat-value">{fmtCount(profile.total_views)}</span>
-                  <span className="ch-stat-label">Görüntülenme</span>
-                </div>
-              ) : null}
-              {profile.signal_accuracy != null ? (
-                <div className="ch-stat">
-                  <span className="ch-stat-value">%{profile.signal_accuracy}</span>
-                  <span className="ch-stat-label">Sinyal Doğruluk</span>
-                </div>
-              ) : null}
-              {profile.subscriber_count > 0 ? (
-                <div className="ch-stat">
-                  <span className="ch-stat-value">{fmtCount(profile.subscriber_count)}</span>
-                  <span className="ch-stat-label">Abone</span>
-                </div>
-              ) : null}
-            </div>
-
-            {channelAnalystReputation ? (
-              <div className="ch-reputation">
-                <div className="ch-reputation-title">Sinyal İtibarı</div>
-                <div className="ch-reputation-headline">{channelAnalystReputation.headline}</div>
-                <div className="ch-reputation-scores">
-                  <span className="ch-rep-score">Güven {channelAnalystReputation.scores.trustScore}</span>
-                  <span className="ch-rep-score">Tutarlılık {channelAnalystReputation.scores.consistencyScore}</span>
-                  <span className="ch-rep-score">
-                    Risk-adj {channelAnalystReputation.scores.riskAdjustedPerformance}
-                  </span>
-                </div>
-                {channelAnalystReputation.badges.length > 0 ? (
-                  <div className="ch-rep-badges">
-                    {channelAnalystReputation.badges.map((b) => (
-                      <span key={b} className="ch-rep-badge">
-                        {analystBadgeLabelTr(b)}
-                      </span>
-                    ))}
-                  </div>
+          <div className="ch-actions">
+            {isOwn ? (
+              <>
+                {!embeddedInHub ? (
+                  <Link href="/hub/profile" className="ch-btn ch-btn--ghost">
+                    Profil
+                  </Link>
                 ) : null}
+                <Link href="/hub/settings?section=profil" className="ch-btn ch-btn--ghost">
+                  Profili Düzenle
+                </Link>
+                <Link href="/hub/studio" className="ch-btn ch-btn--ghost">
+                  Studio
+                </Link>
+                <Link href="/hub/upload" className="ch-btn ch-btn--primary">
+                  İçerik Ekle
+                </Link>
+              </>
+            ) : (
+              <>
+                {!socialWriteEnabled ? (
+                  <ChannelWriteGateNotice compact className="ch-write-gate-notice ch-write-gate-notice--inline" />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={onFollowClick}
+                  disabled={followPending || followLoading || !socialWriteEnabled}
+                  className={cn("ch-btn", follow.isFollowing ? "ch-btn--following" : "ch-btn--follow")}
+                  aria-pressed={follow.isFollowing}
+                  aria-label={follow.isFollowing ? "Takibi bırak" : "Takip et"}
+                  title={!socialWriteEnabled ? "Salt-okuma modu" : undefined}
+                >
+                  {follow.isFollowing ? "Takiptesin" : "Takip Et"}
+                </button>
+                <Link
+                  href={
+                    viewerId
+                      ? messagesInboxWithPeer(channelUserId)
+                      : `/auth/login?next=${encodeURIComponent(channelLoginNext)}`
+                  }
+                  className="ch-btn ch-btn--ghost"
+                >
+                  Mesaj
+                </Link>
+                {profile.subscription_price ? (
+                  <Link
+                    href={`/subscriptions/${encodeURIComponent(channelUserId)}`}
+                    className="ch-btn ch-btn--subscribe"
+                  >
+                    Abone Ol · ₺{profile.subscription_price}/ay
+                  </Link>
+                ) : null}
+              </>
+            )}
+            {followErr ? <span className="ch-follow-err">{followErr}</span> : null}
+          </div>
+
+          <div className="ch-stats-row">
+            <button
+              type="button"
+              className="ch-stat ch-stat--clickable"
+              onClick={() => onOpenFollowList("followers")}
+              aria-label={`${fmtCount(followersShown)} takipçi — listeyi aç`}
+            >
+              <span className="ch-stat-value">{fmtCount(followersShown)}</span>
+              <span className="ch-stat-label">Takipçi</span>
+            </button>
+            <button
+              type="button"
+              className="ch-stat ch-stat--clickable"
+              onClick={() => onOpenFollowList("following")}
+              aria-label={`${fmtCount(followingShown)} takip — listeyi aç`}
+            >
+              <span className="ch-stat-value">{fmtCount(followingShown)}</span>
+              <span className="ch-stat-label">Takip</span>
+            </button>
+            {profile.total_views ? (
+              <div className="ch-stat">
+                <span className="ch-stat-value">{fmtCount(profile.total_views)}</span>
+                <span className="ch-stat-label">Görüntülenme</span>
               </div>
             ) : null}
-
-            <div className="ch-actions">
-              {isOwn ? (
-                <>
-                  {!embeddedInHub ? (
-                    <Link href="/hub/profile" className="ch-btn ch-btn--ghost">
-                      Profil
-                    </Link>
-                  ) : null}
-                  <Link href="/hub/settings?section=profil" className="ch-btn ch-btn--ghost">
-                    Profili Düzenle
-                  </Link>
-                  <Link href="/hub/studio" className="ch-btn ch-btn--ghost">
-                    Studio
-                  </Link>
-                  <Link href="/hub/upload" className="ch-btn ch-btn--follow">
-                    İçerik Ekle
-                  </Link>
-                </>
-              ) : (
-                <>
-                  {!socialWriteEnabled ? (
-                    <ChannelWriteGateNotice compact className="ch-write-gate-notice ch-write-gate-notice--inline" />
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={onFollowClick}
-                    disabled={followPending || followLoading || !socialWriteEnabled}
-                    className={cn("ch-btn", follow.isFollowing ? "ch-btn--following" : "ch-btn--follow")}
-                    aria-pressed={follow.isFollowing}
-                    aria-label={follow.isFollowing ? "Takibi bırak" : "Takip et"}
-                    title={!socialWriteEnabled ? "Salt-okuma modu" : undefined}
-                  >
-                    {follow.isFollowing ? "Takiptesin" : "Takip Et"}
-                  </button>
-                  <Link
-                    href={
-                      viewerId
-                        ? messagesInboxWithPeer(channelUserId)
-                        : `/auth/login?next=${encodeURIComponent(channelLoginNext)}`
-                    }
-                    className="ch-btn ch-btn--ghost"
-                  >
-                    Mesaj
-                  </Link>
-                  {profile.subscription_price ? (
-                    <Link
-                      href={`/subscriptions/${encodeURIComponent(channelUserId)}`}
-                      className="ch-btn ch-btn--subscribe"
-                    >
-                      Abone Ol · ₺{profile.subscription_price}/ay
-                    </Link>
-                  ) : null}
-                </>
-              )}
-              {followErr ? <span className="ch-follow-err">{followErr}</span> : null}
-            </div>
+            {profile.signal_accuracy != null ? (
+              <div className="ch-stat">
+                <span className="ch-stat-value">%{profile.signal_accuracy}</span>
+                <span className="ch-stat-label">Sinyal Doğruluk</span>
+              </div>
+            ) : null}
+            {profile.subscriber_count > 0 ? (
+              <div className="ch-stat">
+                <span className="ch-stat-value">{fmtCount(profile.subscriber_count)}</span>
+                <span className="ch-stat-label">Abone</span>
+              </div>
+            ) : null}
           </div>
         </div>
+
+        {channelAnalystReputation ? (
+          <div className="ch-reputation">
+            <div className="ch-reputation-title">Sinyal İtibarı</div>
+            <div className="ch-reputation-headline">{channelAnalystReputation.headline}</div>
+            <div className="ch-reputation-scores">
+              <span className="ch-rep-score">Güven {channelAnalystReputation.scores.trustScore}</span>
+              <span className="ch-rep-score">Tutarlılık {channelAnalystReputation.scores.consistencyScore}</span>
+              <span className="ch-rep-score">
+                Risk-adj {channelAnalystReputation.scores.riskAdjustedPerformance}
+              </span>
+            </div>
+            {channelAnalystReputation.badges.length > 0 ? (
+              <div className="ch-rep-badges">
+                {channelAnalystReputation.badges.map((b) => (
+                  <span key={b} className="ch-rep-badge">
+                    {analystBadgeLabelTr(b)}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="ch-tabs" role="tablist" aria-label="Kanal sekmeleri">
           {tabs.map(({ id, label }) => {
@@ -286,13 +284,14 @@ export function ChannelHero({
           })}
         </div>
 
-        <ChannelMarketCommunityInset channelUserId={channelUserId} assetTags={channelAssetTags} />
-
-        <ChannelRecommendationRail
-          viewerId={viewerId}
-          channelUserId={channelUserId}
-          specialties={profile.specialties}
-        />
+        {!embeddedInHub ? (
+          <ChannelRecommendationRail
+            viewerId={viewerId}
+            channelUserId={channelUserId}
+            specialties={profile.specialties}
+          />
+        ) : null}
+        </div>
       </div>
     </>
   );

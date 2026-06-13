@@ -2,10 +2,11 @@
 
 import type { ReactElement } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { defaultDiscoverTab, isDiscoverTabId, type DiscoverTabId } from "@/features/feed/discover-feed-filters";
+import { DiscoverHubLink } from "@/features/discover/components/discover-hub-link";
 import { DISCOVER_HUB_PATH, DISCOVER_VERTICAL_ROUTES } from "@/features/discover/routes";
 import { useAuth } from "@/features/auth/use-auth";
 import { PrefetchOnHoverLink } from "@/components/ui/prefetch-on-hover-link";
@@ -269,6 +270,7 @@ const mainNav: NavItem[] = [
  * DISCOVER QUICK ACCESS
  * Discover alt sekmeleri — media discovery surfaces
  */
+/** Keşfet alt menü — bağımsız tam sayfalar */
 const discoverNav: NavItem[] = [
   { href: DISCOVER_VERTICAL_ROUTES.pulse, label: "Pulse", icon: IconFlash },
   { href: DISCOVER_VERTICAL_ROUTES.videos, label: "Videolar", icon: IconVideo },
@@ -327,14 +329,6 @@ function discoverTabFromHref(href: string): DiscoverTabId | null {
 export function Sidebar({ onNavigate }: Props) {
   const { user } = useAuth();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const discoverTabParam = searchParams.get("tab");
-  const discoverTabResolved: DiscoverTabId =
-    pathname === "/discover" && discoverTabParam && isDiscoverTabId(discoverTabParam)
-      ? discoverTabParam
-      : pathname === "/discover"
-        ? defaultDiscoverTab()
-        : defaultDiscoverTab();
 
   const [discoverOpen, setDiscoverOpen] = useState(true);
   const [marketsNavOpen, setMarketsNavOpen] = useState(true);
@@ -360,21 +354,27 @@ export function Sidebar({ onNavigate }: Props) {
   );
 
   const linkActive = (href: string): boolean => {
-    // Keşfet hub — yalnızca /discover (dikey sayfalar ayrı aktif olur)
+    // Keşfet hub — yalnızca /discover (sekme yok; dikeyler ayrı sayfa)
     if (href === DISCOVER_HUB_PATH) {
       return pathname === DISCOVER_HUB_PATH;
     }
 
     // Bağımsız keşif dikeyleri
+    if (href === DISCOVER_VERTICAL_ROUTES.creators) return pathname.startsWith("/creators");
+    if (href === DISCOVER_VERTICAL_ROUTES.signals) return pathname.startsWith("/signals");
     if (href === DISCOVER_VERTICAL_ROUTES.live) return pathname.startsWith("/live");
     if (href === DISCOVER_VERTICAL_ROUTES.pulse) return pathname.startsWith("/pulse");
     if (href === DISCOVER_VERTICAL_ROUTES.videos) return pathname.startsWith("/videos");
-    if (href === DISCOVER_VERTICAL_ROUTES.creators) return pathname.startsWith("/creators");
 
-    // Discover tab links (legacy — hub içi ?tab= hâlâ desteklenir)
+    // Eski ?tab= keşfet linkleri (geri uyumluluk)
     const tabFromLink = discoverTabFromHref(href);
     if (tabFromLink != null) {
-      return pathname === DISCOVER_HUB_PATH && discoverTabResolved === tabFromLink;
+      if (tabFromLink === "live") return pathname.startsWith("/live");
+      if (tabFromLink === "pulse") return pathname.startsWith("/pulse");
+      if (tabFromLink === "videos") return pathname.startsWith("/videos");
+      if (tabFromLink === "signals") return pathname.startsWith("/signals");
+      if (tabFromLink === "creators") return pathname.startsWith("/creators");
+      return pathname === DISCOVER_HUB_PATH;
     }
 
     // Piyasalar kategorileri — tam eşleşme (`/markets` kökü artık yönlendirme; sembol sayfasında kategori aktif olmaz)
@@ -420,6 +420,14 @@ export function Sidebar({ onNavigate }: Props) {
       {/* Primary nav — always visible */}
       {mainNav.map((item) => {
         const active = linkActive(item.href);
+        if (item.href === DISCOVER_HUB_PATH) {
+          return (
+            <DiscoverHubLink key={item.href} prefetch onClick={onNavigate} className={rowClass(active)}>
+              {renderIcon(item.icon, active)}
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            </DiscoverHubLink>
+          );
+        }
         return (
           <Link key={item.href} href={item.href} prefetch onClick={onNavigate} className={rowClass(active)}>
             {renderIcon(item.icon, active)}

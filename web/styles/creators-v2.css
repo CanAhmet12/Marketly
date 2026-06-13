@@ -1354,25 +1354,28 @@
   margin-top: -0.15rem;
 }
 
-/* ── Card ribbons + actions ── */
-.crt-analyst-card__ribbon {
-  position: absolute;
-  top: 0.55rem;
-  right: 0.55rem;
-  z-index: 2;
-  padding: 0.12rem 0.38rem;
+/* ── Card status pills + actions ── */
+.crt-analyst-card__status {
+  padding: 0.14rem 0.42rem;
   border-radius: 6px;
-  font-size: 0.55rem;
-  letter-spacing: 0.08em;
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   font-family: var(--font-bold);
-  color: var(--color-primary-dark);
-  background: var(--color-primary-light);
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
-.crt-analyst-card__ribbon--rising {
+.crt-analyst-card__status--pick {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.crt-analyst-card__status--rising {
   color: #166534;
   background: color-mix(in srgb, #22c55e 16%, #fff);
+  border: 1px solid color-mix(in srgb, #22c55e 22%, transparent);
 }
 
 .crt-analyst-card__actions {
@@ -1382,13 +1385,35 @@
   flex-shrink: 0;
 }
 
+.crt-analyst-card__profile {
+  position: relative;
+  z-index: 2;
+  padding: 0.28rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-family: var(--font-bold);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.crt-analyst-card__profile:hover {
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+}
+
 .crt-analyst-card__watch {
+  position: relative;
+  z-index: 2;
   padding: 0.28rem 0.5rem;
   border-radius: 8px;
   font-size: 0.65rem;
   font-family: var(--font-bold);
   color: #fff;
   background: #dc2626;
+  text-decoration: none;
 }
 
 .crt-analyst-card--acc-high .crt-analyst-card__glow {

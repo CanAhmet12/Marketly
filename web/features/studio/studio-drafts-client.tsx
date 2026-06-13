@@ -14,6 +14,7 @@ import { useStudioLocalMutations } from "@/features/studio/use-studio-local-muta
 import { useStudioOwnerId } from "@/features/studio/use-studio-owner-id";
 import { getStudioRepository } from "@/features/studio/repository";
 import { isMockDataEnabled } from "@/mock/config";
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
 
 function editedLabel(iso: string) {
   return new Date(iso).toLocaleString("tr-TR", {
@@ -32,11 +33,28 @@ export function StudioDraftsClient() {
 
   const liveMode = !mockOn && isSupabaseConfigured();
   const [liveDrafts, setLiveDrafts] = useState<StudioDraftItem[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
-    if (!ownerId || !liveMode) return;
-    fetchStudioDrafts(getSupabaseBrowserClient(), ownerId).then(setLiveDrafts);
+    if (!ownerId || !liveMode) {
+      setLiveLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLiveLoading(true);
+    fetchStudioDrafts(getSupabaseBrowserClient(), ownerId)
+      .then((rows) => {
+        if (!cancelled) setLiveDrafts(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setLiveLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [ownerId, liveMode]);
+
+  useRegisterPageLoad(liveLoading);
 
   const drafts = useMemo(() => {
     if (!ownerId) return [];

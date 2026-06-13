@@ -1,135 +1,26 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, type KeyboardEvent, type MutableRefObject } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRef } from "react";
+import { useSearchParams } from "next/navigation";
 
-import { cn } from "@/lib/cn";
 import { InfiniteScrollSentinel } from "@/components/ui/infinite-scroll-sentinel";
-import { VR_TABS, type VRTabId } from "./discover-visual-reference-tabs";
-import { DISCOVER_STATIC_VIEW_MODEL, type DiscoverViewModel } from "./discover-view-model-adapter";
+import { useNudgeLazyMediaWhenReady } from "@/hooks/use-nudge-lazy-media-when-ready";
+import { resolveDiscoverTabRedirect } from "@/features/discover/lib/discover-hub-routes";
 import { CreatorsHubFaceRail } from "@/features/creators/components/creators-hub-face-rail";
 import { TopicChipBoard } from "./discover-creator-network";
 import { MarketAtmosphereStack } from "./discover-market-strip";
 import { DiscoverErrorBanner } from "./discover-error-banner";
 import { DiscoverFeedFooter } from "./discover-feed-footer";
 import { DiscoverFeedSkeleton } from "./discover-feed-skeleton";
+import { DISCOVER_STATIC_VIEW_MODEL, type DiscoverViewModel } from "./discover-view-model-adapter";
+
 const DiscoveryStream = dynamic(
   () => import("./discover-vr-sections").then((m) => m.DiscoveryStream),
   { loading: () => <DiscoverFeedSkeleton inline /> },
 );
 
-const LiveTabPreview = dynamic(
-  () => import("./discover-vr-sections").then((m) => m.LiveTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline preset="live" /> },
-);
-
-const PulseTabPreview = dynamic(
-  () => import("./discover-vr-sections").then((m) => m.PulseTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline preset="pulse" /> },
-);
-
-const VideosTabPreview = dynamic(
-  () => import("./discover-vr-sections").then((m) => m.VideosTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline preset="videos" /> },
-);
-
-const SignalsTabPreview = dynamic(
-  () => import("./discover-vr-sections").then((m) => m.SignalsTabPreview),
-  { loading: () => <DiscoverFeedSkeleton inline preset="signals" /> },
-);
-
-const CreatorsTabPreview = dynamic(
-  () => import("@/features/creators/components/creators-hub-preview").then((m) => m.CreatorsHubPreview),
-  { loading: () => <DiscoverFeedSkeleton inline preset="creators" /> },
-);
-
 const DISCOVER_PANEL_ID = "discover-feed-panel";
-
-type TabTarget = VRTabId | "all";
-
-const TAB_ORDER: TabTarget[] = ["all", ...VR_TABS.map((t) => t.id)];
-
-function TabBar({
-  active,
-  onSelect,
-  onSelectAll,
-  tabRefs,
-  onTabKeyDown,
-}: {
-  active: VRTabId | null;
-  onSelect: (id: VRTabId) => void;
-  onSelectAll: () => void;
-  tabRefs: MutableRefObject<Partial<Record<TabTarget, HTMLButtonElement>>>;
-  onTabKeyDown: (e: KeyboardEvent<HTMLButtonElement>, target: TabTarget) => void;
-}) {
-  return (
-    <div className="dvr-tab-bar-wrap">
-      <div
-        className="dvr-tab-bar scrollbar-none overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-        role="tablist"
-        aria-label="Keşfet sekmeleri"
-      >
-      <button
-        ref={(el) => {
-          tabRefs.current.all = el ?? undefined;
-        }}
-        type="button"
-        role="tab"
-        id="discover-tab-all"
-        aria-selected={active === null}
-        aria-controls={DISCOVER_PANEL_ID}
-        tabIndex={active === null ? 0 : -1}
-        className={cn("dvr-tab", active === null && "dvr-tab--active")}
-        onClick={onSelectAll}
-        onKeyDown={(e) => onTabKeyDown(e, "all")}
-        data-active={active === null}
-      >
-        <span className="dvr-tab__label">Tümü</span>
-      </button>
-
-      {VR_TABS.map((t) => (
-        <button
-          key={t.id}
-          ref={(el) => {
-            tabRefs.current[t.id] = el ?? undefined;
-          }}
-          type="button"
-          role="tab"
-          id={`discover-tab-${t.id}`}
-          aria-selected={active === t.id}
-          aria-controls={DISCOVER_PANEL_ID}
-          tabIndex={active === t.id ? 0 : -1}
-          className={cn("dvr-tab", active === t.id && "dvr-tab--active")}
-          onClick={() => onSelect(t.id)}
-          onKeyDown={(e) => onTabKeyDown(e, t.id)}
-          data-active={active === t.id}
-        >
-          {t.id === "live" ? <span className="dvr-live-tab-dot" aria-hidden /> : null}
-          <span className="dvr-tab__label">{t.label}</span>
-        </button>
-      ))}
-      </div>
-    </div>
-  );
-}
-
-function TabContent({ tab, vm }: { tab: VRTabId; vm: DiscoverViewModel }) {
-  switch (tab) {
-    case "live":
-      return <LiveTabPreview vm={vm} />;
-    case "pulse":
-      return <PulseTabPreview vm={vm} />;
-    case "videos":
-      return <VideosTabPreview vm={vm} />;
-    case "signals":
-      return <SignalsTabPreview vm={vm} />;
-    case "creators":
-      return <CreatorsTabPreview />;
-    default:
-      return null;
-  }
-}
 
 export type DiscoverVisualReferenceSurfaceProps = {
   viewModel?: DiscoverViewModel;
@@ -153,58 +44,16 @@ export function DiscoverVisualReferenceSurface({
   onFeedLoadMore,
 }: DiscoverVisualReferenceSurfaceProps) {
   const vm = viewModel;
-  const router = useRouter();
   const searchParams = useSearchParams();
   const rawTab = searchParams.get("tab");
+  const pendingLegacyRedirect = Boolean(rawTab && resolveDiscoverTabRedirect(rawTab));
   const contentRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef<Partial<Record<TabTarget, HTMLButtonElement>>>({});
 
-  useEffect(() => {
-    if (rawTab === "shorts") {
-      router.replace("/discover?tab=pulse", { scroll: false });
-    }
-  }, [rawTab, router]);
+  useNudgeLazyMediaWhenReady(!feedLoading && !pendingLegacyRedirect, "all");
 
-  const isValidTab = (t: string | null): t is VRTabId =>
-    t !== null && t !== "shorts" && VR_TABS.some((vt) => vt.id === t);
-
-  const activeTab: VRTabId | null = isValidTab(rawTab) ? rawTab : null;
-
-  const scrollContentTop = useCallback(() => {
-    contentRef.current?.scrollTo({ top: 0 });
-  }, []);
-
-  const handleSelect = useCallback(
-    (id: VRTabId) => {
-      scrollContentTop();
-      router.replace(`/discover?tab=${id}`, { scroll: false });
-    },
-    [router, scrollContentTop],
-  );
-
-  const handleSelectAll = useCallback(() => {
-    scrollContentTop();
-    router.replace("/discover", { scroll: false });
-  }, [router, scrollContentTop]);
-
-  const onTabKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLButtonElement>, current: TabTarget) => {
-      const idx = TAB_ORDER.indexOf(current);
-      if (idx < 0) return;
-      let nextIdx = idx;
-      if (e.key === "ArrowRight") nextIdx = (idx + 1) % TAB_ORDER.length;
-      else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + TAB_ORDER.length) % TAB_ORDER.length;
-      else return;
-      e.preventDefault();
-      const next = TAB_ORDER[nextIdx]!;
-      tabRefs.current[next]?.focus();
-      if (next === "all") handleSelectAll();
-      else handleSelect(next);
-    },
-    [handleSelect, handleSelectAll],
-  );
-
-  const panelLabelId = activeTab === null ? "discover-tab-all" : `discover-tab-${activeTab}`;
+  if (pendingLegacyRedirect) {
+    return <DiscoverFeedSkeleton inline />;
+  }
 
   return (
     <div className="dvr-surface" aria-busy={feedLoading}>
@@ -222,16 +71,16 @@ export function DiscoverVisualReferenceSurface({
         </div>
 
         <div className="dvr-sticky-bar">
-          <div className="dvr-sticky-bar__inner">
-            <TabBar
-              active={activeTab}
-              onSelect={handleSelect}
-              onSelectAll={handleSelectAll}
-              tabRefs={tabRefs}
-              onTabKeyDown={onTabKeyDown}
-            />
+          <div className="dvr-sticky-bar__inner dvr-sticky-bar__inner--all-only">
+            <div className="dvr-tab-bar-wrap dvr-tab-bar-wrap--single">
+              <div className="dvr-tab-bar dvr-tab-bar--single" role="tablist" aria-label="Keşfet görünümü">
+                <span className="dvr-tab dvr-tab--active dvr-tab--static" role="tab" aria-selected="true">
+                  <span className="dvr-tab__label">Tümü</span>
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="dvr-chrome-discovery" aria-label="Keşfet giriş katmanı">
+          <div className="dvr-chrome-discovery dvr-chrome-discovery--all-only" aria-label="Keşfet giriş katmanı">
             <TopicChipBoard compact chips={vm.marketTopicChips} />
             <CreatorsHubFaceRail compact />
           </div>
@@ -243,16 +92,16 @@ export function DiscoverVisualReferenceSurface({
       <div
         ref={contentRef}
         id={DISCOVER_PANEL_ID}
-        role="tabpanel"
-        aria-labelledby={panelLabelId}
+        role="main"
+        aria-label="Keşfet — Tümü akışı"
         className="dvr-content"
         aria-live="polite"
       >
         {feedEnabled && feedLoading ? (
           <DiscoverFeedSkeleton inline />
         ) : (
-          <div key={activeTab ?? "all"} className="motion-panel-crossfade">
-            {activeTab === null ? <DiscoveryStream vm={vm} /> : <TabContent tab={activeTab} vm={vm} />}
+          <div className="motion-panel-crossfade">
+            <DiscoveryStream vm={vm} />
           </div>
         )}
 

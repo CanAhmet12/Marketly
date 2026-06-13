@@ -193,7 +193,7 @@ export function HomeVisualRightRail({
           title="Öne çıkan analistler"
           color={RAIL_ACCENT_COLORS.creators}
           icon={<RailSectionIcon id="creators" color={RAIL_ACCENT_COLORS.creators} />}
-          action={<RailActionLink href="/discover?tab=creators" label="Tümünü gör" />}
+          action={<RailActionLink href="/creators" label="Tümünü gör" />}
         >
           <CreatorRailRows items={creators.slice(0, 4)} viewerId={viewerId} />
         </RailSection>
@@ -227,7 +227,7 @@ export function HomeVisualRightRail({
       {creators.length === 0 && signals.length === 0 && hasRichContent ? (
         <RailSection title="Topluluğu keşfet" color={RAIL_ACCENT_COLORS.creators}>
           <div className="hv-ref-rail__discover-links">
-            <Link href="/discover?tab=creators" className="hv-ref-rail__action-link block">
+            <Link href="/creators" className="hv-ref-rail__action-link block">
               Analistleri keşfet →
             </Link>
             <Link href="/signals" className="hv-ref-rail__action-link block">

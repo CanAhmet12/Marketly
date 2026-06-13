@@ -702,7 +702,7 @@ export function CreatorRailRows({ items, viewerId }: { items: HomeVisualRailLink
           {item.creatorUserId ? (
             <RailCreatorFollow creatorUserId={item.creatorUserId} viewerId={viewerId} />
           ) : (
-            <Link href="/discover?tab=creators" className="hv-ref-rail__follow">
+            <Link href="/creators" className="hv-ref-rail__follow">
               Takip
             </Link>
           )}

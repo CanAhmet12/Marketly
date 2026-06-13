@@ -85,6 +85,11 @@ export function filterCreatorsDirectory(
 
   if (params.tab === "live") rows = rows.filter((c) => c.isLive);
   if (params.tab === "rising") rows = rows.filter((c) => c.rising);
+  if (params.tab === "editor") rows = rows.filter((c) => c.editorPick);
+  if (params.tab === "accuracy") {
+    rows = rows.filter((c) => c.signalAccuracy != null && c.signalAccuracy > 0);
+    return sortCreators(rows, "accuracy");
+  }
 
   if (params.q) rows = rows.filter((c) => matchesQuery(c, params.q));
   if (params.asset) rows = rows.filter((c) => matchesAsset(c, params.asset!));

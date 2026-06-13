@@ -1,28 +1,82 @@
-/** Creators v2 — filter + rail + tape skeleton */
+/** Creators canvas — headless skeleton */
 
 type Props = {
   inline?: boolean;
 };
 
-function FilterSkeleton() {
-  return <div className="crt-v2-sk-filter" aria-hidden />;
-}
-
-function RailSkeleton() {
+function IntelZoneSkeleton() {
   return (
-    <div className="crt-v2-sk-rail-row" aria-hidden>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="crt-v2-sk-card" />
-      ))}
+    <div className="crt-canvas__intel-zone" aria-hidden>
+      <div className="crt-canvas__sk-intel-head">
+        <div>
+          <div className="crt-canvas__sk-intel-kicker" />
+          <div className="crt-canvas__sk-intel-title" />
+        </div>
+        <div className="crt-canvas__sk-intel-pill" />
+      </div>
+      <div className="crt-canvas__sk-deck">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="crt-canvas__sk-tile" />
+        ))}
+      </div>
     </div>
   );
 }
 
-function TapeSkeleton() {
+function SpotlightSkeleton() {
   return (
-    <div aria-hidden>
+    <div className="crt-canvas__spotlight-zone" aria-hidden>
+      <div className="crt-canvas__sk-spotlight-head">
+        <div>
+          <div className="crt-canvas__sk-spotlight-kicker" />
+          <div className="crt-canvas__sk-spotlight-title" />
+        </div>
+        <div className="crt-canvas__sk-spotlight-badge" />
+      </div>
+      <div className="crt-canvas__sk-hero crt-canvas__hero-bento" />
+    </div>
+  );
+}
+
+function DiscoveryRailsSkeleton() {
+  return (
+    <div className="crt-canvas__discovery-zone" aria-hidden>
+      <div className="crt-canvas__sk-discovery-head">
+        <div>
+          <div className="crt-canvas__sk-discovery-kicker" />
+          <div className="crt-canvas__sk-discovery-title" />
+        </div>
+        <div className="crt-canvas__sk-discovery-badge" />
+      </div>
+      <div className="crt-canvas__sk-discovery-rails">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="crt-canvas__sk-discovery-rail">
+            <div className="crt-canvas__sk-discovery-rail-head" />
+            <div className="crt-canvas__sk-discovery-rail-line" />
+            <div className="crt-canvas__sk-discovery-cards">
+              {Array.from({ length: 3 }).map((__, j) => (
+                <div key={j} className="crt-canvas__sk-discovery-card" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScreenerSkeleton() {
+  return (
+    <div className="crt-canvas__screener-zone crt-canvas__sk-screener-zone" aria-hidden>
+      <div className="crt-canvas__sk-screener-head">
+        <div>
+          <div className="crt-canvas__sk-screener-kicker" />
+          <div className="crt-canvas__sk-screener-title" />
+        </div>
+        <div className="crt-canvas__sk-screener-badge" />
+      </div>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="crt-v2-sk-tape" />
+        <div key={i} className="crt-canvas__sk-screener-row" />
       ))}
     </div>
   );
@@ -31,20 +85,18 @@ function TapeSkeleton() {
 export function CreatorsDirectorySkeleton({ inline = false }: Props) {
   const body = (
     <>
-      <FilterSkeleton />
-      <RailSkeleton />
-      <RailSkeleton />
-      <TapeSkeleton />
+      <IntelZoneSkeleton />
+      <SpotlightSkeleton />
+      <DiscoveryRailsSkeleton />
+      <ScreenerSkeleton />
     </>
   );
 
   if (inline) return body;
 
   return (
-    <div className="crt-v2-page ms-page-wrapper ms-page-wrapper--compact" aria-busy="true">
-      <div className="ms-container-wide">
-        <div className="crt-v2-layout">{body}</div>
-      </div>
+    <div aria-busy="true">
+      {body}
     </div>
   );
 }

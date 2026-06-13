@@ -263,8 +263,494 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--cc-meta);
-  padding: 1px 6px;
+}
+
+/* ================================
+   PARÇA 1 — TOOLBAR / TICKER / SKELETON
+   ================================ */
+
+.bist-canvas .bc-preview-banner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+  color: var(--cc-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bist-canvas .bc-ecosystem-nav__link:hover,
+.bist-canvas .cc-ecosystem-nav__link:hover {
+  border-color: color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  color: var(--cc-gold);
+  background: var(--cc-gold-bg);
+}
+
+.bist-canvas .bc-ticker-strip {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 6%, transparent) 0%, transparent 58%),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--cc-gold) 5%, transparent) 100%
+    );
+}
+
+.bist-canvas .bc-ticker-live-badge {
+  border-right: 1px solid var(--cc-border-subtle);
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.bist-canvas .bc-ticker-live-dot {
+  background: var(--cc-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.bist-canvas .bc-ticker-live-text {
+  color: var(--cc-gold);
+}
+
+/* ================================
+   PARÇA 2 — PULSE v2
+   ================================ */
+
+.bist-canvas .bc-pulse-bar-v2 {
+  border-bottom-color: color-mix(in srgb, var(--cc-gold) 18%, var(--cc-border-subtle));
+}
+
+.bc-pulse-cell-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.bc-pulse-cell-icon--bank {
+  background: #2563eb;
+  color: #fff;
+}
+
+.bc-pulse-cell-icon--sin {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.bc-pulse-volume {
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.bc-mood-meter,
+.bc-foreign-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.bc-mood-value-row,
+.bc-foreign-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.bc-mood-big,
+.bc-foreign-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.bc-mood-sub,
+.bc-foreign-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-meta);
+}
+
+.bc-mood-label {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.bc-mood-bar,
+.bc-foreign-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--cc-border);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.bc-mood-fill,
+.bc-foreign-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.bc-foreign-fill {
+  background: var(--cc-gold);
+}
+
+.bc-foreign-delta {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* ================================
+   PARÇA 3 — REJİM + HEATMAP
+   ================================ */
+
+.bist-canvas .bc-regime-headline--bull { color: #3b82f6; }
+.bist-canvas .bc-regime-headline--bear { color: var(--cc-rose); }
+.bist-canvas .bc-regime-headline--flat { color: var(--cc-meta); }
+
+.bist-canvas .bc-regime-live-chip {
+  border-color: color-mix(in srgb, var(--cc-gold) 35%, var(--cc-border));
+  color: var(--cc-gold);
+}
+
+.bist-canvas .bc-regime-live-dot { background: var(--cc-gold); }
+
+.bist-canvas .bc-dom-bar-mali { background: #3b82f6; }
+.bist-canvas .bc-dom-bar-sanayi { background: #60a5fa; }
+.bist-canvas .bc-dom-bar-diger { background: var(--cc-meta); }
+
+.bist-canvas .bc-dom-legend-dot--mali { background: #3b82f6; }
+.bist-canvas .bc-dom-legend-dot--sanayi { background: #60a5fa; }
+.bist-canvas .bc-dom-legend-dot--diger { background: var(--cc-meta); }
+
+.bist-canvas .bc-seg-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 800px) {
+  .bist-canvas .bc-seg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.bist-canvas .bc-seg-cell--hot-strong {
+  border-left-color: #3b82f6;
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+}
+
+.bist-canvas .bc-seg-cell--hot-mild {
+  border-left-color: color-mix(in srgb, var(--cc-gold) 55%, transparent);
+}
+
+.bist-canvas .bc-seg-cell--cold-mild {
+  border-left-color: color-mix(in srgb, var(--cc-rose) 55%, transparent);
+}
+
+.bist-canvas .bc-seg-cell--cold-strong {
+  border-left-color: var(--cc-rose);
+  background: color-mix(in srgb, var(--cc-rose) 6%, var(--cc-surface));
+}
+
+.bist-canvas .bc-seg-change--strong-up { color: #3b82f6; }
+.bist-canvas .bc-seg-change--up { color: color-mix(in srgb, var(--cc-gold) 75%, var(--cc-text)); }
+.bist-canvas .bc-seg-change--down { color: color-mix(in srgb, var(--cc-rose) 75%, var(--cc-text)); }
+.bist-canvas .bc-seg-change--strong-down { color: var(--cc-rose); }
+.bist-canvas .bc-seg-change--flat { color: var(--cc-meta); }
+
+/* ================================
+   PARÇA 4 — 3 PANEL + TREEMAP
+   ================================ */
+
+.bist-canvas .bc-asset-panels {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .bist-canvas .bc-asset-panels { grid-template-columns: 1fr; }
+}
+
+.bc-asset-panel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.bc-asset-panel-icon--b100 {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.3);
+}
+
+.bc-asset-panel-icon--b30 {
+  background: #60a5fa;
+  color: #fff;
+}
+
+.bc-asset-panel-icon--bank {
+  background: #2563eb;
+  color: #fff;
+}
+
+.bc-asset-panel-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bc-asset-panel-meta {
+  font-size: 11px;
+  color: var(--cc-meta);
+}
+
+.bist-canvas .bc-asset-panel--bank {
+  border-top-color: #2563eb;
+}
+
+.bc-asset-chart-empty {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  border-radius: 8px;
+  background: var(--cc-surface-raised);
+}
+
+.bist-canvas .bc-tmap-seg--mega { background: #3b82f6; }
+.bist-canvas .bc-tmap-seg--large { background: #2563eb; }
+
+.bist-canvas .bc-tmap-tile--mega { border-top: 2px solid #3b82f6; }
+.bist-canvas .bc-tmap-tile--large { border-top: 2px solid #2563eb; }
+
+.bc-tmap-symbol-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.05);
-  white-space: nowrap;
+  background: color-mix(in srgb, var(--cc-gold) 12%, var(--cc-surface));
+  color: var(--cc-gold);
+}
+
+.bc-tmap-kpi-symbol {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-text-secondary);
+}
+
+/* ================================
+   PARÇA 5 — INTEL + BOTTOM STRIP
+   ================================ */
+
+.bist-canvas .bc-intel-board .cc-intel-board-sub::before {
+  background: var(--cc-gold);
+}
+
+.bc-intel-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.bist-canvas .bc-intel-row .cc-intel-row-val--violet {
+  color: var(--cc-gold);
+}
+
+.bist-canvas .bc-bottom-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1100px) {
+  .bist-canvas .bc-bottom-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.bc-bottom-empty {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-meta);
+  padding: 8px 0;
+}
+
+.bc-watchlist-symbol-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.bc-gundem-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.bc-cal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bc-cal-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cc-meta);
+}
+
+.bc-cal-impact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bc-cal-impact--high { background: var(--cc-rose); }
+.bc-cal-impact--medium { background: var(--cc-gold); }
+.bc-cal-impact--low { background: var(--cc-meta); }
+
+.bc-fx-row--link {
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+  border-radius: 6px;
+  padding: 0 4px;
+}
+
+.bc-fx-row--link:hover {
+  background: color-mix(in srgb, var(--cc-gold) 6%, transparent);
+}
+
+.bc-fx-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+/* ================================
+   PARÇA 6 — SIGNAL RAIL + SCREENER
+   ================================ */
+
+.bist-canvas .bc-signal-rail {
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cc-gold) 4%, var(--cc-surface)) 0%, var(--cc-surface) 100%);
+}
+
+.bist-canvas .bc-signal-rail-bias-fill {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.bc-screener-symbol-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cc-gold) 12%, var(--cc-surface));
+  color: var(--cc-gold);
+  flex-shrink: 0;
+}
+
+.bist-canvas .bc-screener-row--thyao {
+  border-left: 2px solid #3b82f6;
+}
+
+.bist-canvas .bc-screener-row--thyao .cc-screener-symbol {
+  color: #3b82f6;
+}
+
+.bist-canvas .bc-screener-board .cc-screener-th--active {
+  color: #3b82f6;
+}
+
+.bc-skeleton-signal-rail {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.bc-skeleton-signal-card {
+  flex: 0 0 clamp(360px, 46vw, 440px);
+  height: 158px;
+  border-radius: 10px;
+  animation: cc-shimmer 1.4s ease-in-out infinite;
+  background: var(--cc-surface-hover);
+}
+
+.bist-canvas .bc-skeleton-pulse .cc-skeleton-pulse-cell:nth-child(odd) {
+  background: linear-gradient(
+    90deg,
+    var(--cc-surface-raised) 0%,
+    color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface-raised)) 50%,
+    var(--cc-surface-raised) 100%
+  );
+}
+
+.bist-canvas .bc-skeleton-heatmap {
+  min-height: 280px;
+}
+
+.bist-canvas .bc-toolbar-search button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.bist-canvas .bc-toolbar-search .markets-glass-25.absolute {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: 8px;
+  padding: var(--sp-2, 8px);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 8%, transparent);
+}
+
+.bist-canvas .bc-signal-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--cc-surface));
+}
+
+.bist-canvas .bc-signal-rail-skeleton-card {
+  background: linear-gradient(
+    90deg,
+    var(--cc-surface-raised) 0%,
+    color-mix(in srgb, var(--cc-gold) 10%, var(--cc-surface-raised)) 50%,
+    var(--cc-surface-raised) 100%
+  );
+}
+
+.bist-canvas .bc-screener-row--garan {
+  border-left: 2px solid #60a5fa;
+}
+
+.bist-canvas .bc-screener-row--asels .cc-screener-symbol {
+  color: #2563eb;
+}
+
+.bc-fx-row--link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }

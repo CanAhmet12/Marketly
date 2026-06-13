@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 
 import { EmptyState } from "@/components/states";
 import { ChannelSectionHeader } from "@/features/channel/components/channel-section-header";
-import { PostListCard } from "@/features/channel/channel-page-parts";
-import { isLiveType, isShortType, isVideoTabType, resolveVideoUrl } from "@/features/channel/channel-display-helpers";
+import { ChannelFeedPostCard } from "@/features/channel/channel-page-parts";
+import { fmtCount } from "@/features/channel/channel-display-helpers";
 import type { ChannelPost, ChannelProfile, ChannelTabId } from "@/features/channel/types";
 import { CreatorCommunityRoomsPanel } from "@/features/social/components/creator-community-rooms-panel";
-import { CreatorDiscussionGravityStrip } from "@/features/social/components/creator-discussion-gravity-strip";
 import { PulseCard } from "@/features/discover/cards/PulseCard";
 import { VideoCard } from "@/features/discover/cards/VideoCard";
 import { LiveCard } from "@/features/discover/cards/LiveCard";
@@ -20,8 +19,6 @@ import type { ChannelDiscussionTeaser } from "@/features/social/repository/discu
 import type { CreatorCommunityRoomsSurface } from "@/features/social/repository/creator-room-types";
 import type { StudioPlaylistItem } from "@/features/studio/repository/types";
 import type { FeedPost } from "@/features/feed/types";
-import { fmtCount } from "@/features/channel/channel-display-helpers";
-import { isMockDataEnabled } from "@/mock/config";
 
 export type ChannelTabContentProps = {
   tab: ChannelTabId;
@@ -30,7 +27,6 @@ export type ChannelTabContentProps = {
   isOwn: boolean;
   profile: ChannelProfile;
   postsLoading: boolean;
-  overview: ChannelPost[];
   feedPosts: ChannelPost[];
   videos: ChannelPost[];
   pulsePosts: ChannelPost[];
@@ -52,28 +48,76 @@ export type ChannelTabContentProps = {
   onSelectTab: (id: ChannelTabId) => void;
 };
 
-function OverviewMediaCard({
-  post,
-  index,
-  toFeedPost,
+function ChannelVideoGrid({
+  items,
   engagement,
+  toFeedPost,
 }: {
-  post: ChannelPost;
-  index: number;
-  toFeedPost: (p: ChannelPost) => FeedPost;
+  items: ChannelPost[];
   engagement: HomeEngagementHandlers;
+  toFeedPost: (p: ChannelPost) => FeedPost;
 }) {
-  if (isShortType(post.type)) {
-    return <PulseCard post={toFeedPost(post)} engagement={engagement} index={index} />;
-  }
-  if (isVideoTabType(post.type) || resolveVideoUrl(post)) {
-    return <VideoCard post={toFeedPost(post)} engagement={engagement} index={index} />;
-  }
-  if (isLiveType(post.type)) {
-    return <LiveCard post={toFeedPost(post)} engagement={engagement} index={index} />;
-  }
-  const feedPost = toFeedPost(post);
-  return <PostListCard post={post} feedPost={feedPost} engagement={engagement} />;
+  return (
+    <div className="ch-grid ch-grid--videos">
+      {items.map((p, i) => (
+        <VideoCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} surface="channel" />
+      ))}
+    </div>
+  );
+}
+
+function ChannelPulseGrid({
+  items,
+  engagement,
+  toFeedPost,
+}: {
+  items: ChannelPost[];
+  engagement: HomeEngagementHandlers;
+  toFeedPost: (p: ChannelPost) => FeedPost;
+}) {
+  return (
+    <div className="ch-grid ch-grid--pulse">
+      {items.map((p, i) => (
+        <PulseCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} surface="channel" />
+      ))}
+    </div>
+  );
+}
+
+function ChannelLiveGrid({
+  items,
+  engagement,
+  toFeedPost,
+}: {
+  items: ChannelPost[];
+  engagement: HomeEngagementHandlers;
+  toFeedPost: (p: ChannelPost) => FeedPost;
+}) {
+  return (
+    <div className="ch-grid ch-grid--live">
+      {items.map((p, i) => (
+        <LiveCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} />
+      ))}
+    </div>
+  );
+}
+
+function ChannelFeedList({
+  items,
+  engagement,
+  toFeedPost,
+}: {
+  items: ChannelPost[];
+  engagement: HomeEngagementHandlers;
+  toFeedPost: (p: ChannelPost) => FeedPost;
+}) {
+  return (
+    <div className="ch-feed-list">
+      {items.map((p) => (
+        <ChannelFeedPostCard key={p.id} feedPost={toFeedPost(p)} engagement={engagement} />
+      ))}
+    </div>
+  );
 }
 
 export function ChannelTabContent(props: ChannelTabContentProps) {
@@ -85,7 +129,6 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
     isOwn,
     profile,
     postsLoading,
-    overview,
     feedPosts,
     videos,
     pulsePosts,
@@ -110,32 +153,70 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
   const channelBase = channelRouteBase ?? `/channel/${encodeURIComponent(channelUserId)}`;
 
   if (tab === "overview") {
+    const hasMedia = videos.length > 0 || pulsePosts.length > 0 || livePosts.length > 0;
+
     return (
       <div className="ch-overview-stack">
-        <section>
-          <ChannelSectionHeader
-            title="Son İçerikler"
-            onMore={overview.length > 8 ? () => onSelectTab("videos") : undefined}
-          />
-          {postsLoading ? (
-            <div className="ch-grid ch-grid--overview ch-grid--shimmer">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="ch-shimmer-block ch-shimmer-block--video" />
-              ))}
-            </div>
-          ) : overview.length === 0 ? (
-            <EmptyState title="Henüz içerik yok" description="Bu kullanıcı henüz içerik paylaşmadı." compact />
-          ) : (
-            <div className="ch-grid ch-grid--overview">
-              {overview.slice(0, 8).map((p, i) => (
-                <OverviewMediaCard key={p.id} post={p} index={i} toFeedPost={toFeedPost} engagement={engagement} />
-              ))}
-            </div>
-          )}
-        </section>
+        {postsLoading && !hasMedia && feedPosts.length === 0 ? (
+          <div className="ch-grid ch-grid--videos ch-grid--shimmer">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="ch-shimmer-block ch-shimmer-block--video" />
+            ))}
+          </div>
+        ) : null}
+
+        {videos.length > 0 ? (
+          <section className="ch-overview-section">
+            <ChannelSectionHeader
+              title="Videolar"
+              onMore={videos.length > 4 ? () => onSelectTab("videos") : undefined}
+            />
+            {postsLoading ? (
+              <div className="ch-grid ch-grid--videos ch-grid--shimmer">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="ch-shimmer-block ch-shimmer-block--video" />
+                ))}
+              </div>
+            ) : (
+              <ChannelVideoGrid items={videos.slice(0, 4)} engagement={engagement} toFeedPost={toFeedPost} />
+            )}
+          </section>
+        ) : null}
+
+        {pulsePosts.length > 0 ? (
+          <section className="ch-overview-section">
+            <ChannelSectionHeader
+              title="Pulse"
+              onMore={pulsePosts.length > 6 ? () => onSelectTab("pulse") : undefined}
+            />
+            {postsLoading ? (
+              <div className="ch-grid ch-grid--pulse ch-grid--shimmer">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="ch-shimmer-block ch-shimmer-block--pulse" />
+                ))}
+              </div>
+            ) : (
+              <ChannelPulseGrid items={pulsePosts.slice(0, 6)} engagement={engagement} toFeedPost={toFeedPost} />
+            )}
+          </section>
+        ) : null}
+
+        {livePosts.length > 0 ? (
+          <section className="ch-overview-section">
+            <ChannelSectionHeader
+              title="Canlı"
+              onMore={livePosts.length > 3 ? () => onSelectTab("live") : undefined}
+            />
+            <ChannelLiveGrid items={livePosts.slice(0, 3)} engagement={engagement} toFeedPost={toFeedPost} />
+          </section>
+        ) : null}
+
+        {!postsLoading && !hasMedia && feedPosts.length === 0 && signalsCount === 0 ? (
+          <EmptyState title="Henüz içerik yok" description="Bu kullanıcı henüz içerik paylaşmadı." compact />
+        ) : null}
 
         {signalsCount > 0 ? (
-          <section>
+          <section className="ch-overview-section">
             <ChannelSectionHeader
               title="Son Sinyaller"
               onMore={signalsCount > 3 ? () => onSelectTab("signals") : undefined}
@@ -153,7 +234,7 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
         ) : null}
 
         {roomsSurface && roomsSurface.rooms.length > 0 ? (
-          <section>
+          <section className="ch-overview-section">
             <ChannelSectionHeader title="Topluluk Odaları" onMore={() => onSelectTab("rooms")} />
             <div className="ch-room-pills">
               {roomsSurface.rooms.slice(0, 4).map((r) => (
@@ -170,13 +251,9 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
           </section>
         ) : null}
 
-        {isMockDataEnabled() ? (
-          <section>
-            <CreatorDiscussionGravityStrip highlightCreatorId={channelUserId} />
-          </section>
-        ) : discussions.length > 0 ? (
-          <section>
-            <ChannelSectionHeader title="Tartışma momentumu" onMore={() => onSelectTab("discussions")} />
+        {discussions.length > 0 ? (
+          <section className="ch-overview-section">
+            <ChannelSectionHeader title="Tartışmalar" onMore={() => onSelectTab("discussions")} />
             <div className="ch-post-list">
               {discussions.slice(0, 3).map((d) => (
                 <Link key={d.post_id} href={d.href} className="ch-post-item">
@@ -197,21 +274,12 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
         ) : null}
 
         {feedPosts.length > 0 ? (
-          <section>
+          <section className="ch-overview-section ch-overview-section--feed">
             <ChannelSectionHeader
-              title="Son Gönderiler"
-              onMore={feedPosts.length > 4 ? () => onSelectTab("posts") : undefined}
+              title="Gönderiler"
+              onMore={feedPosts.length > 3 ? () => onSelectTab("posts") : undefined}
             />
-            <div className="ch-post-list">
-              {feedPosts.slice(0, 4).map((p) => (
-                <PostListCard
-                  key={p.id}
-                  post={p}
-                  feedPost={toFeedPost(p)}
-                  engagement={engagement}
-                />
-              ))}
-            </div>
+            <ChannelFeedList items={feedPosts.slice(0, 3)} engagement={engagement} toFeedPost={toFeedPost} />
           </section>
         ) : null}
       </div>
@@ -220,15 +288,11 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
 
   if (tab === "posts") {
     return (
-      <div className="ch-panel ch-panel--narrow">
+      <div className="ch-panel ch-panel--feed">
         {feedPosts.length === 0 ? (
           <EmptyState title="Gönderi yok" description="Bu kullanıcı henüz metin gönderisi paylaşmadı." compact />
         ) : (
-          <div className="ch-post-list">
-            {feedPosts.map((p) => (
-              <PostListCard key={p.id} post={p} feedPost={toFeedPost(p)} engagement={engagement} />
-            ))}
-          </div>
+          <ChannelFeedList items={feedPosts} engagement={engagement} toFeedPost={toFeedPost} />
         )}
       </div>
     );
@@ -325,11 +389,7 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
     return videos.length === 0 ? (
       <EmptyState title="Video yok" description="Bu kullanıcı henüz video paylaşmadı." compact />
     ) : (
-      <div className="ch-grid ch-grid--videos">
-        {videos.map((p, i) => (
-          <VideoCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} />
-        ))}
-      </div>
+      <ChannelVideoGrid items={videos} engagement={engagement} toFeedPost={toFeedPost} />
     );
   }
 
@@ -337,11 +397,7 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
     return pulsePosts.length === 0 ? (
       <EmptyState title="Pulse içeriği yok" description="Bu kullanıcı henüz kısa video paylaşmadı." compact />
     ) : (
-      <div className="ch-grid ch-grid--pulse">
-        {pulsePosts.map((p, i) => (
-          <PulseCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} />
-        ))}
-      </div>
+      <ChannelPulseGrid items={pulsePosts} engagement={engagement} toFeedPost={toFeedPost} />
     );
   }
 
@@ -350,16 +406,10 @@ export function ChannelTabContent(props: ChannelTabContentProps) {
       <EmptyState
         title="Canlı yayın yok"
         description="Şu anda aktif veya geçmiş canlı yayın bulunmuyor."
-        actionLabel="Keşfet · Canlı"
-        actionHref="/discover?tab=live"
         compact
       />
     ) : (
-      <div className="ch-grid ch-grid--live">
-        {livePosts.map((p, i) => (
-          <LiveCard key={p.id} post={toFeedPost(p)} engagement={engagement} index={i} />
-        ))}
-      </div>
+      <ChannelLiveGrid items={livePosts} engagement={engagement} toFeedPost={toFeedPost} />
     );
   }
 

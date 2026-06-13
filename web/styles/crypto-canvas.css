@@ -64,6 +64,16 @@
   z-index: 0;
 }
 
+.crypto-canvas .cc-preview-banner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cc-gold) 28%, var(--cc-border-subtle));
+  background: color-mix(in srgb, var(--cc-gold) 8%, var(--cc-surface));
+  color: var(--cc-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* Tüm içerik glow'un önünde */
 .crypto-canvas > * {
   position: relative;

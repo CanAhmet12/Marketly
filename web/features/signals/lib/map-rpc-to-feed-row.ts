@@ -1,9 +1,9 @@
 import { buildSparklineSeries } from "@/features/markets/lib/sparkline-series";
-import { mockExpiresAtIso, signalStatusKey } from "@/features/signals/domain/signal-meta";
+import { mockExpiresAtIso, normalizeSignalResult, signalStatusKey } from "@/features/signals/domain/signal-meta";
 import type { SignalStatusKey } from "@/features/signals/domain/signal-meta";
 import { enrichSignalsFeedRow, type SignalsFeedRowCore } from "@/features/signals/lib/feed-intelligence";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
-import { inferMarketAssetCategory } from "@/lib/market-category";
+import { inferMarketAssetCategory, normalizeAssetCategory } from "@/lib/market-category";
 
 export type SignalsFeedRpcRow = {
   id: string;
@@ -81,18 +81,18 @@ export function mapRpcRowToSignalsFeedRow(row: SignalsFeedRpcRow): SignalsFeedRo
     copies_count: row.copies_count ?? 0,
     likes_count: row.likes_count ?? 0,
     created_at: String(row.created_at),
-    result: row.result,
+    result: normalizeSignalResult(row.result),
     creator_display: profileDisplay(row),
     asset_display_name: row.asset_name?.trim() || sym,
     detail_href: `/signals?signal=${encodeURIComponent(String(row.id))}`,
     sparkline: buildSparklineSeries(`${row.id}-sig`, trend),
-    assetCategory: inferMarketAssetCategory(sym),
+    assetCategory: normalizeAssetCategory(row.asset_category) ?? inferMarketAssetCategory(sym),
     strategy: inferStrategy(String(row.timeframe ?? "1G")),
     riskRewardLabel: riskRewardLabel(row.entry_price, row.target_price, row.stop_loss),
     entryZoneLabel: entryZoneLabel(row.entry_price),
     status_key: signalStatusKey({
       is_active: row.is_active,
-      result: row.result,
+      result: normalizeSignalResult(row.result),
     }) as SignalStatusKey,
     expires_at: mockExpiresAtIso(row.created_at),
     copies_24h_real: null,

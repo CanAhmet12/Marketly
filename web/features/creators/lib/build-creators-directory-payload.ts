@@ -71,9 +71,17 @@ export function pickRisingCreators(payload: CreatorDirectoryPayload): CreatorDir
 }
 
 export function countCreators(payload: CreatorDirectoryPayload) {
+  const withAccuracy = payload.creators.filter((c) => c.signalAccuracy != null && c.signalAccuracy > 0);
+  const avgAccuracy =
+    withAccuracy.length > 0
+      ? Math.round(withAccuracy.reduce((s, c) => s + (c.signalAccuracy ?? 0), 0) / withAccuracy.length)
+      : null;
+
   return {
     total: payload.creators.length,
     live: payload.liveNowIds.length,
     rising: payload.creators.filter((c) => c.rising).length,
+    editor: payload.featuredIds.length,
+    avgAccuracy,
   };
 }

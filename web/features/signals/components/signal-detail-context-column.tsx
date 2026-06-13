@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 import { SignalDetailConsensusPanel } from "@/features/signals/components/signal-detail-consensus-panel";
 import { SignalDetailCreatorTrack } from "@/features/signals/components/signal-detail-creator-track";
+import { SignalEngagementActions } from "@/features/signals/components/signal-engagement-actions";
 import { SignalAnalystTrustBlock } from "@/features/signals/components/unified-signal-primitives";
 import type { SignalDetailExtension } from "@/features/signals/lib/signal-detail-types";
 import {
@@ -20,19 +21,30 @@ import type { SignalsFeedRow } from "@/features/signals/repository/types";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 import { cn } from "@/lib/cn";
 
+type EngagementProps = {
+  canEngage: boolean;
+  liked: boolean;
+  copied: boolean;
+  liking?: boolean;
+  copying?: boolean;
+  onLike: () => void;
+  onCopy: () => void;
+};
+
 type Props = {
   row: SignalsFeedRow;
   catalog: readonly SignalsFeedRow[];
   similar: SignalsFeedRow[];
   intel: SignalDetailExtension | null;
   onClose: () => void;
+  engagement?: EngagementProps | null;
 };
 
 function formatCount(n: number): string {
   return n.toLocaleString("tr-TR");
 }
 
-export function SignalDetailContextColumn({ row, catalog, similar, intel, onClose }: Props) {
+export function SignalDetailContextColumn({ row, catalog, similar, intel, onClose, engagement }: Props) {
   const rep = useMemo(() => {
     const agg = findAgg(aggregateAnalystRows([...catalog]), row.creator_id);
     return buildAnalystReputationProfile(agg);
@@ -65,7 +77,7 @@ export function SignalDetailContextColumn({ row, catalog, similar, intel, onClos
 
   return (
     <aside className="sdm-context" aria-label="Üretici ve piyasa özeti">
-      <section className="sdm-panel-block sdm-producer-trust" aria-label="Üretici güveni">
+      <section className="sdm-zone sdm-producer-trust" aria-label="Üretici güveni">
         <h3 className="sdm-panel-block__title">Üretici güveni</h3>
         <SignalAnalystTrustBlock
           analyst={row.analyst}
@@ -103,22 +115,38 @@ export function SignalDetailContextColumn({ row, catalog, similar, intel, onClos
 
       <SignalDetailConsensusPanel symbol={row.symbol} catalog={catalog} currentDirection={row.direction} title="Piyasa görüşü" />
 
-      <div className="sdm-stat-pills sdm-stat-pills--row" aria-label="Etkileşim">
-        <span className="sdm-stat-pill">
-          Beğeni <strong>{formatCount(row.likes_count)}</strong>
-        </span>
-        <span className="sdm-stat-pill">
-          Kopya <strong>{formatCount(row.copies_count)}</strong>
-        </span>
+      <section className="sdm-zone" aria-label="Etkileşim">
+        {engagement ? (
+          <SignalEngagementActions
+            likesCount={row.likes_count}
+            copiesCount={row.copies_count}
+            liked={engagement.liked}
+            copied={engagement.copied}
+            canEngage={engagement.canEngage}
+            liking={engagement.liking}
+            copying={engagement.copying}
+            onLike={engagement.onLike}
+            onCopy={engagement.onCopy}
+          />
+        ) : (
+          <div className="sdm-stat-pills sdm-stat-pills--row">
+            <span className="sdm-stat-pill">
+              Beğeni <strong>{formatCount(row.likes_count)}</strong>
+            </span>
+            <span className="sdm-stat-pill">
+              Kopya <strong>{formatCount(row.copies_count)}</strong>
+            </span>
+          </div>
+        )}
         {row.community_copies_24h > 0 ? (
-          <span className="sdm-stat-pill" title="Tahmini son dönem kopya payı">
-            Son dönem <strong>{formatCount(row.community_copies_24h)}</strong>
-          </span>
+          <p className="mt-2 text-[11px] font-medium text-[var(--color-meta)]">
+            Son 24s kopya <strong className="text-[var(--color-text-secondary)]">{formatCount(row.community_copies_24h)}</strong>
+          </p>
         ) : null}
-      </div>
+      </section>
 
       {relatedRows.length > 0 ? (
-        <section className="sdm-panel-block">
+        <section className="sdm-zone">
           <h3 className="sdm-panel-block__title">Benzer çağrılar</h3>
           <ul className="sdm-related-list">
             {relatedRows.map((r) => {

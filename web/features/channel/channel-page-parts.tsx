@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import type { ChannelPost } from "@/features/channel/types";
+import { FeedPostCard } from "@/features/feed/feed-post-card";
 import type { FeedPost } from "@/features/feed/types";
 import type { HomeEngagementHandlers } from "@/features/home/home-engagement";
 import { formatTimeAgo } from "@/lib/format-time-ago";
@@ -24,6 +25,25 @@ export function ChannelSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+type ChannelFeedPostCardProps = {
+  feedPost: FeedPost;
+  engagement: HomeEngagementHandlers;
+};
+
+/** Kanal gönderi sekmesi — feed ile aynı kart anatomisi */
+export function ChannelFeedPostCard({ feedPost, engagement }: ChannelFeedPostCardProps) {
+  return (
+    <FeedPostCard
+      post={feedPost}
+      isLoggedIn={engagement.isLoggedIn}
+      likePending={engagement.likePendingPostId === feedPost.id}
+      savePending={engagement.savePendingPostId === feedPost.id}
+      onToggleLike={() => engagement.onToggleLike(feedPost)}
+      onToggleSave={() => engagement.onToggleSave(feedPost)}
+    />
   );
 }
 

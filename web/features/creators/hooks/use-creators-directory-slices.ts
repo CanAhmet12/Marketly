@@ -25,7 +25,13 @@ export function useCreatorsDirectorySlices(
 
   const live = useMemo(() => filtered.filter((c) => c.isLive), [filtered]);
   const rising = useMemo(() => filtered.filter((c) => c.rising), [filtered]);
-  const counts = useMemo(() => (payload ? countCreators(payload) : { total: 0, live: 0, rising: 0 }), [payload]);
+  const counts = useMemo(
+    () =>
+      payload
+        ? countCreators(payload)
+        : { total: 0, live: 0, rising: 0, editor: 0, avgAccuracy: null as number | null },
+    [payload],
+  );
 
   const featuredAll = useMemo(() => (payload ? pickFeaturedCreators(payload) : []), [payload]);
   const liveAll = useMemo(() => (payload ? pickLiveCreators(payload) : []), [payload]);

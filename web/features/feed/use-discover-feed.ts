@@ -45,6 +45,10 @@ export function useDiscoverFeedRaw() {
     queryKey: queryKeys.discoverFeed(uid),
     enabled: feedEnabled,
     initialPageParam: 0,
+    networkMode: "always",
+    refetchOnMount: "always",
+    staleTime: 30_000,
+    retry: 1,
     queryFn: async ({ pageParam }) => getHomeRepository().getDiscoverFeedPage(uid, pageParam as number),
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length : undefined),
   });

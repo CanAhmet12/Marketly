@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Kripto piyasalar sayfasi -- statik mock veri
  *
  * Tum zone'lar bu dosyadaki sabit verilerle calisir.
@@ -59,6 +59,17 @@ export const CRYPTO_MOCK_PHASE1: CryptoDashboardPhase1 = {
     marketCap: "$458B",
     volume24h: "$21.7B",
     sparkline7d: [3540, 3620, 3710, 3680, 3750, 3840, 3812],
+    trend: "up",
+  },
+  sol: {
+    symbol: "SOL",
+    name: "Solana",
+    price: 198.7,
+    change24h: 9.42,
+    change7d: 14.8,
+    marketCap: "$92B",
+    volume24h: "$6.8B",
+    sparkline7d: [168, 174, 181, 176, 188, 195, 198.7],
     trend: "up",
   },
 };

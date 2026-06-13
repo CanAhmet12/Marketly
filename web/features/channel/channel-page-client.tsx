@@ -240,19 +240,6 @@ export function ChannelPageClient({ channelUserId, initialTab, routeBase, embedd
   const pulsePosts = useMemo(() => posts.filter((p) => isShortType(p.type)), [posts]);
   const livePosts  = useMemo(() => posts.filter((p) => isLiveType(p.type)), [posts]);
   const feedPosts  = useMemo(() => posts.filter((p) => isFeedPostType(p.type)), [posts]);
-  const overview   = useMemo(() => [...posts].slice(0, 12), [posts]);
-  const channelAssetTags = useMemo(() => {
-    const tags = new Set<string>();
-    for (const p of posts) {
-      const tag = p.asset_tag?.trim();
-      if (tag) tags.add(tag);
-    }
-    for (const s of signals) {
-      const sym = s.symbol?.trim();
-      if (sym) tags.add(sym);
-    }
-    return [...tags].slice(0, 8);
-  }, [posts, signals]);
 
   const tabCounts = useMemo<Partial<Record<ChannelTabId, number>>>(() => ({
     posts: feedPosts.length,
@@ -471,7 +458,6 @@ export function ChannelPageClient({ channelUserId, initialTab, routeBase, embedd
         onFollowClick={onFollowClick}
         onOpenFollowList={setFollowListKind}
         channelAnalystReputation={channelAnalystReputation}
-        channelAssetTags={channelAssetTags}
         tabs={TABS}
         tab={tab}
         tabCounts={tabCounts}
@@ -496,14 +482,14 @@ export function ChannelPageClient({ channelUserId, initialTab, routeBase, embedd
           </div>
         ) : null}
 
-        <ChannelTabContent
+        <div className="ch-tab-body">
+          <ChannelTabContent
           tab={tab}
           channelUserId={channelUserId}
           channelRouteBase={activeRouteBase}
           isOwn={isOwn}
           profile={profile}
           postsLoading={postsQuery.isLoading}
-          overview={overview}
           feedPosts={feedPosts}
           videos={videos}
           pulsePosts={pulsePosts}
@@ -524,6 +510,7 @@ export function ChannelPageClient({ channelUserId, initialTab, routeBase, embedd
           toFeedPost={toFeedPost}
           onSelectTab={selectTab}
         />
+        </div>
       </div>
 
       <ChannelFollowListSheet

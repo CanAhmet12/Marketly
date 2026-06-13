@@ -1,0 +1,21 @@
+/**
+ * Keşfet → Sinyaller tab — /signals pazar özeti dilinin embed kapsamı
+ */
+@import "./signals-canvas-zone1.css";
+
+.dsc-hub-tab--signals .sig-canvas__intel-zone {
+  margin: 0 var(--dvr-pad, 12px);
+  border-radius: 12px;
+}
+
+.dsc-hub-tab--signals .sig-canvas__intel-zone .sig-canvas__deck {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dsc-hub-tab--signals {
+  --dvr-sig-rail-card-w: clamp(272px, 74vw, 328px);
+}
+
+.dsc-hub-tab--signals .dvr-sig-rail-item > .dvr-sig-rail-card {
+  width: var(--dvr-sig-rail-card-w);
+}

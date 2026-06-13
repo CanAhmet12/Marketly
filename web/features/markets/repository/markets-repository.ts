@@ -30,6 +30,8 @@ import type {
   BistMoversPayload,
   BistBottomStripPayload,
   BistScreenerPayload,
+  BistSignalStripPayload,
+  BistTreemapPayload,
 } from "@/features/markets/bist/types";
 import type {
   ForexPulseMetrics,
@@ -50,6 +52,8 @@ import type {
   CommodityMoversPayload,
   CommodityBottomStripPayload,
   CommodityScreenerPayload,
+  CommodityTreemapPayload,
+  CommoditySignalStripPayload,
 } from "@/features/markets/commodities/types";
 import type {
   NasdaqPulseMetrics,
@@ -59,6 +63,8 @@ import type {
   NasdaqMoversPayload,
   NasdaqBottomStripPayload,
   NasdaqScreenerPayload,
+  NasdaqSignalStripPayload,
+  NasdaqTreemapPayload,
 } from "@/features/markets/nasdaq/types";
 
 export type EconomicCalendarRow = {
@@ -117,10 +123,12 @@ export type NasdaqCategoryDashboard = {
   pulse:   NasdaqPulseMetrics;
   regime:  NasdaqRegimePayload;
   sectors: NasdaqSectorPayload;
-  panels:  { ndx: NasdaqIndexPanel; sp500: NasdaqIndexPanel };
+  panels:  { ndx: NasdaqIndexPanel; composite: NasdaqIndexPanel; sp500: NasdaqIndexPanel };
   movers:  NasdaqMoversPayload;
   bottom:  NasdaqBottomStripPayload;
   screener: NasdaqScreenerPayload;
+  signals: NasdaqSignalStripPayload;
+  treemap?: NasdaqTreemapPayload;
 };
 
 /** Emtia kategori sayfası için tam veri paketi */
@@ -128,10 +136,12 @@ export type CommoditiesCategoryDashboard = {
   pulse:   CommodityPulseMetrics;
   regime:  CommodityRegimePayload;
   classes: CommodityClassPayload;
-  panels:  { altin: CommodityAssetPanel; petrol: CommodityAssetPanel };
+  panels:  { altin: CommodityAssetPanel; gumus: CommodityAssetPanel; petrol: CommodityAssetPanel };
   movers:  CommodityMoversPayload;
   bottom:  CommodityBottomStripPayload;
   screener: CommodityScreenerPayload;
+  signals:   CommoditySignalStripPayload;
+  treemap?: CommodityTreemapPayload;
 };
 
 /** Forex kategori sayfası için tam veri paketi */
@@ -152,10 +162,12 @@ export type BistCategoryDashboard = {
   pulse:       BistPulseMetrics;
   marketState: BistMarketStatePayload;
   sectors:     BistSectorPayload;
-  panels:      { bist100: BistIndexPanel; bist30: BistIndexPanel };
+  panels:      { bist100: BistIndexPanel; bist30: BistIndexPanel; bistBanka: BistIndexPanel };
   movers:      BistMoversPayload;
   bottom:      BistBottomStripPayload;
   screener:    BistScreenerPayload;
+  signals:     BistSignalStripPayload;
+  treemap?:    BistTreemapPayload;
 };
 
 export type MarketsRepository = {

@@ -19,6 +19,7 @@ export function LivePageClient() {
       onFeedRetry={refetchFeed}
       liveDot
       pageTone="live"
+      headless
     >
       {feedLoading ? <LiveListSkeleton inline /> : <LiveFullPageContent vm={viewModel} />}
     </DiscoverVerticalPageShell>

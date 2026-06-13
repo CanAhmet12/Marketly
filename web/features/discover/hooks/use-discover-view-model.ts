@@ -36,6 +36,7 @@ export function useDiscoverViewModel(tab: DiscoverTabId = "trending") {
 
   const feedEnabled = isMockDataEnabled() || isSupabaseConfigured();
   const mockOn = isMockDataEnabled();
+  const hasFeedPages = (query.data?.pages.length ?? 0) > 0;
 
   // View model: ranked posts → VM adapter
   // Stage 3 Re-ranking (çeşitlilik) zaten useDiscoverFeed içinde uygulanıyor
@@ -44,9 +45,11 @@ export function useDiscoverViewModel(tab: DiscoverTabId = "trending") {
     return buildDiscoverViewModel(postsForVm, mockOn);
   }, [query.isError, posts, mockOn]);
 
+  const feedLoading = Boolean(feedEnabled && (query.isPending || (query.isFetching && !hasFeedPages)));
+
   return {
     viewModel,
-    feedLoading: Boolean(feedEnabled && query.isLoading),
+    feedLoading,
     feedError: Boolean(feedEnabled && query.isError),
     feedEnabled,
     refetchFeed: () => void query.refetch(),

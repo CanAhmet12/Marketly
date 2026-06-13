@@ -1,6 +1,9 @@
 @import "../markets-signals-premium.css";
 @import "../markets-fluid.css";
 @import "../crypto-canvas.css";
+@import "../crypto-detail.css";
+@import "../crypto-detail-v3.css";
+@import "../crypto-detail-ad-bridge.css";
 @import "../bist-canvas.css";
 @import "../forex-canvas.css";
 @import "../commodities-canvas.css";

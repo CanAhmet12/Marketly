@@ -1,0 +1,395 @@
+/**
+ * Kanal / Profil — içerik sekmesi yerleşim, kart boyutları, okunabilirlik
+ */
+
+/* ─── Profil header — cover + hero ayrık, overlap yok ─────────────────────── */
+.ch-profile-header {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.ch-profile-header .ch-cover {
+  margin-bottom: 0;
+}
+
+.ch-profile-header .ch-hero {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.ch-profile-header .ch-avatar-wrap {
+  margin-top: 0;
+}
+@media (max-width: 767px) {
+  .ch-hero-head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .ch-avatar-wrap { order: 1; }
+  .ch-identity { order: 2; }
+  .ch-stats-row {
+    order: 3;
+    margin-top: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--ch-border-2);
+  }
+  .ch-actions {
+    order: 4;
+    width: 100%;
+  }
+
+  .ch-actions .ch-btn {
+    flex: 1 1 auto;
+    min-width: calc(50% - 4px);
+  }
+}
+
+@media (min-width: 768px) {
+  .ch-actions {
+    max-width: 420px;
+    justify-content: flex-end;
+  }
+}
+
+.ch-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ch-recommend-rail-wrap {
+  margin-top: 8px;
+}
+
+/* ─── Tab body — tam genişlik, sol hizalı ───────────────────────────────────── */
+.ch-tab-body {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ch-content-area {
+  width: 100%;
+  max-width: none;
+  padding-bottom: 32px;
+  box-sizing: border-box;
+}
+
+/* ─── Gönderi akışı — tam genişlik ─────────────────────────────────────────── */
+.ch-panel--feed,
+.ch-panel--narrow,
+.ch-panel--wide {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+}
+
+.ch-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+.ch-feed-list > article {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.ch-overview-section--feed .ch-feed-list {
+  max-width: none;
+  width: 100%;
+}
+
+.ch-about {
+  margin-inline: 0;
+  max-width: none;
+  width: 100%;
+}
+
+/* ─── İçerik alanı ritmi ───────────────────────────────────────────────────── */
+.ch-overview-stack {
+  gap: 32px;
+}
+
+.ch-overview-section {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+/* ─── Kanal video / pulse kartları (YouTube tarzı) ─────────────────────────── */
+.ch-video-tile,
+.ch-pulse-tile {
+  max-width: none;
+  width: 100%;
+  min-width: 0;
+}
+
+.ch-video-tile__meta,
+.ch-pulse-tile__meta {
+  margin-top: 12px;
+  padding: 0 2px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.ch-video-tile__title,
+.ch-pulse-tile__title {
+  display: block;
+  word-break: break-word;
+}
+
+.ch-video-tile__stats,
+.ch-pulse-tile__stats {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ch-canvas .ch-video-tile__thumb,
+.ch-canvas .ch-pulse-tile__thumb {
+  isolation: isolate;
+}
+
+/* Eski discover kart override — kanal tile'ları hariç */
+.ch-canvas .discover-pulse-card:not(.ch-pulse-tile),
+.ch-canvas .discover-video-card:not(.ch-video-tile),
+.ch-canvas .discover-pulse-discover {
+  max-width: none;
+  width: 100%;
+}
+
+.ch-canvas .discover-pulse-card > div:first-child,
+.ch-canvas .discover-pulse-discover > div:first-child {
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ─── Izgara — büyük kartlar, az kolon ─────────────────────────────────────── */
+.ch-grid {
+  gap: 16px;
+  width: 100%;
+}
+
+.ch-grid--videos {
+  gap: 16px 20px;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .ch-grid--videos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .ch-grid--videos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ch-grid--pulse {
+  gap: 12px 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 540px) {
+  .ch-grid--pulse {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .ch-grid--pulse {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .ch-grid--pulse {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.ch-grid--live {
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .ch-grid--live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ch-grid--live {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ch-shimmer-block--pulse {
+  aspect-ratio: 9 / 16;
+}
+
+/* ─── Bölüm başlıkları & sekmeler ─────────────────────────────────────────── */
+.ch-section-header {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom-color: color-mix(in srgb, var(--ch-border-2) 80%, var(--ch-accent) 20%);
+}
+
+.ch-section-title {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--ch-text);
+}
+
+.ch-section-more {
+  font-size: 13px;
+  color: var(--ch-text-2);
+}
+
+.ch-tab {
+  font-size: 14px;
+  color: var(--ch-text-2);
+  padding: 12px 16px;
+}
+
+.ch-tab--active {
+  color: var(--ch-accent);
+  font-weight: 700;
+}
+
+.ch-tab--active .ch-tab-count {
+  color: var(--ch-accent);
+  border-color: color-mix(in srgb, var(--ch-accent) 35%, var(--ch-border-2));
+  background: color-mix(in srgb, var(--ch-accent) 10%, transparent);
+  font-size: 11px;
+}
+
+.ch-tab-count {
+  font-size: 11px;
+}
+
+/* ─── Hero metin okunabilirliği ────────────────────────────────────────────── */
+.ch-bio {
+  color: var(--ch-text);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 56ch;
+}
+
+.ch-handle-row {
+  font-size: 14px;
+  color: var(--ch-text-2);
+}
+
+.ch-stat-label {
+  color: var(--ch-text-2);
+  font-size: 13px;
+}
+
+.ch-verified-badge,
+.ch-tier-badge {
+  font-size: 10px;
+}
+
+/* ─── Tartışma & about ─────────────────────────────────────────────────────── */
+.ch-post-excerpt {
+  font-size: 15px;
+  color: var(--ch-text);
+  line-height: 1.5;
+}
+
+.ch-post-meta {
+  font-size: 12px;
+  color: var(--ch-text-2);
+}
+
+.ch-post-tag {
+  font-size: 11px;
+  color: var(--ch-accent);
+}
+
+.ch-tab-loading {
+  font-size: 14px;
+  color: var(--ch-text-2);
+}
+
+.ch-about {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+}
+
+.ch-about-bio {
+  color: var(--ch-text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ch-about-title {
+  font-size: 12px;
+  color: var(--ch-text-2);
+  margin-bottom: 10px;
+}
+
+.ch-about-key {
+  color: var(--ch-text-2);
+  font-size: 14px;
+}
+
+.ch-about-val {
+  color: var(--ch-text);
+  font-size: 14px;
+}
+
+.ch-room-pill {
+  font-size: 13px;
+}
+
+.ch-playlist-title {
+  font-size: 14px;
+  color: var(--ch-text);
+}
+
+.ch-playlist-meta {
+  font-size: 12px;
+  color: var(--ch-text-2);
+}
+
+/* ─── Hub gömülü profil ────────────────────────────────────────────────────── */
+.hp-canvas--embedded-channel .ch-btn--primary {
+  background: var(--hp-zone-1);
+  border-color: color-mix(in srgb, var(--hp-zone-1) 80%, #000);
+  color: #fff;
+}
+
+.hp-canvas--embedded-channel .ch-btn--primary:hover {
+  background: color-mix(in srgb, var(--hp-zone-1) 88%, #000);
+}
+
+.hp-canvas--embedded-channel .ch-tab--active {
+  color: var(--hp-zone-1);
+}

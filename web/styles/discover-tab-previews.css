@@ -1,0 +1,163 @@
+/**
+ * Keşfet hub tab önizlemeleri — orchestration katmanı
+ * Kart anatomisi: canonical bileşenler (dvr-sig-rail-card, crt-analyst-card, …)
+ */
+
+.dsc-hub-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 12px;
+}
+
+.dsc-hub-tab__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 var(--dvr-pad, 12px);
+}
+
+.dsc-hub-tab__kicker {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.dsc-hub-tab__title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+}
+
+.dsc-hub-tab__sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.dsc-hub-tab__badge {
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-divider);
+}
+
+.dsc-hub-tab__zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dsc-hub-tab__zone-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 var(--dvr-pad, 12px);
+}
+
+/* ─── Sinyal explore mozaik (intel kartları — farklı layout) ─────────────── */
+
+.dsc-hub-tab__mosaic {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 var(--dvr-pad, 12px);
+}
+
+.dsc-hub-tab__mosaic .dvr-sig-intel-card:nth-child(1) {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 720px) {
+  .dsc-hub-tab__mosaic {
+    grid-template-columns: 1.15fr 0.85fr 0.85fr;
+    grid-template-rows: auto auto;
+  }
+
+  .dsc-hub-tab__mosaic .dvr-sig-intel-card:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+}
+
+/* ─── Akış bandı (tape — yatay kompakt liste) ───────────────────────────── */
+
+.dsc-hub-tab__flow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 var(--dvr-pad, 12px);
+}
+
+.dsc-hub-tab__flow .dvr-sig-tile {
+  border-radius: 10px;
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+/* ─── Alt CTA ───────────────────────────────────────────────────────────── */
+
+.dsc-hub-tab__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px var(--dvr-pad, 12px) 0;
+  min-height: 42px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-divider));
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dsc-hub-tab__cta:hover {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--color-divider));
+}
+
+.dsc-hub-tab__cta-arrow {
+  color: var(--color-primary);
+}
+
+/* ─── Yükleme ───────────────────────────────────────────────────────────── */
+
+.dsc-hub-tab--loading {
+  pointer-events: none;
+}
+
+.dsc-hub-tab__sk-deck {
+  height: 88px;
+  margin: 0 var(--dvr-pad, 12px);
+  border-radius: 12px;
+  background: var(--color-surface-muted);
+}
+
+.dsc-hub-tab__sk-rail {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+  padding: 0 var(--dvr-pad, 12px);
+}
+
+.dsc-hub-tab__sk-card {
+  flex: 0 0 min(72vw, 15rem);
+  height: 200px;
+  border-radius: 12px;
+  background: var(--color-surface-muted);
+}

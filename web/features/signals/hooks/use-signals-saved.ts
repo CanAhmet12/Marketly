@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { useRegisterPageLoad } from "@/hooks/use-register-page-load";
+
 const KEY = "marketly-signals-saved";
 
 function read(): Set<string> {
@@ -46,6 +48,8 @@ export function useSignalsSaved() {
   }, []);
 
   const isSaved = useCallback((id: string) => saved.has(id), [saved]);
+
+  useRegisterPageLoad(!ready);
 
   return { saved, ready, toggle, isSaved };
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { BistMoverItem, BistMoversPayload } from "@/features/markets/bist/types";
+import { cn } from "@/lib/cn";
 
 type Props = { movers: BistMoversPayload };
 
@@ -10,27 +11,29 @@ function signed(v: number) {
   return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
 
-function changeColor(v: number) {
-  if (v > 0) return "var(--cc-teal)";
-  if (v < 0) return "var(--cc-rose)";
+function dotColor(v: number) {
+  if (v > 0.3) return "var(--cc-gold)";
+  if (v > 0) return "color-mix(in srgb, var(--cc-gold) 55%, transparent)";
+  if (v < -0.3) return "var(--cc-rose)";
+  if (v < 0) return "color-mix(in srgb, var(--cc-rose) 55%, transparent)";
   return "var(--cc-meta)";
 }
 
-function dotColor(v: number) {
-  if (v > 3)  return "#22c55e";
-  if (v > 0)  return "#86efac";
-  if (v < -3) return "#ef4444";
-  if (v < 0)  return "#fca5a5";
-  return "#64748b";
+function changeClass(v: number) {
+  if (v > 0) return "cc-up";
+  if (v < 0) return "cc-down";
+  return "cc-neutral";
 }
 
-type ColProps = {
+function MoverCol({
+  title,
+  rows,
+  showVolume = false,
+}: {
   title: string;
-  rows: BistMoverItem[];
+  rows: readonly BistMoverItem[];
   showVolume?: boolean;
-};
-
-function MoverCol({ title, rows, showVolume = false }: ColProps) {
+}) {
   return (
     <div className="cc-movers-v2-col">
       <p className="cc-movers-v2-col-title">{title}</p>
@@ -39,19 +42,14 @@ function MoverCol({ title, rows, showVolume = false }: ColProps) {
           key={r.symbol}
           href={`/markets/${encodeURIComponent(r.symbol)}`}
           className="cc-movers-v2-row"
-          aria-label={`${r.symbol} detayi`}
         >
           <span className="cc-movers-v2-num">{i + 1}</span>
           <span className="cc-movers-v2-dot" style={{ background: dotColor(r.change) }} aria-hidden />
           <span className="cc-movers-v2-symbol">{r.symbol}</span>
           {showVolume && r.volume ? (
-            <span className="cc-movers-v2-val" style={{ color: "var(--cc-text-secondary)", fontSize: 11 }}>
-              {r.volume}
-            </span>
+            <span className="cc-movers-v2-val cc-intel-row-val--muted">{r.volume}</span>
           ) : (
-            <span className="cc-movers-v2-val" style={{ color: changeColor(r.change) }}>
-              {signed(r.change)}
-            </span>
+            <span className={cn("cc-movers-v2-val", changeClass(r.change))}>{signed(r.change)}</span>
           )}
         </Link>
       ))}
@@ -61,12 +59,12 @@ function MoverCol({ title, rows, showVolume = false }: ColProps) {
 
 export function BistTopMovers({ movers }: Props) {
   return (
-    <div className="cc-movers-v2 cc-section" role="region" aria-label="Piyasa hareketlileri">
-      <div className="cc-movers-v2-header">Piyasa Hareketlileri</div>
+    <div className="cc-movers-v2 cc-section" role="region" aria-label="BIST hareketlileri">
+      <div className="cc-movers-v2-header">BIST Hareketlileri</div>
       <div className="cc-movers-cols">
-        <MoverCol title="En Cok Yukselenler" rows={movers.gainers} />
-        <MoverCol title="En Cok Dusenler"    rows={movers.losers} />
-        <MoverCol title="Hacim Liderleri"     rows={movers.volume} showVolume />
+        <MoverCol title="Yükselenler" rows={movers.gainers} />
+        <MoverCol title="Düşenler" rows={movers.losers} />
+        <MoverCol title="Hacim liderleri" rows={movers.volume} showVolume />
       </div>
     </div>
   );

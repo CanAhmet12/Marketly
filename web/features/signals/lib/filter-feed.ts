@@ -2,6 +2,7 @@ import type { AffinityContext } from "@/features/personalization/domain/personal
 import { personalizedTrendScore } from "@/features/personalization/domain/personalization-engine";
 import type { SignalDirectionFilter, SignalFilterChipId, SignalSortId } from "@/features/signals/types";
 import { signalMarketplaceTrendScore } from "@/features/signals/lib/signals-ranking";
+import { resolveSignalAssetCategory } from "@/features/signals/lib/resolve-signal-asset-category";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
 
 const ASSET_FILTER_IDS: SignalFilterChipId[] = ["crypto", "stocks", "forex", "commodity", "index"];
@@ -45,7 +46,7 @@ export function filterSignalFeed(
 
   const assetSel = ASSET_FILTER_IDS.filter((id) => chips.has(id));
   if (assetSel.length) {
-    out = out.filter((r) => (assetSel as readonly string[]).includes(r.assetCategory));
+    out = out.filter((r) => assetSel.includes(resolveSignalAssetCategory(r)));
   }
 
   if (analystId !== "all") {
