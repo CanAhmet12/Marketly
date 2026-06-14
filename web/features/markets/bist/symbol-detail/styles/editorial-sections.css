@@ -1,0 +1,102 @@
+/**
+ * BIST detay — Faz 2 editorial mavi override
+ */
+.bc-page--bist .cdr-pulse__live-tag {
+  color: color-mix(in srgb, #93c5fd 78%, #fff 22%);
+}
+
+.bc-page--bist .cdr-pulse__live-dot,
+.bc-page--bist .cdr-tokenomics__live-dot {
+  background: #3b82f6;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #3b82f6 22%, transparent),
+    0 0 10px color-mix(in srgb, #3b82f6 55%, transparent);
+}
+
+.bc-page--bist .cdr-markets__live-dot {
+  background: #60a5fa;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #60a5fa 22%, transparent),
+    0 0 10px color-mix(in srgb, #60a5fa 55%, transparent);
+}
+
+.bc-page--bist .cdr-pulse__range-mid em {
+  font-style: normal;
+  font-size: 10px;
+  font-family: var(--font-bold, inherit);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #93c5fd 72%, #fff 28%);
+  margin-left: 4px;
+}
+
+.bc-page--bist .cdr-tokenomics__tag--stock .cdr-tokenomics__tag-dot--stock {
+  background: #3b82f6;
+}
+
+.bc-page--bist .cdr-tokenomics__tag--production .cdr-tokenomics__tag-dot--production {
+  background: #2563eb;
+}
+
+.bc-page--bist .cdr-tokenomics__tag--seasonal .cdr-tokenomics__tag-dot--seasonal {
+  background: #60a5fa;
+}
+
+.bc-page--bist .cdr-tokenomics__live-tag {
+  color: color-mix(in srgb, #93c5fd 78%, #fff 22%);
+}
+
+.bc-page--bist .cdr-markets__live-tag {
+  color: color-mix(in srgb, #bfdbfe 78%, #fff 22%);
+}
+
+.bc-page--bist .cdr-pulse__tile--1h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #93c5fd, #60a5fa);
+}
+
+.bc-page--bist .cdr-pulse__tile--24h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+}
+
+.bc-page--bist .cdr-pulse__tile--7d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+}
+
+.bc-page--bist .cdr-pulse__tile--30d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+}
+
+.bc-page--bist .cdr-pulse__tile--90d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #1d4ed8, #1e40af);
+}
+
+.bc-page--bist .cdr-pulse__range-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #3b82f6 35%, transparent),
+    #3b82f6
+  );
+}
+
+.bc-page--bist .cdr-pulse__range-marker {
+  border-color: #93c5fd;
+  background: #3b82f6;
+}
+
+.bc-page--bist .cdr-chart-overlay__tf-btn--active {
+  border-color: color-mix(in srgb, #3b82f6 55%, transparent);
+  color: #93c5fd;
+  background: color-mix(in srgb, #3b82f6 12%, transparent);
+}
+
+.bc-page--bist .cdr-sidebar-live-dot {
+  background: #60a5fa;
+  box-shadow: 0 0 8px color-mix(in srgb, #3b82f6 55%, transparent);
+}
+
+.bc-pulse-section__corr {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--cdr-muted) 82%, var(--cdr-gold) 18%);
+}

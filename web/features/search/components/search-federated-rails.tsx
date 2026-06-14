@@ -16,7 +16,7 @@ import type {
   SearchSplitPosts,
   SearchTabGroupId,
 } from "@/features/search/types";
-import { NoResultsState } from "@/components/states";
+import { SearchNoResults } from "@/features/search/components/search-no-results";
 
 type Props = {
   query: string;
@@ -73,7 +73,7 @@ export function SearchFederatedRails({
     creatorRooms.length;
 
   if (total === 0) {
-    return <NoResultsState query={query} suggestion="Farklı bir kelime veya sembol deneyin." compact />;
+    return <SearchNoResults query={query} suggestion="Farklı bir kelime veya sembol deneyin." />;
   }
 
   const renderSection = (key: FederatedSectionKey) => {
@@ -87,7 +87,7 @@ export function SearchFederatedRails({
             accent="teal"
             onSeeAll={bundle.markets.length > 3 ? () => onTabChange("markets") : undefined}
           >
-            <SearchMarketsGrid markets={bundle.markets} signals={[]} limit={3} showCommunityHint />
+            <SearchMarketsGrid markets={bundle.markets} signals={[]} limit={3} showCommunityHint={false} />
           </SearchResultRail>
         );
       case "signals":
@@ -197,5 +197,5 @@ export function SearchFederatedRails({
     }
   };
 
-  return <div className="dvr-stream sch-federated">{order.map(renderSection)}</div>;
+  return <div className="srch-stream">{order.map(renderSection)}</div>;
 }

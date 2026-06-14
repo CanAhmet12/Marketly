@@ -1,0 +1,71 @@
+/**
+ * Emtia detay — amber kimlik override
+ */
+.cdr-page.cmr-page--commodity {
+  --cdr-gold: #f97316;
+  --cdr-gold-soft: rgba(249, 115, 22, 0.14);
+  --cdr-rail-teal: #fb923c;
+  --cdr-accent-glow: color-mix(in srgb, #f97316 16%, transparent);
+  --cdr-teal-glow: rgba(249, 115, 22, 0.1);
+}
+
+.cmr-page--commodity .cdr-main-zone-divider--peak-live {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #f97316 58%, #fdba74) 10%,
+    color-mix(in srgb, #fbbf24 42%, #f97316 58%) 30%,
+    color-mix(in srgb, #fb923c 46%, #ea580c 54%) 55%,
+    color-mix(in srgb, #84cc16 38%, transparent) 78%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 16px color-mix(in srgb, #f97316 18%, transparent),
+    0 0 10px color-mix(in srgb, #fbbf24 12%, transparent);
+}
+
+.cmr-page--commodity .cdr-main-zone-divider--live-teal {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #fb923c 44%, transparent) 8%,
+    color-mix(in srgb, #f97316 38%, #ea580c 62%) 32%,
+    color-mix(in srgb, #fbbf24 56%, transparent) 58%,
+    color-mix(in srgb, #84cc16 42%, #f97316 58%) 86%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 14px color-mix(in srgb, #f97316 14%, transparent),
+    0 0 16px color-mix(in srgb, #fb923c 16%, transparent);
+}
+
+.cmr-page--commodity .cdr-live-ticker {
+  border-bottom-color: color-mix(in srgb, var(--cdr-border-subtle) 70%, #f97316 30%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #f97316 8%, var(--cdr-bg)) 0%,
+    color-mix(in srgb, var(--cdr-bg) 96%, #000) 22%,
+    var(--cdr-bg) 100%
+  );
+}
+
+.cmr-page--commodity .cdr-live-ticker::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #f97316 55%, transparent) 35%,
+    color-mix(in srgb, #fbbf24 35%, transparent) 65%,
+    transparent 100%
+  );
+}
+
+.cmr-page--commodity .cdr-live-ticker__item--active {
+  background: color-mix(in srgb, #f97316 10%, rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 -2px 0 #f97316;
+}
+
+@media (hover: hover) {
+  .cmr-page--commodity .cdr-live-ticker__item:hover {
+    background: color-mix(in srgb, #f97316 6%, rgba(255, 255, 255, 0.02));
+  }
+}

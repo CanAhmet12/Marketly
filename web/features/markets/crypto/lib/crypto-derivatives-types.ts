@@ -1,0 +1,22 @@
+export type CryptoDerivativesResponse = {
+  symbol: string;
+  pair: string;
+  source: "binance" | "bybit" | "okx";
+  updatedAt: number;
+  markPrice: number;
+  fundingRate: number;
+  fundingRatePct: number;
+  fundingAnnualizedPct: number;
+  nextFundingTime: number;
+  openInterestQty: number;
+  openInterestUsd: number;
+  openInterestChange24hPct: number;
+  longAccountPct: number;
+  shortAccountPct: number;
+  longShortRatio: number;
+  takerBuyPct24h: number;
+  takerSellPct24h: number;
+  takerBuyVol24h: number;
+  takerSellVol24h: number;
+  liquidationBias: "long" | "short" | "neutral";
+};

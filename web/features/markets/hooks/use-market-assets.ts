@@ -1,7 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchMarketAssets } from "@/features/markets/fetch-market-assets";
 import type { MarketAssetView } from "@/features/markets/types";
@@ -22,21 +21,16 @@ export function useMarketAssetsLive() {
     queryFn: () => fetchMarketAssets(getSupabaseBrowserClient()),
     enabled,
     networkMode: "always",
-    refetchOnMount: "always",
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     staleTime: 30_000,
     refetchInterval: 60_000,
+    refetchIntervalInBackground: true,
+    placeholderData: keepPreviousData,
     retry: 2,
   });
 
   const { data = [], isLoading, error } = query;
-
-  useEffect(() => {
-    if (!enabled) return;
-    if (query.isError) return;
-    if (query.fetchStatus !== "idle") return;
-    if (data.length > 0) return;
-    void query.refetch();
-  }, [enabled, query.isError, data.length, query.fetchStatus, query.refetch]);
 
   return { assets: data, isLoading: enabled ? isLoading : false, error };
 }

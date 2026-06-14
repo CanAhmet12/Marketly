@@ -8,22 +8,46 @@ import { SEARCH_QUICK_SYMBOLS, SEARCH_TREND_SUGGESTIONS } from "@/features/searc
 import { useRecentSearches } from "@/features/search/hooks/use-recent-searches";
 import { cn } from "@/lib/cn";
 
+type SuggestKind = "recent" | "trend" | "symbol";
+
 type Props = {
   query: string;
   open: boolean;
   onClose: () => void;
   onPick: (q: string) => void;
   anchorRef: React.RefObject<HTMLElement | null>;
+  variant?: "topbar" | "inline";
 };
 
-export function SearchSuggestPanel({ query, open, onClose, onPick, anchorRef }: Props) {
+const KIND_LABEL: Record<SuggestKind, string> = {
+  recent: "Son",
+  trend: "Trend",
+  symbol: "Sembol",
+};
+
+function kindClass(kind: SuggestKind): string {
+  if (kind === "symbol") return "srch-suggest__kind--symbol";
+  if (kind === "trend") return "srch-suggest__kind--trend";
+  return "srch-suggest__kind--recent";
+}
+
+export function SearchSuggestPanel({
+  query,
+  open,
+  onClose,
+  onPick,
+  anchorRef,
+  variant = "topbar",
+}: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const { recent, removeRecent } = useRecentSearches();
   const [activeIdx, setActiveIdx] = useState(-1);
+  const trimmed = query.trim();
+  const resultsHref = trimmed.length >= 2 ? buildSearchUrl(trimmed, "all") : "/results";
 
   const items = useMemo(() => {
-    const t = query.trim().toLowerCase();
-    const out: { id: string; label: string; q: string; kind: "recent" | "trend" | "symbol" }[] = [];
+    const t = trimmed.toLowerCase();
+    const out: { id: string; label: string; q: string; kind: SuggestKind }[] = [];
 
     for (const r of recent) {
       if (!t || r.toLowerCase().includes(t)) {
@@ -48,7 +72,7 @@ export function SearchSuggestPanel({ query, open, onClose, onPick, anchorRef }: 
     }
 
     return out.slice(0, 8);
-  }, [query, recent]);
+  }, [trimmed, recent]);
 
   useEffect(() => {
     setActiveIdx(-1);
@@ -100,33 +124,41 @@ export function SearchSuggestPanel({ query, open, onClose, onPick, anchorRef }: 
   if (!open) return null;
 
   return (
-    <div ref={panelRef} className="sch-suggest" role="listbox" aria-label="Arama önerileri">
+    <div
+      ref={panelRef}
+      className={cn("srch-suggest", variant === "inline" && "srch-suggest--inline")}
+      role="listbox"
+      aria-label="Arama önerileri"
+    >
+      <div className="srch-suggest__head">
+        <span className="srch-suggest__eyebrow">{variant === "inline" ? "Hızlı arama" : "Öneriler"}</span>
+        {trimmed ? <span className="srch-suggest__query">&ldquo;{trimmed}&rdquo;</span> : null}
+      </div>
+
       {items.length === 0 ? (
-        <p className="sch-suggest__empty">Öneri yok — Enter ile ara</p>
+        <p className="srch-suggest__empty">Eşleşme yok — Enter ile tam arama yapın</p>
       ) : (
-        <ul className="sch-suggest__list">
+        <ul className="srch-suggest__list">
           {items.map((item, idx) => (
             <li key={item.id}>
               <button
                 type="button"
                 role="option"
                 aria-selected={idx === activeIdx}
-                className={cn("sch-suggest__item", idx === activeIdx && "sch-suggest__item--active")}
+                className={cn("srch-suggest__item", idx === activeIdx && "srch-suggest__item--active")}
                 onMouseEnter={() => setActiveIdx(idx)}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   pick(item.q);
                 }}
               >
-                <span className="sch-suggest__kind">
-                  {item.kind === "recent" ? "Son" : item.kind === "symbol" ? "Sembol" : "Trend"}
-                </span>
-                <span className="sch-suggest__label">{item.label}</span>
+                <span className={cn("srch-suggest__kind", kindClass(item.kind))}>{KIND_LABEL[item.kind]}</span>
+                <span className="srch-suggest__label">{item.label}</span>
                 {item.kind === "recent" ? (
                   <span
                     role="button"
                     tabIndex={-1}
-                    className="sch-suggest__remove"
+                    className="srch-suggest__remove"
                     aria-label="Kaldır"
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -145,21 +177,30 @@ export function SearchSuggestPanel({ query, open, onClose, onPick, anchorRef }: 
           ))}
         </ul>
       )}
-      <div className="sch-suggest__foot">
-        <Link
-          href="/results"
-          className="sch-suggest__link"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={onClose}
-        >
-          Gelişmiş arama
-        </Link>
-        <span className="sch-suggest__hint">↑↓ seç · Enter ara · Esc kapat</span>
+
+      <div className="srch-suggest__foot">
+        <div className="srch-suggest__foot-links">
+          {trimmed.length >= 2 ? (
+            <Link
+              href={resultsHref}
+              className="srch-suggest__link srch-suggest__link--primary"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onClose}
+            >
+              Tüm sonuçları gör
+            </Link>
+          ) : null}
+          <Link
+            href="/results"
+            className="srch-suggest__link"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onClose}
+          >
+            Arama sayfası
+          </Link>
+        </div>
+        <span className="srch-suggest__hint">↑↓ · Enter · Esc</span>
       </div>
     </div>
   );
-}
-
-export function buildSuggestPickUrl(q: string): string {
-  return buildSearchUrl(q, "all");
 }

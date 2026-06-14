@@ -9,6 +9,7 @@ import { formatSignalPrice, strategyTacticLabel } from "@/features/signals/compo
 import { signalMarketTone, type SignalMarketTone } from "@/features/signals/lib/signal-market-tone";
 import { resolveSignalAssetCategory } from "@/features/signals/lib/resolve-signal-asset-category";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 import { motionEntranceDelay } from "@/lib/motion-stagger";
 import { cn } from "@/lib/cn";
@@ -36,7 +37,7 @@ export function SignalHeroSpotlight({ signal, onOpen }: Props) {
   const tone = signalMarketTone(resolveSignalAssetCategory(signal));
   const dir = dirMeta(signal.direction);
   const analystHref = `/channel/${signal.creator_id}`;
-  const marketHref = `/markets/${encodeURIComponent(signal.symbol)}`;
+  const marketHref = marketSymbolPath(signal.symbol);
   const headline =
     signal.rationale?.trim().slice(0, 140) ||
     `${signal.asset_display_name || signal.symbol} için ${strategyTacticLabel(signal.strategy)} tezi.`;

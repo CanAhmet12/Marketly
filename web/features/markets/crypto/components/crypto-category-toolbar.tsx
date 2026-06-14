@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { MarketsSearchBar } from "@/features/markets/components/markets-search-bar";
 import { trendingFromAssets } from "@/features/markets/components/markets-filter-chips";
 import { useMarketsSearch } from "@/features/markets/hooks/use-markets-search";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import type { MarketAssetView } from "@/features/markets/types";
 
 const ECOSYSTEM_LINKS = [
@@ -44,7 +45,7 @@ export function CryptoCategoryToolbar({ assets }: Props) {
           resetHighlight={search.resetHighlight}
           onSelectAsset={(asset) => {
             search.pushRecent(asset.symbol);
-            router.push(`/markets/${encodeURIComponent(asset.symbol)}`);
+            router.push(marketSymbolPath(asset.symbol));
           }}
         />
       </div>

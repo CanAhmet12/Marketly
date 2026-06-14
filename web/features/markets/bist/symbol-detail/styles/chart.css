@@ -1,0 +1,26 @@
+/* BIST chart — yalnızca piyasaya özel rozet; boyut/layout crypto cdr-chart-* ile paylaşılır */
+
+.bc-chart-section__corr {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, #3b82f6 78%, #fff 22%);
+  background: color-mix(in srgb, #3b82f6 14%, transparent);
+  border: 1px solid color-mix(in srgb, #3b82f6 28%, transparent);
+}
+
+.cdr-market-chart__quote-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cdr-market-chart__source {
+  margin-top: 10px;
+}

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
-import "@/styles/route-groups/search.css";
-
+/** `/search` → `/results` redirect alias; CSS yalnızca results layout'ta. */
 export default function SearchLayout({ children }: { children: ReactNode }) {
   return children;
 }

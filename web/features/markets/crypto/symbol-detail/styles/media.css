@@ -1,0 +1,100 @@
+.cdr-media-section {
+  margin-top: var(--cdr-flow-lg);
+}
+
+/* Discover rail kartları — token köprüsü ( .dvr-surface dışında değişkenler yok ) */
+.cdr-page .dvr-surface--embed {
+  --dvr-bg: var(--color-bg, var(--cdr-bg));
+  --dvr-bg-card: var(--color-surface, var(--cdr-surface));
+  --dvr-bg-card-hover: var(--color-surface-hover, var(--cdr-surface-hover));
+  --dvr-border-soft: var(--color-divider, var(--cdr-border-subtle));
+  --dvr-card-plate: var(--color-card-plate, var(--cdr-surface-soft));
+  --dvr-thumb-well: var(--color-thumb-bg, #12121a);
+  --dvr-text: var(--color-text, var(--cdr-text));
+  --dvr-text-2: var(--color-text-secondary, var(--cdr-text-secondary));
+  --dvr-text-3: var(--color-text-tertiary, var(--cdr-muted));
+  --dvr-text-muted: var(--color-muted, var(--cdr-muted));
+  --dvr-teal: var(--color-primary, #14b8a6);
+  --dvr-teal-dim: color-mix(in srgb, var(--color-primary, #14b8a6) 28%, transparent);
+  --dvr-rail-gap: 0.85rem;
+  --dvr-pad: var(--cdr-pad-x, 12px);
+  --dvr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dvr-dur: 200ms;
+
+  /* Ana kolon genişliğine göre — tam viewport değil */
+  --dvr-live-card-w: clamp(300px, min(92%, 440px), 480px);
+  --dvr-video-card-w: clamp(300px, min(92%, 440px), 480px);
+  --dvr-pulse-card-w: clamp(168px, min(44%, 220px), 248px);
+  --dvr-pulse-hero-w: clamp(168px, min(44%, 220px), 248px);
+  --dvr-pulse-tall-w: clamp(160px, min(42%, 210px), 230px);
+  --dvr-pulse-featured-w: clamp(160px, min(42%, 210px), 230px);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 0;
+  background: transparent;
+  overflow: visible;
+  color: inherit;
+}
+
+.cdr-page .dvr-surface--embed .dvr-video-rail-item,
+.cdr-page .dvr-surface--embed .dvr-live-rail-item,
+.cdr-page .dvr-surface--embed .dvr-pulse-rail-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.cdr-page .dvr-surface--embed .dvr-video-rail-item > .dvr-video-card,
+.cdr-page .dvr-surface--embed .dvr-live-rail-item > .dvr-live-card,
+.cdr-page .dvr-surface--embed .dvr-pulse-rail-item > .dvr-pulse-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .cdr-page .dvr-surface--embed {
+    --dvr-live-card-w: clamp(280px, 88vw, 380px);
+    --dvr-video-card-w: clamp(280px, 88vw, 400px);
+    --dvr-pulse-card-w: clamp(160px, 52vw, 210px);
+  }
+}
+
+.cdr-media-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cdr-flow-lg);
+  min-width: 0;
+}
+
+.cdr-media-block {
+  min-width: 0;
+}
+
+.cdr-media-block .cdr-section-head {
+  margin-bottom: var(--cdr-head-gap);
+}
+
+.cdr-media-rail {
+  min-width: 0;
+}
+
+.cdr-media-rail-scroll {
+  margin-inline: calc(var(--cdr-pad-x, 12px) * -1);
+  padding-inline: var(--cdr-pad-x, 12px);
+  scroll-padding-inline: var(--cdr-pad-x, 12px);
+}
+
+.cdr-page .cdr-media-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--color-bg, var(--cdr-bg)) 88%);
+}
+
+.cdr-media-rail .dvr-live-peak-band {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+@media (max-width: 640px) {
+  .cdr-media-stack {
+    gap: var(--cdr-flow-md);
+  }
+}

@@ -1,0 +1,14 @@
+/**
+ * Gönderi detay route bundle — Faz 0
+ * Yalnızca /post/* — channel / discover borrow yok
+ */
+
+@import "../share-sheet.css";
+@import "../share-sheet-light-theme.css";
+@import "../post-detail.css";
+@import "../post-detail-light-theme.css";
+@import "../post-detail-premium-palette.css";
+@import "../post-detail-fluid-motion.css";
+@import "../post-detail-embedded-surface.css";
+@import "../post-detail-divider-sync.css";
+@import "../post-detail-light-readability.css";

@@ -12,7 +12,7 @@ import type {
   SearchSplitPosts,
   SearchTabGroupId,
 } from "@/features/search/types";
-import { NoResultsState } from "@/components/states";
+import { SearchNoResults } from "@/features/search/components/search-no-results";
 
 type Props = {
   tab: SearchTabGroupId;
@@ -40,7 +40,7 @@ export function SearchTabPanel({
       split.livePosts.length ||
       split.textPosts.length;
     if (!has) {
-      return <NoResultsState query={query} suggestion="Bu kategoride içerik bulunamadı." compact />;
+      return <SearchNoResults query={query} suggestion="Bu kategoride içerik bulunamadı." />;
     }
     return (
       <SearchContentGrid
@@ -55,7 +55,7 @@ export function SearchTabPanel({
   if (tab === "people") {
     const has = bundle.channels.length || creatorRooms.length;
     if (!has) {
-      return <NoResultsState query={query} suggestion="Bu kategoride üretici veya oda bulunamadı." compact />;
+      return <SearchNoResults query={query} suggestion="Bu kategoride üretici veya oda bulunamadı." />;
     }
     return <SearchPeopleGrid channels={bundle.channels} creatorRooms={creatorRooms} />;
   }
@@ -63,7 +63,7 @@ export function SearchTabPanel({
   if (tab === "markets") {
     const has = bundle.signals.length || bundle.markets.length;
     if (!has) {
-      return <NoResultsState query={query} suggestion="Bu kategoride piyasa veya sinyal bulunamadı." compact />;
+      return <SearchNoResults query={query} suggestion="Bu kategoride piyasa veya sinyal bulunamadı." />;
     }
     return <SearchMarketsGrid markets={bundle.markets} signals={bundle.signals} />;
   }
@@ -71,7 +71,7 @@ export function SearchTabPanel({
   if (tab === "community") {
     const has = discussions.length || communities.length;
     if (!has) {
-      return <NoResultsState query={query} suggestion="Bu sorgu için topluluk sonucu yok." compact />;
+      return <SearchNoResults query={query} suggestion="Bu sorgu için topluluk sonucu yok." />;
     }
     return <SearchCommunityList discussions={discussions} communities={communities} />;
   }

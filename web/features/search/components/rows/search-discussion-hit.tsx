@@ -8,18 +8,19 @@ type Props = { discussion: DiscussionSearchHit };
 
 export function SearchDiscussionHit({ discussion }: Props) {
   return (
-    <Link
-      href={discussion.href}
-      className="sch-list-row block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--sp-3)] no-underline transition-shadow hover:shadow-[var(--shadow-card)]"
-    >
-      <div className="text-[14px] font-semibold text-[var(--color-text)]">{discussion.title}</div>
-      <div className="mt-1 text-[13px] leading-snug text-[var(--color-text-secondary)]">{discussion.snippet}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-meta)]">
+    <Link href={discussion.href} className="srch-hit srch-hit--thread">
+      <div className="srch-hit__thread-head">
+        <h3 className="srch-hit__thread-title">{discussion.title}</h3>
+        {discussion.heat_label ? <span className="srch-hit__heat">{discussion.heat_label}</span> : null}
+      </div>
+      <p className="srch-hit__thread-snippet">{discussion.snippet}</p>
+      <div className="srch-hit__meta">
         <span>{discussion.author_name}</span>
-        <span>·</span>
-        <span>{discussion.heat_label}</span>
         {discussion.asset_tag ? (
-          <span className="font-semibold text-[var(--color-primary-dark)]">#{discussion.asset_tag}</span>
+          <>
+            <span>·</span>
+            <span className="srch-hit__asset-tag">#{discussion.asset_tag}</span>
+          </>
         ) : null}
       </div>
     </Link>

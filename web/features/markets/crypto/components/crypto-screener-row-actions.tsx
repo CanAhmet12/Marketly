@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { marketAssetSignalsPath } from "@/features/markets/markets-routes";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -12,8 +13,7 @@ type Props = {
 };
 
 export function CryptoScreenerRowActions({ symbol, watched, pending, onToggleWatch }: Props) {
-  const detailHref = `/markets/${encodeURIComponent(symbol)}`;
-  const signalsHref = `/signals?asset=${encodeURIComponent(symbol)}`;
+  const signalsHref = marketAssetSignalsPath(symbol);
 
   return (
     <div className="cc-screener-actions" onClick={(e) => e.stopPropagation()}>
@@ -40,17 +40,10 @@ export function CryptoScreenerRowActions({ symbol, watched, pending, onToggleWat
       </button>
       <Link
         href={signalsHref}
-        className="cc-screener-btn cc-screener-btn--pill"
+        className="cc-screener-btn cc-screener-btn--pill cc-screener-btn--primary"
         aria-label={`${symbol} sinyalleri`}
       >
         Sinyal
-      </Link>
-      <Link
-        href={detailHref}
-        className="cc-screener-btn cc-screener-btn--pill cc-screener-btn--primary"
-        aria-label={`${symbol} detayı`}
-      >
-        Detay
       </Link>
     </div>
   );

@@ -7,6 +7,7 @@ import { useCallback, useState } from "react";
 
 import type { PostCommentRow, DiscussionIntent } from "@/features/post/types";
 import type { CommentTreeNode } from "@/features/post/post-detail-helpers";
+import { postDetailTierLabel } from "@/features/post/post-detail-labels";
 import { avatarUrl as fallbackAvatar } from "@/lib/avatar-url";
 import { formatTimeAgo } from "@/lib/format-time-ago";
 
@@ -79,6 +80,8 @@ function ThreadNodes({
         const isCollapsed = collapsed[c.id] && hasKids;
         const il = intentLabel(c.discussion_intent);
         const st = stanceChip(c.thesis_stance);
+        const tierLabel = postDetailTierLabel(c.author_tier);
+        const tierKey = c.author_tier.toLowerCase();
 
         return (
           <li key={c.id} className="pd-comment">
@@ -93,8 +96,12 @@ function ThreadNodes({
                 <div className="pd-comment-meta">
                   <span className="pd-comment-author">{c.author_name}</span>
                   {c.is_creator_reply ? <span className="pd-comment-badge pd-comment-badge--creator">Üretici</span> : null}
-                  {c.author_tier === "elite" ? <span className="pd-comment-badge pd-comment-badge--elite">Elite</span> : null}
-                  {c.author_tier === "pro" ? <span className="pd-comment-badge pd-comment-badge--pro">Pro</span> : null}
+                  {tierLabel && tierKey === "elite" ? (
+                    <span className="pd-comment-badge pd-comment-badge--elite">{tierLabel}</span>
+                  ) : null}
+                  {tierLabel && tierKey === "pro" ? (
+                    <span className="pd-comment-badge pd-comment-badge--pro">{tierLabel}</span>
+                  ) : null}
                   <span className="pd-comment-handle">{c.author_handle}</span>
                   <span className="pd-comment-time">· {formatTimeAgo(c.created_at)}</span>
                 </div>

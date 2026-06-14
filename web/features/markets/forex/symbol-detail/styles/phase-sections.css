@@ -1,0 +1,35 @@
+.fx-phase-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.fx-phase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 88%, var(--cdr-gold) 12%);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fx-phase-section .cdr-section-stub {
+  margin: 0;
+  max-width: 52ch;
+}
+
+.fx-wide-band-placeholder {
+  margin-bottom: 0;
+}
+
+.fx-sidebar-block--phase .fx-phase-section__body {
+  gap: 8px;
+}
+
+.fx-sidebar-block--phase .fx-phase-badge {
+  margin-top: 2px;
+}

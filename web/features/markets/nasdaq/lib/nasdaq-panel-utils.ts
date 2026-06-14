@@ -19,8 +19,8 @@ export function buildNasdaqIndexPanel(asset: MarketAssetView): NasdaqIndexPanel 
     sparkline: sparkOrFlat(asset),
     trend: trendFromChange(asset.change_percent),
     stats: {
-      haftalik: `${asset.change_percent >= 0 ? "+" : ""}${(asset.change_percent * 1.4).toFixed(2)}%`,
-      aylik: `${asset.change_percent >= 0 ? "+" : ""}${(asset.change_percent * 3.2).toFixed(2)}%`,
+      haftalik: "—",
+      aylik: "—",
       destek: support.toLocaleString("en-US", { maximumFractionDigits: 0 }),
       direnc: resistance.toLocaleString("en-US", { maximumFractionDigits: 0 }),
     },

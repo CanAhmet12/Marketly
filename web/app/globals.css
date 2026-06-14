@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../styles/theme.css";
+@import "../styles/search-chrome-global.css";
 @import "../styles/surface-global-bridge.css";
 @import "../styles/motion.css";
 @import "../styles/layout-containers.css";

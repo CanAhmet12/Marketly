@@ -1,0 +1,90 @@
+/**
+ * Forex detay — Faz 2 editorial mor (#8b5cf6) override
+ */
+.fx-page--forex .cdr-pulse__live-tag {
+  color: color-mix(in srgb, #c4b5fd 78%, #fff 22%);
+}
+
+.fx-page--forex .cdr-pulse__live-dot,
+.fx-page--forex .cdr-tokenomics__live-dot {
+  background: #8b5cf6;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #8b5cf6 22%, transparent),
+    0 0 10px color-mix(in srgb, #8b5cf6 55%, transparent);
+}
+
+.fx-page--forex .cdr-markets__live-dot {
+  background: #a78bfa;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #a78bfa 22%, transparent),
+    0 0 10px color-mix(in srgb, #a78bfa 55%, transparent);
+}
+
+.fx-page--forex .cdr-pulse__range-mid em {
+  font-style: normal;
+  font-size: 10px;
+  font-family: var(--font-bold, inherit);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #c4b5fd 72%, #fff 28%);
+  margin-left: 4px;
+}
+
+.fx-page--forex .cdr-tokenomics__tag--policy .cdr-tokenomics__tag-dot--policy {
+  background: #a78bfa;
+}
+
+.fx-page--forex .cdr-tokenomics__tag--carry .cdr-tokenomics__tag-dot--carry {
+  background: #8b5cf6;
+}
+
+.fx-page--forex .cdr-tokenomics__tag--macro .cdr-tokenomics__tag-dot--macro {
+  background: #c4b5fd;
+}
+
+.fx-page--forex .cdr-tokenomics__live-tag {
+  color: color-mix(in srgb, #c4b5fd 78%, #fff 22%);
+}
+
+.fx-page--forex .cdr-markets__live-tag {
+  color: color-mix(in srgb, #ddd6fe 78%, #fff 22%);
+}
+
+.fx-page--forex .cdr-pulse__tile--1h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #c4b5fd, #a78bfa);
+}
+
+.fx-page--forex .cdr-pulse__tile--24h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #a78bfa, #8b5cf6);
+}
+
+.fx-page--forex .cdr-pulse__tile--7d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+}
+
+.fx-page--forex .cdr-pulse__tile--30d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #7c3aed, #6d28d9);
+}
+
+.fx-page--forex .cdr-pulse__tile--90d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #6d28d9, #5b21b6);
+}
+
+.fx-page--forex .cdr-pulse__range-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #8b5cf6 35%, transparent),
+    #8b5cf6
+  );
+}
+
+.fx-page--forex .cdr-pulse__range-marker {
+  border-color: #c4b5fd;
+  background: #8b5cf6;
+}
+
+.fx-page--forex .cdr-chart-overlay__tf-btn--active {
+  border-color: color-mix(in srgb, #8b5cf6 55%, transparent);
+  color: #c4b5fd;
+  background: color-mix(in srgb, #8b5cf6 12%, transparent);
+}

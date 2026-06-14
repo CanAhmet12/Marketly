@@ -4,9 +4,9 @@ import { useEffect } from "react";
 
 import { AlertCallout } from "@/components/shared/alert-callout";
 import { SearchFederatedRails } from "@/features/search/components/search-federated-rails";
+import { SearchPageMast } from "@/features/search/components/search-page-mast";
 import { SearchPageShell } from "@/features/search/components/search-page-shell";
 import { SearchProgressBar } from "@/features/search/components/search-progress-bar";
-import { SearchResultsHeader } from "@/features/search/components/search-results-header";
 import { SearchSkeleton } from "@/features/search/components/search-skeleton";
 import { SearchCategoryToolbar } from "@/features/search/components/search-category-toolbar";
 import { SearchTabPanel } from "@/features/search/components/search-tab-panel";
@@ -47,6 +47,7 @@ export function SearchPageClient() {
   if (!configOk && !canSearch) {
     return (
       <SearchPageShell>
+        <SearchPageMast mode="idle" />
         <AlertCallout tone="danger" title="Arama kullanılamıyor">
           {configError ?? "Supabase yapılandırması eksik."}
         </AlertCallout>
@@ -65,7 +66,7 @@ export function SearchPageClient() {
   if (rawQ.length < minLen) {
     return (
       <SearchPageShell>
-        <p className="sch-hint">En az {minLen} karakter girin.</p>
+        <SearchPageMast mode="hint" query={rawQ} hint={`En az ${minLen} karakter girin.`} />
       </SearchPageShell>
     );
   }
@@ -74,13 +75,21 @@ export function SearchPageClient() {
 
   return (
     <SearchPageShell>
-      <SearchProgressBar active={query.isFetching} />
-      <SearchResultsHeader query={rawQ} total={counts.all} isFetching={query.isFetching && query.isSuccess} />
-      <SearchCategoryToolbar tab={effectiveTab} counts={counts} onTabChange={setTab} />
+      <SearchPageMast
+        mode="results"
+        query={rawQ}
+        total={counts.all}
+        isFetching={query.isFetching && query.isSuccess}
+      />
+
+      <div className="srch-chrome">
+        <SearchProgressBar active={query.isFetching} />
+        <SearchCategoryToolbar tab={effectiveTab} counts={counts} onTabChange={setTab} />
+      </div>
 
       <div
         id="search-results-panel"
-        className="sch-body"
+        className="srch-body"
         role="tabpanel"
         aria-labelledby={`search-tab-${effectiveTab}`}
         aria-label="Arama sonuçları"

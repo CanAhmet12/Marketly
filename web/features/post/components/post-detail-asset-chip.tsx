@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { isMockDataEnabled } from "@/mock/config";
 import { cn } from "@/lib/cn";
 
@@ -18,7 +19,7 @@ export function PostDetailAssetChip({ assetTag }: Props) {
 
   return (
     <Link
-      href={live ? `/markets/${encodeURIComponent(clean)}` : `/results?q=${encodeURIComponent(clean)}`}
+      href={live ? marketSymbolPath(clean) : `/results?q=${encodeURIComponent(clean)}`}
       className={cn(
         "pd-asset-chip",
         live?.trend === "up" && "pd-asset-chip--up",

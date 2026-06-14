@@ -11,26 +11,52 @@ type Props = {
 };
 
 export function SearchCommunityList({ discussions, communities, limit = null }: Props) {
+  const rail = limit != null;
   const slice = <T,>(arr: T[]) => (limit != null ? arr.slice(0, limit) : arr);
 
+  if (rail) {
+    return (
+      <div className="srch-rail-entities">
+        {slice(discussions).length > 0 ? (
+          <section className="srch-rail-entity" aria-label="Tartışmalar">
+            <div className="srch-rail-track srch-rail-track--stack">
+              {slice(discussions).map((d) => (
+                <SearchDiscussionHit key={d.id} discussion={d} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+        {slice(communities).length > 0 ? (
+          <section className="srch-rail-entity" aria-label="Topluluklar">
+            <div className="srch-rail-track srch-rail-track--stack">
+              {slice(communities).map((c) => (
+                <SearchCommunityHit key={c.id} community={c} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <div className="sch-entity-stack">
-      {slice(discussions).length > 0 ? (
-        <section className="sch-entity-section" aria-label="Tartışmalar">
-          {limit == null ? <h2 className="creators-page__section-title sch-entity-section__title">Tartışmalar</h2> : null}
-          <div className="flex flex-col gap-2">
-            {slice(discussions).map((d) => (
+    <div className="srch-tab-panel">
+      {discussions.length > 0 ? (
+        <section className="srch-tab-section" aria-label="Tartışmalar">
+          <h2 className="srch-tab-section__title">Tartışmalar</h2>
+          <div className="srch-hit-list">
+            {discussions.map((d) => (
               <SearchDiscussionHit key={d.id} discussion={d} />
             ))}
           </div>
         </section>
       ) : null}
 
-      {slice(communities).length > 0 ? (
-        <section className="sch-entity-section" aria-label="Topluluklar">
-          {limit == null ? <h2 className="creators-page__section-title sch-entity-section__title">Topluluklar</h2> : null}
-          <div className="flex flex-col gap-2">
-            {slice(communities).map((c) => (
+      {communities.length > 0 ? (
+        <section className="srch-tab-section" aria-label="Topluluklar">
+          <h2 className="srch-tab-section__title">Topluluklar</h2>
+          <div className="srch-hit-list">
+            {communities.map((c) => (
               <SearchCommunityHit key={c.id} community={c} />
             ))}
           </div>

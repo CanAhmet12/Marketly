@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useRef } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { fetchAssetSymbolCommunity } from "@/features/markets/fetch-asset-symbol-community";
 import { fetchMarketNewsRows } from "@/features/markets/fetch-market-news";
@@ -10,6 +10,7 @@ import { emptyAssetIntelligenceBundle } from "@/features/markets/lib/asset-intel
 import { tryBuildAssetIntelligenceFromLive } from "@/features/markets/lib/live-richness/build-asset-intelligence-from-live";
 import { fillAssetIntelligenceGaps } from "@/features/markets/lib/live-richness/fill-asset-intelligence-gaps";
 import { mergeAssetCommunityLive } from "@/features/markets/lib/live-richness/merge-asset-community-live";
+import { stabilizeAssetIntelligenceBundle } from "@/features/markets/lib/live-richness/stabilize-asset-intelligence-bundle";
 import type { AssetIntelligenceBundle } from "@/features/markets/types/asset-intelligence";
 import { getMarketsRepository } from "@/features/markets/repository";
 import { fetchSignalsFeed } from "@/features/signals/fetch-signals-feed";
@@ -33,6 +34,9 @@ export function useAssetIntelligence(symbol: string): {
     queryFn: () => fetchSignalsFeed(getSupabaseBrowserClient()),
     enabled: liveMode,
     staleTime: 60_000,
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
   const newsQuery = useQuery({
@@ -40,6 +44,9 @@ export function useAssetIntelligence(symbol: string): {
     queryFn: () => fetchMarketNewsRows(getSupabaseBrowserClient(), 40),
     enabled: liveMode,
     staleTime: 120_000,
+    refetchInterval: 180_000,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
   const symKey = symbol.trim().toUpperCase();
@@ -52,7 +59,12 @@ export function useAssetIntelligence(symbol: string): {
     },
     enabled: liveMode && symKey.length > 0,
     staleTime: 60_000,
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
+
+  const bundleRef = useRef<AssetIntelligenceBundle | null>(null);
 
   const bundle = useMemo(() => {
     const s = symbol.trim();
@@ -70,13 +82,13 @@ export function useAssetIntelligence(symbol: string): {
       ? mergeAssetCommunityLive(base, communityQuery.data)
       : base;
 
-    return fillAssetIntelligenceGaps(withCommunity);
+    const next = fillAssetIntelligenceGaps(withCommunity);
+    const stable = stabilizeAssetIntelligenceBundle(bundleRef.current, next);
+    bundleRef.current = stable;
+    return stable;
   }, [symbol, mockOn, repo, assets, signalsQuery.data, newsQuery.data, communityQuery.data]);
 
-  const isLoading =
-    !mockOn &&
-    (assetsLoading ||
-      (liveMode && (signalsQuery.isLoading || newsQuery.isLoading || communityQuery.isLoading)));
+  const isLoading = !mockOn && liveMode && assetsLoading && assets.length === 0;
 
   return { bundle, isLoading, mockOn };
 }

@@ -20,6 +20,7 @@ export function TopBarSearch() {
   const { pushRecent } = useRecentSearches();
 
   const onResultsPage = pathname === "/results" || pathname === "/search";
+  const hasQuery = Boolean(qParam.trim());
 
   useEffect(() => {
     if (onResultsPage) {
@@ -32,12 +33,22 @@ export function TopBarSearch() {
       if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
       const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea" || (e.target as HTMLElement)?.isContentEditable) return;
+
+      if (onResultsPage && !qParam.trim()) {
+        const inline = document.getElementById("search-inline-q");
+        if (inline instanceof HTMLInputElement) {
+          e.preventDefault();
+          inline.focus();
+          return;
+        }
+      }
+
       e.preventDefault();
-      wrapRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+      wrapRef.current?.querySelector<HTMLInputElement>("#top-bar-search-q")?.focus();
     };
     document.addEventListener("keydown", onSlash);
     return () => document.removeEventListener("keydown", onSlash);
-  }, []);
+  }, [onResultsPage, qParam]);
 
   const navigate = useCallback(
     (q: string) => {
@@ -67,8 +78,6 @@ export function TopBarSearch() {
     [navigate],
   );
 
-  const showPanel = panelOpen;
-
   const handleInputBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
     const next = e.relatedTarget as Node | null;
     if (next && wrapRef.current?.contains(next)) return;
@@ -79,21 +88,22 @@ export function TopBarSearch() {
   return (
     <form
       onSubmit={submit}
-      className="sch-topbar-form flex w-full min-w-0 max-w-[640px] items-center gap-[var(--sp-2)]"
+      className={cn("srch-topbar-form", onResultsPage && "srch-topbar-form--results")}
       role="search"
       aria-label="Site içi arama"
     >
-      <div ref={wrapRef} className="sch-topbar-wrap relative min-w-0 flex-1">
+      <div ref={wrapRef} className="srch-topbar-wrap">
         <div
           className={cn(
-            "sch-topbar-field relative min-h-[40px] min-w-0 rounded-[var(--radius-chip)] border border-transparent transition-[box-shadow,border-color] duration-[var(--motion-fast)]",
-            focused && "sch-topbar-field--focused",
+            "srch-topbar-field",
+            focused && "srch-topbar-field--focused",
+            onResultsPage && hasQuery && "srch-topbar-field--synced",
           )}
         >
           <label htmlFor="top-bar-search-q" className="sr-only">
             Ara
           </label>
-          <span className="sch-topbar-icon pointer-events-none absolute left-[var(--sp-3)] top-1/2 -translate-y-1/2" aria-hidden>
+          <span className="srch-topbar-icon" aria-hidden>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="7" />
               <path d="M20 20l-3-3" strokeLinecap="round" />
@@ -106,7 +116,7 @@ export function TopBarSearch() {
             autoComplete="off"
             placeholder="Sembol, kanal veya konu…"
             aria-label="Arama sorgusu"
-            aria-expanded={showPanel}
+            aria-expanded={panelOpen}
             aria-controls="search-suggest-panel"
             value={value}
             onChange={(e) => {
@@ -118,12 +128,11 @@ export function TopBarSearch() {
               setPanelOpen(true);
             }}
             onBlur={handleInputBlur}
-            className="min-h-[40px] w-full rounded-[var(--radius-chip)] border-0 bg-transparent py-2.5 pl-9 pr-[var(--sp-3)] text-[16px] font-medium leading-relaxed tracking-[-0.01em] text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-secondary)] placeholder:opacity-80"
           />
           {value ? (
             <button
               type="button"
-              className="sch-topbar-clear absolute right-2 top-1/2 -translate-y-1/2"
+              className="srch-topbar-clear"
               aria-label="Temizle"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
@@ -133,23 +142,24 @@ export function TopBarSearch() {
             >
               ×
             </button>
-          ) : null}
+          ) : (
+            <span className="srch-topbar-kbd" aria-hidden>
+              /
+            </span>
+          )}
         </div>
         <div id="search-suggest-panel">
           <SearchSuggestPanel
             query={value}
-            open={showPanel}
+            open={panelOpen}
             onClose={() => setPanelOpen(false)}
             onPick={onPick}
             anchorRef={wrapRef}
+            variant="topbar"
           />
         </div>
       </div>
-      <button
-        type="submit"
-        aria-label="Ara"
-        className="hidden h-10 shrink-0 rounded-[var(--radius-chip)] border-0 bg-[var(--color-search-field-bg)] px-[var(--sp-4)] text-[14px] font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] active:scale-[0.98] sm:inline-block"
-      >
+      <button type="submit" className="srch-topbar-submit" aria-label="Ara">
         Ara
       </button>
     </form>

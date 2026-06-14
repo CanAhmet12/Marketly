@@ -42,9 +42,9 @@ html[data-theme="light"] .pd-canvas .pd-thread-siblings__edge {
   border-radius: 0;
 }
 
-html[data-theme="light"] .pd-canvas .hv-ref-article__quote,
-html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed,
-html[data-theme="light"] .pd-canvas .hv-ref-article__link-preview {
+html[data-theme="light"] .pd-canvas .pd-quoted-block,
+html[data-theme="light"] .pd-canvas .pd-repost-embed,
+html[data-theme="light"] .pd-canvas .pd-link-preview {
   border-radius: 0;
   background: transparent;
   border: none;

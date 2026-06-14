@@ -1,0 +1,73 @@
+.cdr-stat-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: var(--cdr-radius-pill);
+  background: var(--cdr-surface-soft);
+  font-size: var(--type-meta, 0.875rem);
+  line-height: 1.35;
+  color: var(--color-text-secondary, var(--cdr-text-secondary));
+  white-space: nowrap;
+}
+
+.cdr-stat-pill strong {
+  color: var(--color-text, var(--cdr-text));
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdr-stat-pill strong.cdr-up,
+.cdr-stat-pill strong.cdr-down {
+  font-size: var(--type-subtitle, 0.9375rem);
+  font-weight: 700;
+}
+
+.cdr-signals__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cdr-signals-rail {
+  --ms-page-pad: var(--cdr-pad-x, 12px);
+  margin-top: 4px;
+  min-width: 0;
+}
+
+.cdr-page .cdr-signals-rail .dvr-hscroll-wrap::after {
+  background: linear-gradient(90deg, transparent, var(--color-bg, var(--cdr-bg)) 88%);
+}
+
+.cdr-signals__empty {
+  padding: 20px 0;
+  text-align: center;
+  font-size: var(--type-meta, 0.875rem);
+  color: var(--color-meta, var(--cdr-muted));
+}
+
+.cdr-signals-section--wide {
+  margin-top: 0;
+  --cc-sig-rail-card-w: clamp(300px, min(38vw, 420px), 440px);
+}
+
+.cdr-signals-rail--wide {
+  margin-top: 0;
+}
+
+.cdr-page .cdr-signals-rail--wide .dvr-hscroll-wrap::after {
+  display: none;
+}
+
+.cdr-page .cdr-signals-rail--wide .dvr-hscroll-wrap {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--sig-rail {
+  scroll-padding-inline-end: max(12px, calc(100% - var(--cc-sig-rail-card-w, 360px)));
+  padding-inline-end: max(12px, calc(100% - var(--cc-sig-rail-card-w, 360px)));
+}

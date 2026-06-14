@@ -1,0 +1,583 @@
+.cdr-tokenomics-section--wide,
+.cdr-tokenomics-section--inline {
+  margin-top: 0;
+}
+
+.cdr-tokenomics__canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Canlı etiket */
+.cdr-tokenomics__live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fde68a 72%, #fff 28%);
+}
+
+.cdr-tokenomics__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--cdr-gold) 22%, transparent),
+    0 0 10px color-mix(in srgb, var(--cdr-gold) 55%, transparent);
+  animation: cdr-tokenomics-live-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes cdr-tokenomics-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.9);
+  }
+}
+
+/* Bento KPI — 2x2 grid, kart kutusu yok */
+.cdr-tokenomics__bento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  padding: 12px 0 14px;
+  border-top: 1px solid color-mix(in srgb, var(--cdr-gold) 28%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 18%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 5%, transparent) 0%,
+    color-mix(in srgb, var(--cdr-gold) 4%, transparent) 52%,
+    color-mix(in srgb, var(--cdr-green) 3%, transparent) 100%
+  );
+}
+
+.cdr-tokenomics__tile {
+  display: grid;
+  grid-template-columns: 3px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.cdr-tokenomics__tile-accent {
+  display: block;
+  width: 3px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.cdr-tokenomics__tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cdr-tokenomics__tile-k {
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.cdr-tokenomics__tile-v {
+  font-size: clamp(0.9375rem, 0.4vw + 0.88rem, 1.0625rem);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #f8fafc;
+}
+
+.cdr-tokenomics__tile-sub {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cdr-muted) 88%, #fff 12%);
+}
+
+.cdr-tokenomics__tile-bar {
+  display: block;
+  height: 3px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.cdr-tokenomics__tile-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  min-width: 0;
+}
+
+.cdr-tokenomics__tile-bar-fill--gold {
+  background: linear-gradient(90deg, #f59e0b, #fde68a);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cdr-gold) 45%, transparent);
+}
+
+.cdr-tokenomics__tile--circ .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #2dd4a8, #34d399);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 50%, transparent);
+}
+
+.cdr-tokenomics__tile--circ .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 78%, #fff 22%);
+}
+
+.cdr-tokenomics__tile--circ .cdr-tokenomics__tile-v {
+  color: var(--cdr-rail-teal, #2dd4a8);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 32%, transparent);
+}
+
+.cdr-tokenomics__tile--lock .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #f59e0b, #fde68a);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-gold) 45%, transparent);
+}
+
+.cdr-tokenomics__tile--lock .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, #fde68a 75%, var(--cdr-muted) 25%);
+}
+
+.cdr-tokenomics__tile--lock .cdr-tokenomics__tile-v {
+  color: #fde68a;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--cdr-gold) 28%, transparent);
+}
+
+.cdr-tokenomics__tile--fdv .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #fb923c, #fdba74);
+  box-shadow: 0 0 10px color-mix(in srgb, #fb923c 40%, transparent);
+}
+
+.cdr-tokenomics__tile--fdv .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, #fdba74 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__tile--fdv .cdr-tokenomics__tile-v {
+  color: #fff7ed;
+}
+
+.cdr-tokenomics__tile--pressure-high .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #ef4444, #fca5a5);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-red) 45%, transparent);
+}
+
+.cdr-tokenomics__tile--pressure-high .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, #fca5a5 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__tile--pressure-high .cdr-tokenomics__tile-v {
+  color: #fecaca;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--cdr-red) 30%, transparent);
+}
+
+.cdr-tokenomics__tile--pressure-mid .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #f59e0b, #fcd34d);
+}
+
+.cdr-tokenomics__tile--pressure-mid .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, #fcd34d 70%, var(--cdr-muted) 30%);
+}
+
+.cdr-tokenomics__tile--pressure-mid .cdr-tokenomics__tile-v {
+  color: #fde68a;
+}
+
+.cdr-tokenomics__tile--pressure-low .cdr-tokenomics__tile-accent {
+  background: linear-gradient(180deg, #22c55e, #86efac);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-green) 45%, transparent);
+}
+
+.cdr-tokenomics__tile--pressure-low .cdr-tokenomics__tile-k {
+  color: color-mix(in srgb, #86efac 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__tile--pressure-low .cdr-tokenomics__tile-v {
+  color: #bbf7d0;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--cdr-green) 30%, transparent);
+}
+
+/* Orta bölüm — halka + metrik grid yan yana */
+.cdr-tokenomics__body {
+  display: grid;
+  grid-template-columns: minmax(130px, 38%) minmax(0, 1fr);
+  gap: 14px 18px;
+  align-items: start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--cdr-gold) 14%, transparent);
+}
+
+.cdr-tokenomics__viz-label {
+  margin: 0 0 8px;
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fde68a 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__ring-wrap {
+  position: relative;
+  width: clamp(96px, 28vw, 118px);
+  height: clamp(96px, 28vw, 118px);
+  margin: 0 auto 10px;
+}
+
+.cdr-tokenomics__ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 24px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 18%, transparent);
+}
+
+.cdr-tokenomics__ring-core {
+  position: absolute;
+  inset: 24%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cdr-bg, #0a0a0b) 92%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.cdr-tokenomics__ring-pct {
+  font-size: 0.9375rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--cdr-rail-teal, #2dd4a8);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 35%, transparent);
+}
+
+.cdr-tokenomics__ring-k {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cdr-muted) 85%, #fff 15%);
+}
+
+.cdr-tokenomics__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.cdr-tokenomics__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 650;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cdr-tokenomics__tag strong {
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdr-tokenomics__tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cdr-tokenomics__tag--circulating {
+  color: #a7f3d0;
+  background: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 10%, transparent);
+}
+
+.cdr-tokenomics__tag-dot--circulating {
+  background: var(--cdr-rail-teal, #2dd4a8);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 55%, transparent);
+}
+
+.cdr-tokenomics__tag--locked {
+  color: #fde68a;
+  background: color-mix(in srgb, var(--cdr-gold) 10%, transparent);
+}
+
+.cdr-tokenomics__tag-dot--locked {
+  background: #fbbf24;
+}
+
+.cdr-tokenomics__tag--remaining {
+  color: #cbd5e1;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+.cdr-tokenomics__tag-dot--remaining {
+  background: #94a3b8;
+}
+
+.cdr-tokenomics__viz-note {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 650;
+  color: color-mix(in srgb, #fde68a 65%, var(--cdr-muted) 35%);
+}
+
+/* Metrik grid — 2 sütun, renkli etiketler */
+.cdr-tokenomics__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  align-content: start;
+}
+
+.cdr-tokenomics__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 0 7px 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.cdr-tokenomics__fact-k {
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cdr-tokenomics__fact-v {
+  font-size: 0.8125rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: #f8fafc;
+}
+
+.cdr-tokenomics__fact--mcap {
+  border-left-color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 55%, transparent);
+}
+
+.cdr-tokenomics__fact--mcap .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__fact--ratio {
+  border-left-color: color-mix(in srgb, #fb923c 50%, transparent);
+}
+
+.cdr-tokenomics__fact--ratio .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, #fdba74 70%, var(--cdr-muted) 30%);
+}
+
+.cdr-tokenomics__fact--lock {
+  border-left-color: color-mix(in srgb, var(--cdr-gold) 55%, transparent);
+}
+
+.cdr-tokenomics__fact--lock .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, #fde68a 68%, var(--cdr-muted) 32%);
+}
+
+.cdr-tokenomics__fact--lock .cdr-tokenomics__fact-v {
+  color: #fde68a;
+}
+
+.cdr-tokenomics__fact--max {
+  border-left-color: color-mix(in srgb, #94a3b8 50%, transparent);
+}
+
+.cdr-tokenomics__fact--max .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, #cbd5e1 65%, var(--cdr-muted) 35%);
+}
+
+.cdr-tokenomics__fact--growth {
+  border-left-color: color-mix(in srgb, var(--cdr-green) 45%, transparent);
+}
+
+.cdr-tokenomics__fact--growth .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, #86efac 65%, var(--cdr-muted) 35%);
+}
+
+.cdr-tokenomics__fact--total {
+  border-left-color: color-mix(in srgb, #818cf8 45%, transparent);
+}
+
+.cdr-tokenomics__fact--total .cdr-tokenomics__fact-k {
+  color: color-mix(in srgb, #a5b4fc 65%, var(--cdr-muted) 35%);
+}
+
+/* Sinyaller — yatay satır, kart yok */
+.cdr-tokenomics__signals-title {
+  margin: 0 0 8px;
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fde68a 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-tokenomics__signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cdr-tokenomics__signal {
+  display: grid;
+  grid-template-columns: 3px minmax(0, 1fr) auto;
+  gap: 0 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.cdr-tokenomics__signal:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.cdr-tokenomics__signal-accent {
+  align-self: stretch;
+  width: 3px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.cdr-tokenomics__signal--high {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-red) 9%, transparent) 0%,
+    transparent 55%
+  );
+}
+
+.cdr-tokenomics__signal--high .cdr-tokenomics__signal-accent {
+  background: linear-gradient(180deg, #ef4444, #fca5a5);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-red) 40%, transparent);
+}
+
+.cdr-tokenomics__signal--medium {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-gold) 8%, transparent) 0%,
+    transparent 55%
+  );
+}
+
+.cdr-tokenomics__signal--medium .cdr-tokenomics__signal-accent {
+  background: linear-gradient(180deg, #f59e0b, #fde68a);
+}
+
+.cdr-tokenomics__signal--low {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-green) 7%, transparent) 0%,
+    transparent 55%
+  );
+}
+
+.cdr-tokenomics__signal--low .cdr-tokenomics__signal-accent {
+  background: linear-gradient(180deg, #22c55e, #86efac);
+}
+
+.cdr-tokenomics__signal-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.cdr-tokenomics__signal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #fbbf24;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cdr-gold) 50%, transparent);
+}
+
+.cdr-tokenomics__signal--high .cdr-tokenomics__signal-dot {
+  background: var(--cdr-red);
+}
+
+.cdr-tokenomics__signal--low .cdr-tokenomics__signal-dot {
+  background: var(--cdr-green);
+}
+
+.cdr-tokenomics__signal-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 750;
+  line-height: 1.25;
+  color: #f8fafc;
+}
+
+.cdr-tokenomics__signal-desc {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(226, 232, 240, 0.76);
+}
+
+.cdr-tokenomics__signal-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: #fde68a;
+  background: color-mix(in srgb, var(--cdr-gold) 10%, transparent);
+  white-space: nowrap;
+}
+
+.cdr-tokenomics__signal-badge em {
+  font-style: normal;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cdr-muted) 80%, #fff 20%);
+}
+
+@media (max-width: 520px) {
+  .cdr-tokenomics__body {
+    grid-template-columns: 1fr;
+  }
+
+  .cdr-tokenomics__ring-wrap {
+    margin-bottom: 8px;
+  }
+
+  .cdr-tokenomics__signal {
+    grid-template-columns: 3px minmax(0, 1fr);
+  }
+
+  .cdr-tokenomics__signal-badge {
+    grid-column: 2;
+    align-items: flex-start;
+    margin-top: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdr-tokenomics__live-dot {
+    animation: none;
+  }
+}

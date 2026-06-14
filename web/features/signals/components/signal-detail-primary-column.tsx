@@ -9,6 +9,7 @@ import { SignalDiscussionPanel } from "@/features/signals/components/signal-disc
 import type { SignalDetailExtension } from "@/features/signals/lib/signal-detail-types";
 import type { SignalThreadPack } from "@/features/signals/community/types";
 import type { SignalsFeedRow } from "@/features/signals/repository/types";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { thesisGradeLabel } from "@/features/signals/components/unified-signal-primitives";
 import { filterHonestTimelineEvents, SIGNAL_METRIC_LABELS } from "@/features/signals/lib/signal-detail-narrative";
 import { formatTimeAgo } from "@/lib/format-time-ago";
@@ -96,7 +97,7 @@ export function SignalDetailPrimaryColumn({ row, locked, intel, threadPack, onCl
         <SignalDiscussionPanel
           pack={threadPack}
           symbol={row.symbol}
-          assetHref={`/markets/${encodeURIComponent(row.symbol)}`}
+          assetHref={marketSymbolPath(row.symbol)}
           signalsHref={`/signals?signal=${encodeURIComponent(row.id)}`}
           locked={locked}
           onNavigate={onClose}

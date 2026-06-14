@@ -1,0 +1,184 @@
+/**
+ * Motion — akıcı geçişler, canlı pulse, giriş animasyonları
+ */
+
+@keyframes cdr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cdr-pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-rise, #00c853) 0%, transparent);
+  }
+  50% {
+    opacity: 0.88;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-rise, #00c853) 12%, transparent);
+  }
+}
+
+@keyframes cdr-shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cdr-gauge-draw {
+  from {
+    stroke-dashoffset: 289;
+  }
+}
+
+.cdr-shell--enter .cdr-hero {
+  animation: cdr-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cdr-shell--enter .cdr-main-grid {
+  animation: none;
+}
+
+.cdr-shell--enter .cdr-sidebar-col {
+  animation: none;
+}
+
+.cdr-shell--enter .cdr-bottom-section {
+  animation: cdr-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.cdr-section-head__link {
+  transition: color 0.15s, transform 0.15s;
+}
+
+@media (hover: hover) {
+  .cdr-section-head__link:hover {
+    transform: translateX(2px);
+  }
+}
+
+.cdr-btn {
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+
+@media (hover: hover) {
+  .cdr-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .cdr-btn:active {
+    transform: translateY(0);
+  }
+}
+
+.cdr-btn--primary {
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--cdr-gold) 22%, transparent);
+}
+
+@media (hover: hover) {
+  .cdr-btn--primary:hover {
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--cdr-gold) 30%, transparent);
+  }
+}
+
+.cdr-stat-pill,
+.cdr-chart-card__stat,
+.cdr-signal-card,
+.cdr-community-chat,
+.cdr-asset-mini,
+.cdr-peer-row,
+.dvr-video-rail-item .dvr-video-card {
+  transition:
+    background 0.18s,
+    transform 0.18s,
+    opacity 0.18s;
+}
+
+@media (hover: hover) {
+  .cdr-signal-card:hover,
+  .cdr-asset-mini:hover {
+    transform: translateY(-2px);
+  }
+
+  .cdr-community-chat:hover {
+    transform: translateX(2px);
+  }
+
+  .dvr-video-rail-item .dvr-video-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .cdr-kv-row:hover {
+    background: rgba(255, 255, 255, 0.025);
+  }
+}
+
+.cdr-kv-row {
+  margin-inline: -6px;
+  padding-inline: 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.cdr-badge--live {
+  animation: cdr-pulse-live 2.4s ease-in-out infinite;
+}
+
+.cdr-consensus__arc {
+  transition: stroke-dasharray 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cdr-consensus--settled .cdr-consensus__arc {
+  transition: none;
+}
+
+.cdr-chart-stage__shimmer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.cdr-chart-stage__shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+  animation: cdr-shimmer-sweep 1.6s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdr-shell--enter .cdr-hero,
+  .cdr-shell--enter .cdr-main-grid,
+  .cdr-shell--enter .cdr-bottom-section,
+  .cdr-badge--live,
+  .cdr-chart-stage__shimmer::after {
+    animation: none;
+  }
+
+  .cdr-btn,
+  .cdr-signal-card,
+  .cdr-asset-mini,
+  .cdr-news-item {
+    transition: none;
+  }
+}

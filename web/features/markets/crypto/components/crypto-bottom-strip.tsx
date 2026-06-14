@@ -14,6 +14,7 @@ import {
 import type { CryptoBottomStripPayload } from "@/features/markets/crypto/types";
 import { economicCalendarEventHref } from "@/features/markets/lib/economic-calendar-shared";
 import { marketNewsDetailHref } from "@/features/markets/lib/market-news-shared";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import type { MarketNewsIntelligenceItem } from "@/features/markets/types/news-calendar-intelligence";
 import { cn } from "@/lib/cn";
 
@@ -50,9 +51,9 @@ export function CryptoBottomStrip({ strip, newsIntel }: Props) {
           {strip.watchlist.map((item) => (
             <Link
               key={item.symbol}
-              href={`/markets/${encodeURIComponent(item.symbol)}`}
+              href={marketSymbolPath(item.symbol)}
               className="cc-watchlist-item"
-              aria-label={`${item.symbol} detayı`}
+              aria-label={`${item.symbol} sinyalleri`}
             >
               <MarketSymbolIcon symbol={item.symbol} size={22} className="cc-watchlist-icon" />
               <span className="cc-watchlist-symbol">{item.symbol}</span>

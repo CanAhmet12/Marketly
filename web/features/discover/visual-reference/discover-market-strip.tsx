@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, type CSSProperties } from "react";
 
 import { formatSignedChangePercent } from "@/features/markets/lib/market-display";
+import { MARKETS_HUB_PATH, marketSymbolPath } from "@/features/markets/markets-routes";
 import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
 import type { MarketAssetView } from "@/features/markets/types";
 import { cn } from "@/lib/cn";
@@ -34,7 +35,7 @@ export function mapAssetsToTickers(assets: MarketAssetView[]): VRMarketTicker[] 
       price: formatTickerPrice(a.price),
       change: formatSignedChangePercent(a.change_percent),
       positive: a.change_percent > 0,
-      href: `/markets/${encodeURIComponent(a.symbol)}`,
+      href: marketSymbolPath(a.symbol),
       category: a.category,
     }));
 }
@@ -184,11 +185,11 @@ export function MiniSignalStrip({ label = "Aktif Sinyaller", compact = false }: 
 
 /* ─── Atmosphere discovery strip (top of content) ────────────────────────── */
 const ATMOSPHERE_TOPICS = [
-  { id: "at-1", label: "Bitcoin", sub: "+2,4%", positive: true, href: "/markets/BTC" },
+  { id: "at-1", label: "Bitcoin", sub: "+2,4%", positive: true, href: MARKETS_HUB_PATH },
   { id: "at-2", label: "TCMB", sub: "Karar haftası", positive: null, href: "/markets/USDTRY" },
   { id: "at-3", label: "BIST bankaları", sub: "Hacim yukarı", positive: true, href: "/markets/XU100" },
   { id: "at-4", label: "Fed takvimi", sub: "Yarın", positive: null, href: "/markets/SPX" },
-  { id: "at-5", label: "Kripto rotasyonu", sub: "ETH önde", positive: true, href: "/markets/ETH" },
+  { id: "at-5", label: "Kripto rotasyonu", sub: "ETH önde", positive: true, href: MARKETS_HUB_PATH },
   { id: "at-6", label: "Altın", sub: "Dolar baskısı", positive: false, href: "/markets/XAUUSD" },
   { id: "at-7", label: "Teknoloji", sub: "Güçlü", positive: true, href: "/markets/SPX" },
   { id: "at-8", label: "VIOP", sub: "Açık artıyor", positive: null, href: "/signals" },

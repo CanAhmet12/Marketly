@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { CryptoAnchorAsset } from "@/features/markets/crypto/types";
 import { CryptoInteractiveAreaChart } from "@/features/markets/crypto/components/crypto-interactive-area-chart";
 import { MarketSymbolIcon } from "@/features/markets/components/market-symbol-icon";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { cn } from "@/lib/cn";
 
 type AnchorVariant = "btc" | "eth" | "sol";
@@ -39,9 +40,9 @@ function AssetPanel({ asset, variant }: { asset: CryptoAnchorAsset; variant: Anc
 
   return (
     <Link
-      href={`/markets/${encodeURIComponent(asset.symbol)}`}
+      href={marketSymbolPath(asset.symbol)}
       className={cn("cc-asset-panel block no-underline", panelClass)}
-      aria-label={`${asset.name} detayına git`}
+      aria-label={`${asset.name} detay`}
     >
       <div className="cc-asset-panel-header">
         <MarketSymbolIcon symbol={asset.symbol} size={34} className="cc-asset-panel-icon" />

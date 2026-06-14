@@ -18,6 +18,7 @@ import {
   pickGridThumbnail,
   primaryContentHref,
 } from "@/features/feed/feed-display";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import {
   VR_CREATOR_ACTIVITY_FEED,
   VR_CREATOR_ITEMS,
@@ -330,7 +331,7 @@ function buildMarketTopicChipsFromPosts(posts: FeedPost[]): VRMarketTopicChip[] 
       title: `${tag} gündemi`,
       tickers: [tag],
       heat: HEAT_POOL[stableU32(id) % HEAT_POOL.length]!,
-      href: `/markets/${encodeURIComponent(tag)}`,
+      href: marketSymbolPath(tag),
       accent: ACCENT_POOL[stableU32(id) % ACCENT_POOL.length]!,
       size: SIZE_POOL[i % SIZE_POOL.length]!,
     };

@@ -10,6 +10,7 @@ import {
   vrSignalHref,
   vrVideoHref,
 } from "./vr-static-hrefs";
+import { MARKETS_HUB_PATH } from "@/features/markets/markets-routes";
 
 /** Keşfet VR canlı kartları — Home/LiveCard ile aynı mantık: `thumb` URL + `onError` yedeği. */
 export function vrLiveThumbUrl(seed: string, w = 960, h = 600): string {
@@ -665,8 +666,8 @@ export const VR_MINI_SIGNALS: VRMiniSignal[] = [
 
 /* ─── Market tickers ──────────────────────────────────────────────────────── */
 export const VR_MARKET_TICKERS: VRMarketTicker[] = [
-  { id: "t-1",  symbol: "BTC",    name: "Bitcoin",       price: "$97.4K",  change: "+2.4%",  positive: true,  href: "/markets/BTC" },
-  { id: "t-2",  symbol: "ETH",    name: "Ethereum",      price: "$3.86K",  change: "+3.1%",  positive: true,  href: "/markets/ETH" },
+  { id: "t-1",  symbol: "BTC",    name: "Bitcoin",       price: "$97.4K",  change: "+2.4%",  positive: true,  href: MARKETS_HUB_PATH },
+  { id: "t-2",  symbol: "ETH",    name: "Ethereum",      price: "$3.86K",  change: "+3.1%",  positive: true,  href: MARKETS_HUB_PATH },
   { id: "t-3",  symbol: "XU100",  name: "BIST 100",      price: "9.840",   change: "+1.2%",  positive: true,  href: "/markets/XU100" },
   { id: "t-4",  symbol: "USDTRY", name: "Dolar/TL",      price: "₺33.82",  change: "-0.4%",  positive: false, href: "/markets/USDTRY" },
   { id: "t-5",  symbol: "XAUUSD", name: "Altın",         price: "$2.398",  change: "+0.8%",  positive: true,  href: "/markets/XAUUSD" },
@@ -674,7 +675,7 @@ export const VR_MARKET_TICKERS: VRMarketTicker[] = [
   { id: "t-7",  symbol: "GARAN",  name: "Garanti BBVA",  price: "₺131.4",  change: "+1.8%",  positive: true,  href: "/markets/GARAN" },
   { id: "t-8",  symbol: "THYAO",  name: "THY",           price: "₺357.2",  change: "-0.9%",  positive: false, href: "/markets/THYAO" },
   { id: "t-9",  symbol: "EURUSD", name: "Euro/Dolar",    price: "1.0841",  change: "+0.2%",  positive: true,  href: "/markets/EURUSD" },
-  { id: "t-10", symbol: "SOL",    name: "Solana",        price: "$182.4",  change: "+4.6%",  positive: true,  href: "/markets/SOL" },
+  { id: "t-10", symbol: "SOL",    name: "Solana",        price: "$182.4",  change: "+4.6%",  positive: true,  href: MARKETS_HUB_PATH },
 ];
 
 /* ─── Creator items ───────────────────────────────────────────────────────── */
@@ -950,7 +951,7 @@ export type VRMarketTopicChip = {
 export const VR_MARKET_TOPIC_CHIPS: VRMarketTopicChip[] = [
   { id: "chip-1", title: "Bankacılık rotasyonu", tickers: ["GARAN", "AKBNK"], heat: "hot", href: "/markets/XU100", accent: "bist", size: "lg" },
   { id: "chip-2", title: "TCMB sonrası kur bandı", tickers: ["USDTRY"], heat: "watch", href: "/markets/USDTRY", accent: "macro", size: "md" },
-  { id: "chip-3", title: "BTC dominance", tickers: ["BTC", "ETF"], heat: "rising", href: "/markets/BTC", accent: "crypto", size: "md" },
+  { id: "chip-3", title: "BTC dominance", tickers: ["BTC", "ETF"], heat: "rising", href: MARKETS_HUB_PATH, accent: "crypto", size: "md" },
   { id: "chip-4", title: "Altın / ons ayrışması", tickers: ["XAU", "Gram"], heat: "risk", href: "/markets/XAUUSD", accent: "commodity", size: "md" },
   { id: "chip-5", title: "THYAO bilanço okuması", tickers: ["THYAO", "HAVACILIK"], heat: "new", href: "/markets/THYAO", accent: "equity", size: "lg" },
   { id: "chip-6", title: "VIOP strateji görünümü", tickers: ["VIOP", "Baz"], heat: "watch", href: vrPulseHref(0), accent: "deriv", size: "md" },

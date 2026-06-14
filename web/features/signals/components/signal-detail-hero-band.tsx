@@ -12,6 +12,7 @@ import {
   strategyTacticLabel,
 } from "@/features/signals/components/unified-signal-primitives";
 import { signalStatusKey, signalStatusLabel } from "@/features/signals/domain/signal-meta";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import type { SignalDetailVerdict } from "@/features/signals/lib/signal-detail-narrative";
 import { buildTradePlanNarrative } from "@/features/signals/lib/signal-detail-narrative";
 import {
@@ -128,7 +129,7 @@ export function SignalDetailHeroBand({ row, locked, entryLabel, targetLabel, sto
         </div>
 
         <div className="sdm-hero__quick-links">
-          <Link href={`/markets/${encodeURIComponent(row.symbol)}`} className="sdm-hero__link" onClick={onClose}>
+          <Link href={marketSymbolPath(row.symbol)} className="sdm-hero__link" onClick={onClose}>
             Piyasa
           </Link>
           <Link href={`/channel/${row.creator_id}`} className="sdm-hero__link" onClick={onClose}>

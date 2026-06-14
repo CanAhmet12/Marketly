@@ -1,0 +1,65 @@
+/**
+ * Tipografi — Akış (`home-feed-surface`) ile hizalı
+ */
+.cdr-page {
+  --type-page: 1.5rem;
+  --type-page--leading: 1.16;
+  --type-page--weight: 700;
+  --type-subtitle: 0.9375rem;
+  --type-subtitle--leading: 1.42;
+  --type-subtitle--weight: 500;
+  --type-meta: 0.875rem;
+  --type-meta--leading: 1.45;
+  --type-meta--weight: 500;
+  --type-rail-body: 0.9375rem;
+  --type-rail-body--leading: 1.48;
+  --type-overline: 0.6875rem;
+  --type-overline--leading: 1.3;
+  --type-overline--weight: 600;
+  --type-overline--tracking: 0.08em;
+  --type-chip: 0.8125rem;
+  --type-chip--weight: 600;
+  --type-price-hero: clamp(1.75rem, 2.8vw, 2.375rem);
+  --type-price-md: 1.0625rem;
+  --type-stat: 0.8125rem;
+  --type-stat-k: 0.6875rem;
+
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--type-rail-body);
+  line-height: var(--type-rail-body--leading);
+  letter-spacing: -0.012em;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  color: var(--color-text, var(--cdr-text));
+}
+
+.cdr-page .cdr-text-secondary {
+  color: var(--color-text-secondary, var(--cdr-text-secondary));
+}
+
+.cdr-page .cdr-muted {
+  color: var(--color-meta, var(--cdr-muted));
+}
+
+.cdr-page .cdr-up {
+  color: var(--color-rise, var(--cdr-green));
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdr-page .cdr-down {
+  color: var(--color-fall, var(--cdr-red));
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdr-page .cdr-up.cdr-size-lg,
+.cdr-page .cdr-down.cdr-size-lg {
+  font-size: var(--type-subtitle);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cdr-page .cdr-accent-gold {
+  color: var(--cdr-gold);
+  font-weight: 650;
+}

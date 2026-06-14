@@ -1,0 +1,22 @@
+.cdr-empty-state {
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.cdr-empty-state__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cdr-empty-state__desc {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--cdr-muted);
+}
+
+.cdr-wide-band {
+  margin-top: var(--cdr-flow-xl);
+  width: 100%;
+  min-width: 0;
+}

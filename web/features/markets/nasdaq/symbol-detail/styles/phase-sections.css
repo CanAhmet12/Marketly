@@ -1,0 +1,42 @@
+.nqx-phase-section__body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nqx-phase-badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cdr-gold) 35%, transparent);
+  background: color-mix(in srgb, var(--cdr-gold) 10%, transparent);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cdr-gold);
+}
+
+.nqx-phase-section .cdr-section-stub {
+  flex: 1;
+  padding-inline: 0;
+}
+
+.nqx-wide-band-placeholder {
+  padding: 18px 0 8px;
+  border-top: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 85%, var(--cdr-gold) 15%);
+}
+
+.nqx-wide-band-placeholder .cdr-section-stub {
+  padding-inline: 0;
+}
+
+.nqx-sidebar-block--phase .nqx-phase-section__body {
+  gap: 10px;
+}
+
+.nqx-sidebar-block--phase .nqx-phase-badge {
+  font-size: 9px;
+  padding: 3px 8px;
+}

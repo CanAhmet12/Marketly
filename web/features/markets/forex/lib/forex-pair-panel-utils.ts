@@ -49,7 +49,7 @@ export function buildForexPairPanel(asset: MarketAssetView): ForexPairPanel {
       dayHigh: fmtPanelRate(dayHigh, pair),
       dayLow: fmtPanelRate(dayLow, pair),
       pipRange: pipRange(dayHigh, dayLow, pair),
-      weeklyChange: `${asset.change_percent >= 0 ? "+" : ""}${(asset.change_percent * 1.4).toFixed(2)}%`,
+      weeklyChange: "—",
     },
   };
 }

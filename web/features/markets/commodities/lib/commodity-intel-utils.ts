@@ -19,6 +19,9 @@ import { parseVolumeLabel } from "@/features/markets/lib/live-category/parse-vol
 
 import { commodityDisplayLabel } from "./map-commodity-tickers";
 import { resolveCommodityCategory } from "./commodity-regime-utils";
+import {
+  defaultDxyCorrelationForSymbol,
+} from "./commodity-correlation-utils";
 
 function unitFor(symbol: string): string {
   const cat = resolveCommodityCategory(symbol);
@@ -71,12 +74,18 @@ export function buildCommodityBottomStrip(assets: readonly MarketAssetView[]): C
 
   const correlation = [...assets]
     .slice(0, 4)
-    .map((a) => ({
-      symbol: `${commodityDisplayLabel(a.symbol, a.name)}/USD`,
-      correlation: a.change_percent >= 0 ? -0.65 : -0.42,
-      label: "Ters",
-      changePct: a.change_percent,
-    }));
+    .map((a) => {
+      const cat = resolveCommodityCategory(a.symbol);
+      const value = defaultDxyCorrelationForSymbol(a.symbol, cat);
+      const label =
+        value <= -0.35 ? "Ters" : value >= 0.25 ? "Pozitif" : "Zayıf";
+      return {
+        symbol: `${commodityDisplayLabel(a.symbol, a.name)}/USD`,
+        correlation: value,
+        label,
+        changePct: a.change_percent,
+      };
+    });
 
   const calendar: CommodityCalendarItem[] = [
     {

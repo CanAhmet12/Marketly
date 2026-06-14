@@ -6,6 +6,7 @@ import { memo, useMemo, useState } from "react";
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
 import { MarketSymbolIcon } from "@/features/markets/components/market-symbol-icon";
 import { CryptoScreenerRowActions } from "@/features/markets/crypto/components/crypto-screener-row-actions";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { renderVirtualTableRows, useVirtualTableRows } from "@/features/markets/components/virtual-table-rows";
 import type { CryptoScreenerAsset, CryptoScreenerPayload } from "@/features/markets/crypto/types";
 import { parseVolumeLabel } from "@/features/markets/lib/live-category/parse-volume-label";
@@ -220,7 +221,7 @@ const ScreenerRow = memo(function ScreenerRow({
   onToggleWatch?: (symbol: string) => void;
   watchPending?: string | null;
 }) {
-  const href = `/markets/${encodeURIComponent(asset.symbol)}`;
+  const href = marketSymbolPath(asset.symbol);
   const isAnchor = ANCHOR_SYMBOLS.has(asset.symbol);
   const showActions = Boolean(onToggleWatch && isWatched);
   const anchorClass =

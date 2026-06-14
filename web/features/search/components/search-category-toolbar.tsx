@@ -4,7 +4,6 @@ import { useCallback, useRef, type KeyboardEvent } from "react";
 
 import { SEARCH_TAB_LABELS } from "@/features/search/lib/search-tab-counts";
 import type { SearchTabCounts, SearchTabGroupId } from "@/features/search/types";
-import { cn } from "@/lib/cn";
 
 type Props = {
   tab: SearchTabGroupId;
@@ -12,8 +11,8 @@ type Props = {
   onTabChange: (tab: SearchTabGroupId) => void;
 };
 
-function ChipCount({ n }: { n: number }) {
-  return <span className="creators-page__chip-count">{n > 99 ? "99+" : n}</span>;
+function TabCount({ n }: { n: number }) {
+  return <span className="srch-tab__count">{n > 99 ? "99+" : n}</span>;
 }
 
 export function SearchCategoryToolbar({ tab, counts, onTabChange }: Props) {
@@ -38,7 +37,7 @@ export function SearchCategoryToolbar({ tab, counts, onTabChange }: Props) {
   );
 
   return (
-    <div className="sch-toolbar" role="tablist" aria-label="Arama kategorileri">
+    <div className="srch-tabs" role="tablist" aria-label="Arama kategorileri">
       {visible.map(({ id, label }) => {
         const active = tab === id;
         const cnt = counts[id];
@@ -54,12 +53,13 @@ export function SearchCategoryToolbar({ tab, counts, onTabChange }: Props) {
             aria-selected={active}
             aria-controls="search-results-panel"
             tabIndex={active ? 0 : -1}
-            className={cn("creators-page__chip", active && "creators-page__chip--active")}
+            className="srch-tab"
+            data-active={active ? "true" : "false"}
             onClick={() => onTabChange(id)}
             onKeyDown={(e) => onKeyDown(e, id)}
           >
-            {label}
-            {id !== "all" && cnt > 0 ? <ChipCount n={cnt} /> : null}
+            <span className="srch-tab__label">{label}</span>
+            {id !== "all" && cnt > 0 ? <TabCount n={cnt} /> : null}
           </button>
         );
       })}

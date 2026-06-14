@@ -73,18 +73,55 @@ html[data-theme="light"] .pd-canvas .pd-asset-chip-pct {
   opacity: 1;
 }
 
-html[data-theme="light"] .pd-canvas .hv-ref-article__repost-banner {
+html[data-theme="light"] .pd-canvas .pd-repost-banner {
   color: var(--pd-meta);
 }
 
-html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed-handle,
-html[data-theme="light"] .pd-canvas .hv-ref-article__quote-handle {
+html[data-theme="light"] .pd-canvas .pd-repost-embed__handle {
   color: var(--pd-meta);
 }
 
-html[data-theme="light"] .pd-canvas .hv-ref-article__repost-embed-snippet,
-html[data-theme="light"] .pd-canvas .hv-ref-article__quote-text {
+html[data-theme="light"] .pd-canvas .pd-repost-embed__snippet {
   color: var(--pd-text-2);
+}
+
+html[data-theme="light"] .pd-canvas .pd-mention {
+  color: color-mix(in srgb, var(--color-primary-dark) 78%, var(--pd-text) 22%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-shell-banner {
+  background: color-mix(in srgb, var(--pd-type-shell-bg, var(--pd-surface-soft)) 55%, #ffffff 45%);
+}
+
+html[data-theme="light"] .pd-canvas .pd-type-shell-banner__desc,
+html[data-theme="light"] .pd-canvas .pd-sidebar-mobile-toggle__meta {
+  color: var(--pd-meta);
+}
+
+html[data-theme="light"] .pd-canvas .pd-post-menu__popover {
+  background: color-mix(in srgb, #ffffff 96%, transparent);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-dropdown, 0 12px 32px -10px rgba(15, 15, 20, 0.12));
+}
+
+html[data-theme="light"] .pd-canvas .pd-post-menu__item {
+  color: var(--pd-text-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="light"] .pd-canvas .pd-post-menu__item:hover {
+    background: var(--color-surface-hover);
+    color: var(--pd-text);
+  }
+
+  html[data-theme="light"] .pd-canvas .pd-sidebar-mobile-toggle:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+html[data-theme="light"] .pd-canvas .pd-sidebar-mobile-toggle {
+  background: color-mix(in srgb, #ffffff 92%, var(--color-surface-muted) 8%);
+  border-bottom: 1px solid var(--pd-divider-faint);
 }
 
 @media (hover: hover) and (pointer: fine) {

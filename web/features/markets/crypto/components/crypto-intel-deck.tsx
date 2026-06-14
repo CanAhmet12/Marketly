@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { MarketSymbolIcon } from "@/features/markets/components/market-symbol-icon";
 import type { CryptoMoverItem, CryptoMoversPayload } from "@/features/markets/crypto/types";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -46,7 +47,7 @@ function FlowCol({
         ) : (
           rows.slice(0, 5).map((row, index) => (
             <li key={`${title}-${row.symbol}`}>
-              <Link href={`/markets/${encodeURIComponent(row.symbol)}`} className="cc-intel-row">
+              <Link href={marketSymbolPath(row.symbol)} className="cc-intel-row">
                 <span className="cc-intel-row-num">{index + 1}</span>
                 <MarketSymbolIcon symbol={row.symbol} size={22} />
                 <span className="cc-intel-row-dot" style={{ background: dotColor(row.change) }} aria-hidden />

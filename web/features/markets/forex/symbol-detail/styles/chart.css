@@ -1,0 +1,12 @@
+/* Forex chart — layout crypto cdr-chart-* ile paylaşılır */
+
+.cdr-market-chart__quote-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cdr-market-chart__source {
+  margin-top: 10px;
+}

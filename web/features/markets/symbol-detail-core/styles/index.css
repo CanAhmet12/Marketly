@@ -1,0 +1,9 @@
+/**
+ * Market symbol detail — paylaşımlı çekirdek stiller (cdr-*)
+ */
+@import "./tokens.css";
+@import "./layout.css";
+@import "./sections-rhythm.css";
+@import "./section-head.css";
+@import "./live-pill.css";
+@import "./shell-zones.css";

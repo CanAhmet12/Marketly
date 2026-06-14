@@ -54,6 +54,7 @@ const HARDCODED: Record<string, MarketAssetCategory> = {
   USDTRY: "forex",
   EURUSD: "forex",
   GBPUSD: "forex",
+  DXY: "forex",
   XAUUSD: "commodity",
   XAGUSD: "commodity",
 };

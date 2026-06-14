@@ -1,0 +1,72 @@
+/**
+ * Emtia detay — Faz 2 editorial bölüm amber override
+ */
+.cmr-page--commodity .cdr-pulse__live-tag {
+  color: color-mix(in srgb, #fb923c 78%, #fff 22%);
+}
+
+.cmr-page--commodity .cdr-pulse__live-dot {
+  background: #f97316;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #f97316 22%, transparent),
+    0 0 10px color-mix(in srgb, #f97316 55%, transparent);
+}
+
+.cmr-page--commodity .cdr-tokenomics__live-dot {
+  background: #f97316;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #f97316 22%, transparent),
+    0 0 10px color-mix(in srgb, #f97316 55%, transparent);
+}
+
+.cmr-page--commodity .cdr-markets__live-dot {
+  background: #fb923c;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #fb923c 22%, transparent),
+    0 0 10px color-mix(in srgb, #fb923c 55%, transparent);
+}
+
+.cmr-page--commodity .cdr-pulse__range-mid em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fb923c 72%, #fff 28%);
+  margin-left: 4px;
+}
+
+.cmr-page--commodity .cdr-tokenomics__tag--stock .cdr-tokenomics__tag-dot--stock {
+  background: #fbbf24;
+}
+
+.cmr-page--commodity .cdr-tokenomics__tag--production .cdr-tokenomics__tag-dot--production {
+  background: #f97316;
+}
+
+.cmr-page--commodity .cdr-tokenomics__tag--seasonal .cdr-tokenomics__tag-dot--seasonal {
+  background: #84cc16;
+}
+
+.cmr-page--commodity .cdr-sidebar-block--derivatives::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #f97316 28%, transparent) 50%,
+    transparent
+  );
+}
+
+.cmr-page--commodity .cdr-chart-overlay__tf-btn--active {
+  border-color: color-mix(in srgb, #f97316 55%, transparent);
+  color: #fdba74;
+  background: color-mix(in srgb, #f97316 12%, transparent);
+}
+
+.cmr-page--commodity .cdr-sidebar-block--sentiment::before {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #f97316 12%, transparent),
+    transparent 72%
+  );
+}

@@ -1,7 +1,7 @@
 import type { FeedPost } from "@/features/feed/types";
 import type { SearchPostHit } from "@/features/search/types";
 
-/** SearchPostHit → FeedPost (VideoCard / PulseCard / LiveCard / FeedPostCard) */
+/** SearchPostHit → FeedPost (SearchContentHit thumbnail / routing helpers) */
 export function searchPostToFeedPost(hit: SearchPostHit): FeedPost {
   const duration = hit.duration;
   return {

@@ -1,0 +1,122 @@
+/**
+ * BIST detay — mavi (#3b82f6 / #2563eb) kimlik override
+ */
+.cdr-page.bc-page--bist {
+  --cdr-gold: #3b82f6;
+  --cdr-gold-soft: rgba(59, 130, 246, 0.14);
+  --cdr-rail-teal: #60a5fa;
+  --cdr-accent-glow: color-mix(in srgb, #3b82f6 16%, transparent);
+  --cdr-teal-glow: rgba(59, 130, 246, 0.1);
+}
+
+.cdr-page.bc-page--stock {
+  --cdr-gold: #2563eb;
+  --cdr-gold-soft: rgba(37, 99, 235, 0.14);
+  --cdr-rail-teal: #60a5fa;
+}
+
+.bc-badge--kind {
+  background: rgba(59, 130, 246, 0.14);
+  color: #93c5fd;
+}
+
+.bc-page--bist .cdr-main-zone-divider--peak-live {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #3b82f6 58%, #93c5fd) 10%,
+    color-mix(in srgb, #60a5fa 42%, #3b82f6 58%) 30%,
+    color-mix(in srgb, #2563eb 46%, #1d4ed8 54%) 55%,
+    color-mix(in srgb, #bfdbfe 38%, transparent) 78%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 16px color-mix(in srgb, #3b82f6 18%, transparent),
+    0 0 10px color-mix(in srgb, #60a5fa 12%, transparent);
+}
+
+.bc-page--bist .cdr-main-zone-divider--live-teal {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #60a5fa 44%, transparent) 8%,
+    color-mix(in srgb, #3b82f6 38%, #2563eb 62%) 32%,
+    color-mix(in srgb, #93c5fd 56%, transparent) 58%,
+    color-mix(in srgb, #bfdbfe 42%, #3b82f6 58%) 86%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 14px color-mix(in srgb, #3b82f6 14%, transparent),
+    0 0 16px color-mix(in srgb, #60a5fa 16%, transparent);
+}
+
+.bc-page--bist .cdr-live-pill--on {
+  border-color: color-mix(in srgb, #3b82f6 35%, var(--cdr-border));
+}
+
+.bc-page--bist .cdr-live-pill__dot--pulse {
+  background: #60a5fa;
+  box-shadow: 0 0 8px color-mix(in srgb, #3b82f6 55%, transparent);
+}
+
+.bc-page--bist .bc-phase-badge {
+  border-color: color-mix(in srgb, #3b82f6 28%, var(--cdr-border-subtle));
+  color: #93c5fd;
+  background: color-mix(in srgb, #3b82f6 10%, rgba(255, 255, 255, 0.03));
+}
+
+.bc-page--bist .cdr-live-ticker__item--active {
+  border-color: color-mix(in srgb, #3b82f6 45%, var(--cdr-border));
+  background: color-mix(in srgb, #3b82f6 8%, rgba(255, 255, 255, 0.02));
+}
+
+.bc-corr-card__icon {
+  background: color-mix(in srgb, #3b82f6 18%, rgba(255, 255, 255, 0.04));
+  color: #93c5fd;
+}
+
+.bc-alert-sheet__spot {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: var(--cdr-muted);
+}
+
+.bc-alert-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.bc-alert-sheet__close {
+  border: none;
+  background: transparent;
+  color: var(--cdr-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.bc-alert-sheet__group-label {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cdr-muted) 82%, var(--cdr-gold) 18%);
+}
+
+.bc-alert-sheet__presets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bc-alert-sheet__empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cdr-muted);
+}

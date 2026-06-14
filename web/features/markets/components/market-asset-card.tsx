@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MarketAssetTransitionLink } from "@/components/ui/market-asset-transition-link";
 import { MiniSparkline } from "@/features/markets/components/mini-sparkline";
 import { changePercentTextClass, formatSignedChangePercent, trendToneLabel } from "@/features/markets/lib/market-display";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import type { MarketAssetCategory, MarketAssetView } from "@/features/markets/types";
 import { marketVtStyle } from "@/lib/navigation/view-transition";
 import { cn } from "@/lib/cn";
@@ -84,7 +85,7 @@ export function MarketAssetCard({
           <div className="flex flex-wrap items-center gap-x-[var(--sp-2)] gap-y-1">
             <h3 className="text-[17px] font-bold leading-none tracking-[-0.03em] text-[var(--color-text)] min-[480px]:text-[19px]">
               <MarketAssetTransitionLink
-                href={`/markets/${encodeURIComponent(asset.symbol)}`}
+                href={marketSymbolPath(asset.symbol)}
                 symbol={asset.symbol}
                 className="hover:text-[var(--color-primary-dark)] hover:underline"
                 onClick={(e) => e.stopPropagation()}

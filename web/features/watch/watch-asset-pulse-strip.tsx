@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 import { getMarketsRepository } from "@/features/markets/repository";
 import { changePercentTextClass, formatSignedChangePercent } from "@/features/markets/lib/market-display";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 
 type Props = { assetTag: string };
 
@@ -32,7 +33,7 @@ export function WatchAssetPulseStrip({ assetTag }: Props) {
   return (
     <div className="mb-3 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-[10px] border border-[color-mix(in_srgb,var(--color-border)_88%,transparent)] bg-[color-mix(in_srgb,var(--color-text)_2%,var(--color-surface))] px-2.5 py-2">
       <Link
-        href={`/markets/${encodeURIComponent(clean)}`}
+        href={marketSymbolPath(clean)}
         className="shrink-0 text-[11px] font-bold tracking-wide text-[var(--color-primary-dark)] hover:underline"
       >
         {clean}
@@ -53,7 +54,7 @@ export function WatchAssetPulseStrip({ assetTag }: Props) {
       ) : null}
       <span className="hidden h-3 w-px shrink-0 bg-[var(--color-divider)] sm:block" aria-hidden />
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 text-[10px] font-semibold">
-        <Link href={`/markets/${encodeURIComponent(clean)}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary-dark)] hover:underline">
+        <Link href={marketSymbolPath(clean)} className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary-dark)] hover:underline">
           Piyasa
         </Link>
         <span className="text-[var(--color-divider)]" aria-hidden>

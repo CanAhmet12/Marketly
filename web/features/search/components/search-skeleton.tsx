@@ -2,14 +2,14 @@
 
 export function SearchSkeleton() {
   return (
-    <div className="sch-skeleton" aria-busy="true" aria-label="Sonuçlar yükleniyor">
+    <div className="srch-skeleton" aria-busy="true" aria-label="Sonuçlar yükleniyor">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="sch-skeleton__row">
-          <div className="sch-skeleton__thumb" />
-          <div className="sch-skeleton__lines">
-            <div className="sch-skeleton__line sch-skeleton__line--lg" />
-            <div className="sch-skeleton__line sch-skeleton__line--md" />
-            <div className="sch-skeleton__line sch-skeleton__line--sm" />
+        <div key={i} className="srch-skeleton__row">
+          <div className="srch-skeleton__thumb" />
+          <div className="srch-skeleton__lines">
+            <div className="srch-skeleton__line srch-skeleton__line--lg" />
+            <div className="srch-skeleton__line srch-skeleton__line--md" />
+            <div className="srch-skeleton__line srch-skeleton__line--sm" />
           </div>
         </div>
       ))}

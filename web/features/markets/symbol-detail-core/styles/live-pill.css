@@ -1,0 +1,79 @@
+/**
+ * Paylaşımlı canlı rozeti — piyasa ticker dili
+ */
+.cdr-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cdr-live-pill__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cdr-muted) 55%, #fff 45%);
+  flex-shrink: 0;
+}
+
+.cdr-live-pill__dot--pulse {
+  background: var(--cdr-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--cdr-green) 55%, transparent);
+  animation: cdr-live-pill-ring 2s ease-in-out infinite;
+}
+
+@keyframes cdr-live-pill-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--cdr-green) 50%, transparent);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--cdr-green) 0%, transparent);
+  }
+}
+
+.cdr-live-pill__text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cdr-muted) 72%, #fff 28%);
+}
+
+.cdr-live-pill--on .cdr-live-pill__text {
+  color: var(--cdr-gold);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--cdr-gold) 38%, transparent);
+}
+
+.cdr-live-pill--wait .cdr-live-pill__text {
+  color: #fbbf24;
+}
+
+.cdr-live-pill--wait .cdr-live-pill__dot {
+  background: #fbbf24;
+  box-shadow: 0 0 8px color-mix(in srgb, #fbbf24 45%, transparent);
+}
+
+.cdr-section-head .cdr-live-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 75%, var(--cdr-gold) 25%);
+  background: color-mix(in srgb, var(--cdr-gold) 7%, transparent);
+}
+
+.cdr-section-head .cdr-live-pill--on {
+  border-color: color-mix(in srgb, var(--cdr-gold) 40%, transparent);
+  background: color-mix(in srgb, var(--cdr-gold) 13%, transparent);
+}
+
+.cdr-section-head .cdr-live-pill--wait {
+  border-color: color-mix(in srgb, #fbbf24 35%, transparent);
+  background: color-mix(in srgb, #fbbf24 10%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdr-live-pill__dot--pulse {
+    animation: none;
+  }
+}

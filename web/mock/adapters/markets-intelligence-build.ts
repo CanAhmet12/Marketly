@@ -1,4 +1,5 @@
 import { parseVolumeRough } from "@/features/markets/lib/filter-assets";
+import { MARKETS_HUB_PATH, marketSymbolPath } from "@/features/markets/markets-routes";
 import type { MarketAssetView } from "@/features/markets/types";
 import type {
   MarketCrossAssetDiscussionChain,
@@ -217,13 +218,13 @@ function buildCommunityIntelSurface(
       symbol: a.symbol,
       name: a.name,
       watchersScore: Math.round(40 + a.signal_active_count * 6 + (i + 1) * 8),
-      href: `/markets/${encodeURIComponent(a.symbol)}`,
+      href: marketSymbolPath(a.symbol),
     }));
   const risingCommunityAttention = analystAttention.creatorHot.slice(0, 4).map((x, i) => ({
     symbol: x.symbol,
     name: x.name,
     deltaLabel: `+${(12 + (i * 7) % 20).toFixed(0)}% dikkat`,
-    href: `/markets/${encodeURIComponent(x.symbol)}`,
+    href: marketSymbolPath(x.symbol),
   }));
   const sections = getSignalsRepository().getAnalystLeaderboardSections();
   const topRows = sections.flatMap((s) => s.rows).slice(0, 4);
@@ -256,8 +257,8 @@ function hasSym(assets: MarketAssetView[], s: string): boolean {
 
 function buildCrossAssetChains(assets: MarketAssetView[]): MarketCrossAssetDiscussionChain[] {
   const templates: { left: string; right: string; theme: string; href: string }[] = [
-    { left: "BTC", right: "ETH", theme: "Likidite & korelasyon", href: "/markets/BTC" },
-    { left: "BTC", right: "SOL", theme: "Alt-L1 rotasyonu", href: "/markets/SOL" },
+    { left: "BTC", right: "ETH", theme: "Likidite & korelasyon", href: MARKETS_HUB_PATH },
+    { left: "BTC", right: "SOL", theme: "Alt-L1 rotasyonu", href: MARKETS_HUB_PATH },
     { left: "XU100", right: "THYAO", theme: "Endeks taşıyıcıları", href: "/markets/XU100" },
     { left: "XAUUSD", right: "USDTRY", theme: "Altın ↔ kur", href: "/markets/XAUUSD" },
     { left: "NDX", right: "AAPL", theme: "Büyüme taşıyıcıları", href: "/markets/NDX" },

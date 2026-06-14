@@ -1,0 +1,368 @@
+/**
+ * Piyasa Pulse — performans + teknik özet
+ */
+.cdr-pulse-section--wide,
+.cdr-pulse-section--inline {
+  margin-top: 0;
+}
+
+.cdr-pulse__live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #f87171 78%, #fff 22%);
+}
+
+.cdr-pulse__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #f87171 22%, transparent),
+    0 0 10px color-mix(in srgb, #f87171 55%, transparent);
+  animation: cdr-pulse-live-dot 2.2s ease-in-out infinite;
+}
+
+@keyframes cdr-pulse-live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.9);
+  }
+}
+
+.cdr-pulse__canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Getiri bant — 5 sütun */
+.cdr-pulse__returns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  padding: 12px 0 14px;
+  border-top: 1px solid color-mix(in srgb, #f87171 22%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 18%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #818cf8 5%, transparent) 0%,
+    color-mix(in srgb, #f87171 4%, transparent) 25%,
+    color-mix(in srgb, var(--cdr-green) 5%, transparent) 50%,
+    color-mix(in srgb, #fde68a 4%, transparent) 75%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 5%, transparent) 100%
+  );
+}
+
+.cdr-pulse__tile {
+  display: grid;
+  grid-template-columns: 3px minmax(0, 1fr);
+  gap: 0 8px;
+  align-items: stretch;
+  min-width: 0;
+  padding: 0 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cdr-pulse__tile:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.cdr-pulse__tile-accent {
+  display: block;
+  width: 3px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.cdr-pulse__tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cdr-pulse__tile-k {
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cdr-pulse__tile-v {
+  font-size: clamp(0.8125rem, 0.3vw + 0.78rem, 0.9375rem);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.cdr-pulse__tile--1h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #818cf8, #a5b4fc);
+  box-shadow: 0 0 8px color-mix(in srgb, #818cf8 40%, transparent);
+}
+
+.cdr-pulse__tile--1h .cdr-pulse__tile-k {
+  color: color-mix(in srgb, #a5b4fc 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__tile--24h .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #f87171, #fecaca);
+  box-shadow: 0 0 8px color-mix(in srgb, #f87171 40%, transparent);
+}
+
+.cdr-pulse__tile--24h .cdr-pulse__tile-k {
+  color: color-mix(in srgb, #fecaca 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__tile--7d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #22c55e, #86efac);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cdr-green) 40%, transparent);
+}
+
+.cdr-pulse__tile--7d .cdr-pulse__tile-k {
+  color: color-mix(in srgb, #86efac 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__tile--30d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #f59e0b, #fde68a);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cdr-gold) 40%, transparent);
+}
+
+.cdr-pulse__tile--30d .cdr-pulse__tile-k {
+  color: color-mix(in srgb, #fde68a 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__tile--90d .cdr-pulse__tile-accent {
+  background: linear-gradient(180deg, #2dd4a8, #5eead4);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 40%, transparent);
+}
+
+.cdr-pulse__tile--90d .cdr-pulse__tile-k {
+  color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 78%, var(--cdr-muted) 22%);
+}
+
+/* 24s aralık barı */
+.cdr-pulse__range {
+  padding: 4px 0 2px;
+}
+
+.cdr-pulse__range-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cdr-pulse__range-k {
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fde68a 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__range-pos {
+  font-size: 0.625rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 78%, #fff 22%);
+}
+
+.cdr-pulse__range-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-red) 35%, rgba(255, 255, 255, 0.06)),
+    color-mix(in srgb, #fde68a 30%, rgba(255, 255, 255, 0.06)) 50%,
+    color-mix(in srgb, var(--cdr-green) 35%, rgba(255, 255, 255, 0.06))
+  );
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  overflow: visible;
+}
+
+.cdr-pulse__range-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-red) 55%, transparent),
+    color-mix(in srgb, #fde68a 50%, transparent) 70%,
+    color-mix(in srgb, var(--cdr-green) 45%, transparent)
+  );
+  opacity: 0.55;
+  transition: width 0.25s ease;
+}
+
+.cdr-pulse__range-marker {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 2px solid var(--cdr-rail-teal, #2dd4a8);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 25%, transparent),
+    0 0 12px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 45%, transparent);
+  transform: translateY(-50%);
+  transition: left 0.25s ease;
+}
+
+.cdr-pulse__range-labels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--cdr-muted) 75%, #fff 25%);
+}
+
+.cdr-pulse__range-labels span:first-child {
+  color: #fca5a5;
+}
+
+.cdr-pulse__range-labels span:last-child {
+  text-align: right;
+  color: #86efac;
+}
+
+.cdr-pulse__range-mid {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: #f8fafc;
+  text-align: center;
+}
+
+/* Teknik seviyeler — 2x2 */
+.cdr-pulse__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 14%, transparent);
+}
+
+.cdr-pulse__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0 8px 10px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, rgba(255, 255, 255, 0.03) 80%, transparent);
+}
+
+.cdr-pulse__fact-k {
+  font-size: 0.625rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cdr-pulse__fact-v {
+  font-size: 0.8125rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: #f8fafc;
+}
+
+.cdr-pulse__fact--vol {
+  border-left-color: color-mix(in srgb, #818cf8 55%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, #818cf8 8%, transparent), transparent 85%);
+}
+
+.cdr-pulse__fact--vol .cdr-pulse__fact-k {
+  color: color-mix(in srgb, #a5b4fc 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__fact--vol .cdr-pulse__fact-v {
+  color: #e0e7ff;
+}
+
+.cdr-pulse__fact--pivot {
+  border-left-color: color-mix(in srgb, #fde68a 55%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, #fde68a 8%, transparent), transparent 85%);
+}
+
+.cdr-pulse__fact--pivot .cdr-pulse__fact-k {
+  color: color-mix(in srgb, #fde68a 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__fact--pivot .cdr-pulse__fact-v {
+  color: #fde68a;
+}
+
+.cdr-pulse__fact--support {
+  border-left-color: color-mix(in srgb, var(--cdr-green) 55%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cdr-green) 8%, transparent), transparent 85%);
+}
+
+.cdr-pulse__fact--support .cdr-pulse__fact-k {
+  color: color-mix(in srgb, #86efac 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-pulse__fact--resist {
+  border-left-color: color-mix(in srgb, var(--cdr-red) 55%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cdr-red) 8%, transparent), transparent 85%);
+}
+
+.cdr-pulse__fact--resist .cdr-pulse__fact-k {
+  color: color-mix(in srgb, #fca5a5 72%, var(--cdr-muted) 28%);
+}
+
+@media (max-width: 720px) {
+  .cdr-pulse__returns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 0;
+  }
+
+  .cdr-pulse__tile:nth-child(3) {
+    border-right: none;
+  }
+
+  .cdr-pulse__tile:nth-child(n + 4) {
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+@media (max-width: 480px) {
+  .cdr-pulse__returns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cdr-pulse__facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdr-pulse__live-dot {
+    animation: none;
+  }
+
+  .cdr-pulse__range-fill,
+  .cdr-pulse__range-marker {
+    transition: none;
+  }
+}

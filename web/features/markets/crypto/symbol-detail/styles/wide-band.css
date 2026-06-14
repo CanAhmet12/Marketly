@@ -1,0 +1,155 @@
+/**
+ * Tam genişlik bant — ana grid + sidebar altında; sinyaller sayfası edge-rail modeli
+ */
+
+.cdr-wide-band {
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--cdr-flow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cdr-flow-xl);
+}
+
+.cdr-wide-band > .cdr-section + .cdr-section {
+  margin-top: 0;
+}
+
+.cdr-media-section--wide {
+  margin-top: 0;
+}
+
+.cdr-community-section--wide {
+  margin-top: 0;
+}
+
+/* Discover embed — tam sayfa genişliği kartları (sp-discovery-stream--full benzeri) */
+.cdr-page .dvr-surface--embed-full {
+  --dvr-live-card-w: clamp(380px, min(52vw, 620px), 680px);
+  --dvr-video-card-w: clamp(380px, min(52vw, 620px), 680px);
+  --dvr-pulse-card-w: clamp(196px, min(24vw, 280px), 300px);
+  --dvr-pulse-hero-w: clamp(210px, min(26vw, 300px), 320px);
+  --dvr-pulse-tall-w: clamp(196px, min(24vw, 280px), 300px);
+  --dvr-pulse-featured-w: clamp(210px, min(26vw, 300px), 320px);
+}
+
+@media (max-width: 900px) {
+  .cdr-page .dvr-surface--embed-full {
+    --dvr-live-card-w: clamp(320px, 88vw, 520px);
+    --dvr-video-card-w: clamp(320px, 88vw, 520px);
+    --dvr-pulse-card-w: clamp(168px, 46vw, 220px);
+  }
+}
+
+.cdr-wide-rail {
+  min-width: 0;
+}
+
+.cdr-wide-rail-scroll {
+  margin-inline: calc(var(--cdr-pad-x, 12px) * -1);
+  padding-inline: var(--cdr-pad-x, 12px);
+  scroll-padding-inline: var(--cdr-pad-x, 12px);
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll-wrap {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll-wrap::after {
+  display: none;
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll {
+  gap: 1rem;
+  padding-block: 0.25rem 0.75rem;
+}
+
+@media (min-width: 900px) {
+  .cdr-page .cdr-wide-rail .dvr-hscroll {
+    gap: 1.15rem;
+  }
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--live-rail,
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--video-rail,
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--pulse-rail {
+  scroll-padding-inline-end: max(12px, calc(100% - var(--dvr-live-card-w, 520px)));
+  padding-inline-end: max(12px, calc(100% - var(--dvr-live-card-w, 520px)));
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--video-rail {
+  scroll-padding-inline-end: max(12px, calc(100% - var(--dvr-video-card-w, 520px)));
+  padding-inline-end: max(12px, calc(100% - var(--dvr-video-card-w, 520px)));
+}
+
+.cdr-page .cdr-wide-rail .dvr-hscroll.dvr-hscroll--pulse-rail {
+  scroll-padding-inline-end: max(12px, calc(100% - var(--dvr-pulse-card-w, 240px)));
+  padding-inline-end: max(12px, calc(100% - var(--dvr-pulse-card-w, 240px)));
+}
+
+.cdr-community-rail {
+  margin-top: 4px;
+}
+
+.cdr-community-rail-item {
+  width: clamp(300px, min(34vw, 420px), 440px);
+  flex: 0 0 clamp(300px, min(34vw, 420px), 440px);
+  scroll-snap-align: start;
+}
+
+.cdr-community-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 168px;
+  padding: 14px 14px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--cdr-surface-soft);
+  border: 1px solid var(--cdr-border-subtle);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .cdr-community-card:hover {
+    background: var(--cdr-surface-hover);
+    border-color: color-mix(in srgb, var(--cdr-accent, #f7931a) 28%, var(--cdr-border-subtle));
+  }
+
+  .cdr-community-card:hover .cdr-community-post__name {
+    color: var(--cdr-gold);
+  }
+}
+
+.cdr-community-card .cdr-community-post__text {
+  flex: 1;
+  -webkit-line-clamp: 4;
+  margin-bottom: 10px;
+}
+
+.cdr-page .cdr-community-rail .dvr-hscroll {
+  scroll-padding-inline-end: max(12px, calc(100% - clamp(300px, 34vw, 440px)));
+  padding-inline-end: max(12px, calc(100% - clamp(300px, 34vw, 440px)));
+}
+
+@media (max-width: 1080px) {
+  .cdr-wide-band {
+    gap: var(--cdr-flow-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .cdr-wide-band {
+    margin-top: var(--cdr-flow-lg);
+    gap: var(--cdr-flow-md);
+  }
+
+  .cdr-community-rail-item {
+    width: clamp(280px, 86vw, 360px);
+    flex-basis: clamp(280px, 86vw, 360px);
+  }
+}

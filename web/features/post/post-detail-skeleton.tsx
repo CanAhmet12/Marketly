@@ -16,13 +16,16 @@ export function PostDetailSkeleton() {
                 <div className="pd-shimmer pd-shimmer--handle" />
               </div>
             </div>
-            <div className="pd-shimmer pd-shimmer--title" />
-            <div className="pd-shimmer pd-shimmer--body-line" />
-            <div className="pd-shimmer pd-shimmer--body-line-short" />
           </div>
 
           <div className="pd-media-inset">
             <div className="pd-shimmer pd-shimmer--media" />
+          </div>
+
+          <div className="pd-prose pd-skeleton-prose pd-prose--tight-top">
+            <div className="pd-shimmer pd-shimmer--title" />
+            <div className="pd-shimmer pd-shimmer--body-line" />
+            <div className="pd-shimmer pd-shimmer--body-line-short" />
           </div>
 
           <hr className="pd-section-divider" />

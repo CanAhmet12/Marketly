@@ -1,0 +1,115 @@
+/**
+ * NASDAQ detay — Faz 2 editorial cyan/mavi override
+ */
+.nqx-page--stock .cdr-pulse__live-tag {
+  color: color-mix(in srgb, #22d3ee 78%, #fff 22%);
+}
+
+.nqx-page--index .cdr-pulse__live-tag {
+  color: color-mix(in srgb, #93c5fd 78%, #fff 22%);
+}
+
+.nqx-page--stock .cdr-pulse__live-dot,
+.nqx-page--stock .cdr-tokenomics__live-dot {
+  background: #06b6d4;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #06b6d4 22%, transparent),
+    0 0 10px color-mix(in srgb, #06b6d4 55%, transparent);
+}
+
+.nqx-page--index .cdr-pulse__live-dot,
+.nqx-page--index .cdr-tokenomics__live-dot {
+  background: #3b82f6;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #3b82f6 22%, transparent),
+    0 0 10px color-mix(in srgb, #3b82f6 55%, transparent);
+}
+
+.nqx-page--stock .cdr-markets__live-dot {
+  background: #22d3ee;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #22d3ee 22%, transparent),
+    0 0 10px color-mix(in srgb, #22d3ee 55%, transparent);
+}
+
+.nqx-page--index .cdr-markets__live-dot {
+  background: #60a5fa;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #60a5fa 22%, transparent),
+    0 0 10px color-mix(in srgb, #60a5fa 55%, transparent);
+}
+
+.nqx-page--stock .cdr-pulse__range-mid em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #22d3ee 72%, #fff 28%);
+  margin-left: 4px;
+}
+
+.nqx-page--index .cdr-pulse__range-mid em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #93c5fd 72%, #fff 28%);
+  margin-left: 4px;
+}
+
+.nqx-page--stock .cdr-tokenomics__tag--stock .cdr-tokenomics__tag-dot--stock {
+  background: #22d3ee;
+}
+
+.nqx-page--stock .cdr-tokenomics__tag--production .cdr-tokenomics__tag-dot--production {
+  background: #06b6d4;
+}
+
+.nqx-page--stock .cdr-tokenomics__tag--seasonal .cdr-tokenomics__tag-dot--seasonal {
+  background: #38bdf8;
+}
+
+.nqx-page--index .cdr-tokenomics__tag--stock .cdr-tokenomics__tag-dot--stock {
+  background: #60a5fa;
+}
+
+.nqx-page--index .cdr-tokenomics__tag--production .cdr-tokenomics__tag-dot--production {
+  background: #3b82f6;
+}
+
+.nqx-page--index .cdr-tokenomics__tag--seasonal .cdr-tokenomics__tag-dot--seasonal {
+  background: #818cf8;
+}
+
+.nqx-page--stock .cdr-chart-overlay__tf-btn--active {
+  border-color: color-mix(in srgb, #06b6d4 55%, transparent);
+  color: #67e8f9;
+  background: color-mix(in srgb, #06b6d4 12%, transparent);
+}
+
+.nqx-page--index .cdr-chart-overlay__tf-btn--active {
+  border-color: color-mix(in srgb, #3b82f6 55%, transparent);
+  color: #93c5fd;
+  background: color-mix(in srgb, #3b82f6 12%, transparent);
+}
+
+.nqx-page--stock .cdr-sidebar-block--derivatives::after,
+.nqx-page--index .cdr-sidebar-block--derivatives::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--cdr-gold) 28%, transparent) 50%,
+    transparent
+  );
+}
+
+.nqx-page--stock .cdr-sidebar-block--sentiment::before,
+.nqx-page--index .cdr-sidebar-block--sentiment::before {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cdr-gold) 12%, transparent),
+    transparent 72%
+  );
+}

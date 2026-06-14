@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { SafeAvatar } from "@/components/ui/safe-avatar";
@@ -11,11 +12,13 @@ import type { DiscussionTimelineRow } from "@/features/social/repository/discuss
 import { mockFollowState } from "@/mock/adapters/channel";
 import { isMockDataEnabled } from "@/mock/config";
 import { queryKeys } from "@/lib/query-keys";
+import { cn } from "@/lib/cn";
 import { formatCompactCount } from "@/lib/format-compact-count";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { avatarUrl } from "@/lib/avatar-url";
 import { authorAvatarSrc } from "../post-detail-helpers";
+import { postDetailTierLabel } from "../post-detail-labels";
 import type { PostDetail } from "../types";
 import { PostDetailMarketContext } from "./post-detail-market-context";
 import { PostDetailSideSkeleton } from "./post-detail-side-skeleton";
@@ -126,9 +129,41 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
 
   const sidecar = sidecarQuery.data;
   const isSelf = viewerId === post.user_id;
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const tierLabel = postDetailTierLabel(post.author_tier);
+  const tierKey = post.author_tier.toLowerCase();
 
   return (
-    <aside className="pd-sidebar-col">
+    <aside className={cn("pd-sidebar-col", mobileOpen && "pd-sidebar-col--open")}>
+      <button
+        type="button"
+        className="pd-sidebar-mobile-toggle"
+        aria-expanded={mobileOpen}
+        aria-controls="pd-sidebar-mobile-body"
+        onClick={() => setMobileOpen((v) => !v)}
+      >
+        <span className="pd-sidebar-mobile-toggle__copy">
+          <span className="pd-sidebar-mobile-toggle__title">Yazar ve bağlam</span>
+          <span className="pd-sidebar-mobile-toggle__meta">
+            {post.author_name}
+            {asset ? ` · #${asset}` : ""}
+          </span>
+        </span>
+        <svg
+          className="pd-sidebar-mobile-toggle__chevron"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden
+        >
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      <div id="pd-sidebar-mobile-body" className="pd-sidebar-mobile-body">
       <SideModule title="Yazar" className="pd-side-module--author">
         <Link href={`/channel/${post.user_id}`} className="pd-side-author">
           <SafeAvatar
@@ -140,8 +175,12 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
           <div className="min-w-0">
             <div className="pd-side-author-name-row">
               <span className="pd-side-author-name">{post.author_name}</span>
-              {post.author_tier === "elite" ? <span className="pd-side-tier pd-side-tier--elite">Elite</span> : null}
-              {post.author_tier === "pro" ? <span className="pd-side-tier pd-side-tier--pro">Pro</span> : null}
+              {tierLabel && tierKey === "elite" ? (
+                <span className="pd-side-tier pd-side-tier--elite">{tierLabel}</span>
+              ) : null}
+              {tierLabel && tierKey === "pro" ? (
+                <span className="pd-side-tier pd-side-tier--pro">{tierLabel}</span>
+              ) : null}
             </div>
             <div className="pd-side-author-handle">{post.author_handle}</div>
             <div className="pd-side-followers">
@@ -308,6 +347,7 @@ export function PostDetailSidebar({ post, postId, viewerId }: Props) {
           </Link>
         )}
       </SideModule>
+      </div>
     </aside>
   );
 }

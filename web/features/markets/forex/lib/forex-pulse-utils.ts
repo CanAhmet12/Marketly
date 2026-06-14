@@ -35,6 +35,16 @@ export function buildForexSessions(now = new Date()): ForexSession[] {
   }));
 }
 
+export function activeForexSessionLabel(now = new Date()): string {
+  const sessions = buildForexSessions(now);
+  const active = sessions.filter((s) => s.status === "active");
+  if (active.length >= 2) return `${active.map((s) => s.label).join(" · ")} overlap`;
+  if (active.length === 1) return `${active[0]!.label} açık`;
+  const soon = sessions.find((s) => s.status === "soon");
+  if (soon) return `${soon.label} yakında`;
+  return "Seans kapalı";
+}
+
 function pairItem(asset: MarketAssetView): ForexPairItem {
   return {
     pair: pairLabel(asset.symbol),

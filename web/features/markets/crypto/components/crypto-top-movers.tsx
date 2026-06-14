@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { MarketSymbolIcon } from "@/features/markets/components/market-symbol-icon";
 import type { CryptoMoverItem, CryptoMoversPayload } from "@/features/markets/crypto/types";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { cn } from "@/lib/cn";
 
 type Props = { movers: CryptoMoversPayload };
@@ -39,9 +40,9 @@ function MoverCol({ title, rows, mode }: ColProps) {
       {rows.map((r, i) => (
         <Link
           key={r.symbol}
-          href={`/markets/${encodeURIComponent(r.symbol)}`}
+          href={marketSymbolPath(r.symbol)}
           className="cc-movers-v2-row"
-          aria-label={`${r.symbol} detayı`}
+          aria-label={`${r.symbol} sinyalleri`}
         >
           <span className="cc-movers-v2-num">{i + 1}</span>
           <MarketSymbolIcon symbol={r.symbol} size={22} className="cc-movers-v2-icon" />

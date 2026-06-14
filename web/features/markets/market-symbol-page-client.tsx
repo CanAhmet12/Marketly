@@ -5,17 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { AssetDetailAlertSheet } from "@/features/markets/components/asset-detail/asset-detail-alert-sheet";
-import { CryptoDetailSignalHub } from "@/features/markets/crypto/detail/components/crypto-detail-signal-hub";
-import { CryptoDetailNewsMacro } from "@/features/markets/crypto/detail/components/crypto-detail-news-macro";
-import { CryptoDetailCommunityHub } from "@/features/markets/crypto/detail/components/crypto-detail-community-hub";
-import { CryptoDetailDiscoveryRail } from "@/features/markets/crypto/detail/components/crypto-detail-discovery-rail";
-import { CryptoDetailPageChrome } from "@/features/markets/crypto/detail/components/crypto-detail-page-chrome";
-import { CryptoDetailStickyTicker } from "@/features/markets/crypto/detail/components/crypto-detail-sticky-ticker";
-import { CryptoDetailStatsMatrix } from "@/features/markets/crypto/detail/components/crypto-detail-stats-matrix";
-import { CryptoDetailHero } from "@/features/markets/crypto/detail/components/crypto-detail-hero";
-import { CryptoDetailChartWorkbench } from "@/features/markets/crypto/detail/components/crypto-detail-chart-workbench";
-import { CryptoDetailSideRail } from "@/features/markets/crypto/detail/components/crypto-detail-side-rail";
-import { CryptoDetailZoneHead } from "@/features/markets/crypto/detail/components/crypto-detail-zone-head";
 import { AssetDetailChartWorkbench } from "@/features/markets/components/asset-detail/asset-detail-chart-workbench";
 import { AssetDetailHero } from "@/features/markets/components/asset-detail/asset-detail-hero";
 import { AssetDetailSignalIntelligence } from "@/features/markets/components/asset-detail/asset-detail-signal-intelligence";
@@ -23,9 +12,6 @@ import { AssetDetailNewsCalendar } from "@/features/markets/components/asset-det
 import { AssetDetailStatsMatrix } from "@/features/markets/components/asset-detail/asset-detail-stats-matrix";
 import { AssetDetailSideRail } from "@/features/markets/components/asset-detail/asset-detail-side-rail";
 import { AssetDetailCommunityTabs } from "@/features/markets/components/asset-detail/asset-detail-community-tabs";
-import { useMarketAssetsLive } from "@/features/markets/hooks/use-market-assets";
-import { filterCategory } from "@/features/markets/lib/live-category/live-category-shared";
-import { buildMarketAssetViews } from "@/mock/adapters/markets-workspace";
 import { EmptyState } from "@/components/states";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { runViewTransition } from "@/lib/navigation/view-transition";
@@ -79,17 +65,6 @@ export function MarketSymbolPageClient() {
   }, [symStable, decoded]);
 
   const { bundle, isLoading: intelLoading } = useAssetIntelligence(decoded);
-  const { assets: liveAssets } = useMarketAssetsLive();
-
-  const cryptoAssetPool = useMemo(() => {
-    const liveCrypto = filterCategory(liveAssets, "crypto");
-    if (liveCrypto.length > 0) return liveCrypto;
-    if (mockOn) {
-      const dash = repo.getDashboardPayload();
-      return filterCategory(dash?.assets ?? [], "crypto");
-    }
-    return filterCategory(buildMarketAssetViews(), "crypto");
-  }, [mockOn, repo, liveAssets]);
 
   const liveOff = !mockOn && (!bundle || bundle.asset.price <= 0 || bundle.asset.name === "Veri bekleniyor");
 
@@ -152,8 +127,6 @@ export function MarketSymbolPageClient() {
   }
 
   const sym = bundle.asset.symbol;
-  const isCrypto = bundle.asset.category === "crypto";
-  const isLive = isCrypto && !mockOn && !liveOff;
   const accentColor = categoryAccentColor(bundle.asset.category ?? "");
   const accentGlow = `${accentColor}18`;
   const accentBg = `${accentColor}10`;
@@ -168,147 +141,6 @@ export function MarketSymbolPageClient() {
     onOpenAlerts: () => setAlertsOpen(true),
     liveOff,
   };
-
-  if (isCrypto) {
-    const sentinelId = "cd-hero-sentinel";
-    const statsAssets = cryptoAssetPool.length > 0 ? cryptoAssetPool : [bundle.asset];
-
-    return (
-      <div
-        className="crypto-canvas crypto-detail-canvas crypto-detail-unified ms-page-wrapper min-w-0 min-h-screen"
-        style={
-          {
-            "--cd-accent": accentColor,
-            "--cd-accent-dim": `${accentColor}a6`,
-            "--cd-accent-bg": accentBg,
-          } as React.CSSProperties
-        }
-      >
-        <CryptoDetailStickyTicker
-          symbol={sym}
-          name={bundle.asset.name}
-          price={bundle.asset.price}
-          changePercent={bundle.asset.change_percent}
-          sentinelId={sentinelId}
-          isLive={isLive}
-        />
-
-        <div className="ms-container-markets min-w-0 pb-20 pt-4">
-          <div className="cd-unified-shell">
-            <CryptoDetailPageChrome symbol={sym} name={bundle.asset.name} />
-
-            <CryptoDetailHero {...heroProps} isLive={isLive} sentinelId={sentinelId} />
-
-            <CryptoDetailStatsMatrix
-              asset={bundle.asset}
-              allAssets={statsAssets}
-              signalSummary={bundle.signalSummary}
-              unified
-            />
-
-            <hr className="cd-unified-rule cd-unified-rule--major" aria-hidden />
-
-            <div className="cd-unified-stage">
-              <div className="cd-unified-stage-main">
-                <CryptoDetailChartWorkbench bundle={bundle} featured integrated />
-
-                <div className="cd-unified-feed">
-                  <section aria-labelledby="cd-zone-signals">
-                    <CryptoDetailZoneHead
-                      id="cd-zone-signals"
-                      title="Sinyaller"
-                      subtitle={`${sym} · analist tezleri ve canlı akış`}
-                      href={`/signals?asset=${encodeURIComponent(sym)}`}
-                      linkLabel="Tüm sinyaller →"
-                    />
-                    <CryptoDetailSignalHub bundle={bundle} />
-                  </section>
-
-                  <hr className="cd-unified-section-rule" aria-hidden />
-
-                  <section aria-labelledby="cd-zone-news">
-                    <CryptoDetailZoneHead
-                      id="cd-zone-news"
-                      title="Haber & makro"
-                      subtitle="Coin haberleri ve yaklaşan makro etkinlikler"
-                      actions={
-                        <div className="cd-zone-head-actions">
-                          <Link href="/market-news" className="cd-zone-link">
-                            Haberler →
-                          </Link>
-                          <Link href="/economic-calendar" className="cd-zone-link">
-                            Takvim →
-                          </Link>
-                        </div>
-                      }
-                    />
-                    <CryptoDetailNewsMacro bundle={bundle} />
-                  </section>
-                </div>
-              </div>
-
-              <CryptoDetailSideRail
-                bundle={bundle}
-                watched={isWatched(sym)}
-                inPortfolio={inPortfolio}
-                alerts={alerts}
-                onRemoveAlert={removeAlert}
-                onOpenAlerts={() => setAlertsOpen(true)}
-                symbol={sym}
-                integrated
-                slim={false}
-                layout="cd"
-              />
-            </div>
-
-            <hr className="cd-unified-section-rule" aria-hidden />
-
-            <section className="cd-unified-feed" aria-labelledby="cd-zone-community">
-              <CryptoDetailZoneHead
-                id="cd-zone-community"
-                title="Topluluk"
-                subtitle="Tezler, tartışmalar ve topluluk akışı"
-                href={`/discover?q=${encodeURIComponent(sym)}`}
-                linkLabel="Keşfet →"
-              />
-              <CryptoDetailCommunityHub bundle={bundle} />
-            </section>
-
-            <hr className="cd-unified-section-rule" aria-hidden />
-
-            <section className="cd-unified-feed" aria-labelledby="cd-zone-discovery">
-              <CryptoDetailZoneHead
-                id="cd-zone-discovery"
-                title="Keşif"
-                subtitle="Korele varlıklar, segment ve video analiz"
-                actions={
-                  <div className="cd-zone-head-actions">
-                    <Link href="/markets/category/crypto" className="cd-zone-link">
-                      Kripto canvas →
-                    </Link>
-                    <Link href="/markets/screener?category=crypto" className="cd-zone-link">
-                      Tarayıcı →
-                    </Link>
-                  </div>
-                }
-              />
-              <CryptoDetailDiscoveryRail bundle={bundle} allAssets={statsAssets} />
-            </section>
-          </div>
-        </div>
-
-        <AssetDetailAlertSheet
-          open={alertsOpen}
-          onClose={() => setAlertsOpen(false)}
-          symbol={sym}
-          price={bundle.asset.price}
-          alerts={alerts}
-          onAdd={addPresetAlert}
-          onRemove={removeAlert}
-        />
-      </div>
-    );
-  }
 
   return (
     <div

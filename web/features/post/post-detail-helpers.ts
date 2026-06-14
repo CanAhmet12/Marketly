@@ -1,4 +1,5 @@
-import { isPulsePost, isVideoLikePost, pickGridThumbnail, pickDurationSeconds } from "@/features/feed/feed-display";
+import { isLivePost, isPulsePost, isVideoLikePost, pickGridThumbnail, pickDurationSeconds } from "@/features/feed/feed-display";
+import { liveHrefForPostId } from "@/features/live/live-href";
 import { pulseHrefForPostId } from "@/features/pulse/pulse-href";
 import type { PostCommentRow, PostDetail } from "@/features/post/types";
 import { avatarUrl as fallbackAvatar } from "@/lib/avatar-url";
@@ -10,13 +11,63 @@ export type PostDetailMedia =
   | { kind: "video"; poster: string | null; watchHref: string; duration: number | null }
   | null;
 
+export type PostDetailShellKind = "live" | "pulse" | "video";
+
+export type PostDetailShellHint = {
+  kind: PostDetailShellKind;
+  href: string;
+  title: string;
+  description: string;
+  cta: string;
+  topbarLabel: string;
+};
+
+/** `/post/[id]` üzerinde kanonik route farklıysa banner + shell accent */
+export function resolvePostDetailShellHint(post: PostDetail): PostDetailShellHint | null {
+  if (isPulsePost(post)) {
+    return {
+      kind: "pulse",
+      href: pulseHrefForPostId(post.id),
+      title: "Pulse gönderisi",
+      description: "Kısa form içerik tam ekran Pulse deneyiminde daha iyi çalışır.",
+      cta: "Pulse'ta izle",
+      topbarLabel: "Pulse",
+    };
+  }
+  if (isLivePost(post)) {
+    return {
+      kind: "live",
+      href: liveHrefForPostId(post.id),
+      title: "Canlı yayın",
+      description: "Sohbet ve yayın kontrolleri canlı sayfada açılır.",
+      cta: "Canlıya git",
+      topbarLabel: "Canlı",
+    };
+  }
+  if (isVideoLikePost(post)) {
+    return {
+      kind: "video",
+      href: `/watch/${post.id}`,
+      title: "Video gönderisi",
+      description: "Oynatıcı, bölümler ve ilgili videolar watch sayfasında.",
+      cta: "Videoyu izle",
+      topbarLabel: "Video",
+    };
+  }
+  return null;
+}
+
 /** Görsel / video medyasını tek noktadan çöz — feed ile uyumlu fallback zinciri */
 export function resolvePostDetailMedia(post: PostDetail): PostDetailMedia {
   const hasVideoMedia = post.media_urls?.some((m) => m.type === "video") ?? false;
   const video = isVideoLikePost(post) || Boolean(post.video_url?.trim()) || hasVideoMedia;
 
   if (video) {
-    const href = isPulsePost(post) ? pulseHrefForPostId(post.id) : `/watch/${post.id}`;
+    const href = isPulsePost(post)
+      ? pulseHrefForPostId(post.id)
+      : isLivePost(post)
+        ? liveHrefForPostId(post.id)
+        : `/watch/${post.id}`;
     return {
       kind: "video",
       poster: pickGridThumbnail(post),

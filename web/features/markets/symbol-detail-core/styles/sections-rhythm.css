@@ -1,0 +1,133 @@
+/**
+ * Bölüm ritmi — Linear editorial flow
+ */
+.cdr-section {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.cdr-section-body {
+  min-width: 0;
+}
+
+.cdr-main-col > .cdr-section + .cdr-section,
+.cdr-sidebar-col > .cdr-section + .cdr-section {
+  margin-top: var(--cdr-flow-lg);
+}
+
+.cdr-section--duo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 36px);
+}
+
+.cdr-section-pane {
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.cdr-section--duo-single {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 900px) {
+  .cdr-section--duo {
+    grid-template-columns: 1fr;
+    gap: var(--cdr-flow-lg);
+  }
+}
+
+.cdr-main-grid {
+  gap: clamp(24px, 3.2vw, 40px);
+  align-items: start;
+  margin-top: var(--cdr-flow-md);
+}
+
+.cdr-main-col,
+.cdr-sidebar-col {
+  gap: 0;
+}
+
+.cdr-bottom-section {
+  margin-top: var(--cdr-flow-xl);
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.cdr-row-divider {
+  border: none;
+  height: 0;
+  margin: var(--cdr-flow-sm) 0 0;
+}
+
+.cdr-inset-rule {
+  display: none;
+}
+
+.cdr-main-zone-divider {
+  border: none;
+  height: 2px;
+  width: 100%;
+  margin: var(--cdr-flow-lg) 0 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--cdr-border-subtle) 55%, var(--cdr-rail-teal, #2dd4a8) 45%) 12%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 52%, transparent) 50%,
+    color-mix(in srgb, var(--cdr-border-subtle) 55%, var(--cdr-accent, #f7931a) 45%) 88%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0.94;
+}
+
+.cdr-main-zone-divider--peak-live {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--cdr-gold) 58%, #fde68a) 10%,
+    color-mix(in srgb, #fbbf24 42%, var(--cdr-gold) 58%) 28%,
+    color-mix(in srgb, #f87171 46%, #818cf8 54%) 52%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 48%, transparent) 78%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--cdr-gold) 16%, transparent),
+    0 0 10px color-mix(in srgb, #f87171 12%, transparent);
+}
+
+.cdr-main-zone-divider--live-teal {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #f87171 44%, transparent) 8%,
+    color-mix(in srgb, #818cf8 38%, #f87171 62%) 32%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 56%, transparent) 58%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 42%, var(--cdr-green) 58%) 86%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 14px color-mix(in srgb, #818cf8 12%, transparent),
+    0 0 16px color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 16%, transparent);
+}
+
+.cdr-main-col > .cdr-main-zone-divider + .cdr-section {
+  margin-top: var(--cdr-flow-lg);
+}
+
+@media (max-width: 1080px) {
+  .cdr-main-grid {
+    gap: var(--cdr-flow-lg);
+  }
+}

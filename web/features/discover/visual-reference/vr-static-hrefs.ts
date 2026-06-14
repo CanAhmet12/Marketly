@@ -3,6 +3,7 @@
  */
 import { liveHrefForPostId } from "@/features/live/live-href";
 import { pulseHrefForPostId } from "@/features/pulse/pulse-href";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { MOCK_POST_SOURCES } from "@/mock/fixtures/posts";
 import { MOCK_PROFILE_IDS } from "@/mock/fixtures/profiles";
 
@@ -52,7 +53,7 @@ export function vrCreatorHref(index: number): string {
 }
 
 export function vrMarketHref(symbol: string): string {
-  return `/markets/${encodeURIComponent(symbol)}`;
+  return marketSymbolPath(symbol);
 }
 
 export function vrResultsHref(query: string): string {

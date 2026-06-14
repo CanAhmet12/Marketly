@@ -1,0 +1,126 @@
+/**
+ * Sağ rail — Korelasyon / ilgili varlıklar (kompakt dikey kartlar)
+ */
+.cdr-sidebar-block--correlation .cdr-section-head {
+  margin-bottom: 10px;
+}
+
+.cdr-corr-stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cdr-corr-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 50px auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 82%, var(--cdr-rail-teal, #2dd4a8) 18%);
+  background: color-mix(in srgb, var(--cdr-surface-soft) 90%, rgba(255, 255, 255, 0.03));
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s;
+}
+
+@media (hover: hover) {
+  .cdr-corr-card:hover {
+    border-color: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 36%, var(--cdr-border-subtle));
+    background: color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 7%, rgba(255, 255, 255, 0.04));
+    transform: translateX(2px);
+  }
+
+  .cdr-corr-card:hover .cdr-corr-card__sym {
+    color: var(--cdr-rail-teal, #2dd4a8);
+  }
+}
+
+.cdr-corr-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cdr-corr-card__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cdr-corr-card__sym {
+  font-size: 0.8125rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  color: #f8fafc;
+  transition: color 0.15s;
+}
+
+.cdr-corr-card__name {
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--cdr-muted) 92%, #fff 8%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cdr-corr-card__spark {
+  height: 16px;
+  opacity: 0.88;
+  flex-shrink: 0;
+}
+
+.cdr-corr-card__vals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.cdr-corr-card__price {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
+.cdr-corr-card__chg {
+  font-size: 0.625rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.cdr-corr-card__chg.cdr-up {
+  background: color-mix(in srgb, var(--cdr-green) 14%, transparent);
+  color: var(--cdr-green);
+}
+
+.cdr-corr-card__chg.cdr-down {
+  background: color-mix(in srgb, var(--cdr-red) 14%, transparent);
+  color: var(--cdr-red);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdr-corr-card:hover {
+    transform: none;
+  }
+}

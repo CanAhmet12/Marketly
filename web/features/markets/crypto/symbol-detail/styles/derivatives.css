@@ -1,0 +1,99 @@
+.cdr-sidebar-block--derivatives {
+  position: relative;
+}
+
+.cdr-sidebar-block--derivatives::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #a78bfa 28%, transparent) 40%,
+    color-mix(in srgb, var(--cdr-rail-teal, #2dd4a8) 22%, transparent) 70%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.cdr-sidebar-live-dot--signal {
+  background: #a78bfa;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #a78bfa 24%, transparent);
+}
+
+.cdr-sidebar-block--sync .cdr-sidebar-live-dot--signal {
+  animation-duration: 1.2s;
+}
+
+.cdr-derivatives__liquidation {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 88%, #a78bfa 12%);
+}
+
+.cdr-derivatives__liquidation-title {
+  margin: 0 0 10px;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #c4b5fd 72%, var(--cdr-muted) 28%);
+}
+
+.cdr-derivatives__bias {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--cdr-border-subtle) 85%, #a78bfa 15%);
+  background: color-mix(in srgb, #a78bfa 10%, rgba(255, 255, 255, 0.03));
+  font-size: 0.8125rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  color: #ddd6fe;
+}
+
+.cdr-derivatives__bias--long {
+  border-color: color-mix(in srgb, var(--cdr-red) 32%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-red) 14%, transparent),
+    color-mix(in srgb, #a78bfa 8%, transparent)
+  );
+  color: #fecaca;
+}
+
+.cdr-derivatives__bias--short {
+  border-color: color-mix(in srgb, var(--cdr-green) 32%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cdr-green) 14%, transparent),
+    color-mix(in srgb, #a78bfa 8%, transparent)
+  );
+  color: #bbf7d0;
+}
+
+.cdr-derivatives__bias-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #a78bfa;
+  box-shadow: 0 0 10px color-mix(in srgb, #a78bfa 55%, transparent);
+}
+
+.cdr-derivatives__bias--long .cdr-derivatives__bias-dot {
+  background: var(--cdr-red);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-red) 55%, transparent);
+}
+
+.cdr-derivatives__bias--short .cdr-derivatives__bias-dot {
+  background: var(--cdr-green);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cdr-green) 55%, transparent);
+}

@@ -7,6 +7,7 @@ import { MarketSymbolIcon } from "@/features/markets/components/market-symbol-ic
 import { buildCryptoTreemapCells } from "@/features/markets/crypto/lib/build-crypto-treemap";
 import { treemapDominanceSummary } from "@/features/markets/crypto/lib/layout-crypto-treemap";
 import type { CryptoScreenerAsset, CryptoTreemapCell, CryptoTreemapPayload } from "@/features/markets/crypto/types";
+import { marketSymbolPath } from "@/features/markets/markets-routes";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -41,7 +42,7 @@ function WeightTile({ cell }: { cell: CryptoTreemapCell }) {
 
   return (
     <Link
-      href={`/markets/${encodeURIComponent(cell.symbol)}`}
+      href={marketSymbolPath(cell.symbol)}
       className={cn("cc-tmap-tile", tileTone(cell.symbol, cell.change24h))}
       aria-label={`${cell.name} ${cell.weightPct.toFixed(1)}% ağırlık ${signed(cell.change24h)}`}
     >
